@@ -11,13 +11,13 @@ If there are no to-values specified, then you must manually, later, call "start"
 are set to the current values.
 ###
 
-{currentSecond, min, max, Transaction, inspect, inspectLean, log} = require 'art.foundation'
+{currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseObject} = require 'art.foundation'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art.atomic'
-{Event, EventEpoch, EasingFunctions} = require 'art.events'
+{Event, EventEpoch, EasingFunctions, EventedObject} = require 'art.events'
 EasingFunctions = require './easing_functions'
 {eventEpoch} = EventEpoch
 
-module.exports = class Animator extends Foundation.BaseObject
+module.exports = class Animator extends BaseObject
   @include EventedObject
   @animate: (objects, options) -> new Animator objects, options
 

@@ -1,7 +1,7 @@
 define [
-  'lib/art/foundation'
-  'lib/art/engine/core/state_epoch'
-], (Foundation, StateEpoch) ->
+  'art.foundation'
+  'art.engine'
+], (Foundation, {Core:{StateEpoch}}) ->
   {inspect, log, isArray, isFunction} = Foundation
   {stateEpoch} = StateEpoch
 

@@ -1,12 +1,12 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/canvas'
-  'lib/art/engine'
-], (chai, Foundation, Atomic, Canvas, Engine) ->
+
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
+  'art.engine'
+], (Foundation, Atomic, Canvas, Engine) ->
   {log, BaseObject} = Foundation
-  {assert} = chai
+
   {point, Matrix} = Atomic
   {StateEpoch, Element} = Engine.Core
   {stateEpoch} = StateEpoch

@@ -1,11 +1,9 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/engine/core/element'
+  'art.foundation'
+  'art.atomic'
+  'art.engine'
   './state_epoch_test_helper'
-], (chai, Foundation, Atomic, Element, StateEpochTestHelper) ->
-  {assert} = chai
+], (Foundation, Atomic, {Core:{Element}}, StateEpochTestHelper) ->
 
   {inspect, log, isArray, compact, flatten} = Foundation
   {point, matrix} = Atomic

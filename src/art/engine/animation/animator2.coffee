@@ -107,13 +107,13 @@ NOTE:
 
 ###
 
-{currentSecond, min, max, Transaction, inspect, inspectLean, log} = require 'art.foundation'
+{currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseObject} = require 'art.foundation'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art.atomic'
-{Event, EventEpoch, EasingFunctions} = require 'art.events'
+{Event, EventEpoch, EasingFunctions, EventedObject} = require 'art.events'
 EasingFunctions = require './easing_functions'
 {eventEpoch} = EventEpoch
 
-module.exports = class Animator2 extends Foundation.BaseObject
+module.exports = class Animator2 extends BaseObject
   @include EventedObject
 
   # It's a FactoryFactory because:

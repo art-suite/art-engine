@@ -1,9 +1,9 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/engine/elements'
-], ({assert}, Foundation, Atomic, Elements) ->
+
+  'art.foundation'
+  'art.atomic'
+  'art.engine'
+], (Foundation, Atomic, {Elements}) ->
   {inspect, log, bound, flatten, first, second, last} = Foundation
   {point, point0, rect, Matrix, matrix} = Atomic
   {Element, Rectangle, PagingScrollElement} = Elements

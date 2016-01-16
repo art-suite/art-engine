@@ -1,4 +1,4 @@
-Foundatio = require 'art.foundation'
+Foundation = require 'art.foundation'
 Atomic = require 'art.atomic'
 {EventEpoch} = require 'art.events'
 Element = require '../core/element'

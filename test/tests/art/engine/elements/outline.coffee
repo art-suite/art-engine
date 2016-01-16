@@ -1,12 +1,11 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/canvas/gradient_fill_style'
-  'lib/art/engine/elements'
+
+  'art.foundation'
+  'art.atomic'
+  'art.engine'
   './helper'
-], (chai, Foundation, Atomic, GradientFillStyle, Elements, Helper) ->
-  {assert} = chai
+], (Foundation, Atomic, {GradientFillStyle, Elements}, Helper) ->
+
   {inspect, log} = Foundation
   {point, rect, matrix, Matrix, color} = Atomic
   {Outline, Shapes, TextElement, Fills, Fill} = Elements

@@ -1,11 +1,11 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/engine'
+
+  'art.foundation'
+  'art.atomic'
+  'art.engine'
   './helper'
-], (chai, Foundation, Atomic, Engine, Helper) ->
-  assert = chai.assert
+], (Foundation, Atomic, Engine, Helper) ->
+
   {insepct, log} = Foundation
   {point, rect, Matrix, matrix} = Atomic
   {Elements} = Engine

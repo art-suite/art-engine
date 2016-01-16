@@ -1,10 +1,9 @@
 define [
-  'extlib/chai'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/engine/layout/linear_layout'
-], (chai, Foundation, Atomic, LinearLayout) ->
-  {assert} = chai
+  'art.foundation'
+  'art.atomic'
+  'art.engine'
+], (Foundation, Atomic, {Layout:{LinearLayout}}) ->
+
   {point, matrix, Point} = Atomic
   {point0} = Point
   {log, inspect} = Foundation
