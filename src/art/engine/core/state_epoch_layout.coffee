@@ -2,9 +2,8 @@ define [
   './namespace'
   'art.foundation'
   'art.atomic'
-  'art.events'
   '../layout/layout_base'
-], (ArtEngineCore, Foundation, Atomic, Events, LayoutBase) ->
+], (ArtEngineCore, Foundation, Atomic, LayoutBase) ->
   {point, Point, perimeter} = Atomic
   {
     BaseObject
@@ -19,6 +18,9 @@ define [
   {nearInfiniteSize, nearInfinity, nearInfinityResult} = LayoutBase
   {point0} = Point
   {abs} = Math
+
+  getGlobalEpochCycle = ->
+    ArtEngineCore.GlobalEpochCycle.globalEpochCycle
 
   partition = (src, f) ->
     intoIfFalse = []
@@ -77,8 +79,8 @@ define [
         # if a layout changes the element's size, recurse on children.
         # We need to process all "parent" layouts before "child" layouts,
         # so sortedLayoutDirtyElements is sorted by depth ascending.
-      if ArtEngineCore.globalEpochCycle # loaded
-        ArtEngineCore.globalEpochCycle.timePerformance "aimLayout", process
+      if getGlobalEpochCycle() # loaded
+        getGlobalEpochCycle().timePerformance "aimLayout", process
       else
         process()
       null

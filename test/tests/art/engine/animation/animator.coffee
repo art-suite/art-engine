@@ -13,6 +13,9 @@ define [
 
   suite "Art.Engine.Animation.Animator", ->
 
+    test "failure", ->
+      assert.eq 1, 2
+
     stateEpochTest "Element Animator - Explicit", ->
       el = new Element
       ani = new Animator el,

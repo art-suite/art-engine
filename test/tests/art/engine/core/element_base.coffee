@@ -5,9 +5,10 @@ define [
   'art.engine'
   './state_epoch_test_helper'
 ], (Foundation, Atomic, Canvas, Engine, StateEpochTestHelper) ->
-  {color, point, matrix, Matrix} = Atomic
+  {color, point, matrix, Matrix, perimeter} = Atomic
   {inspect, eq, log, peek} = Foundation
   {ElementBase, StateEpoch} = Engine.Core
+  {PointLayout} = Engine.Layout
 
   {stateEpochTest} = StateEpochTestHelper
   {stateEpoch} = StateEpoch
@@ -20,7 +21,6 @@ define [
       currentSize:            default: point 100
       children:               default: []
       isFilterSource:         default: false
-      layout:                 default: null
 
     @drawAreaProperty
       # basic property
@@ -46,6 +46,26 @@ define [
     @getter
       redrawRequired: -> true
 
+    getPendingParentSizeForChildren: ->
+      point 10
+
+    @layoutProperty
+      padding:  default: 0
+      margin:  default: 0
+      location: default: 0, preprocess: (v) -> new PointLayout v
+      size:     default: 1, preprocess: (v) -> new PointLayout v
+      currentPadding: default: perimeter()
+      childrenLayout: default: null
+
+    _setPaddingFromLayout: ->
+    _setMarginFromLayout: ->
+    _setSizeFromLayout: ->
+    _setLocationFromLayout: ->
+
+    # getPendingLocation: -> new PointLayout
+    # getPendingSize: -> new PointLayout
+    # getPendingPadding:
+
   suite "Art.Engine.Core.ElementBase", ->
     test "_color in instance and _pendingState", ->
       ebd = new ElementBaseTest
@@ -70,16 +90,6 @@ define [
       ebd = new ElementBaseTest color: "red"
       assert.eq ebd.colorChanged, true
       assert.eq ebd.pendingColor, color "red"
-
-    stateEpochTest "init with preprocess virtual property", ->
-      ebd = new ElementBaseTest location: 10
-      assert.ok !ebd._pendingState.hasOwnProperty "location"
-      assert.ok !ebd._pendingState.hasOwnProperty "_location"
-      assert.eq ebd.pendingLocation, point 10
-      assert.eq ebd.elementToParentMatrix, matrix()
-      assert.eq ebd.pendingElementToParentMatrix, matrix 1, 1, 0, 0, 10, 10
-      ->
-        assert.eq ebd.location, point 10
 
     test "init with invalid property", ->
       errorCount = 0
@@ -200,7 +210,8 @@ define [
 
     test "metaProperties", ->
       ebd = new ElementBaseTest
-      assert.eq Object.keys(ebd.metaProperties), ["parent", "elementToParentMatrix", "currentSize", "children", "isFilterSource", "layout", "radius", "cursor", "color", "gray", "location"]
+      assert.ok ebd.metaProperties.parent
+      assert.ok ebd.metaProperties.elementToParentMatrix
 
       assert.eq typeof ebd.metaProperties.color.externalName, "string"
       assert.eq typeof ebd.metaProperties.color.internalName, "string"

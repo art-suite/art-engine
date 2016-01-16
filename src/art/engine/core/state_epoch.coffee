@@ -1,9 +1,8 @@
 define [
   'art.foundation'
   'art.atomic'
-  'art.events'
   './state_epoch_layout'
-], (Foundation, Atomic, Events, StateEpochLayout) ->
+], (Foundation, Atomic, StateEpochLayout) ->
   {point, Point} = Atomic
   {
     log

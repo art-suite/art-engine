@@ -13,7 +13,6 @@ define [
   'art.atomic'
   'art.foundation'
   'art.canvas'
-  'art.events'
   "../animation/animator"
   "../layout"
   './element_base'
@@ -21,7 +20,7 @@ define [
   "./draw_epoch"
   './global_epoch_cycle'
   './draw_cache_manager'
-], (Atomic, Foundation, Canvas, Events, Animator, Layout, ElementBase, StateEpoch, DrawEpoch, GlobalEpochCycle, DrawCacheManager) ->
+], (Atomic, Foundation, Canvas, Animator, Layout, ElementBase, StateEpoch, DrawEpoch, GlobalEpochCycle, DrawCacheManager) ->
 
   {point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint} = Atomic
   {floor} = Math

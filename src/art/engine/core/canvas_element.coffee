@@ -6,7 +6,7 @@ define [
   'art.atomic'
   'art.canvas/webgl'
   'art.canvas'
-  'art.events'
+  '../events'
   './element'
   './global_epoch_cycle'
   './draw_epoch'

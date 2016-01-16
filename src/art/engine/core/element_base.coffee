@@ -4,7 +4,7 @@ define [
   'art.events'
   "./state_epoch"
   "./element_factory"
-], (Atomic, Foundation, Events, StateEpoch, {elementFactory}) ->
+], (Atomic, Foundation, {EventedObjectBase}, StateEpoch, {elementFactory}) ->
   {stateEpoch} = StateEpoch
 
   {
@@ -29,7 +29,7 @@ define [
     @_elementInstanceRegistry: _elementInstanceRegistry = {}
     @propsEq: propsEq = plainObjectsDeepEq
     @shallowPropsEq: shallowPropsEq = shallowEq
-    @include Events.EventedObjectBase
+    @include EventedObjectBase
 
     @postCreate: ->
       elementFactory.register @ if @registerWithElementFactory()
@@ -695,6 +695,7 @@ define [
         "#{@getClassPathName()}:#{@getInstanceId()}#{if name = @getPendingName() then ":" + name else ""}"
       inspectedNameWithoutIds: ->
         "#{@getClassPathName()}#{if name = @getPendingName() then ":" + name else ""}"
+      inspectedString: -> @inspectedName
 
     inspectedPropsNotToInclude = ["children", "name", "on"]
     inspectedPropsFirst = ["key", "instanceId", "location", "size", "currentLocation", "currentSize"]

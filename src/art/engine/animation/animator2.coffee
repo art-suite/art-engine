@@ -109,7 +109,7 @@ NOTE:
 
 {currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseObject} = require 'art.foundation'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art.atomic'
-{Event, EventEpoch, EasingFunctions, EventedObject} = require 'art.events'
+{Event, EventEpoch, EventedObject} = require 'art.events'
 EasingFunctions = require './easing_functions'
 {eventEpoch} = EventEpoch
 

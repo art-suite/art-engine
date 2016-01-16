@@ -77,8 +77,8 @@ define [
 
           canvasElement = null
           p.onNextReady ->
-            canvasElement = new CanvasElement
-            canvasElement.addChild p
+            assert.eq c.rootElement, p
+            canvasElement = new CanvasElement {}, p
 
         stateEpochTest "handler added later", ->
           p = new Element

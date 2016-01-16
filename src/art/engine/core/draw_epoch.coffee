@@ -1,10 +1,9 @@
 define [
   'art.foundation'
   'art.atomic'
-  'art.events'
   './state_epoch_layout'
   './draw_cache_manager'
-], (Foundation, Atomic, Events, StateEpochLayout, DrawCacheManager) ->
+], (Foundation, Atomic, StateEpochLayout, DrawCacheManager) ->
   {point, Point} = Atomic
   {
     log

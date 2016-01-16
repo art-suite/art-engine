@@ -8,6 +8,9 @@ define [
   {inspect, BaseObject, Map, timeout, remove, log} = Foundation
   {Bitmap} = Canvas
 
+  getGlobalEpochCycle = ->
+    ArtEngineCore.GlobalEpochCycle.globalEpochCycle
+
   ###
   PURPOSE
   - Keep the maximum byte-size of the cache under a cap.
@@ -127,13 +130,13 @@ define [
         @_cachedBitmaps.set element, @_cachedBitmaps.remove recyclableCacheBitmap.element
 
         # log "found recyclableCacheBitmap for #{size}, recyclableCacheBitmap.lastFrameUsed = #{recyclableCacheBitmap.lastFrameUsed}, _currentFrameNumber = #{@_currentFrameNumber}"
-        ArtEngineCore.globalEpochCycle.logEvent "recycleUsedCacheBitmap", "recycleUsedCacheBitmap"
+        getGlobalEpochCycle().logEvent "recycleUsedCacheBitmap", "recycleUsedCacheBitmap"
         return recyclableCacheBitmap.recycle element, @_currentFrameNumber
 
     _recycleUnusedCacheBitmap: (element, size) ->
       if unusedCacheBitmap = @_getUnusedCacheBitmap size
         # log "found unusedCacheBitmap for #{size}"
-        ArtEngineCore.globalEpochCycle.logEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
+        getGlobalEpochCycle().logEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
         unusedCacheBitmap.recycle element, @_currentFrameNumber
         @_cachedBitmaps.set element, unusedCacheBitmap
         unusedCacheBitmap.bitmap
@@ -142,7 +145,7 @@ define [
       @_evictCacheBitmaps size if !@_roomInCacheForNewBitmap size
 
       @_bitmapsCreated++
-      ArtEngineCore.globalEpochCycle.logEvent "createCacheBitmap", "createCacheBitmap"
+      getGlobalEpochCycle().logEvent "createCacheBitmap", "createCacheBitmap"
       bitmap = element.getBitmapFactory().newBitmap size
       cachedBitmap = @_cachedBitmaps.set element, cacheBitmap = new CacheBitmap element, bitmap, @_currentFrameNumber
       @_cacheByteSize += cachedBitmap.getByteSize()
