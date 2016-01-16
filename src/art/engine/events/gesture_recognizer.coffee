@@ -1,6 +1,6 @@
 define [
-  'lib/art/foundation'
-  'lib/art/atomic'
+  'art.foundation'
+  'art.atomic'
   './pointer'
 ], (Foundation, Atomic, Pointer) ->
 

@@ -1,7 +1,7 @@
 define [
-  'lib/art/atomic'
-  'lib/art/foundation'
-  'lib/art/events'
+  'art.atomic'
+  'art.foundation'
+  'art.events'
 ], (Atomic, Foundation, Events) ->
 
   {point, rect, matrix} = Atomic

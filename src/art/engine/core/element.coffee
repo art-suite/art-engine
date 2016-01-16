@@ -10,10 +10,10 @@ NOTE on the "axis" property. It doesn't impact drawing in any way. It just eases
 ###
 
 define [
-  "../../atomic"
-  "../../foundation"
-  "../../canvas"
-  "../../events"
+  'art.atomic'
+  'art.foundation'
+  'art.canvas'
+  'art.events'
   "../animation/animator"
   "../layout"
   './element_base'

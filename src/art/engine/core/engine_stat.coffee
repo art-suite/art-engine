@@ -1,5 +1,5 @@
 define [
-  '../../foundation'
+  'art.foundation'
 ], (Foundation) ->
   {log, Map, miniInspect, currentSecond, arrayWithout, BaseObject, Stat} = Foundation
 

@@ -107,113 +107,106 @@ NOTE:
 
 ###
 
-define [
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/events/evented_object'
-  'lib/art/events/event'
-  'lib/art/events/event_epoch'
-  './easing_functions'
-], (Foundation, Atomic, EventedObject, Event, EventEpoch, EasingFunctions) ->
-  {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
-  {currentSecond, min, max, Transaction, inspect, inspectLean, log, isFunction} = Foundation
+{currentSecond, min, max, Transaction, inspect, inspectLean, log} = require 'art.foundation'
+{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art.atomic'
+{Event, EventEpoch, EasingFunctions} = require 'art.events'
+EasingFunctions = require './easing_functions'
+{eventEpoch} = EventEpoch
 
-  {eventEpoch} = EventEpoch
+module.exports = class Animator2 extends Foundation.BaseObject
+  @include EventedObject
 
-  class Animator2 extends Foundation.BaseObject
-    @include EventedObject
+  # It's a FactoryFactory because:
+  #   The first Factory captures the options and returns a Factory
+  #   for creating an instance-object with those options each time
+  #   the animated value changes and needs a new Animator2.
+  @createAnimator2FactoryFactory: (Animator2Class)->
+    (options) =>
+      (animatedElement, iValue, iTarget) =>
+        new Animator2Class animatedElement, iValue, iTarget, options
 
-    # It's a FactoryFactory because:
-    #   The first Factory captures the options and returns a Factory
-    #   for creating an instance-object with those options each time
-    #   the animated value changes and needs a new Animator2.
-    @createAnimator2FactoryFactory: (Animator2Class)->
-      (options) =>
-        (animatedElement, iValue, iTarget) =>
-          new Animator2Class animatedElement, iValue, iTarget, options
+  constructor: (animatedElement, initialValue, initialTargetValue, options = {})->
+    super
+    @animatedElement = animatedElement
+    @options = options
+    @on options.on if options?.on
 
-    constructor: (animatedElement, initialValue, initialTargetValue, options = {})->
-      super
-      @animatedElement = animatedElement
-      @options = options
-      @on options.on if options?.on
+    @lastFrameTime =
+    @currentFrameTime   = @initialFrameTime = currentSecond()
+    @currentTargetValue = @initialTargetValue = initTargetValue
+    @lastValue          = @initialValue = initialValue
+    @_isDone = false
 
-      @lastFrameTime =
-      @currentFrameTime   = @initialFrameTime = currentSecond()
-      @currentTargetValue = @initialTargetValue = initTargetValue
-      @lastValue          = @initialValue = initialValue
-      @_isDone = false
+    @queueEvent "start"
 
-      @queueEvent "start"
+  @getter
+    lastFrameTimeDelta: -> @currentFrameTime - @lastFrameTime
+    ellapsedTime:       -> @currentFrameTime - @initialFrameTime
+    isDone:             -> @_isDone
 
-    @getter
-      lastFrameTimeDelta: -> @currentFrameTime - @lastFrameTime
-      ellapsedTime:       -> @currentFrameTime - @initialFrameTime
-      isDone:             -> @_isDone
+  # OVERRIDE
+  # Needs to do the following:
+  #   return the next value
+  #   call @done() when the animation should stop.
+  #     NOTE: It's OK if it never stops.
+  # This version is a non-animation. It just updates the element to its
+  # final target-value and ends the animation.
+  advance: ->
+    @done()
+    @currentTargetValue
 
-    # OVERRIDE
-    # Needs to do the following:
-    #   return the next value
-    #   call @done() when the animation should stop.
-    #     NOTE: It's OK if it never stops.
-    # This version is a non-animation. It just updates the element to its
-    # final target-value and ends the animation.
-    advance: ->
+  # called by the framework each frame until @isDone returns false
+  # returns the next value
+  nextValue: (currentFrameTime, currentTargetValue)->
+    @lastFrameTime = @currentFrameTime
+    @currentFrameTime = currentFrameTime
+    @currentTargetValue = currentTargetValue
+    @lastValue = @advance()
+
+  # advance calls this when the animation is complete
+  # the return value from advance will be the final value
+  done: ->
+    @_isDone = true
+
+    @queueEvent "done"
+
+  # advance should call this at the beginning of its body,
+  # if this is the desired behavior.
+  resetOnTargetChange: ->
+    if @currentTargetValue != @initialTargetValue
+      @initialFrameTime   = @lastFrameTime
+      @initialValue       = @lastValue
+      @initialTargetValue = @currentTargetValue
+
+Animator2.createAnimator2FactoryFactory class EasingAnimator2 extends Animator2
+
+  constructor: (initialValue, initialTargetValue, options = {})->
+    super
+
+    @d = options.d || options.duration || .25
+    @f = options.f || options.function || "easeInQuad"
+
+    if isString @f
+      ef = EasingFunctions[@f]
+      throw new "Invalid EasingFunction name: #{inspect @f}" unless ef
+      @f = ef
+
+  interpolate: (fromValue, toValue, pos) ->
+    if isFunction fromValue.interpolate
+      fromValue.interpolate toValue, pos
+    else
+      fromValue + (toValue - fromValue) * pos
+
+  advance: ->
+    @resetOnTargetChange()
+
+    pos = @ellapsedTime / @d
+    if pos < 1
+      pos = @f pos
+    else
       @done()
-      @currentTargetValue
+      pos = 1
 
-    # called by the framework each frame until @isDone returns false
-    # returns the next value
-    nextValue: (currentFrameTime, currentTargetValue)->
-      @lastFrameTime = @currentFrameTime
-      @currentFrameTime = currentFrameTime
-      @currentTargetValue = currentTargetValue
-      @lastValue = @advance()
-
-    # advance calls this when the animation is complete
-    # the return value from advance will be the final value
-    done: ->
-      @_isDone = true
-
-      @queueEvent "done"
-
-    # advance should call this at the beginning of its body,
-    # if this is the desired behavior.
-    resetOnTargetChange: ->
-      if @currentTargetValue != @initialTargetValue
-        @initialFrameTime   = @lastFrameTime
-        @initialValue       = @lastValue
-        @initialTargetValue = @currentTargetValue
-
-  Animator2.createAnimator2FactoryFactory class EasingAnimator2 extends Animator2
-
-    constructor: (initialValue, initialTargetValue, options = {})->
-      super
-
-      @d = options.d || options.duration || .25
-      @f = options.f || options.function || "easeInQuad"
-
-      if isString @f
-        ef = EasingFunctions[@f]
-        throw new "Invalid EasingFunction name: #{inspect @f}" unless ef
-        @f = ef
-
-    interpolate: (fromValue, toValue, pos) ->
-      if isFunction fromValue.interpolate
-        fromValue.interpolate toValue, pos
-      else
-        fromValue + (toValue - fromValue) * pos
-
-    advance: ->
-      @resetOnTargetChange()
-
-      pos = @ellapsedTime / @d
-      if pos < 1
-        pos = @f pos
-      else
-        @done()
-        pos = 1
-
-      @interpolate @initialValue, @currentTargetValue, pos
+    @interpolate @initialValue, @currentTargetValue, pos
 
 

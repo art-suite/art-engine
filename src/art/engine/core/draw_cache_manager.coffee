@@ -1,15 +1,12 @@
 define [
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/canvas'
-], (Foundation, Atomic, Canvas) ->
+  './namespace'
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
+], (ArtEngineCore, Foundation, Atomic, Canvas) ->
   {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
   {inspect, BaseObject, Map, timeout, remove, log} = Foundation
   {Bitmap} = Canvas
-
-  globalEpochCycle = null
-  require ['lib/art/engine/core/global_epoch_cycle'], (GlobalEpochCycle) ->
-    {globalEpochCycle} = GlobalEpochCycle
 
   ###
   PURPOSE
@@ -130,13 +127,13 @@ define [
         @_cachedBitmaps.set element, @_cachedBitmaps.remove recyclableCacheBitmap.element
 
         # log "found recyclableCacheBitmap for #{size}, recyclableCacheBitmap.lastFrameUsed = #{recyclableCacheBitmap.lastFrameUsed}, _currentFrameNumber = #{@_currentFrameNumber}"
-        globalEpochCycle.logEvent "recycleUsedCacheBitmap", "recycleUsedCacheBitmap"
+        ArtEngineCore.globalEpochCycle.logEvent "recycleUsedCacheBitmap", "recycleUsedCacheBitmap"
         return recyclableCacheBitmap.recycle element, @_currentFrameNumber
 
     _recycleUnusedCacheBitmap: (element, size) ->
       if unusedCacheBitmap = @_getUnusedCacheBitmap size
         # log "found unusedCacheBitmap for #{size}"
-        globalEpochCycle.logEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
+        ArtEngineCore.globalEpochCycle.logEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
         unusedCacheBitmap.recycle element, @_currentFrameNumber
         @_cachedBitmaps.set element, unusedCacheBitmap
         unusedCacheBitmap.bitmap
@@ -145,7 +142,7 @@ define [
       @_evictCacheBitmaps size if !@_roomInCacheForNewBitmap size
 
       @_bitmapsCreated++
-      globalEpochCycle.logEvent "createCacheBitmap", "createCacheBitmap"
+      ArtEngineCore.globalEpochCycle.logEvent "createCacheBitmap", "createCacheBitmap"
       bitmap = element.getBitmapFactory().newBitmap size
       cachedBitmap = @_cachedBitmaps.set element, cacheBitmap = new CacheBitmap element, bitmap, @_currentFrameNumber
       @_cacheByteSize += cachedBitmap.getByteSize()

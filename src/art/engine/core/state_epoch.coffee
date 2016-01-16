@@ -1,7 +1,7 @@
 define [
-  '../../foundation'
-  '../../atomic'
-  '../../events'
+  'art.foundation'
+  'art.atomic'
+  'art.events'
   './state_epoch_layout'
 ], (Foundation, Atomic, Events, StateEpochLayout) ->
   {point, Point} = Atomic

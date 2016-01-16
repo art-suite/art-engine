@@ -1,10 +1,10 @@
 define [
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/canvas'
-  'lib/art/xbd'
-  'lib/art/engine/core'
-  'lib/art/engine/elements'
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
+  'art.xbd'
+  '../core'
+  '../elements'
   './model'
 ], (Foundation, Atomic, Canvas, Xbd, Core, Elements, Model) ->
 

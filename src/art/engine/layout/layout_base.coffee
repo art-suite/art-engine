@@ -1,6 +1,6 @@
 define [
-  '../../foundation'
-  '../../atomic'
+  'art.foundation'
+  'art.atomic'
 ], (Foundation, Atomic) ->
   {BaseObject, isPlainObject, log, isFunction, nearInfinity, nearInfinityResult} = Foundation
   {point} = Atomic

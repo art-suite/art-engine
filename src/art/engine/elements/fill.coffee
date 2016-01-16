@@ -1,7 +1,7 @@
 define [
-  '../../foundation'
-  '../../atomic'
-  '../../canvas'
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
   './fillable_base'
 ], (Foundation, Atomic, Canvas, FillableBase) ->
   {log, createWithPostCreate} = Foundation

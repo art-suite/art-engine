@@ -74,9 +74,9 @@ GUARANTEES
 ###
 
 define [
-  'lib/art/atomic'
-  'lib/art/foundation'
-  'lib/art/events'
+  'art.atomic'
+  'art.foundation'
+  'art.events'
   './pointer'
   './pointer_event'
 ], (Atomic, Foundation, Events, Pointer, PointerEvent) ->

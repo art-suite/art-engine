@@ -1,5 +1,5 @@
 define [
-  'lib/art/foundation'
+  'art.foundation'
   '../core'
   './namespace'
   './shapes'

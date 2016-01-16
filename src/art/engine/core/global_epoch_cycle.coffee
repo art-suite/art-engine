@@ -1,210 +1,209 @@
-define [
-  '../../foundation'
-  '../../events/event_epoch'
-  './state_epoch'
-  './draw_epoch'
-  './idle_epoch'
-  './draw_cache_manager'
-], (Foundation, EventEpoch, StateEpoch, DrawEpoch, IdleEpoch, DrawCacheManager) ->
-  {
-    log, requestAnimationFrame, Map, miniInspect, time, arrayWithout, currentSecond, Epoch
-    globalCount
-    isPlainObject
-    durationString
-    fastBind
-  } = Foundation
+Foundation = require 'art.foundation'
+{EventEpoch} = require 'art.events'
+StateEpoch = require './state_epoch'
+DrawEpoch = require './draw_epoch'
+IdleEpoch = require './idle_epoch'
+DrawCacheManager = require './draw_cache_manager'
 
-  toMs = (s) -> (s*1000).toFixed(1) + "ms"
-  {eventEpoch} = EventEpoch
-  {drawEpoch} = DrawEpoch
-  {stateEpoch} = StateEpoch
-  {idleEpoch} = IdleEpoch
-  {drawCacheManager} = DrawCacheManager
+{
+  log, requestAnimationFrame, Map, miniInspect, time, arrayWithout, currentSecond, Epoch
+  globalCount
+  isPlainObject
+  durationString
+  fastBind
+} = Foundation
 
-  class DummyEpoch extends Epoch
-    @singletonClass()
+toMs = (s) -> (s*1000).toFixed(1) + "ms"
+{eventEpoch} = EventEpoch
+{drawEpoch} = DrawEpoch
+{stateEpoch} = StateEpoch
+{idleEpoch} = IdleEpoch
+{drawCacheManager} = DrawCacheManager
 
-  {dummyEpoch} = DummyEpoch
-  fluxEpoch = reactEpoch = dummyEpoch
+class DummyEpoch extends Epoch
+  @singletonClass()
 
-  class GlobalEpochCycle extends Epoch
-    @singletonClass()
+{dummyEpoch} = DummyEpoch
+fluxEpoch = reactEpoch = dummyEpoch
 
-    @classGetter
-      activeCanvasElements: -> @globalEpochCycle.activeCanvasElements
+module.exports = class GlobalEpochCycle extends Epoch
+  @singletonClass()
 
-    constructor: ->
-      super
-      @cycleQueued = false
-      @processingCycle = false
-      @activeCanvasElements = []
-      @_fluxOnIdleOkUntil = currentSecond()
-      @_resetThisCyclesStats()
+  @classGetter
+    activeCanvasElements: -> @globalEpochCycle.activeCanvasElements
 
-      # @globalEpochStats = new GlobalEpochStats
+  constructor: ->
+    super
+    @cycleQueued = false
+    @processingCycle = false
+    @activeCanvasElements = []
+    @_fluxOnIdleOkUntil = currentSecond()
+    @_resetThisCyclesStats()
 
-      boundQueueNextEpoch = fastBind @queueNextEpoch, @
-      idleEpoch.queueNextEpoch  =
-      stateEpoch.queueNextEpoch =
-      drawEpoch.queueNextEpoch  =
-      eventEpoch.queueNextEpoch = boundQueueNextEpoch
-      eventEpoch.flushEpochNow  = => @flushEpochNow()
+    # @globalEpochStats = new GlobalEpochStats
 
-      eventEpoch.logEvent = (name, id) => @globalEpochStats?.logEvent name, id
+    boundQueueNextEpoch = fastBind @queueNextEpoch, @
+    idleEpoch.queueNextEpoch  =
+    stateEpoch.queueNextEpoch =
+    drawEpoch.queueNextEpoch  =
+    eventEpoch.queueNextEpoch = boundQueueNextEpoch
+    eventEpoch.flushEpochNow  = => @flushEpochNow()
 
-    allowFluxOnIdle: (nextNSeconds)->
-      @_fluxOnIdleOkUntil = currentSecond() + nextNSeconds
+    eventEpoch.logEvent = (name, id) => @globalEpochStats?.logEvent name, id
 
-    _resetThisCyclesStats: ->
-      @performanceSamples = {}
+  allowFluxOnIdle: (nextNSeconds)->
+    @_fluxOnIdleOkUntil = currentSecond() + nextNSeconds
 
-    addPerformanceSample: (name, value) ->
-      throw new Error "@performanceSamples not set" unless @performanceSamples
-      @performanceSamples[name] = (@performanceSamples[name] || 0) + value
-      # @fluxFrameTime = @reactFrameTime = @eventFrameTime = @idleFrametime = @aimUpdateFrameTime = @drawFrameTime = 0
+  _resetThisCyclesStats: ->
+    @performanceSamples = {}
 
-    timerStack = []
-    timePerformance: (name, f) ->
-      start = currentSecond()
-      timerStack.push 0
-      f()
-      subTimeTotal = timerStack.pop()
-      timeResult = currentSecond() - start
-      if (tsl = timerStack.length) > 0
-        timerStack[tsl-1] += timeResult
+  addPerformanceSample: (name, value) ->
+    throw new Error "@performanceSamples not set" unless @performanceSamples
+    @performanceSamples[name] = (@performanceSamples[name] || 0) + value
+    # @fluxFrameTime = @reactFrameTime = @eventFrameTime = @idleFrametime = @aimUpdateFrameTime = @drawFrameTime = 0
 
-      @addPerformanceSample name, timeResult - subTimeTotal
+  timerStack = []
+  timePerformance: (name, f) ->
+    start = currentSecond()
+    timerStack.push 0
+    f()
+    subTimeTotal = timerStack.pop()
+    timeResult = currentSecond() - start
+    if (tsl = timerStack.length) > 0
+      timerStack[tsl-1] += timeResult
 
-    @getter
-      numActivePointers: ->
-        count = 0
-        for canvasElement in @activeCanvasElements
-          count += canvasElement.getNumActivePointers()
-        count
+    @addPerformanceSample name, timeResult - subTimeTotal
 
-      idle: ->
-        reactEpoch.getEpochLength() == 0 &&
-        stateEpoch.getEpochLength() == 0 &&
-        eventEpoch.getEpochLength() == 0 #&&
-        # @getNumActivePointers() == 0
+  @getter
+    numActivePointers: ->
+      count = 0
+      for canvasElement in @activeCanvasElements
+        count += canvasElement.getNumActivePointers()
+      count
 
-      epochLength: ->
-        idleEpoch.getEpochLength() +
-        eventEpoch.getEpochLength() +
-        stateEpoch.getEpochLength() +
-        reactEpoch.getEpochLength() +
-        fluxEpoch.getEpochLength()
+    idle: ->
+      reactEpoch.getEpochLength() == 0 &&
+      stateEpoch.getEpochLength() == 0 &&
+      eventEpoch.getEpochLength() == 0 #&&
+      # @getNumActivePointers() == 0
 
-    @getter
-      idleEpoch : -> idleEpoch
-      eventEpoch: -> eventEpoch
-      stateEpoch: -> stateEpoch
-      drawEpoch:  -> drawEpoch
-      reactEpoch: -> reactEpoch
-      fluxEpoch : -> fluxEpoch
+    epochLength: ->
+      idleEpoch.getEpochLength() +
+      eventEpoch.getEpochLength() +
+      stateEpoch.getEpochLength() +
+      reactEpoch.getEpochLength() +
+      fluxEpoch.getEpochLength()
+
+  @getter
+    idleEpoch : -> idleEpoch
+    eventEpoch: -> eventEpoch
+    stateEpoch: -> stateEpoch
+    drawEpoch:  -> drawEpoch
+    reactEpoch: -> reactEpoch
+    fluxEpoch : -> fluxEpoch
 
 
-    includeReact: (epoch) -> (reactEpoch = epoch).queueNextEpoch = => @queueNextEpoch()
-    includeFlux: (epoch) -> (fluxEpoch = epoch).queueNextEpoch = => @queueNextEpoch()
+  includeReact: (epoch) -> (reactEpoch = epoch).queueNextEpoch = => @queueNextEpoch()
+  includeFlux: (epoch) -> (fluxEpoch = epoch).queueNextEpoch = => @queueNextEpoch()
 
-    logEvent: (name, id) ->
-      @globalEpochStats?.logEvent name, id
+  logEvent: (name, id) ->
+    @globalEpochStats?.logEvent name, id
 
-    dettachCanvasElement: (toRemoveCe) ->
-      @activeCanvasElements = arrayWithout @activeCanvasElements, toRemoveCe
+  dettachCanvasElement: (toRemoveCe) ->
+    @activeCanvasElements = arrayWithout @activeCanvasElements, toRemoveCe
 
-    attachCanvasElement: (toAddCe) ->
-      @activeCanvasElements.push toAddCe
+  attachCanvasElement: (toAddCe) ->
+    @activeCanvasElements.push toAddCe
 
-    processFluxEpoch:  -> @timePerformance "flux"  , => fluxEpoch.processEpoch()
-    processIdleEpoch:  -> @timePerformance "idle"  , => idleEpoch?.processEpoch()
-    processEventEpoch: -> @timePerformance "event" , => eventEpoch.processEpoch()
-    processReactEpoch: -> @timePerformance "react" , => reactEpoch.processEpoch()
-    processStateEpoch: -> @timePerformance "aim"   , => stateEpoch.processEpoch()
-    processDrawEpoch:  -> @timePerformance "draw"  , => drawEpoch.processEpoch()
+  processFluxEpoch:  -> @timePerformance "flux"  , => fluxEpoch.processEpoch()
+  processIdleEpoch:  -> @timePerformance "idle"  , => idleEpoch?.processEpoch()
+  processEventEpoch: -> @timePerformance "event" , => eventEpoch.processEpoch()
+  processReactEpoch: -> @timePerformance "react" , => reactEpoch.processEpoch()
+  processStateEpoch: -> @timePerformance "aim"   , => stateEpoch.processEpoch()
+  processDrawEpoch:  -> @timePerformance "draw"  , => drawEpoch.processEpoch()
 
-    flushEpochNow: ->
-      return if @processingCycle
-      @processingCycle = true
-      @_processCycleExceptDraw()
-      @processingCycle = false
+  flushEpochNow: ->
+    return if @processingCycle
+    @processingCycle = true
+    @_processCycleExceptDraw()
+    @processingCycle = false
 
-    _processCycleExceptDraw: ->
-      @processFluxEpoch() #if @getIdle() || currentSecond() < @_fluxOnIdleOkUntil
-      @processIdleEpoch() if @getIdle()
+  _processCycleExceptDraw: ->
+    @processFluxEpoch() #if @getIdle() || currentSecond() < @_fluxOnIdleOkUntil
+    @processIdleEpoch() if @getIdle()
 
-      @processEventEpoch()
+    @processEventEpoch()
 
-      reactEpoch.updateGlobalCounts()
-      @processReactEpoch()
-      globalCount "reactEpochAfter", reactEpoch.getEpochLength()
+    reactEpoch.updateGlobalCounts()
+    @processReactEpoch()
+    globalCount "reactEpochAfter", reactEpoch.getEpochLength()
 
-      stateEpoch.updateGlobalCounts()
-      @processStateEpoch()
-      globalCount "stateEpochAfter", stateEpoch.getEpochLength()
+    stateEpoch.updateGlobalCounts()
+    @processStateEpoch()
+    globalCount "stateEpochAfter", stateEpoch.getEpochLength()
 
-    processEpochItems: (items) ->
-      Foundation.resetGlobalCounts()
-      startTime = currentSecond()
+  processEpochItems: (items) ->
+    Foundation.resetGlobalCounts()
+    startTime = currentSecond()
 
-      @_resetThisCyclesStats()
-      @processingCycle = true
-      @_processCycleExceptDraw()
+    @_resetThisCyclesStats()
+    @processingCycle = true
+    @_processCycleExceptDraw()
 
-      # animations triggered on element creation cannot be properly initalized until
-      # all other properties have been applied - i.e. until stateEpoch.onNextReady
-      # However, animations triggered on element creation need to set their start-state before
-      # the next redraw. Therefor, we allow a second iteration of non-draw epochs.
-      # ALSO: some Components need to capture ElementSizes to refine layout (VerticalStackPager), so they may need one extra cycle.
-      # SBD: Changed on 12-20-2015 to only reprocess StateEpoch. That's all the animators need.
-      #   In particular, I don't want to process the eventEpoch twice since animators trigger their frames
-      #   each time we process the eventEpoch.
-      #   We could process the React epoch again, but we don't need it with the new Art.EngineRemote code
-      @processStateEpoch() if stateEpoch.getEpochLength() > 0
+    # animations triggered on element creation cannot be properly initalized until
+    # all other properties have been applied - i.e. until stateEpoch.onNextReady
+    # However, animations triggered on element creation need to set their start-state before
+    # the next redraw. Therefor, we allow a second iteration of non-draw epochs.
+    # ALSO: some Components need to capture ElementSizes to refine layout (VerticalStackPager), so they may need one extra cycle.
+    # SBD: Changed on 12-20-2015 to only reprocess StateEpoch. That's all the animators need.
+    #   In particular, I don't want to process the eventEpoch twice since animators trigger their frames
+    #   each time we process the eventEpoch.
+    #   We could process the React epoch again, but we don't need it with the new Art.EngineRemote code
+    @processStateEpoch() if stateEpoch.getEpochLength() > 0
 
-      drawCount = drawEpoch.epochLength
-      @processDrawEpoch()
-      @processingCycle = false
+    drawCount = drawEpoch.epochLength
+    @processDrawEpoch()
+    @processingCycle = false
 
-      # processTime = currentSecond() - @cycleStartTime
-      # @log cycleTime:"#{1000 * cycleTime | 0}ms", processTime:"#{1000 * processTime | 0}ms", events:events, states:states
+    # processTime = currentSecond() - @cycleStartTime
+    # @log cycleTime:"#{1000 * cycleTime | 0}ms", processTime:"#{1000 * processTime | 0}ms", events:events, states:states
 
-      if @getEpochLength() > 0
-        # console.warn "GlobalEpochCycle: processed maximum state and event cycles (#{@getEpochLength()}) before Draw."
-        @queueNextEpoch()
+    if @getEpochLength() > 0
+      # console.warn "GlobalEpochCycle: processed maximum state and event cycles (#{@getEpochLength()}) before Draw."
+      @queueNextEpoch()
 
-      if drawCount > 0
-        globalEpochFrameTime = currentSecond() - startTime
+    if drawCount > 0
+      globalEpochFrameTime = currentSecond() - startTime
 
-        gc = Foundation.globalCounts
-        # log ReactComponent_Rendered:gc.ReactComponent_Rendered
-        if false #globalEpochFrameTime > 1/60
-          keys = Object.keys(gc).sort()
-          sorted = {}
-          for k in keys
-            v = gc[k]
-            v = toMs v if v > 0 && v < 1
-            if isPlainObject v
-              for k2, v2 of v when v2 >0 && v2< 1
-                v[k2] = toMs v2
-            sorted[k] = v
+      gc = Foundation.globalCounts
+      # log ReactComponent_Rendered:gc.ReactComponent_Rendered
+      if false #globalEpochFrameTime > 1/60
+        keys = Object.keys(gc).sort()
+        sorted = {}
+        for k in keys
+          v = gc[k]
+          v = toMs v if v > 0 && v < 1
+          if isPlainObject v
+            for k2, v2 of v when v2 >0 && v2< 1
+              v[k2] = toMs v2
+          sorted[k] = v
 
+        log
+          globalCounts:sorted
+          fps:(1/globalEpochFrameTime).toFixed(1)
+
+        reactWork = (gc["ReactComponent_Created"] || 0) + (gc["ReactVirtualElement_Created"] || 0)
+        reactWastedWork = (gc["ReactComponent_UpdateFromTemporaryComponent_NoChange"] || 0) + (gc["ReactVirtualElement_UpdateFromTemporaryVirtualElement_NoChange"] || 0)
+        if reactWork > 0
           log
-            globalCounts:sorted
-            fps:(1/globalEpochFrameTime).toFixed(1)
+            reactWork: reactWork
+            reactWastedWork: reactWastedWork
+            reactEfficiency: 1 - reactWastedWork / reactWork
 
-          reactWork = (gc["ReactComponent_Created"] || 0) + (gc["ReactVirtualElement_Created"] || 0)
-          reactWastedWork = (gc["ReactComponent_UpdateFromTemporaryComponent_NoChange"] || 0) + (gc["ReactVirtualElement_UpdateFromTemporaryVirtualElement_NoChange"] || 0)
-          if reactWork > 0
-            log
-              reactWork: reactWork
-              reactWastedWork: reactWastedWork
-              reactEfficiency: 1 - reactWastedWork / reactWork
-
-        @globalEpochStats?.add startTime, globalEpochFrameTime, @performanceSamples
-          # flux:   @fluxFrameTime
-          # event:  @eventFrameTime
-          # react:  @reactFrameTime
-          # aim:    @aimUpdateFrameTime
-          # draw:   @drawFrameTime
+      @globalEpochStats?.add startTime, globalEpochFrameTime, @performanceSamples
+        # flux:   @fluxFrameTime
+        # event:  @eventFrameTime
+        # react:  @reactFrameTime
+        # aim:    @aimUpdateFrameTime
+        # draw:   @drawFrameTime
 

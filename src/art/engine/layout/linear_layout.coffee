@@ -1,6 +1,6 @@
 define [
-  '../../atomic'
-  '../../foundation'
+  'art.atomic'
+  'art.foundation'
   './layout_base'
 ], (Atomic, Foundation, LayoutBase) ->
 

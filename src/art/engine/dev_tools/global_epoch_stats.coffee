@@ -1,12 +1,10 @@
 define [
-  'lib/art/namespace'
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/engine/core'
-  'lib/art/canvas'
-  'lib/art/dev_tools'
-  # '../elements/rectangle'
-], (Art, Foundation, Atomic, EngineCore, Canvas, ArtDevTools) ->
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
+  'art.foundation/src/art/dev_tools'
+  '../core'
+], (Foundation, Atomic, Canvas, FoundationDevTools, EngineCore) ->
   {log, Map, miniInspect, currentSecond, max, min, timeout, peek} = Foundation
   {point, rect, Matrix, color} = Atomic
   {GlobalEpochCycle} = EngineCore
@@ -168,7 +166,7 @@ define [
     log: ->
       return unless @stats.length > 0
 
-      !ArtDevTools.DomConsole.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
+      !FoundationDevTools.DomConsole.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
 
       bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
       {w, h} = size

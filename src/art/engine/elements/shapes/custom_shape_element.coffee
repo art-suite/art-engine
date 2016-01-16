@@ -1,9 +1,9 @@
 define [
-  'lib/art/foundation'
-  'lib/art/atomic'
-  'lib/art/canvas/paths'
+  'art.foundation'
+  'art.atomic'
+  'art.canvas'
   '../fillable_base'
-], (Foundation, Atomic, Paths, FillableBase) ->
+], (Foundation, Atomic, {Paths}, FillableBase) ->
   {pureMerge, isFunction, createWithPostCreate} = Foundation
 
   createWithPostCreate class CustomShapeElement extends FillableBase

@@ -1,5 +1,1 @@
-define [
-  "lib/art/engine/core/element"
-], (Element) ->
-
-  class Model extends Element
+module.exports = class Model extends require '..//core/element'

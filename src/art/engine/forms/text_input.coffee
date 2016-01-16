@@ -1,9 +1,9 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 define [
-  "extlib/jquery"
-  "lib/art/foundation"
-  "lib/art/atomic"
+  'jquery'
+  'art.foundation'
+  'art.atomic'
   "./synchronized_dom_overlay"
 ], ($, Foundation, Atomic, SynchronizedDomOverlay) ->
   {color} = Atomic

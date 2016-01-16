@@ -1,12 +1,12 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 define [
-  "extlib/jquery"
-  "extlib/jquery.outer_setter"
-  "lib/art/foundation"
-  "lib/art/atomic"
+  'jquery'
+  # "extlib/jquery.outer_setter"
+  'art.foundation'
+  'art.atomic'
   "../core"
-], ($, OutterSetter, Foundation, Atomic, EngineCore) ->
+], ($, Foundation, Atomic, EngineCore) ->
   {log, merge} = Foundation
   {rect} = Atomic
   {StateEpoch, Element} = EngineCore
@@ -48,8 +48,10 @@ define [
 
       @$domElement.css "left", r.x
       @$domElement.css "top", r.y
-      @$domElement.outerWidth r.w
-      @$domElement.outerHeight r.h
+      @$domElement.width r.w
+      @$domElement.height r.h
+      # @$domElement.outerWidth r.w
+      # @$domElement.outerHeight r.h
 
     detachDomElement: ->
       # TODO: fix documentMatriciesChanged

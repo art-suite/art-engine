@@ -2,17 +2,16 @@
 # http://stackoverflow.com/questions/1685326/responding-to-the-onmousemove-event-outside-of-the-browser-window-in-ie
 
 define [
-  'extlib/jquery'
-  '../../foundation'
-  '../../atomic'
-  '../../webgl'
-  '../../canvas'
-  '../events'
+  'art.foundation'
+  'art.atomic'
+  'art.canvas/webgl'
+  'art.canvas'
+  'art.events'
   './element'
   './global_epoch_cycle'
   './draw_epoch'
   './engine_stat'
-], ($, Foundation, Atomic, Webgl, Canvas, ArtEngineEvents, Element, GlobalEpochCycle, DrawEpoch, EngineStat) ->
+], (Foundation, Atomic, Webgl, Canvas, ArtEngineEvents, Element, GlobalEpochCycle, DrawEpoch, EngineStat) ->
   {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
   {
     log, inspect
@@ -25,7 +24,7 @@ define [
     createWithPostCreate
   } = Foundation
 
-  {getDevicePixelRatio} = Browser.Dom
+  {getDevicePixelRatio, domElementOffset} = Browser.Dom
   {PointerEventManager, PointerEvent, KeyEvent} = ArtEngineEvents
 
   {globalEpochCycle} = GlobalEpochCycle
@@ -187,7 +186,6 @@ define [
       globalEpochCycle.attachCanvasElement @
       @onNextReady => @_register()
 
-      @$canvas = $ canvas
       @_canvas = canvas
       @_retinaSetup()
 
@@ -219,10 +217,10 @@ define [
       @_elementChanged()
 
     _updateCanvasToDocumentMatricies: ->
-      offset = @$canvas.offset()
-      @_canvasDocumentOffset = point offset.left, offset.top
-      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translate offset.left, offset.top
-      @_documentToElementMatrix = Matrix.translate(-offset.left, -offset.top).scale @_devicePixelsPerPoint
+      {left, top} = domElementOffset @_canvas
+      @_canvasDocumentOffset = point left, top
+      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translate left, top
+      @_documentToElementMatrix = Matrix.translate(-left, -top).scale @_devicePixelsPerPoint
       @_parentToElementMatrix = null
       @setElementToParentMatrix @_elementToAbsMatrix = Matrix.scale @_devicePixelsPerPoint
 

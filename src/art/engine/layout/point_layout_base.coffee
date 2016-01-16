@@ -1,6 +1,6 @@
 define [
-  'lib/art/atomic'
-  'lib/art/foundation'
+  'art.atomic'
+  'art.foundation'
 ], (Atomic, Foundation) ->
 
   {point, Point} = Atomic
