@@ -3,6 +3,7 @@ module.exports =
   entry:
     index: ["./index.coffee"]
     test: ["./test"]
+    full_screen_app: ["./full_screen_app.coffee"]
     # must wrap source in array due to bug in webpack:
     # https://github.com/webpack/webpack/issues/300
 
