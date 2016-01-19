@@ -4,12 +4,9 @@
   "description": "art.engine",
   "main": "index.coffee",
   "dependencies": {
-    "coffee-loader": "^0.7.2",
-    "neptune-namespaces": "^0.0.1",
-    "jquery": "^2.2.0",
-    "art.foundation": "^0.0.1",
-    "art.atomic": "^0.0.1",
-    "art.events": "^0.0.1"
+    "art.canvas": "git://github.com/Imikimi-LLC/art.canvas.git",
+    "art.events": "git://github.com/Imikimi-LLC/art.events.git",
+    "art.text":   "git://github.com/Imikimi-LLC/art.text.git"
   },
   "devDependencies": {
     "mocha": "^2.3.4",
