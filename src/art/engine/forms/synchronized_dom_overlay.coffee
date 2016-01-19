@@ -1,12 +1,10 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 define [
-  'jquery'
-  # "extlib/jquery.outer_setter"
   'art.foundation'
   'art.atomic'
   "../core"
-], ($, Foundation, Atomic, EngineCore) ->
+], (Foundation, Atomic, EngineCore) ->
   {log, merge} = Foundation
   {rect} = Atomic
   {StateEpoch, Element} = EngineCore
@@ -32,12 +30,12 @@ define [
         absMatriciesChanged: (e) =>
           @updateDomLayout()
 
-    @getter domElement: -> @$domElement
+    @getter domElement: -> @_domElement
 
     setupDomElement: (domElement) ->
-      @$domElement = $ domElement
-      @$domElement.css "position", "absolute"
-      @$domElement.css "top", "0"
+      @_domElement = domElement
+      @_domElement.style.position = "absolute"
+      @_domElement.style.top = "0"
 
     updateDomLayout: ->
       return unless @canvasElement
@@ -46,12 +44,12 @@ define [
       size = @paddedSize.mul m.getS()
       r = rect(loc,size).round()
 
-      @$domElement.css "left", r.x
-      @$domElement.css "top", r.y
-      @$domElement.width r.w
-      @$domElement.height r.h
-      # @$domElement.outerWidth r.w
-      # @$domElement.outerHeight r.h
+      @_domElement.style.left = ""+r.x
+      @_domElement.style.top = ""+r.y
+      @_domElement.width  = r.w
+      @_domElement.height = r.h
+      # @_domElement.outerWidth r.w
+      # @_domElement.outerHeight r.h
 
     detachDomElement: ->
       # TODO: fix documentMatriciesChanged
@@ -60,7 +58,7 @@ define [
       # if @_attachedCanvasElement && @_documentMatriciesChangedListener
       #   @_attachedCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
       #   @_documentMatriciesChangedListener = @_attachedCanvasElement = null
-      @$domElement.detach()
+      @_domElement.detach()
 
     attachDomElement: ->
       return unless canvasElement = @canvasElement
@@ -68,6 +66,6 @@ define [
       # @_attachedCanvasElement.on = documentMatriciesChanged: @_documentMatriciesChangedListener = => @updateDomLayout()
 
       @_needToAttachDomElement = false
-      zIndex = Foundation.Browser.Dom.zIndex(@canvasElement.$canvas) + 1
-      @$domElement.css "z-index", zIndex
-      @$domElement.appendTo $('body')
+      zIndex = Foundation.Browser.Dom.zIndex(@canvasElement._canvas) + 1
+      @_domElement.style["z-index"] = zIndex
+      @_domElement.appendTo $('body')

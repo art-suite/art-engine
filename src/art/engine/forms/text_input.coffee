@@ -1,12 +1,12 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 define [
-  'jquery'
   'art.foundation'
   'art.atomic'
   "./synchronized_dom_overlay"
-], ($, Foundation, Atomic, SynchronizedDomOverlay) ->
+], (Foundation, Atomic, SynchronizedDomOverlay) ->
   {color} = Atomic
+  {createElementFromHtml} = Foundation.Browser.Dom
   {merge, select, inspect, createWithPostCreate} = Foundation
 
   createWithPostCreate class TextInput extends SynchronizedDomOverlay
@@ -32,7 +32,9 @@ define [
       propsString = (for k, v of props
         "#{k}=#{inspect v}"
       ).join " "
-      options.domElement = $("<#{tagType} #{propsString}'></input>").val(options.value || "").css merge options.style,
+      options.domElement = el = createElementFromHtml("<#{tagType} #{propsString}'></input>")
+      el.value = options.value || ""
+      style = merge options.style,
         padding: "#{options.padding || 5}px"
         border: '0px'
         color: color(options.color || "black").toString()
@@ -43,6 +45,8 @@ define [
         'font-size': "#{options.fontSize || 16}px"
         'background-color': 'transparent'
         'font-family': options.fontFamily || "Arial"
+      for k, v of style
+        el.style[k] = v
 
       if options.attrs
         for k,v of options.attrs
