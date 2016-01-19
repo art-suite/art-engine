@@ -9,11 +9,6 @@
     "art.text":   "git://github.com/Imikimi-LLC/art.text.git"
   },
   "devDependencies": {
-    "mocha": "^2.3.4",
-    "coffee-loader": "^0.7.2",
-    "coffee-script": "^1.10.0",
-    "webpack": "^1.12.0",
-    "webpack-dev-server": "^1.12.0"
   },
   "scripts": {
     "test": "webpack-dev-server -d"
