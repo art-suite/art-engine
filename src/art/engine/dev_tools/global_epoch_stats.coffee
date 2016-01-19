@@ -2,21 +2,21 @@ define [
   'art.foundation'
   'art.atomic'
   'art.canvas'
-  'art.foundation/src/art/dev_tools/dom_console'
   '../core'
-], (Foundation, Atomic, Canvas, DomConsole, EngineCore) ->
+], (Foundation, Atomic, Canvas, EngineCore) ->
   {log, Map, miniInspect, currentSecond, max, min, timeout, peek} = Foundation
   {point, rect, Matrix, color} = Atomic
   {GlobalEpochCycle} = EngineCore
   {globalEpochCycle} = GlobalEpochCycle
   {floor} = Math
 
+  DomConsole = Neptune.Art.DevTools?.DomConsole
+
   reactColor = color("gold")
   aimColor = color "#9c3"
 
   class GlobalEpochStat extends Foundation.BaseObject
     constructor: (@sampleTime, @total, @sampleSet) ->
-
 
     @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactLC", "reactRender", "event", "flux"]
     @statColors: statColors =
@@ -166,7 +166,7 @@ define [
     log: ->
       return unless @stats.length > 0
 
-      !DomConsole.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
+      !DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
 
       bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
       {w, h} = size
