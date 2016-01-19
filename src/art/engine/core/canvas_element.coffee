@@ -76,10 +76,25 @@ define [
 
       parentSize: getter: ->
         if @_canvas
-          point(
-            @_canvas.parentElement.clientWidth
-            @_canvas.parentElement.clientHeight
-          )
+
+          ###
+          When using HTML5 <!DOCTYPE html>, parentElement.clientWidth* doesn't work right
+          It appears that the canvas's size effects the parent's size. A feedback loop.
+
+            # old:
+            point(
+              @_canvas.parentElement.clientWidth
+              @_canvas.parentElement.clientHeight
+            )
+
+          For FullScreenApps, we just want to use the whole viewport anyway, so that's what I'm
+          doing right now. If we want to have apps in canvas elements which are not full-screen,
+          then we need to update this.
+          ###
+          w = Math.max document.documentElement.clientWidth, window.innerWidth || 0
+          h = Math.max document.documentElement.clientHeight, window.innerHeight || 0
+
+          point w, h
         else point 100
 
     _domListener: (target, type, listener)->
