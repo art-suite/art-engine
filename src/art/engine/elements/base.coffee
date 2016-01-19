@@ -1,6 +1,6 @@
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   '../core/element'
 ], (Foundation, Atomic, Element) ->
   {inspect, createWithPostCreate} = Foundation

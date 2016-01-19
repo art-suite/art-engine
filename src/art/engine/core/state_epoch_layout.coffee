@@ -1,7 +1,7 @@
 define [
   './namespace'
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   '../layout/layout_base'
 ], (ArtEngineCore, Foundation, Atomic, LayoutBase) ->
   {point, Point, perimeter} = Atomic

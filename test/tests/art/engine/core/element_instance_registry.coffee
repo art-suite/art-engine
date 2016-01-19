@@ -1,6 +1,6 @@
-Foundation = require 'art.foundation'
-Atomic = require 'art.atomic'
-Engine = require 'art.engine'
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+Engine = require 'art-engine'
 
 {inspect, nextTick, eq, log} = Foundation
 {point, matrix, Matrix} = Atomic

@@ -1,9 +1,9 @@
 define [
 
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
+  'art-engine'
 ], (Foundation, Atomic, Canvas, Engine) ->
   {log, BaseObject} = Foundation
 

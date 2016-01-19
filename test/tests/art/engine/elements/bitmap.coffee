@@ -1,9 +1,9 @@
 define [
 
-  'art.foundation'
-  'art.atomic'
-  'art.engine'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-engine'
+  'art-canvas'
   './helper'
 ], (Foundation, Atomic, {Elements}, Canvas, Helper) ->
 

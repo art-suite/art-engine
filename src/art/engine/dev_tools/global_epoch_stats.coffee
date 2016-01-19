@@ -1,7 +1,7 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
   '../core'
 ], (Foundation, Atomic, Canvas, EngineCore) ->
   {log, Map, miniInspect, currentSecond, max, min, timeout, peek} = Foundation

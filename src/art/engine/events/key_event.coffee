@@ -1,7 +1,7 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.events'
+  'art-foundation'
+  'art-atomic'
+  'art-events'
 ], (Foundation, Atomic, Events) ->
   {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 

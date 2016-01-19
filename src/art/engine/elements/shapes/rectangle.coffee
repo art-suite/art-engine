@@ -1,7 +1,7 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
   '../fillable_base'
 ], (Foundation, Atomic, {Paths}, FillableBase) ->
   {pureMerge, floatEq, base, createWithPostCreate} = Foundation

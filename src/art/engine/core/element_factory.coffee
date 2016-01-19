@@ -1,5 +1,5 @@
 define [
-  'art.foundation'
+  'art-foundation'
 ], (Foundation) ->
   {BaseObject, timeout, inspect} = Foundation
   class ElementFactory extends BaseObject

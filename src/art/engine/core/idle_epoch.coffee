@@ -1,5 +1,5 @@
 define [
-  'art.foundation'
+  'art-foundation'
 ], (Foundation) ->
   {log, Epoch} = Foundation
 

@@ -1,7 +1,7 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
   './base'
 ], (Foundation, Atomic, Canvas, Base) ->
   {log, currentSecond, isPlainObject, createWithPostCreate} = Foundation

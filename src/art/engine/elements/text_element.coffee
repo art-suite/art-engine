@@ -1,9 +1,9 @@
 # https://developer.mozilla.org/en-US/docs/Web/API/TextMetrics
 
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.text'
+  'art-foundation'
+  'art-atomic'
+  'art-text'
   './base'
   '../core/global_epoch_cycle'
 ], (Foundation, Atomic, Text, Base, GlobalEpochCycle) ->

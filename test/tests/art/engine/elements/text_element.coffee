@@ -1,8 +1,8 @@
 define [
 
-  'art.foundation'
-  'art.atomic'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-engine'
   './helper'
   '../core/state_epoch_test_helper'
 ], (Foundation, Atomic, {Elements}, Helper, StateEpochTestHelper) ->

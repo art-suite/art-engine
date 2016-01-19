@@ -1,8 +1,8 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
+  'art-engine'
   './state_epoch_test_helper'
 ], (Foundation, Atomic, Canvas, Engine, StateEpochTestHelper) ->
   {color, point, matrix, Matrix, perimeter} = Atomic

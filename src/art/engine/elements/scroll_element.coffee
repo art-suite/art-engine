@@ -1,6 +1,6 @@
-Foundation = require 'art.foundation'
-Atomic = require 'art.atomic'
-{EventEpoch} = require 'art.events'
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+{EventEpoch} = require 'art-events'
 Element = require '../core/element'
 GestureRecognizer = require '../events/gesture_recognizer'
 {log, inspect, currentSecond, bound, round, min, max, abs, merge, peek, createWithPostCreate} = Foundation

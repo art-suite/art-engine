@@ -1,8 +1,8 @@
 define [
   './namespace'
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
 ], (ArtEngineCore, Foundation, Atomic, Canvas) ->
   {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
   {inspect, BaseObject, Map, timeout, remove, log} = Foundation

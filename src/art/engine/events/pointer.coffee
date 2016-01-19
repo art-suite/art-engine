@@ -1,6 +1,6 @@
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
 ], (Foundation, Atomic) ->
 
   {inspect, clone, peek, first, BaseObject} = Foundation

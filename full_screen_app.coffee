@@ -1,5 +1,5 @@
-{Promise} = Foundation = require 'art.foundation'
-Engine = require 'art.engine'
+{Promise} = Foundation = require 'art-foundation'
+Engine = require 'art-engine'
 
 document.onreadystatechange = ->
   if document.readyState == "interactive"
@@ -21,7 +21,7 @@ class Neptune.Art.Engine.FullScreenApp
 
     if query.dev == "true" || query.perfGraphs == "true"
       # Art.bindGlobally()
-      DomConsole = require 'art.foundation/src/art/dev_tools/dom_console'
+      DomConsole = require 'art-foundation/src/art/dev_tools/dom_console'
 
       DomConsole.enable()
       Engine.Core.CanvasElement.prototype.defaultSize = hh:1, w: (query.w | 0) || 375

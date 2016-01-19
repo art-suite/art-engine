@@ -1,8 +1,8 @@
 define [
 
-  'art.foundation'
-  'art.atomic'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-engine'
 ], (Foundation, Atomic, {Elements}) ->
   {inspect, log, bound, flatten, first, second, last} = Foundation
   {point, point0, rect, Matrix, matrix} = Atomic

@@ -1,6 +1,6 @@
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   './state_epoch_layout'
   './draw_cache_manager'
 ], (Foundation, Atomic, StateEpochLayout, DrawCacheManager) ->

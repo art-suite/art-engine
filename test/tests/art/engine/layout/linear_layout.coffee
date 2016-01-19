@@ -1,7 +1,7 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-engine'
 ], (Foundation, Atomic, {Layout:{LinearLayout}}) ->
 
   {point, matrix, Point} = Atomic

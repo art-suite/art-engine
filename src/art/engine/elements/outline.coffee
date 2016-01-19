@@ -1,6 +1,6 @@
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   './base'
 ], (Foundation, Atomic, Base) ->
   {merge, createWithPostCreate} = Foundation

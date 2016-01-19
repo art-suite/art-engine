@@ -1,5 +1,5 @@
 define [
-  'art.foundation'
+  'art-foundation'
   './point_layout_base'
 ], (Foundation, PointLayoutBase) ->
 

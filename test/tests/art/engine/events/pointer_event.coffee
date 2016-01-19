@@ -1,8 +1,8 @@
 define [
 
-  'art.foundation'
-  'art.atomic'
-  'art.engine'
+  'art-foundation'
+  'art-atomic'
+  'art-engine'
 ], (Foundation, Atomic, {Events}) ->
 
   {Matrix, point} = Atomic

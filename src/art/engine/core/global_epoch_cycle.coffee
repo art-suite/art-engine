@@ -1,5 +1,5 @@
-Foundation = require 'art.foundation'
-{EventEpoch} = require 'art.events'
+Foundation = require 'art-foundation'
+{EventEpoch} = require 'art-events'
 StateEpoch = require './state_epoch'
 DrawEpoch = require './draw_epoch'
 IdleEpoch = require './idle_epoch'

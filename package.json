@@ -1,13 +1,14 @@
 {
-  "name": "art.engine",
+  "name": "art-engine",
   "version": "0.0.1",
-  "description": "art.engine",
+  "description": "art-engine",
   "main": "index.coffee",
   "dependencies": {
-    "art.canvas": "git://github.com/Imikimi-LLC/art.canvas.git",
-    "art.events": "git://github.com/Imikimi-LLC/art.events.git",
-    "art.xbd": "git://github.com/Imikimi-LLC/art.xbd.git",
-    "art.text":   "git://github.com/Imikimi-LLC/art.text.git"
+    "art-foundation": "git://github.com/Imikimi-LLC/art-foundation.git",
+    "art-canvas": "git://github.com/Imikimi-LLC/art-canvas.git",
+    "art-events": "git://github.com/Imikimi-LLC/art-events.git",
+    "art-xbd": "git://github.com/Imikimi-LLC/art-xbd.git",
+    "art-text":   "git://github.com/Imikimi-LLC/art-text.git"
   },
   "devDependencies": {
   },

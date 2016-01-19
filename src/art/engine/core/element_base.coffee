@@ -1,7 +1,7 @@
 define [
-  'art.atomic'
-  'art.foundation'
-  'art.events'
+  'art-atomic'
+  'art-foundation'
+  'art-events'
   "./state_epoch"
   "./element_factory"
 ], (Atomic, Foundation, {EventedObjectBase}, StateEpoch, {elementFactory}) ->

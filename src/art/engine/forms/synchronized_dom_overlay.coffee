@@ -1,8 +1,8 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   "../core"
 ], (Foundation, Atomic, EngineCore) ->
   {log, merge} = Foundation

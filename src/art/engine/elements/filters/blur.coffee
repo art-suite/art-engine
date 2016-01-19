@@ -1,6 +1,6 @@
 define [
-  'art.foundation'
-  'art.atomic'
+  'art-foundation'
+  'art-atomic'
   './filter'
 ], (Foundation, Atomic, Filter) ->
   {createWithPostCreate} = Foundation

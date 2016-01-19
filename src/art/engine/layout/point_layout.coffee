@@ -1,6 +1,6 @@
 define [
-  'art.atomic'
-  'art.foundation'
+  'art-atomic'
+  'art-foundation'
   './point_layout_base'
 ], (Atomic, Foundation, PointLayoutBase) ->
 

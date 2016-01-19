@@ -2,10 +2,10 @@
 # http://stackoverflow.com/questions/1685326/responding-to-the-onmousemove-event-outside-of-the-browser-window-in-ie
 
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas/webgl'
-  'art.canvas'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas/webgl'
+  'art-canvas'
   '../events'
   './element'
   './global_epoch_cycle'

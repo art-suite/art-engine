@@ -1,8 +1,8 @@
 define [
-  'art.foundation'
-  'art.atomic'
-  'art.canvas'
-  'art.xbd'
+  'art-foundation'
+  'art-atomic'
+  'art-canvas'
+  'art-xbd'
   '../core'
   '../elements'
   './model'
