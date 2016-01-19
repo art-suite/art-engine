@@ -87,6 +87,7 @@ class Neptune.Art.Engine.FullScreenApp
             padding: 0px;
             margin: 0px;
             background-color: #eee;
+            overflow: hidden;
           }
           canvas {
             width: 100%;
@@ -98,7 +99,7 @@ class Neptune.Art.Engine.FullScreenApp
         </style>
 
         <body>
-          <canvas id="artCanvas"></canvas>
+          <canvas id="artCanvas" moz-opaque></canvas>
           #{scriptLinks.join newLine}
           #{fontFamilyInits.join newLine}
         </body>
