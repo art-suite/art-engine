@@ -1,71 +1,95 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
-define [
-  'art-foundation'
-  'art-atomic'
-  "../core"
-], (Foundation, Atomic, EngineCore) ->
-  {log, merge} = Foundation
-  {rect} = Atomic
-  {StateEpoch, Element} = EngineCore
-  {stateEpoch} = StateEpoch
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+Element = require '../core/element'
+{log, merge, inspect, float32Eq} = Foundation
+{rect, point1, point} = Atomic
 
-  class SynchronizedDomOverlay extends Element
-    constructor: (options={}) ->
-      super
-      @setupDomElement options.domElement
+module.exports = class SynchronizedDomOverlay extends Element
+  constructor: (options={}) ->
+    super
+    @_attachedToCanvasElement = null
+    @_updateQueued = false
+    @setDomElement options.domElement
 
-    preprocessEventHandlers: (handlerMap) ->
-      super merge handlerMap,
-        rootElementChanged: (e) =>
-          canvasElement = @canvasElement
-          if canvasElement && !@_attachedCanvasElement
-            stateEpoch.onNextReady =>
-              @attachDomElement()
-              @updateDomLayout()
+  @getter domElement: -> @_domElement
+  @setter domElement: (domElement) ->
+    attachedToCanvasElement = @_attachedToCanvasElement
+    @_detachDomElement()
 
-          else if @_attachedCanvasElement && !canvasElement
-            @detachDomElement()
+    @_domElement = domElement
+    @_domElement.style.position = "absolute"
+    @_domElement.style.top = "0"
 
-        absMatriciesChanged: (e) =>
-          @updateDomLayout()
+    @_attachDomElement attachedToCanvasElement
 
-    @getter domElement: -> @_domElement
+  #################
+  # OVERRIDES
+  #################
+  preprocessEventHandlers: (handlerMap) ->
+    super merge handlerMap,
+      rootElementChanged: (e) => @_rootElementChanged e
 
-    setupDomElement: (domElement) ->
-      @_domElement = domElement
-      @_domElement.style.position = "absolute"
-      @_domElement.style.top = "0"
+  #################
+  # PRIVATE
+  #################
+  _rootElementChanged: (e) ->
+    if canvasElement = @canvasElement
+      @_attachDomElement canvasElement
+    else
+      @_detachDomElement()
 
-    updateDomLayout: ->
-      return unless @canvasElement
-      m = @getElementToDocumentMatrix()
-      loc = m.location
-      size = @paddedSize.mul m.getS()
-      r = rect(loc,size).round()
+  _queueUpdate: ->
+    return if @_updateQueued || !@_attachedToCanvasElement
+    @_updateQueued = true
+    @onNextReady(=>
+      @_updateQueued = false
+      @_updateDomLayout()
+      @_queueUpdate()
+    , false) # don't force an epoch - wait until the next one
 
-      @_domElement.style.left = ""+r.x
-      @_domElement.style.top = ""+r.y
-      @_domElement.width  = r.w
-      @_domElement.height = r.h
-      # @_domElement.outerWidth r.w
-      # @_domElement.outerHeight r.h
+  _updateDomLayout: ->
+    return unless @_attachedToCanvasElement
+    m = @getElementToDocumentMatrix()
+    x = m.getLocationX()
+    y = m.getLocationY()
+    size  = @getPaddedSize()
+    sx = m.getScaleX()
+    sy = m.getScaleY()
+    r = rect(x, y, size.x, size.y).round()
 
-    detachDomElement: ->
-      # TODO: fix documentMatriciesChanged
-      #   We no longer support adding and removing listeners on an Element. You can only set, and replace all, the
-      #   listener property. So, how should SynchronizedDomOverlay update the dom elements if the CanvasElement moves?
-      # if @_attachedCanvasElement && @_documentMatriciesChangedListener
-      #   @_attachedCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
-      #   @_documentMatriciesChangedListener = @_attachedCanvasElement = null
-      @_domElement.detach()
+    opacity = @getAbsOpacity()
+    # console.log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
 
-    attachDomElement: ->
-      return unless canvasElement = @canvasElement
-      @_attachedCanvasElement = @canvasElement
-      # @_attachedCanvasElement.on = documentMatriciesChanged: @_documentMatriciesChangedListener = => @updateDomLayout()
+    @_domElement.style.opacity = opacity
+    @_domElement.style.left   = "#{r.x}px"
+    @_domElement.style.top    = "#{r.y}px"
+    @_domElement.style.width  = "#{r.w}px"
+    @_domElement.style.height = "#{r.h}px"
+    @_domElement.style.transform = if !float32Eq(sx, 1) || !float32Eq(sy, 1)
+      @_domElement.style["transform-origin"] = "left top"
+      "scale(#{sx}, #{sy})"
+    else
+      "none"
 
-      @_needToAttachDomElement = false
-      zIndex = Foundation.Browser.Dom.zIndex(@canvasElement._canvas) + 1
-      @_domElement.style["z-index"] = zIndex
-      document.body.appendChild @_domElement
+  _detachDomElement: ->
+    return unless @_attachedToCanvasElement
+    # TODO: fix documentMatriciesChanged
+    #   We no longer support adding and removing listeners on an Element. You can only set, and replace all, the
+    #   listener property. So, how should SynchronizedDomOverlay update the dom elements if the CanvasElement moves?
+    # if @_attachedToCanvasElement && @_documentMatriciesChangedListener
+    #   @_attachedToCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
+    #   @_documentMatriciesChangedListener = @_attachedToCanvasElement = null
+    @_domElement?.parentNode.removeChild @_domElement
+    @_attachedToCanvasElement = null
+
+  _attachDomElement: (canvasElement)->
+    return if canvasElement == @_attachedToCanvasElement
+    @_attachedToCanvasElement = canvasElement
+
+    @_needToAttachDomElement = false
+    zIndex = Foundation.Browser.Dom.zIndex(@canvasElement._canvas) + 1
+    @_domElement.style.zIndex = zIndex
+    document.body.appendChild @_domElement
+    @_queueUpdate()

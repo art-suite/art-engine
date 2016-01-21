@@ -52,7 +52,6 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
         options.domElement.attr k, v
     super
 
-    log TextInput_at_domElement:@domElement,  propsString: propsString
     @lastValue = @value
     @domElement.onchange = (event) => @checkIfValueChanged()
     @domElement.oninput  = (event) => @checkIfValueChanged()

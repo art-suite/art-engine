@@ -187,6 +187,7 @@ define [
         ]
 
     processEpochItems: (changingElements)->
+      # log "StateEpoc#processEpochItems"
       # log @inspectChangingElements changingElements
       @computeDepths changingElements
       @notifyLayoutPropertiesChanged changingElements

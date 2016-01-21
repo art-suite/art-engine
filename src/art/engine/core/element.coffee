@@ -151,6 +151,12 @@ define [
       parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
       elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
 
+      absOpacity: ->
+        opacity = if @getVisible() then @getOpacity() else 0
+        if parent = @getParent()
+          opacity *= parent.getAbsOpacity()
+        opacity
+
       isChanging: -> @_pendingState.__addedToChangingElements
       # isFilter:      -> false
       # filterSource:  -> @_filterSource || @_parent

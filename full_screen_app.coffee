@@ -99,9 +99,9 @@ class Neptune.Art.Engine.FullScreenApp
         </style>
 
         <body>
+          #{fontFamilyInits.join newLine}
           <canvas id="artCanvas" moz-opaque></canvas>
           #{scriptLinks.join newLine}
-          #{fontFamilyInits.join newLine}
         </body>
       </html>
     """

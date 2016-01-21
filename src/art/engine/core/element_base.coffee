@@ -723,11 +723,11 @@ define [
 
     inspectLocal: -> @getInspectedName()
 
-    onNextReady: (callback) ->
-      stateEpoch.onNextReady callback
+    onNextReady: (callback, forceEpoch = true) ->
+      stateEpoch.onNextReady callback, forceEpoch
 
-    @onNextReady: (callback) ->
-      stateEpoch.onNextReady callback
+    @onNextReady: (callback, forceEpoch = true) ->
+      stateEpoch.onNextReady callback, forceEpoch
 
     onIdle: (callback) ->
       stateEpoch.onNextReady callback
