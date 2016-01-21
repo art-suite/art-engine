@@ -68,4 +68,4 @@ define [
       @_needToAttachDomElement = false
       zIndex = Foundation.Browser.Dom.zIndex(@canvasElement._canvas) + 1
       @_domElement.style["z-index"] = zIndex
-      @_domElement.appendTo $('body')
+      document.body.appendChild @_domElement
