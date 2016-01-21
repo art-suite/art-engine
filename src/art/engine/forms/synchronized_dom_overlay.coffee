@@ -6,6 +6,8 @@ Element = require '../core/element'
 {log, merge, inspect, float32Eq} = Foundation
 {rect, point1, point} = Atomic
 
+# TODO: add a clipping <div> so the domElement is propperly clipped if its Art-Element is clipped.
+
 module.exports = class SynchronizedDomOverlay extends Element
   constructor: (options={}) ->
     super
@@ -15,14 +17,13 @@ module.exports = class SynchronizedDomOverlay extends Element
 
   @getter domElement: -> @_domElement
   @setter domElement: (domElement) ->
-    attachedToCanvasElement = @_attachedToCanvasElement
     @_detachDomElement()
 
     @_domElement = domElement
     @_domElement.style.position = "absolute"
     @_domElement.style.top = "0"
 
-    @_attachDomElement attachedToCanvasElement
+    @onNextReady => @_attachDomElement()
 
   #################
   # OVERRIDES
@@ -35,10 +36,7 @@ module.exports = class SynchronizedDomOverlay extends Element
   # PRIVATE
   #################
   _rootElementChanged: (e) ->
-    if canvasElement = @canvasElement
-      @_attachDomElement canvasElement
-    else
-      @_detachDomElement()
+    @onNextReady => @_attachDomElement()
 
   _queueUpdate: ->
     return if @_updateQueued || !@_attachedToCanvasElement
@@ -50,6 +48,9 @@ module.exports = class SynchronizedDomOverlay extends Element
     , false) # don't force an epoch - wait until the next one
 
   _updateDomLayout: ->
+    if @_attachedToCanvasElement != newCanvasElement = @getCanvasElement()
+      @_attachDomElement newCanvasElement
+
     return unless @_attachedToCanvasElement
     m = @getElementToDocumentMatrix()
     x = m.getLocationX()
@@ -60,8 +61,10 @@ module.exports = class SynchronizedDomOverlay extends Element
     r = rect(x, y, size.x, size.y).round()
 
     opacity = @getAbsOpacity()
-    # console.log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
+    zIndex = Foundation.Browser.Dom.zIndex(canvasElement._canvas) + 1
 
+    # console.log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
+    @_domElement.style.zIndex = zIndex
     @_domElement.style.opacity = opacity
     @_domElement.style.left   = "#{r.x}px"
     @_domElement.style.top    = "#{r.y}px"
@@ -84,12 +87,13 @@ module.exports = class SynchronizedDomOverlay extends Element
     @_domElement?.parentNode.removeChild @_domElement
     @_attachedToCanvasElement = null
 
-  _attachDomElement: (canvasElement)->
-    return if canvasElement == @_attachedToCanvasElement
-    @_attachedToCanvasElement = canvasElement
+  _attachDomElement: ->
+    canvasElement = @getCanvasElement()
+    if @_attachedToCanvasElement
+      return if canvasElement == @_attachedToCanvasElement
+      @_detachDomElement()
 
-    @_needToAttachDomElement = false
-    zIndex = Foundation.Browser.Dom.zIndex(@canvasElement._canvas) + 1
-    @_domElement.style.zIndex = zIndex
-    document.body.appendChild @_domElement
-    @_queueUpdate()
+    if canvasElement
+      @_attachedToCanvasElement = canvasElement
+      document.body.appendChild @_domElement
+      @_queueUpdate()
