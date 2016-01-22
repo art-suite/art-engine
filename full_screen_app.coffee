@@ -1,15 +1,9 @@
 {Promise} = Foundation = require 'art-foundation'
 Engine = require 'art-engine'
 
-document.onreadystatechange = ->
-  if document.readyState == "interactive"
-    Neptune.Art.Engine.FullScreenApp.init();
+module.exports = class Neptune.Art.Engine.FullScreenApp
 
-module.exports = appReadyPromise = new Promise
-
-class Neptune.Art.Engine.FullScreenApp
-
-  @init: ->
+  @_domReady: ->
     query = Foundation.Browser.Parse.query()
     console.log """
       Art.Engine.FullScreenApp options:
@@ -20,7 +14,7 @@ class Neptune.Art.Engine.FullScreenApp
       """
 
     if query.dev == "true" || query.perfGraphs == "true"
-      # Art.bindGlobally()
+
       DomConsole = require 'art-foundation/src/art/dev_tools/dom_console'
 
       DomConsole.enable()
@@ -28,18 +22,20 @@ class Neptune.Art.Engine.FullScreenApp
       Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs == "true"
 
     console.log "Art.Engine.FullScreenApp: app ready"
-    appReadyPromise.resolve()
-    Promise.resolve()
 
-  @writeDom: (config = {})->
+  @init: (config = {})->
+    document.onreadystatechange = =>
+      if document.readyState == "interactive"
+        @_domReady();
+        appReadyPromise.resolve()
 
-    {
-      title
-      styleSheets
-      scripts
-      fontFamilies
-      main # baseUrl relative URL for main.js
-    } = config
+    module.exports = appReadyPromise = new Promise
+
+    @writeDom config
+
+    appReadyPromise
+
+  @writeDom: ({title, styleSheets, scripts, fontFamilies})->
 
     title ||= "Art App"
     scripts ||= []
@@ -106,5 +102,3 @@ class Neptune.Art.Engine.FullScreenApp
       </html>
     """
     document.write html
-
-Neptune.Art.Engine.FullScreenApp.writeDom self.artConfig
