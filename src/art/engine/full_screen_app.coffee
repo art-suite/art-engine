@@ -1,9 +1,9 @@
 {Promise} = Foundation = require 'art-foundation'
-Engine = require 'art-engine'
 
-module.exports = class Neptune.Art.Engine.FullScreenApp
+module.exports = class FullScreenApp
 
   @_domReady: ->
+    Engine = require 'art-engine'
     query = Foundation.Browser.Parse.query()
     console.log """
       Art.Engine.FullScreenApp options:

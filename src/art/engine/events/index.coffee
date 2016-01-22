@@ -5,9 +5,9 @@ module.exports =
 Events                     = require './namespace'
 Events.GestureRecognizer   = require './gesture_recognizer'
 Events.KeyEvent            = require './key_event'
-Events.PointerEventManager = require './pointer_event_manager'
-Events.PointerEvent        = require './pointer_event'
 Events.Pointer             = require './pointer'
+Events.PointerEvent        = require './pointer_event'
+Events.PointerEventManager = require './pointer_event_manager'
 Events.finishLoad(
-  ["GestureRecognizer","KeyEvent","PointerEventManager","PointerEvent","Pointer"]
+  ["GestureRecognizer","KeyEvent","Pointer","PointerEvent","PointerEventManager"]
 )

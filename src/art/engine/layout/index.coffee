@@ -7,8 +7,8 @@ Layout.InterpolatedLayout      = require './interpolated_layout'
 Layout.InterpolatedPointLayout = require './interpolated_point_layout'
 Layout.LayoutBase              = require './layout_base'
 Layout.LinearLayout            = require './linear_layout'
-Layout.PointLayoutBase         = require './point_layout_base'
 Layout.PointLayout             = require './point_layout'
+Layout.PointLayoutBase         = require './point_layout_base'
 Layout.finishLoad(
-  ["InterpolatedLayout","InterpolatedPointLayout","LayoutBase","LinearLayout","PointLayoutBase","PointLayout"]
+  ["InterpolatedLayout","InterpolatedPointLayout","LayoutBase","LinearLayout","PointLayout","PointLayoutBase"]
 )
