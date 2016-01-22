@@ -419,7 +419,13 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         #     atEndEdge: atEndEdge
 
         if referenceFrame.page && 0 > pages.indexOf referenceFrame.page
-          console.warn "PagingScrollElement#pages setter: New page list does not contain the current referenceFrame. ALWAYS include the current referenceFrame when setting pages. Screen will jump!"
+          console.warn(
+            """
+            PagingScrollElement#pages setter: New page list does not contain the current referenceFrame. ALWAYS include the current referenceFrame when setting pages. Screen will jump!
+
+            page keys: #{inspect (page.key for page in pages)}
+            """
+          )
 
         if referenceFrame.page != page || referenceFrame.atEndEdge != atEndEdge
           # setReferenceFrame will call _updatePagesSplit
@@ -573,7 +579,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         totalSize += @getMainCoordinate page.getCurrentSize()
         break if totalSize >= pixelsOnScreen
 
-      if totalSize < pixelsOnScreen
+      if totalSize < pixelsOnScreen && pages.length > 0 && totalSize > 0
         averagePageSize = totalSize / pages.length
         pixelsLeft = pixelsOnScreen - totalSize
         count += ceil pixelsLeft / averagePageSize
@@ -589,7 +595,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         totalSize += @getMainCoordinate page.getCurrentSize()
         break if totalSize >= pixelsOnScreen
 
-      if totalSize < pixelsOnScreen
+      if totalSize < pixelsOnScreen && pages.length > 0 && totalSize > 0
         averagePageSize = totalSize / pages.length
         pixelsLeft = pixelsOnScreen - totalSize
         count += ceil pixelsLeft / averagePageSize
