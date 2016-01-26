@@ -15,6 +15,13 @@ module.exports = class FullScreenApp
 
     if query.dev == "true" || query.perfGraphs == "true"
 
+      ###
+      TODO:
+      this indirectly requires jquery...
+      1) dom-console doesn't really need jquery, it just needs a refactor
+      2) I'd like a way to easily build production vs dev code.
+      3) DomConsole should only be included in dev code.
+      ###
       DomConsole = require 'art-foundation/src/art/dev_tools/dom_console'
 
       DomConsole.enable()

@@ -180,7 +180,7 @@ class ScrollAnimator extends BaseObject
     if absLt frameTime*60 - 1, .25
     else
       missCount++ if tookFrames > 1
-      console.log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
+      # console.log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
     # </DEBUG>
 
     scrollPosition = @getScrollPosition()
