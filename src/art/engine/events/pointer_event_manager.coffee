@@ -12,6 +12,19 @@ All Event Types:
   focus
   blur
 
+  pointerClick
+  pointerUpInside
+  pointerUpOutside
+  pointerMoveIn
+  pointerMoveOut
+
+TODO:
+  Rename these events:
+
+    mouseMove => cursorMove
+    mouseIn   => cursorMoveIn
+    mouseOut  => cursorMoveOut
+
 DESIGN NOTES
 Purpose:
   Support Touch and Mouse events.
@@ -20,7 +33,18 @@ Purpose:
 
   Synthesize events:
     pointerClick
-      triggerd if active-locations went from 0 to non-0 and back to 0 without moving outside the pointerDeadZone
+      triggered if active-locations went from 0 to non-0 and back to 0 without moving outside the pointerDeadZone
+    pointerUpInside / pointerUpOutside
+      just before the pointerUp event is sent:
+        if pointer is "pointInside" for the target element
+          send pointerUpInside
+        else
+          send pointerUpOutside
+    pointerMoveIn / pointerMoveOut
+      pointer's "pointInside" changed from false>>true for the target element
+        send pointerMovedIn
+      else
+        send pointerMovedOut
 
 Differences between Touch events and Mouse events
   Touch Events
@@ -144,13 +168,18 @@ define [
 
     queuePointerEventForElements: (elements, type, pointer, timeStampInPerformanceSeconds) ->
       elements = prioritySortElements elements.slice()
-      @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds for element in elements
+      for element in elements
+        @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
 
     queuePointerEvents: (type, pointer, timeStampInPerformanceSeconds) ->
-      if e = @capturingElement
+      @forEachReceivingElement (e) =>
         @queuePointerEventForElement e, type, pointer, timeStampInPerformanceSeconds
+
+    forEachReceivingElement: (f) ->
+      if e = @capturingElement
+        f e
       else
-        @queuePointerEventForElements @currentFocusedPath, type, pointer, timeStampInPerformanceSeconds
+        f e for e in @currentFocusedPath
 
     queueMouseEvents: (type, pointer, timeStampInPerformanceSeconds) ->
       @queuePointerEventForElements @currentMousePath, type, pointer, timeStampInPerformanceSeconds
@@ -230,6 +259,28 @@ define [
 
       @queuePointerEvents "pointerDown", pointer, timeStampInPerformanceSeconds
 
+    queuePointerUpInAndOutsideEvents: (pointer, timeStampInPerformanceSeconds) ->
+      @forEachReceivingElement (element) =>
+        locationInParentSpace = pointer.locationIn element.parent
+        type = if element.pointInside locationInParentSpace then  "pointerUpInside" else "pointerUpOutside"
+        @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
+
+    queuePointerMoveInAndOutEvents: (pointer, timeStampInPerformanceSeconds) ->
+      isInsideParent = true
+      wasInsideParent = true
+      @forEachReceivingElement (element) =>
+        lastLocationInParentSpace = pointer.lastLocationIn element.parent
+        locationInParentSpace = pointer.locationIn element.parent
+        wasInside = wasInsideParent && element.pointInside lastLocationInParentSpace
+        isInside = isInsideParent && element.pointInside locationInParentSpace
+
+        if isInside != wasInside
+          type = if isInside then "pointerMoveIn" else "pointerMoveOut"
+          @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
+
+        isInsideParent = isInside
+        wasInsideParent = wasInside
+
     # pointerUp - user activity cased this
     pointerUp: (id, timeStampInPerformanceSeconds) ->
       eventEpoch.logEvent "pointerUp", id
@@ -239,7 +290,9 @@ define [
       @_numActivePointers--
       delete @activePointers[id]
 
+      @queuePointerUpInAndOutsideEvents pointer, timeStampInPerformanceSeconds
       @queuePointerEvents "pointerUp", pointer, timeStampInPerformanceSeconds
+
       if pointer.stayedWithinDeadzone
         # If you want to open a file dialog, for security reasons, the browser REQUIRES this happens within the mouse-up event.
         # So, flush the eventEpoch immediatly.
@@ -270,6 +323,7 @@ define [
       return unless !pointer.location.eq location
 
       @activePointers[id] = pointer = pointer.moved location
+      @queuePointerMoveInAndOutEvents pointer, timeStampInPerformanceSeconds
       @queuePointerEvents "pointerMove", pointer, timeStampInPerformanceSeconds
 
     mouseDown: (location, timeStampInPerformanceSeconds) -> @pointerDown "mousePointer", location, timeStampInPerformanceSeconds
