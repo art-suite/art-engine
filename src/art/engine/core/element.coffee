@@ -65,7 +65,7 @@ define [
   nonStatePropertyKeyTest = ElementBase.nonStatePropertyKeyTest
 
   createWithPostCreate class Element extends ElementBase
-    @drawCachingEnabled: drawCachingEnabled = false
+    @drawCachingEnabled: drawCachingEnabled = true
     @registerWithElementFactory: -> true
     @stats: stats
     @resetStats: -> mergeInto stats, zeroedStats
