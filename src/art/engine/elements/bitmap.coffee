@@ -10,28 +10,49 @@ define [
   {ceil, round} = Math
 
   {BaseObject} = Foundation
-  class SimpleUrlToBitmapCache extends FillableBase
-    @singletonClass()
-
-    constructor: ->
-      @_cache = {}
-      @_referenceCounts = {}
-
-    # OUT: a Promise to deliver a Canvas.Bitmap
-    get: (url) ->
-      @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
-      @_cache[url] ||= Canvas.Bitmap.get url
-
-    release: (url) ->
-      throw new Error "no references for #{url}" unless isNumber @_referenceCounts[url]
-      throw new Error "reference count already 0 for #{url}" if @_referenceCounts[url] == 0
-      @_referenceCounts[url]--
 
   createWithPostCreate class Bitmap extends FillableBase
+
+    class Bitmap.SourceToBitmapCache extends BaseObject
+      @singletonClass()
+
+      constructor: ->
+        @_cache = {}
+        @_referenceCounts = {}
+
+      # OUT: a Promise to deliver a Canvas.Bitmap
+      get: (url, initializerPromise) ->
+        if url.match "ImagePicker"
+          console.log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"
+          console.log "initializerPromise: #{!!initializerPromise}"
+        @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
+        @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
+
+      # returns true if the bitmap was released
+      # returns false if there are still other references
+      release: (url) ->
+        return unless url
+        console.log "SourceToBitmapCache#release: #{url}"
+        throw new Error "no references for #{url}" unless isNumber @_referenceCounts[url]
+        if @_referenceCounts[url] == 0 || !isNumber @_referenceCounts[url]
+          return console.error "invalid referenceCount: #{inspect @_referenceCounts[url]} for url: #{url}"
+
+        @_referenceCounts[url]--
+        if @_referenceCounts[url] == 0
+          delete @_cache[url]
+          true
+        else
+          false
+
+    sourceToBitmapCache = Bitmap.SourceToBitmapCache.singleton
 
     constructor: (options) ->
       super
       @_bitmapToElementMatrix = new Matrix
+
+    _unregister: ->
+      sourceToBitmapCache.release @getSource()
+      super
 
     @getter
       cacheable: -> false
@@ -80,7 +101,7 @@ define [
         postSetter: (v) -> @_loadBitmapFromSource v
 
     _loadBitmapFromSource: (source) ->
-      Canvas.Bitmap.get source
+      sourceToBitmapCache.get source
       .then (bitmap) =>
         @onNextReady => @queueEvent "load", => bitmap:bitmap
         @setBitmap bitmap
