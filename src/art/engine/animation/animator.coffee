@@ -93,6 +93,7 @@ module.exports = class Animator extends BaseObject
     @frames = 0
 
     eventEpoch.queue =>
+      return if @deactivated
       @updateValues 0
       eventEpoch.logEvent "animation", @getObjectId()
       @startTime = currentSecond()
