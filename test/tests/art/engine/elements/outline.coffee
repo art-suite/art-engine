@@ -123,3 +123,4 @@ define [
                 "#f0f", "#ff0"
                 "#f0f", "#ff0"
               ]
+              to: "bottomRight"

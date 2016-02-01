@@ -3,8 +3,9 @@
 
 module.exports =
 Layout                  = require './namespace'
+Layout.Basics           = require './basics'
 Layout.FlexLayout       = require './flex_layout'
 Layout.StateEpochLayout = require './state_epoch_layout'
 Layout.finishLoad(
-  ["FlexLayout","StateEpochLayout"]
+  ["Basics","FlexLayout","StateEpochLayout"]
 )

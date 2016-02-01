@@ -51,10 +51,10 @@ define [
         setter: (v) -> @setGradient v && new GradientFillStyle point0, point1, v
         getter: (o) -> o.gradient?.colors
 
-    _prepareDrawOptions: (compositeMode, opacity)->
+    _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
       super
-      @_drawOptions.fillStyle     = @_gradient
-      @_drawOptions.shadow        = @_shadow
+      drawOptions.fillStyle     = @_gradient
+      drawOptions.shadow        = @_shadow
 
       if @_gradient
         # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.

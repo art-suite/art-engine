@@ -40,7 +40,7 @@ define [
           @_curriedPathFunction
 
     drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
-      @_prepareDrawOptions compositeMode, opacity
+      @_prepareDrawOptions @_drawOptions, compositeMode, opacity
       @fillShape target, elementToTargetMatrix, @_drawOptions
 
     # override so Outline child can be "filled"

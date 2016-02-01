@@ -19,7 +19,7 @@ define [
     # OVERRIDES
     #############
     drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
-      @_prepareDrawOptions compositeMode, opacity
+      @_prepareDrawOptions @_drawOptions, compositeMode, opacity
       @fillShape target, elementToTargetMatrix, @_drawOptions
 
     _useStagingBitmap: ->
@@ -44,7 +44,7 @@ define [
     Inheriting classes can override & extend to add additional options
     purpose: to re-use the plain-object for draw options instead of creating a new one every time.
     ###
-    _prepareDrawOptions: (compositeMode, opacity)->
-      @_drawOptions.compositeMode = compositeMode
-      @_drawOptions.opacity       = opacity
-      @_drawOptions.color         = @_color
+    _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
+      drawOptions.compositeMode = compositeMode
+      drawOptions.opacity       = opacity
+      drawOptions.color         = @_color

@@ -17,6 +17,7 @@ define [
     getPendingBaseDrawArea: -> @getPendingParent().getPendingBaseDrawArea()
 
     drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
-      @_prepareDrawOptions compositeMode, opacity
+      @_parent._prepareDrawOptions? @_drawOptions, compositeMode, opacity
+      @_prepareDrawOptions @_drawOptions, compositeMode, opacity
 
       @_parent.fillShape target, elementToTargetMatrix, @_drawOptions

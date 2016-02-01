@@ -9,10 +9,9 @@ Elements.Filter              = require './filter'
 Elements.Helper              = require './helper'
 Elements.Outline             = require './outline'
 Elements.PagingScrollElement = require './paging_scroll_element'
-Elements.RectangleShadow     = require './rectangle_shadow'
 Elements.Rectangle           = require './rectangle'
 Elements.Shadow              = require './shadow'
 Elements.TextElement         = require './text_element'
 Elements.finishLoad(
-  ["Bitmap","Blur","Filter","Helper","Outline","PagingScrollElement","RectangleShadow","Rectangle","Shadow","TextElement"]
+  ["Bitmap","Blur","Filter","Helper","Outline","PagingScrollElement","Rectangle","Shadow","TextElement"]
 )
