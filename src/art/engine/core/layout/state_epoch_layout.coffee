@@ -326,7 +326,10 @@ module.exports = class StateEpochLayout extends BaseObject
           child._setLocationFromLayout point l.x + offsetX, l.y + offsetY
 
   CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
-    console.error "layoutElement-start:#{element.inspectedName} parentSize:#{parentSize}"
+    # console.error """
+    #   layoutElement-start: #{element.inspectedName}
+    #     parentSize:                 #{parentSize}
+    #   """
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
     # unless skipLocation
@@ -515,12 +518,12 @@ module.exports = class StateEpochLayout extends BaseObject
     element._setSizeFromLayout     deinfinitize secondPassSize
     element._setLocationFromLayout deinfinitize finalLocation unless skipLocation
 
-    console.error """
-      layoutElement-done: #{element.inspectedName}
-        parentSize:                 #{parentSize}
-        secondPassSize:             #{secondPassSize}
-        pendingCurrentSize:         #{element.getPendingCurrentSize()}
-        secondPassSizeForChildren:  #{secondPassSizeForChildren}
-      """
+    # console.error """
+    #   layoutElement-done: #{element.inspectedName}
+    #     parentSize:                 #{parentSize}
+    #     secondPassSize:             #{secondPassSize}
+    #     pendingCurrentSize:         #{element.getPendingCurrentSize()}
+    #     secondPassSizeForChildren:  #{secondPassSizeForChildren}
+    #   """
     secondPassSize
 

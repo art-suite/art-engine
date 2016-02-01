@@ -299,43 +299,28 @@ define [
                   assert.eq sizes = (c.currentSize for c in root.children), [point(30, 100), point(50, 100)]
                   assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
 
-            testLogBitmap "order of variable children when one has a minimum height shouldn't matter - order A", ->
+            testLogBitmap "order of variable children when one has a minimum height shouldn't matter", ->
               root: root = new Element
-                size: 100
-                childrenLayout: "column"
-                new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-                new Rectangle color:"green", size: hph:1, w:50
+                size: w: 200, h: 100
+                new Rectangle color: "#ddd"
+                root1 = new Element
+                  size: 100
+                  childrenLayout: "column"
+                  new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+                  new Rectangle color:"green", size: hph:1, w:50
+
+                root2 = new Element
+                  location: x: 100
+                  size: 100
+                  childrenLayout: "column"
+                  new Rectangle color:"green", size: hph:1, w:50
+                  new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
 
               test: ->
-                assert.eq sizes = (c.currentSize for c in root.children), [point(30, 60), point(50, 40)]
-                assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 60)]
-                root.size = 200
-
-            testLogBitmap "order of variable children when one has a minimum height shouldn't matter - order B", ->
-              root: root = new Element
-                size: 100
-                childrenLayout: "column"
-                new Rectangle color:"green", size: hph:1, w:50
-                new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-
-              test: ->
-                log """
-                  TODO: to fix this one, we need another pass in Flex layout:
-                    - If, on the second pass, there are any variable children who's
-                      size layout doesn't match the area provided for it AND there
-                      are some children's size that does, do a third pass over the latter group.
-                    NOTE - we don't want to do a full layoutElement on that latter group twice.
-                      Instead, we should only do a shallow layout for those elements during the
-                      second pass and wait for the third for the deep layout.
-                      Further, if the element's size layout's mainAxisSize is children-relative,
-                      then it probably can't go in the third pass.
-                  """
-                assert.eq sizes = (c.currentSize for c in root.children), [point(30, 40), point(50, 60)]
-                assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 40)]
-                root.size = 200
-                ->
-                  assert.eq sizes = (c.currentSize for c in root.children), [point(30, 100), point(50, 100)]
-                  assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
+                assert.eq sizes     = (c.currentSize for c in root1.children), [point(30, 60), point(50, 40)]
+                assert.eq sizes     = (c.currentSize for c in root2.children), [point(30, 40), point(50, 60)]
+                assert.eq locations = (c.currentLocation for c in root1.children), [point(0, 0), point(0, 60)]
+                assert.eq locations = (c.currentLocation for c in root2.children), [point(0, 0), point(0, 40)]
 
           suite "margins", ->
             testLogBitmap "no variable children, all same margin", ->

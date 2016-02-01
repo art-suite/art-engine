@@ -114,8 +114,26 @@ define [
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(50), point(50)]
-          assert.eq locations = (c.currentLocation.x for c in root.children), [point(0, 0), point(50, 0)]
-          log sizes: sizes, locations:locations
+          assert.eq locations = (c.currentLocation.x for c in root.children), [0, 50]
+
+      testLogBitmap "parent padding should not effect childrenLayout", ->
+        root: root = new Element
+          size: w:100, hch:1
+          padding: v:10
+          childrenLayout: "row"
+
+          new Rectangle key:"re", color: "cyan", inFlow: false
+
+          firstElement = new Rectangle
+            size: w:50, hh:1
+            color: "green"
+
+          secondElement = new Rectangle
+            size: w:50, h:40
+            color: "blue"
+
+        test: ->
+          assert.eq firstElement.currentSize.y, 40
 
       testLogBitmap "child indirectly effects siblings height - base case without childrenLayout", ->
         root: root = new Element
@@ -140,27 +158,7 @@ define [
           assert.eq firstElement.currentSize, point 20, 40
           assert.eq secondElement.currentSize, point 200, 40
 
-
       testLogBitmap "child indirectly effects siblings height - with childrenLayout-row", ->
-        root: root = new Element
-          size: w:100, hch:1
-          padding: v:10
-          childrenLayout: "row"
-
-          new Rectangle key:"re", color: "cyan", inFlow: false
-
-          firstElement = new Rectangle
-            size: w:50, hh:1
-            color: "green"
-
-          secondElement = new Rectangle
-            size: w:50, h:40
-            color: "blue"
-
-        test: ->
-          assert.eq firstElement.currentSize.y, 40
-
-      testLogBitmap "width of second element is not correct FULL", ->
         root: root = new Element
           key:"rootElement"
           size: w:220, hch:1
