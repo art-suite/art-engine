@@ -179,7 +179,7 @@ define [
       if e = @capturingElement
         f e
       else
-        f e for e in @currentFocusedPath
+        f e for e in prioritySortElements @currentFocusedPath
 
     queueMouseEvents: (type, pointer, timeStampInPerformanceSeconds) ->
       @queuePointerEventForElements @currentMousePath, type, pointer, timeStampInPerformanceSeconds
