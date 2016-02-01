@@ -689,12 +689,12 @@ define [
       instanceId: -> @remoteId || @getUniqueId()
       shortClassPathName: ->
         name = @getClassPathName()
-        peek name.split /(Art\.)?Engine\.(Core|Elements)\./
+        peek name.split /(Neptune\.Art\.)?Engine\.(Core|Elements)\./
 
       inspectedName: ->
-        "#{@getClassPathName()}:#{@getInstanceId()}#{if name = @getPendingName() then ":" + name else ""}"
+        "#{@getShortClassPathName()}:#{@instanceId}#{if name = @getPendingName() then ":" + name else ""}"
       inspectedNameWithoutIds: ->
-        "#{@getClassPathName()}#{if name = @getPendingName() then ":" + name else ""}"
+        "#{@getShortClassPathName()}#{if name = @getPendingName() then ":" + name else ""}"
       inspectedString: -> @inspectedName
 
     inspectedPropsNotToInclude = ["children", "name", "on"]
@@ -775,5 +775,15 @@ define [
         validate: (v) -> isPlainObject v
         setter: (v) -> @preprocessEventHandlers v
 
+    ###
+    TODO:
+
+      I'd like to have a "preprocessProps" function rather than one function which is
+      special-cased for event-handlers. I didn't do this with the first pass because
+      Element props can be set one at a time. They aren't set in batch like ArtReact.
+      But, I realized, they are effectively batch-set in the StateEpoch. Can we run
+      preprocessProps at the beginning of the StateEpoch???
+
+    ###
     preprocessEventHandlers: defaultEventHandlerPreprocessor = (handlerMap) -> handlerMap
 
