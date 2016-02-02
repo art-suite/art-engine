@@ -348,7 +348,8 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
 
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
-      animatorDone: ({animator}) =>
+      animatorDone: ({props}) =>
+        {animator} = props
         if animator == @_scrollAnimator
           @_scrollAnimator = null
       createGestureRecognizer
