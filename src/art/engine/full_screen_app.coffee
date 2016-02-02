@@ -22,7 +22,7 @@ module.exports = class FullScreenApp
       2) I'd like a way to easily build production vs dev code.
       3) DomConsole should only be included in dev code.
       ###
-      DomConsole = require 'art-foundation/src/art/dev_tools/dom_console'
+      DomConsole = require 'art-foundation/dev_tools/dom_console'
 
       DomConsole.enable()
       Engine.Core.CanvasElement.prototype.defaultSize = hh:1, w: (query.w | 0) || 375

@@ -202,62 +202,65 @@ define [
     ###
     constructor inputs: (initializer, previousLayout)
 
-    initializer:
+    constant initializer: anything that isn't a function or an object that is a legal initializer for Points
 
-      null/undefined:     constant layout returning 0
-      Point:              constant layout returning initializer
-      Number:             constant layout returning the number
+      123         # number
+      point 1, 2  # point
+      [1, 2]      # [x, y] array
+      "topLeft"   # named point
+      "1, 2"      # "x, y" string which is parsed
 
-      (ps, cs) -> Point:
-        layout is an abitrary function based on ps (parent-size) and cs (children-size) returning a point
-        NOTE: this is the least efficient option UNLESS the function directly returns ps or cs.
-        REASON: otherwise you are creating new points each time the function is called.
+    function initializer: (ps, cs) -> Point or Number
 
-      x: (px, cs) -> number
-      y: (px, cs) -> number
-        Layout is two arbitraty functions, one for X and one for Y.
-        You can provide only one if you wish. If so, the other is set to: () -> 0
+      layout is an abitrary function based on ps (parent-size) and cs (children-size) returning a point
+      NOTE: this is the least efficient option UNLESS the function directly returns ps or cs.
+      REASON: otherwise you are creating new points each time the function is called.
 
-      options object:
+    options object initializer:
 
-        # layoutX is the sum of:
-        x:         k # -> k
-        xpw:       k # -> k * ps.w
-        xcw:       k # -> k * cs.w
-        plus:      k # -> k
-        ps:        k # -> k * ps.w
-        cs:        k # -> k * cs.w
+      # contains one or more of the following options
 
-        # layoutY is the sum of:
-        y:         k # -> k
-        yph:       k # -> k * ps.h
-        ych:       k # -> k * cs.h
-        plus:      k # -> k
-        ps:        k # -> k * ps.h
-        cs:        k # -> k * cs.h
+      # layoutX = x if isFunction x
+      x:         (ps, cs) -> number
 
-        # Alaises
-        w:                        x
-        h:                        y
-        wpw:                      xpw
-        hph:                      yph
-        wcw:                      xcw
-        hch:                      ych
+      # layoutX is the sum of:
+      x:         k # -> k
+      xpw:       k # -> k * ps.w
+      xcw:       k # -> k * cs.w
+      plus:      k # -> k
+      ps:        k # -> k * ps.w
+      cs:        k # -> k * cs.w
 
-        width:                    x
-        height:                   y
-        width_parentWidth:        xpw
-        height_parentHeight:      yph
-        width_childrenWidth:      xcw
-        height_childrenHeight:    ych
+      # layoutY = y if isFunction y
+      y:         (ps, cs) -> number
 
-        x_parentWidth:            xpw
-        y_parentHeight:           yph
-        x_childrenWidth:          xcw
-        y_childrenHeight:         ych
+      # layoutY is the sum of:
+      y:         k # -> k
+      yph:       k # -> k * ps.h
+      ych:       k # -> k * cs.h
+      plus:      k # -> k
+      ps:        k # -> k * ps.h
+      cs:        k # -> k * cs.h
 
-      NOTE: Not all possible combinations are supported.
-      Use custom functions for special cases.
+      # Alaises
+      w:                        x
+      h:                        y
+      wpw:                      xpw
+      hph:                      yph
+      wcw:                      xcw
+      hch:                      ych
+
+      width:                    x
+      height:                   y
+      width_parentWidth:        xpw
+      height_parentHeight:      yph
+      width_childrenWidth:      xcw
+      height_childrenHeight:    ych
+
+      x_parentWidth:            xpw
+      y_parentHeight:           yph
+      x_childrenWidth:          xcw
+      y_childrenHeight:         ych
 
     constructor option examples:
 
