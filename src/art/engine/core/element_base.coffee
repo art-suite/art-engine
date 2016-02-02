@@ -767,7 +767,8 @@ define [
       #   this: @inspectedName
       #   eventType:eventType
       #   on: @_on && Object.keys @_on
-      @_on?[eventType] || @_pendingState._on?[eventType]
+      (_on = @_pendingState._on || @_on) &&
+      !!(_on[eventType] || _on.preprocess?[eventType])
 
     @inertProperty
       on:
