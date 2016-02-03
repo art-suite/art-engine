@@ -226,6 +226,15 @@ define [
         preprocess: (v, oldValue) -> if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
         postSetter: -> @_locationLayoutDisabled = false
 
+      scale:
+        default: 1
+        preprocess: (s) -> point s
+        postSetter: -> @_locationLayoutDisabled = false
+
+      angle:
+        default: 0
+        postSetter: -> @_locationLayoutDisabled = false
+
       childrenLayout:         default: null,                  validate:   (v) -> v == null || v == "flow" || v == "column" || v == "row"
       childrenGrid:           default: null,                  validate:   (v) -> v == null || isString(v) && v.match /^[ a-zA-Z]+$/
       childrenAlignment:      default: point0,                preprocess: (v) -> point v
@@ -478,15 +487,6 @@ define [
       key:
         setter: (v) -> @setName v
         getter: (o) -> o._name
-
-      scale:
-        preprocess: (s) -> point s
-        getter: (o) -> o._elementToParentMatrix.getS()
-        setter: (s) -> @_setElementToParentMatrixWithoutChangingLocation @getPendingElementToParentMatrix().withScale s; s
-
-      angle:
-        getter: (o) -> o._elementToParentMatrix.getAngle()
-        setter: (a) -> @_setElementToParentMatrixWithoutChangingLocation @getPendingElementToParentMatrix().withAngle a; a
 
       invisible:
         getter: (o) -> !o._visible
@@ -1121,23 +1121,44 @@ define [
 
     _setLocationFromLayoutXY: (x, y) ->
       return if @_locationLayoutDisabled
-      e2p = @getPendingElementToParentMatrix()
-      {tx, ty} = e2p
 
-      newTx = tx + x - @getPendingCurrentLocationX()
-      newTy = ty + y - @getPendingCurrentLocationY()
-      # log _setLocationFromLayout:
-      #   pendingCurrentLocation: @pendingCurrentLocation
-      #   x:x
-      #   y:y
-      #   tx:tx
-      #   ty:ty
-      #   newTx: newTx
-      #   newTy: newTy
+      angle = @getPendingAngle()
+      size  = @getPendingCurrentSize()
+      scale = @getPendingScale()
+      axis  = @getPendingAxis()
+      padding = @getPendingCurrentPadding()
 
-      if tx != newTx || ty != newTy
-        @_pendingState._elementToParentMatrix = e2p.withLocationXY newTx, newTy
+      x += padding.left
+      y += padding.top
+
+      asx = axis.x * size.x
+      asy = axis.y * size.y
+
+      e2p = identityMatrix
+      shouldScale = !scale.eq point1
+      shouldRotate = !floatEq(angle)
+      if shouldScale || shouldRotate
+        e2p = e2p.translate -asx, -asy
+        e2p = e2p.scale scale if shouldScale
+        e2p = e2p.rotate angle if shouldRotate
+        e2p = e2p.translate x, y
+      else
+        e2p = e2p.translate x - asx, y - asy
+
+      if !@_pendingState._elementToParentMatrix.eq e2p
+        @_pendingState._elementToParentMatrix = e2p
         @_elementChanged()
+
+      # e2p = @getPendingElementToParentMatrix()
+      # {tx, ty} = e2p
+
+      # newTx = tx + x - @getPendingCurrentLocationX()
+      # newTy = ty + y - @getPendingCurrentLocationY()
+
+      # if tx != newTx || ty != newTy
+      #   @_pendingState._elementToParentMatrix = e2p.withLocationXY newTx, newTy
+      #   @_elementChanged()
+
       @
 
     _sizeDirectlyEffectsDrawing: ->
