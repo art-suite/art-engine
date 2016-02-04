@@ -25,11 +25,11 @@ define [
         window.c =
         c = new Element
           name: "child"
-          on: parentChanged: (e)=>
+          on: parentChanged: ({target, props:{parent, oldParent}})=>
             assert.eq c.parent, p
-            assert.eq e.target, c
-            assert.eq e.parent, p
-            assert.eq e.oldParent, null
+            assert.eq target, c
+            assert.eq parent, p
+            assert.eq oldParent, null
             done()
         # p.onNextReady =>
         p.addChild c
@@ -42,12 +42,12 @@ define [
         p = new Element null,
           c = new Element
         (done) ->
-          c.on = parentChanged: (e)->
+          c.on = parentChanged: ({target, props: {parent, oldParent}})->
             assert.eq c.parent, null
             assert.eq p.children, []
-            assert.eq e.target, c
-            assert.eq e.oldParent, p
-            assert.eq e.parent, null
+            assert.eq target, c
+            assert.eq oldParent, p
+            assert.eq parent, null
             done()
           c.removeFromParent()
 
@@ -68,11 +68,11 @@ define [
           p = new Element name: "parent",
             c = new Element
               name: "child"
-              on: rootElementChanged: (e) ->
-                if e.rootElement == canvasElement
+              on: rootElementChanged: ({target, props:{rootElement,oldRootElement}}) ->
+                if rootElement == canvasElement
                   assert.eq c.canvasElement, canvasElement
-                  assert.eq e.target, c
-                  assert.eq e.oldRootElement, p
+                  assert.eq target, c
+                  assert.eq oldRootElement, p
                   done()
 
           canvasElement = null
@@ -90,11 +90,11 @@ define [
 
           (done) ->
             log "add rootElementChanged, add child p"
-            c.on = rootElementChanged: (e) =>
-              assert.eq e.rootElement, canvasElement
+            c.on = rootElementChanged: ({target, props:{rootElement, oldRootElement}}) =>
+              assert.eq rootElement, canvasElement
               assert.eq c.canvasElement, canvasElement
-              assert.eq e.target, c
-              assert.eq e.oldRootElement, p
+              assert.eq target, c
+              assert.eq oldRootElement, p
               done()
 
             canvasElement.addChild p
@@ -108,11 +108,11 @@ define [
           canvasElement.addChild p
 
           (done) ->
-            c.on = rootElementChanged: (e) =>
-              assert.eq e.rootElement, p
+            c.on = rootElementChanged: ({target, props:{rootElement, oldRootElement}}) =>
+              assert.eq rootElement, p
               assert.eq c.canvasElement, null
-              assert.eq e.target, c
-              assert.eq e.oldRootElement, canvasElement
+              assert.eq target, c
+              assert.eq oldRootElement, canvasElement
               done()
 
             p.removeFromParent()
@@ -121,10 +121,10 @@ define [
           p = new Element null,
             c = new Element
               on: rootElementChanged: (e) =>
-                assert.eq e.rootElement, p
+                assert.eq e.props.rootElement, p
                 assert.eq c.canvasElement, null
                 assert.eq e.target, c
-                assert.eq e.oldRootElement, c
+                assert.eq e.props.oldRootElement, c
                 done()
 
         stateEpochTest "after construction, oldRootElement is set to this", ->
@@ -133,10 +133,10 @@ define [
 
           (done)->
             c.on = rootElementChanged: (e) =>
-                assert.eq e.rootElement, p
+                assert.eq e.props.rootElement, p
                 assert.eq c.canvasElement, null
                 assert.eq e.target, c
-                assert.eq e.oldRootElement, c
+                assert.eq e.props.oldRootElement, c
                 done()
 
             p.addChild c

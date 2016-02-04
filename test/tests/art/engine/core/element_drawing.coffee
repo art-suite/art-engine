@@ -207,7 +207,7 @@ define [
         drawArea:          expectedSize: point(50, 35), expectedDrawMatrix: matrix()
         parentLogicalArea: expectedSize: point 100, 80
         parentPaddedArea:  expectedSize: point 80, 60
-        parentDrawArea:    expectedSize: point 61, 56
+        parentDrawArea:    expectedSize: point 62, 56
         targetDrawArea:    expectedSize: point(121, 61), elementToDrawAreaMatrix: Matrix.rotate(Math.PI / 4).scale 2, 1
       for k, v of areaOptions
         do (k, v) ->

@@ -69,7 +69,7 @@ define [
         el = new Element location:100
 
         ->
-          assert.eq 1.5, el.setScale 1.5
+          assert.eq point(1.5), el.setScale 1.5
           assert.eq el.locationChanged, false
           assert.eq el.pendingScale, point 1.5
           assert.eq el.scale, point 1
