@@ -119,10 +119,8 @@ define [
     @keysDown.length = 0
 
     constructor: ->
-      @keyCode = null
-      @typed = null
       super
-      @key = keyCodesToKeys[@keyCode] if @keyCode
+      @props.key = keyCodesToKeys[@props.keyCode]
       switch @type
         when "keyDown"
           unless @keysDown[@key]

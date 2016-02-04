@@ -63,8 +63,8 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
     merge super,
       focus: => @domElement.focus()
       blur:  => @domElement.blur()
-      keyUp: (e) =>
-        if e.key == "enter"
+      keyUp: ({props}) =>
+        if props.key == "enter"
           @handleEvent "enter", value:@value
 
   checkIfValueChanged: ->
