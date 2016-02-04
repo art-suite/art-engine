@@ -327,7 +327,7 @@ define [
       hh: -> @_sizeSy
       hw: -> @_sizeShy
 
-    @propGetter "wcw", "wch", "hch", "hcw"
+    @getter "wcw wch hch hcw"
 
     layout: ({
       x, xw, xh            # layout x

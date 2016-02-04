@@ -35,17 +35,19 @@ define [
         console.error newLayout:newLayout, oldLayout:oldLayout
         throw new Error "mergeLayout requires newLayout to be: null, a plain object, instanceof LinearLayout or newLayout.hasFullLayout == true"
 
-    @propGetter "options",
-      "sizeChildRelative",
-      "locationParentRelative"
-      "sizeParentRelative"
-      "widthParentRelative"
-      "heightParentRelative"
-      "hasXLayout"
-      "hasYLayout"
-      "hasWLayout"
-      "hasHLayout"
-      "hasFullLayout"
+    @getter """
+      options
+      sizeChildRelative
+      locationParentRelative
+      sizeParentRelative
+      widthParentRelative
+      heightParentRelative
+      hasXLayout
+      hasYLayout
+      hasWLayout
+      hasHLayout
+      hasFullLayout
+      """
 
     @getter
       parentRelative: -> @_locationParentRelative || @_sizeParentRelative

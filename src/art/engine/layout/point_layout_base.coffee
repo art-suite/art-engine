@@ -41,16 +41,18 @@ define [
     inspect2: ->
       @toString()
 
-    @propGetter "xRelativeToParentW",
-      "xRelativeToParentH"
-      "yRelativeToParentW"
-      "yRelativeToParentH"
-      "xRelativeToChildrenW"
-      "xRelativeToChildrenH"
-      "yRelativeToChildrenW"
-      "yRelativeToChildrenH"
-      "hasXLayout"
-      "hasYLayout"
+    @getter """
+      xRelativeToParentW
+      xRelativeToParentH
+      yRelativeToParentW
+      yRelativeToParentH
+      xRelativeToChildrenW
+      xRelativeToChildrenH
+      yRelativeToChildrenW
+      yRelativeToChildrenH
+      hasXLayout
+      hasYLayout
+      """
 
     @getter
       hasFullLayout:      -> @_hasXLayout           && @_hasYLayout
