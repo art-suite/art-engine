@@ -24,12 +24,14 @@ define [
   doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement, done) ->
     wrapperElement.onNextReady ->
       testElement = wrapperElement.find("testElement")[0]
-      wrapperElement.toBitmap {}, (firstRendered) ->
+      wrapperElement.toBitmap {}
+      .then (firstRendered) ->
         firstCache = testElement._drawCacheBitmap
         firstImageData = firstCache.getImageData()
         assert.eq true, !!firstCache
         propChangeFunction testElement
-        wrapperElement.toBitmap {}, (rendered) ->
+        wrapperElement.toBitmap {}
+        .then (rendered) ->
           log
             result: rendered
             test: testName
@@ -62,53 +64,56 @@ define [
   {stateEpochTest} = StateEpochTestHelper
   suite "Art.Engine.Core.Element", ->
     suite "cache draw", ->
-      test "'always' caches on next draw-cycle", (done)->
+      test "'always' caches on next draw-cycle", ->
         el = new Element
           cacheDraw: 'always'
           size: point 100, 50
           new Rectangle color:"red"
 
-        el.toBitmap {}, (rendered) ->
+        el.toBitmap()
+        .then (rendered) ->
           assert.eq true, !!result = el._drawCacheBitmap
-          done()
 
-      test "'auto' caches after one full draw-cycle with no changes", (done)->
+      test "'auto' caches after one full draw-cycle with no changes", ->
         el = new Element
           cacheDraw: 'auto'
           size: point 100, 50
           rectangle = new Rectangle color:"red"
 
-        el.toBitmap {}, (rendered) ->
+        el.toBitmap {}
+        .then ->
           assert.eq false, !!el._drawCacheBitmap
-          el.toBitmap {}, (rendered) ->
-            assert.eq true, !!result = el._drawCacheBitmap
-            assert.eq false, !!rectangle._drawCacheBitmap
+          el.toBitmap {}
+        .then (rendered) ->
+          assert.eq true, !!result = el._drawCacheBitmap
+          assert.eq false, !!rectangle._drawCacheBitmap
 
-            assert.eq el._drawCacheBitmap.size, el.currentSize
-            assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, 0, 0
-            done()
+          assert.eq el._drawCacheBitmap.size, el.currentSize
+          assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, 0, 0
 
-      test "rectangle does not cache", (done)->
+      test "rectangle does not cache", ->
         el = new Rectangle
           cacheDraw: 'always'
           size: point 100, 50
 
-        el.toBitmap {}, (rendered) ->
+        el.toBitmap {}
+        .then (rendered) ->
           assert.eq false, !!el._drawCacheBitmap
-          el.toBitmap {}, (rendered) ->
-            assert.eq false, !!result = el._drawCacheBitmap
-            done()
+          el.toBitmap {}
+        .then (rendered) ->
+          assert.eq false, !!result = el._drawCacheBitmap
 
-      test "bitmap does not cache", (done)->
+      test "bitmap does not cache", ->
         el = new Bitmap
           cacheDraw: 'always'
           bitmap: new Canvas.Bitmap point 50
 
-        el.toBitmap {}, (rendered) ->
+        el.toBitmap {}
+        .then (rendered) ->
           assert.eq false, !!el._drawCacheBitmap
-          el.toBitmap {}, (rendered) ->
-            assert.eq false, !!result = el._drawCacheBitmap
-            done()
+          el.toBitmap {}
+        .then (rendered) ->
+          assert.eq false, !!result = el._drawCacheBitmap
 
       test "'always' with overdraw", (done)->
         el = new Element
@@ -140,64 +145,70 @@ define [
       propChangeTest false,  "size", {ps: .5}, "locked"
 
       do ->
-        test testName = "'locked', changing size, then setting cacheDraw = 'always' DOES reset cache", (done)->
+        test testName = "'locked', changing size, then setting cacheDraw = 'always' DOES reset cache", ->
           wrapperElement = newPropChangeTestElements "locked"
-          wrapperElement.toBitmap {}, (rendered) ->
+          wrapperElement.toBitmap {}
+          .then (rendered) ->
             testElement = wrapperElement.find("testElement")[0]
             assert.eq true, !!firstDrawCacheBitmap = testElement._drawCacheBitmap
 
             testElement.size = ps: .75
             wrapperElement.onNextReady ->
               testElement.cacheDraw = "always"
-              wrapperElement.toBitmap {}, (rendered) ->
+              wrapperElement.toBitmap {}
+              .then (rendered) ->
                 log
                   result: rendered
                   test: testName
                 assert.eq true, !!testElement._drawCacheBitmap
                 assert.neq firstDrawCacheBitmap, testElement._drawCacheBitmap
-                done()
 
       do ->
-        test testName = "'locked', no change, then setting cacheDraw = 'always' does NOT reset cache", (done)->
+        test testName = "'locked', no change, then setting cacheDraw = 'always' does NOT reset cache", ->
           wrapperElement = newPropChangeTestElements "locked"
-          wrapperElement.toBitmap {}, (rendered) ->
+          wrapperElement.toBitmap {}
+          .then (rendered) ->
             testElement = wrapperElement.find("testElement")[0]
             assert.eq true, !!firstDrawCacheBitmap = testElement._drawCacheBitmap
             wrapperElement.onNextReady ->
               testElement.cacheDraw = 'always'
-              wrapperElement.toBitmap {}, (rendered) ->
+              wrapperElement.toBitmap {}
+              .then (rendered) ->
                 log
                   result: rendered
                   test: testName
                 assert.eq firstDrawCacheBitmap, testElement._drawCacheBitmap
-                done()
 
       do ->
-        test testName = "'always', no change, then setting cacheDraw = false DOES reset cache", (done)->
+        test testName = "'always', no change, then setting cacheDraw = false DOES reset cache", ->
           wrapperElement = newPropChangeTestElements 'always'
-          wrapperElement.toBitmap {}, (rendered) ->
+          wrapperElement.toBitmap {}
+          .then (rendered) ->
             testElement = wrapperElement.find("testElement")[0]
             assert.eq true, !!testElement._drawCacheBitmap
             testElement.cacheDraw = false
-            wrapperElement.toBitmap {}, (rendered) ->
+            wrapperElement.toBitmap {}
+            .then (rendered) ->
               log
                 result: rendered
                 test: testName
               assert.eq false, !!testElement._drawCacheBitmap
-              done()
 
       do ->
-        test testName = "'locked', no change, then setting cacheDraw = false DOES reset cache", (done)->
+        test testName = "'locked', no change, then setting cacheDraw = false DOES reset cache", ->
           wrapperElement = newPropChangeTestElements "locked"
-          wrapperElement.toBitmap {}, (rendered) ->
-            wrapperElement.toBitmap {}, (rendered) ->
-              testElement = wrapperElement.find("testElement")[0]
-              assert.eq true, !!testElement._drawCacheBitmap
-              testElement.cacheDraw = false
-              wrapperElement.toBitmap {}, (rendered) ->
-                wrapperElement.toBitmap {}, (rendered) ->
-                  log
-                    result: rendered
-                    test: testName
-                  assert.eq false, !!testElement._drawCacheBitmap
-                  done()
+          wrapperElement.toBitmap {}
+          .then (rendered) ->
+            wrapperElement.toBitmap {}
+          .then (rendered) ->
+            testElement = wrapperElement.find("testElement")[0]
+            assert.eq true, !!testElement._drawCacheBitmap
+            testElement.cacheDraw = false
+            wrapperElement.toBitmap {}
+            .then (rendered) ->
+              wrapperElement.toBitmap {}
+              .then (rendered) ->
+                log
+                  result: rendered
+                  test: testName
+                assert.eq false, !!testElement._drawCacheBitmap

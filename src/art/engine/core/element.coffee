@@ -1028,7 +1028,7 @@ define [
     OUT promise.then ({bitmap, elementToBitmapMatrix}) ->
     ###
     toBitmap: (options={}, callback) ->
-      console.error "toBitmap returns Promise now" if callback
+      console.error "callback DEPRICATED; toBitmap returns Promise now" if callback
       new Promise (resolve) =>
         throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
         stateEpoch.onNextReady =>

@@ -19,7 +19,8 @@ define [
       {root, test} = setup()
       testNum = 1
       testR = (root, testFunction) ->
-        root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+        root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+        .then ({bitmap}) ->
           log bitmap, name, testNum
           if isFunction nextTest = testFunction?()
             testNum++

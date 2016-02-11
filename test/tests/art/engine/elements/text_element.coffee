@@ -424,16 +424,18 @@ define [
           new Rectangle color: "#fcc"
           new TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
 
-    test "flow two paragraphTexts", (done) ->
+    test "flow two paragraphTexts", ->
       e = new Element
         size: w:200, hch:1
         childrenLayout: "flow"
         e1 = new TextElement color:"red", text:"This is going to be great, don't you think?", fontSize:32
         e2 = new TextElement color:"red", text:"-------", fontSize:32
-      e1.onNextReady ->
-        e.toBitmap {}, (bitmap) -> log bitmap
+      e1.onNextReady()
+      .then ->
+        e.toBitmap {}
+      .then (bitmap) ->
+        log bitmap
         assert.neq e1.currentLocation, e2.currentLocation
-        done()
 
     test "drawArea", (done)->
       el = new TextElement text:"hi", fontSize:16, align: "center", size: w:300
