@@ -12,8 +12,7 @@ Elements.Fill                = require './fill'
 Elements.FillableBase        = require './fillable_base'
 Elements.Outline             = require './outline'
 Elements.PagingScrollElement = require './paging_scroll_element'
-Elements.ScrollElement       = require './scroll_element'
 Elements.TextElement         = require './text_element'
 Elements.finishLoad(
-  ["All","Base","Bitmap","Fill","FillableBase","Outline","PagingScrollElement","ScrollElement","TextElement"]
+  ["All","Base","Bitmap","Fill","FillableBase","Outline","PagingScrollElement","TextElement"]
 )
