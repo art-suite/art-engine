@@ -14,20 +14,14 @@ define [
   {Element, TextElement, Rectangle} = Elements
   {LinearLayout} = Layout
 
-  testLogBitmap = (name, setup, tests...) ->
-    test name, (done) ->
+  testLogBitmap = (name, setup) ->
+    test name, ->
       {root, test} = setup()
       testNum = 1
-      testR = (root, testFunction) ->
-        root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
-        .then ({bitmap}) ->
-          log bitmap, name, testNum
-          if isFunction nextTest = testFunction?()
-            testNum++
-            testR root, nextTest
-          else
-            done()
-      testR root, test
+      root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+      .then ({bitmap}) ->
+        log bitmap, name, testNum
+        test?()
 
   suite "Art.Engine.Core.Element", ->
     suite "layout", ->
@@ -296,7 +290,8 @@ define [
                 assert.eq sizes = (c.currentSize for c in root.children), [point(30, 60), point(50, 40)]
                 assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 60)]
                 root.size = 200
-                ->
+                root.onNextReady()
+                .then ->
                   assert.eq sizes = (c.currentSize for c in root.children), [point(30, 100), point(50, 100)]
                   assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
 

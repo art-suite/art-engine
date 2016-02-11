@@ -15,12 +15,12 @@ define [
   {LinearLayout} = Layout
 
   testLogBitmap = (name, setup, tests...) ->
-    test name, (done) ->
+    test name, ->
       {root, test} = setup()
-      root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+      root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+      .then (bitmap) ->
         log bitmap, name
         test?()
-        done()
 
   suite "Art.Engine.Core.Element", ->
     suite "layout", ->
@@ -202,7 +202,7 @@ define [
               assert.within c2.currentSize, point(41, 10), point(42, 10)
               assert.within root.currentSize, point(41, 34), point(42, 34)
 
-          test "flow with layout {scs:1}: child with layout ss:1 should work the same with or without inFlow: false, ", (done)->
+          test "flow with layout {scs:1}: child with layout ss:1 should work the same with or without inFlow: false, ", ->
             root = new Element
               size:
                 w: (ps, cs) -> min 50, cs.x
@@ -213,15 +213,15 @@ define [
               new TextElement text: "Hi"
               new TextElement text: "world."
 
-            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+            .then (bitmap) ->
               log bitmap
               assert.eq (c.currentLocation for c in root.children), [point(), point(), point(), point(0, 12)]
               assert.eq c1.currentSize, root.currentSize
               assert.eq c2.currentSize, root.currentSize
               assert.within root.currentSize, point(41, 24), point(42, 24)
-              done()
 
-          test "flow with fixed size: inFlow: false required to have background", (done)->
+          test "flow with fixed size: inFlow: false required to have background", ->
             root = new Element
               size: 50
               childrenLayout: "flow"
@@ -229,13 +229,13 @@ define [
               new TextElement text: "Hi"
               new TextElement text: "world."
 
-            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+            .then (bitmap) ->
               log bitmap
               assert.eq (c.currentLocation for c in root.children), [point(), point(), point(0, 12)]
               assert.eq c1.currentSize, root.currentSize
-              done()
 
-          test "flow with fixed size: ss:.5 child is placed in flow", (done)->
+          test "flow with fixed size: ss:.5 child is placed in flow", ->
             root = new Element
               size: 50
               childrenLayout: "flow"
@@ -243,15 +243,15 @@ define [
               new TextElement text: "Hi"
               new TextElement text: "world."
 
-            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+            .then (bitmap) ->
               log bitmap
               assert.eq (c.currentLocation for c in root.children), [point(), point(25, 0), point(0, 25)]
               assert.eq c1.currentSize, point 25
               assert.eq root.currentSize, point 50
-              done()
 
 
-          test "all full-width", (done)->
+          test "all full-width", ->
             root = new Element
               size: hch:1, w:50
               childrenLayout: "flow"
@@ -259,12 +259,12 @@ define [
               new Rectangle color: '#cfc', size: wpw:1, h:10
               new Rectangle color: '#ccf', size: wpw:1, h:10
 
-            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+            .then (bitmap) ->
               log bitmap
               assert.eq (c.currentLocation for c in root.children), [point(), point(0, 10), point(0, 20)]
-              done()
 
-          test "all full-height", (done)->
+          test "all full-height", ->
             root = new Element
               size: wcw:1, h:50
               childrenLayout: "flow"
@@ -272,10 +272,10 @@ define [
               new Rectangle color: '#cfc', size: hph:1, w:10
               new Rectangle color: '#ccf', size: hph:1, w:10
 
-            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+            root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+            .then (bitmap) ->
               log bitmap
               assert.eq (c.currentLocation for c in root.children), [point(), point(10, 0), point(20, 0)]
-              done()
 
           testLogBitmap "flow with child ss:1 and child ww:1, h:10", ->
             root:newRoot = new Element

@@ -22,7 +22,7 @@ define [
           ->
             assert.eq ao.currentSize, point 100
 
-        test "flow children: even if first child has margins, it's still at location 0", (done)->
+        test "flow children: even if first child has margins, it's still at location 0", ->
           parent = new Element
             size:100
             childrenLayout: "flow"
@@ -31,12 +31,12 @@ define [
               color: "red"
               margin: 10
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then ({bitmap}) ->
             log bitmap
             assert.eq c1.currentLocation, point()
-            done()
 
-        test "flow children: equal margins, horizontal layout", (done)->
+        test "flow children: equal margins, horizontal layout", ->
           parent = new Element
             size:100
             childrenLayout: "flow"
@@ -49,12 +49,12 @@ define [
               color: "blue"
               margin: m
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then (bitmap)->
             log bitmap
             assert.eq c2.currentLocation, point s + m, 0
-            done()
 
-        test "flow children: unequal margins, horizontal layout", (done)->
+        test "flow children: unequal margins, horizontal layout", ->
           parent = new Element
             size:100
             childrenLayout: "flow"
@@ -67,12 +67,12 @@ define [
               color: "blue"
               margin: m2 = 15
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then (bitmap)->
             log bitmap
             assert.eq c2.currentLocation, point s + max(m1, m2), 0
-            done()
 
-        test "flow children: two margined children, vertical layout", (done)->
+        test "flow children: two margined children, vertical layout", ->
           parent = new Element
             size: point 80, 120
             childrenLayout: "flow"
@@ -85,12 +85,12 @@ define [
               color: "blue"
               margin: m
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then (bitmap)->
             log bitmap
             assert.eq c2.currentLocation, point 0, s + m
-            done()
 
-        test "flow children: three children with different margins, two on first line", (done)->
+        test "flow children: three children with different margins, two on first line", ->
           parent = new Element
             size: point 85, 120
             childrenLayout: "flow"
@@ -107,14 +107,14 @@ define [
               color: "green"
               margin: m3 = 20
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then (bitmap)->
             log bitmap
             assert.eq c1.currentLocation, point 0
             assert.eq c2.currentLocation, point s + max(m1, m2), 0
             assert.eq c3.currentLocation, point 0, s + max(m1, m2, m3)
-            done()
 
-        test "flow children: three children, middle one with different top and bottom margins", (done)->
+        test "flow children: three children, middle one with different top and bottom margins", ->
           parent = new Element
             size: point 85, 120
             childrenLayout: "flow"
@@ -129,9 +129,9 @@ define [
               size: s
               color: "green"
 
-          parent.toBitmap area: "logicalArea", (bitmap)->
+          parent.toBitmap area: "logicalArea"
+          .then (bitmap)->
             log bitmap
             assert.eq c1.currentLocation, point 0
             assert.eq c2.currentLocation, point 0, 30
             assert.eq c3.currentLocation, point 0, 70
-            done()

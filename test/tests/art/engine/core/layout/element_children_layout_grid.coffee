@@ -14,13 +14,13 @@ define [
   {Element, TextElement, Rectangle} = Elements
   {LinearLayout} = Layout
 
-  testLogBitmap = (name, setup, tests...) ->
-    test name, (done) ->
+  testLogBitmap = (name, setup) ->
+    test name, ->
       {root, test} = setup()
-      root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
+      root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+      .then ({bitmap}) ->
         log bitmap, name
         test?()
-        done()
 
   suite "Art.Engine.Core.Element", ->
     suite "layout", ->

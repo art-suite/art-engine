@@ -22,7 +22,6 @@ define [
         root.onNextReady ->
           root._generateDrawCache()
           bitmap = root._drawCacheBitmap
-        # root.toBitmap area:"drawArea", elementToTargetMatrix:Matrix.scale(2), (bitmap) ->
           log bitmap, name, testNum
           if isFunction nextTest = testFunction?()
             testNum++

@@ -115,7 +115,7 @@ define [
         .then (rendered) ->
           assert.eq false, !!result = el._drawCacheBitmap
 
-      test "'always' with overdraw", (done)->
+      test "'always' with overdraw", ->
         el = new Element
           cacheDraw: 'always'
           size: point 100, 50
@@ -125,12 +125,12 @@ define [
             location: -5
           new Rectangle color:"red"
 
-        el.toBitmap {}, (rendered) ->
+        el.toBitmap {}
+        .then (rendered) ->
           result = el._drawCacheBitmap
           assert.eq true, !!result
           assert.eq result.size, point 110, 60
           assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, -5, -5
-          done()
 
       propChangeTest false, "opacity",                .5
       propChangeTest false, "compositeMode",          "add"

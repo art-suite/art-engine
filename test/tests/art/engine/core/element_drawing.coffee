@@ -28,8 +28,7 @@ define [
         name: "child"
         new Rectangle color: "#700"
 
-  suite "Art.Engine.Core.Element", ->
-    suite "drawing", ->
+  suite "Art.Engine.Core.Element.drawing", ->
       stateEpochTest "drawing rectangles", (done)->
         o = new Element
           size: 4
@@ -84,7 +83,7 @@ define [
             8, 8, 8, 8
           ]
 
-      test "rotated rectangle drawing", (done)->
+      test "rotated rectangle drawing", ->
         o = new Element
           size: 6
           new Rectangle color: "#ff0"
@@ -101,14 +100,15 @@ define [
               size:     ps: .75
             new Rectangle isMask: true
 
-        o.toBitmap area: "logicalArea", (b) ->
+        o.toBitmap area: "logicalArea"
+        .then ({bitmap}) ->
           # TODO: The generated bitmap seems oddly off-center solely due to the mask.
-          # Without the mask, the generated image IS centered, but the mask is part of the test.
+          # Without the mask, the generated bitmap IS centered, but the mask is part of the test.
           # The mask should be symmetric, too.
-          log rotatedRectangleBitmap:b
+          log rotatedRectangleBitmap:bitmap
           assert.eq el.elementToParentMatrix, matrix 0.7071067811865476, 0.7071067811865476, -0.7071067811865475, 0.7071067811865475, 3, 0.17157287525380838
-          assert.eq b.size, o.currentSize
-          data = b.getImageDataArray "red"
+          assert.eq bitmap.size, o.currentSize
+          data = bitmap.getImageDataArray "red"
 
           chromeReference = [
             8, 8, 7, 7, 8, 8,
@@ -144,62 +144,59 @@ define [
             assert.eq reducedData, firefoxReference
           else
             assert.eq reducedData, safariReference
-          done()
 
-      test "toBitmap no options", (done)->
+      test "toBitmap no options", ->
         o = testArtStructure()
 
-        o.toBitmap {}, (image)->
-          log image
-          assert.eq image.pixelsPerPoint, 1
-          assert.eq image.size, o.currentSize
-          done()
+        o.toBitmap {}
+        .then ({bitmap})->
+          log bitmap
+          assert.eq bitmap.pixelsPerPoint, 1
+          assert.eq bitmap.size, o.currentSize
 
-      test "toBitmap translated", (done)->
-        (o = testArtStructure()).toBitmap elementToDrawAreaMatrix:Matrix.translate(point(123,456)), (image)->
+      test "toBitmap translated", ->
+        (o = testArtStructure()).toBitmap elementToDrawAreaMatrix:Matrix.translate(point(123,456))
+        .then ({bitmap})->
+          log bitmap
+          assert.eq bitmap.size, o.currentSize
 
-          log image
-          assert.eq image.size, o.currentSize
-          done()
-
-      test "toBitmap pixelsPerPoint:2 - 'retina'", (done)->
+      test "toBitmap pixelsPerPoint:2 - 'retina'", ->
         o = testArtStructure()
-        o.toBitmap pixelsPerPoint:2, (image) ->
+        o.toBitmap pixelsPerPoint:2
+        .then ({bitmap})->
 
-          log image
-          assert.eq image.pixelsPerPoint, 2
-          assert.eq image.size, o.currentSize.mul 2
-          done()
+          log bitmap
+          assert.eq bitmap.pixelsPerPoint, 2
+          assert.eq bitmap.size, o.currentSize.mul 2
 
-      test "toBitmap rotated", (done)->
-        (o = testArtStructure()).toBitmap elementToDrawAreaMatrix:Matrix.rotate(Math.PI/6), area:"targetDrawArea", (image) ->
+      test "toBitmap rotated", ->
+        (o = testArtStructure()).toBitmap elementToDrawAreaMatrix:Matrix.rotate(Math.PI/6), area:"targetDrawArea"
+        .then ({bitmap})->
+          log bitmap
+          assert.eq bitmap.size, point 100, 92
 
-          log image
-          assert.eq image.size, point 100, 92
-          done()
-
-      test "toBitmap with blur", (done)->
+      test "toBitmap with blur", ->
         o = testArtStructure()
         o.addChild new Blur radius:10
-        o.toBitmap {}, (image) ->
+        o.toBitmap {}
+        .then ({bitmap})->
 
-          log image
-          assert.eq image.size, o.currentSize.add 20
-          assert.eq image.size, o.elementSpaceDrawArea.size
-          done()
+          log bitmap
+          assert.eq bitmap.size, o.currentSize.add 20
+          assert.eq bitmap.size, o.elementSpaceDrawArea.size
 
-      test "toBitmap with out of bounds child and backgroundColor", (done)->
+      test "toBitmap with out of bounds child and backgroundColor", ->
         o = testArtStructure()
         o.addChild new Rectangle
           color:  "#700"
           location: xpw:-.25, yph:.75
           size: ps: .5
-        o.toBitmap backgroundColor:"#ff7", (image) ->
+        o.toBitmap backgroundColor:"#ff7"
+        .then ({bitmap})->
 
-          log image
-          assert.eq image.size, point 100, 75
-          assert.eq image.size, o.elementSpaceDrawArea.size
-          done()
+          log bitmap
+          assert.eq bitmap.size, point 100, 75
+          assert.eq bitmap.size, o.elementSpaceDrawArea.size
 
       areaOptions =
         logicalArea:       expectedSize: point(40, 15), expectedDrawMatrix: Matrix.translate -5
@@ -212,7 +209,7 @@ define [
       for k, v of areaOptions
         do (k, v) ->
           {expectedDrawMatrix, expectedSize} = v
-          test "toBitmap area: #{k} size should == #{expectedSize}", (done)->
+          test "toBitmap area: #{k} size should == #{expectedSize}", ->
             new Element
               size: w: 100, h: 80
               padding: 10
@@ -225,11 +222,11 @@ define [
                 new Rectangle color: "#f00"
                 new Rectangle color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
 
-            child.toBitmap (merge v, area:k, backgroundColor:"#ddd"), (image, drawMatrix) ->
-              log area:k, toBitmap:image
-              assert.eq image.size, expectedSize
-              assert.eq drawMatrix, expectedDrawMatrix if expectedDrawMatrix
-              done()
+            child.toBitmap (merge v, area:k, backgroundColor:"#ddd")
+            .then ({bitmap, elementToBitmapMatrix})->
+              log area:k, toBitmap:bitmap
+              assert.eq bitmap.size, expectedSize
+              assert.eq elementToBitmapMatrix, expectedDrawMatrix if expectedDrawMatrix
 
       modeOptions =
         fit: point 100, 50
@@ -237,12 +234,13 @@ define [
 
       for mode, expectedSize of modeOptions
         do (mode, expectedSize) ->
-          test "toBitmap mode: #{inspect mode}", (done)->
+          test "toBitmap mode: #{inspect mode}", ->
             element = new Element
               size: w: 200, h:100
               new Rectangle color: "orange"
 
-            element.toBitmap size:100, mode: mode, backgroundColor:"#ddd", (image, drawMatrix) ->
-              log mode: mode, toBitmap:image
-              assert.eq image.size, expectedSize
-              done()
+            element.toBitmap size:100, mode: mode, backgroundColor:"#ddd"
+            .then ({bitmap, elementToBitmapMatrix})->
+
+              log mode: mode, toBitmap:bitmap
+              assert.eq bitmap.size, expectedSize
