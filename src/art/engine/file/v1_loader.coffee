@@ -8,7 +8,7 @@ define [
   './model'
 ], (Foundation, Atomic, Canvas, Xbd, Core, Elements, Model) ->
 
-  {Binary, inspect, BaseObject} = Foundation
+  {Binary, inspect, BaseObject, Promise} = Foundation
   {point, rect, matrix} = Atomic
   {EncodedImage} = Binary
 
@@ -66,23 +66,26 @@ define [
     7: "bothMul"
     8: "bothStretch"
 
-
-
   class V1Loader extends BaseObject
+    @load: (data, bitmapFactory) ->
+      new V1Loader bitmapFactory || Canvas.Bitmap
+      .load data
+
     constructor: (bitmapFactory)->
       @bitmapFactory = bitmapFactory
 
-    load: (data, callBack) ->
-      xbd = Xbd.parse data
-      topTag = xbd.tag("art_file")
-      @decodeTopTag topTag, (artFile) =>
-        artFile.axis = point()
-        artFile.location = point()
+    load: (data) ->
+      new Promise (resolve) =>
+        xbd = Xbd.parse data
+        topTag = xbd.tag("art_file")
+        @decodeTopTag topTag, (artFile) =>
+          artFile.axis = point()
+          artFile.location = point()
 
-        artFile.children = (child for child in artFile.getPendingChildren() when !child.getPendingIsMask())
-        artFile.bitmapFactory = @bitmapFactory
-        stateEpoch.onNextReady ->
-          callBack artFile
+          artFile.children = (child for child in artFile.getPendingChildren() when !child.getPendingIsMask())
+          artFile.bitmapFactory = @bitmapFactory
+          stateEpoch.onNextReady ->
+            resolve artFile
 
     @objectFactory =
       art_file: -> new Model

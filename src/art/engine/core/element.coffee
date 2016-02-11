@@ -49,6 +49,7 @@ define [
     currentSecond
     repeat
     present
+    Promise
   } = Foundation
 
   cacheAggressively = false
@@ -1005,83 +1006,90 @@ define [
     # ToBitmap
     #################
 
-    # Creates and returns an bitmap with the current element drawn on it
-    # options: [defaults]
-    #   backgroundColor: [transparent]  #
-    #   area: ["drawArea"]
-    #     "logicalArea"         means => drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
-    #     "paddedArea"          means => drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
-    #     "drawArea"            means => drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
-    #     "parentLogicalArea"   means => drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
-    #     "parentPaddedArea"    means => drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
-    #     "parentDrawArea"      means => drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
-    #     "targetDrawArea"    to be used with custom elementToDrawAreaMatrix - sets drawArea to include @elementSpaceDrawArea in the specificed target-space
-    #   size: [drawArea.size]     # Bitmap size. Will be multiplied by pixelsPerPoint for the final size.
-    #   mode: ["fit"], "zoom"     # determines how the requested drawArea is scaled to fit the bitmap size
-    #   pixelsPerPoint: [1]       # Ex: set to "2" for "retina" images [default = 1]
-    #   elementToDrawAreaMatrix:  # the draw matrix [see area's defaults]
-    #   drawArea: [see area]      # the area to capture in drawArea-space (overrides area's drawArea)
-    #   bitmapFactory: [null]     # overrides default bitmapFactory
-    # callback: (bitmap, elementToBitmapSpaceMatrix) -> # => null
-    toBitmap: (options={}, callback) ->
-      throw new Error "callback now required for toBitmap" unless typeof callback is "function"
-      throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
-      stateEpoch.onNextReady =>
-        areaOptions = switch options.area || "drawArea"
-          when "logicalArea"        then drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
-          when "paddedArea"         then drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
-          when "drawArea"           then drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
-          when "parentLogicalArea"  then drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
-          when "parentPaddedArea"   then drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
-          when "parentDrawArea"     then drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
-          when "targetDrawArea"
-            drawArea: @drawAreaIn options.elementToDrawAreaMatrix || identityMatrix
-            elementToDrawAreaMatrix: identityMatrix
+    ###
+    Creates and returns an bitmap with the current element drawn on it
+    options: [defaults]
+      backgroundColor: [transparent]  #
+      area: ["drawArea"]
+        "logicalArea"         means => drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
+        "paddedArea"          means => drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
+        "drawArea"            means => drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
+        "parentLogicalArea"   means => drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
+        "parentPaddedArea"    means => drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
+        "parentDrawArea"      means => drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
+        "targetDrawArea"    to be used with custom elementToDrawAreaMatrix - sets drawArea to include @elementSpaceDrawArea in the specificed target-space
+      size: [drawArea.size]     # Bitmap size. Will be multiplied by pixelsPerPoint for the final size.
+      mode: ["fit"], "zoom"     # determines how the requested drawArea is scaled to fit the bitmap size
+      pixelsPerPoint: [1]       # Ex: set to "2" for "retina" images [default = 1]
+      elementToDrawAreaMatrix:  # the draw matrix [see area's defaults]
+      drawArea: [see area]      # the area to capture in drawArea-space (overrides area's drawArea)
+      bitmapFactory: [null]     # overrides default bitmapFactory
+
+    OUT promise.then ({bitmap, elementToBitmapMatrix}) ->
+    ###
+    toBitmap: (options={}) ->
+      new Promise (resolve) =>
+        throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
+        stateEpoch.onNextReady =>
+          areaOptions = switch options.area || "drawArea"
+            when "logicalArea"        then drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
+            when "paddedArea"         then drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
+            when "drawArea"           then drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
+            when "parentLogicalArea"  then drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
+            when "parentPaddedArea"   then drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
+            when "parentDrawArea"     then drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
+            when "targetDrawArea"
+              drawArea: @drawAreaIn options.elementToDrawAreaMatrix || identityMatrix
+              elementToDrawAreaMatrix: identityMatrix
+            else
+              throw new Error "invalid area option: #{options.area}"
+
+          options = merge areaOptions, options
+          {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
+
+          pixelsPerPoint ||= 1
+          mode ||= "fit"
+
+          size = point(size || drawArea.size).mul(pixelsPerPoint).ceil()
+          ratio = size.div drawArea.size
+          if mode == "zoom"
+            scale = ratio.max()
           else
-            throw new Error "invalid area option: #{options.area}"
+            scale = ratio.min()
+            size = drawArea.size.mul(scale).ceil()
 
-        options = merge areaOptions, options
-        {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
+          elementToBitmapMatrix = elementToDrawAreaMatrix.mul(Matrix
+            .translate drawArea.cc.neg
+            .scale scale
+            .translate size.cc
+          )
 
-        pixelsPerPoint ||= 1
-        mode ||= "fit"
+          # log elementToBitmapMatrix:elementToBitmapMatrix, drawArea:drawArea, size:size, scale:scale, options:options
 
-        size = point(size || drawArea.size).mul(pixelsPerPoint).ceil()
-        ratio = size.div drawArea.size
-        if mode == "zoom"
-          scale = ratio.max()
-        else
-          scale = ratio.min()
-          size = drawArea.size.mul(scale).ceil()
+          oldBitmapFactory = @_bitmapFactory
+          @_bitmapFactory = bitmapFactory || @bitmapFactory
 
-        elementToBitmapMatrix = elementToDrawAreaMatrix.mul(Matrix
-          .translate drawArea.cc.neg
-          .scale scale
-          .translate size.cc
-        )
+          bitmap = @bitmapFactory.newBitmap size
+          bitmap.pixelsPerPoint = pixelsPerPoint
+          bitmap.clear backgroundColor if backgroundColor
+          @draw bitmap, elementToBitmapMatrix
 
-        # log elementToBitmapMatrix:elementToBitmapMatrix, drawArea:drawArea, size:size, scale:scale, options:options
-
-        oldBitmapFactory = @_bitmapFactory
-        @_bitmapFactory = bitmapFactory || @bitmapFactory
-
-        bitmap = @bitmapFactory.newBitmap size
-        bitmap.pixelsPerPoint = pixelsPerPoint
-        bitmap.clear backgroundColor if backgroundColor
-        @draw bitmap, elementToBitmapMatrix
-
-        @_bitmapFactory = oldBitmapFactory
-        callback bitmap, elementToBitmapMatrix
+          @_bitmapFactory = oldBitmapFactory
+          resolve
+            bitmap: bitmap
+            elementToBitmapMatrix: elementToBitmapMatrix
 
     logBitmap: (options = {})->
       options.pixelsPerPoint ||= @devicePixelsPerPoint
-      @toBitmap options, (bitmap) => @log
-        size: @currentSize
-        location: @currentLocation
-        size: @size
-        location: @location
-        elementToParentMatrix: @elementToParentMatrix
-        bitmap: bitmap
+      @toBitmap options
+      .then ({bitmap}) =>
+        @log
+          size: @currentSize
+          location: @currentLocation
+          size: @size
+          location: @location
+          elementToParentMatrix: @elementToParentMatrix
+          bitmap: bitmap
 
     # override so Outline child can be "filled"
     fillShape: (target, elementToTargetMatrix, options={}) ->
