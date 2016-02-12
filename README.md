@@ -1,4 +1,5 @@
-# art-engine
-art.engine
+# Art.Engine
+
+The ArtEngine is a layout, rendering and event engine for creating user interfaces in HTML5 Canvas elements.
 
 Visit the Wiki for more: https://github.com/Imikimi-LLC/art-engine/wiki
