@@ -1029,58 +1029,61 @@ define [
     ###
     toBitmap: (options={}, callback) ->
       console.error "callback DEPRICATED; toBitmap returns Promise now" if callback
+      throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
+
       new Promise (resolve) =>
-        throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
         stateEpoch.onNextReady =>
-          areaOptions = switch options.area || "drawArea"
-            when "logicalArea"        then drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
-            when "paddedArea"         then drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
-            when "drawArea"           then drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
-            when "parentLogicalArea"  then drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
-            when "parentPaddedArea"   then drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
-            when "parentDrawArea"     then drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
-            when "targetDrawArea"
-              drawArea: @drawAreaIn options.elementToDrawAreaMatrix || identityMatrix
-              elementToDrawAreaMatrix: identityMatrix
-            else
-              throw new Error "invalid area option: #{options.area}"
+          resolve results = @toBitmapSync options
+          callback? results.bitmap, results.elementToBitmapMatrix
 
-          options = merge areaOptions, options
-          {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
+    toBitmapSync: (options={}) ->
+      areaOptions = switch options.area || "drawArea"
+        when "logicalArea"        then drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
+        when "paddedArea"         then drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
+        when "drawArea"           then drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
+        when "parentLogicalArea"  then drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
+        when "parentPaddedArea"   then drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
+        when "parentDrawArea"     then drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
+        when "targetDrawArea"
+          drawArea: @drawAreaIn options.elementToDrawAreaMatrix || identityMatrix
+          elementToDrawAreaMatrix: identityMatrix
+        else
+          throw new Error "invalid area option: #{options.area}"
 
-          pixelsPerPoint ||= 1
-          mode ||= "fit"
+      options = merge areaOptions, options
+      {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
 
-          size = point(size || drawArea.size).mul(pixelsPerPoint).ceil()
-          ratio = size.div drawArea.size
-          if mode == "zoom"
-            scale = ratio.max()
-          else
-            scale = ratio.min()
-            size = drawArea.size.mul(scale).ceil()
+      pixelsPerPoint ||= 1
+      mode ||= "fit"
 
-          elementToBitmapMatrix = elementToDrawAreaMatrix.mul(Matrix
-            .translate drawArea.cc.neg
-            .scale scale
-            .translate size.cc
-          )
+      size = point(size || drawArea.size).mul(pixelsPerPoint).ceil()
+      ratio = size.div drawArea.size
+      if mode == "zoom"
+        scale = ratio.max()
+      else
+        scale = ratio.min()
+        size = drawArea.size.mul(scale).ceil()
 
-          # log elementToBitmapMatrix:elementToBitmapMatrix, drawArea:drawArea, size:size, scale:scale, options:options
+      elementToBitmapMatrix = elementToDrawAreaMatrix.mul(Matrix
+        .translate drawArea.cc.neg
+        .scale scale
+        .translate size.cc
+      )
 
-          oldBitmapFactory = @_bitmapFactory
-          @_bitmapFactory = bitmapFactory || @bitmapFactory
+      # log elementToBitmapMatrix:elementToBitmapMatrix, drawArea:drawArea, size:size, scale:scale, options:options
 
-          bitmap = @bitmapFactory.newBitmap size
-          bitmap.pixelsPerPoint = pixelsPerPoint
-          bitmap.clear backgroundColor if backgroundColor
-          @draw bitmap, elementToBitmapMatrix
+      oldBitmapFactory = @_bitmapFactory
+      @_bitmapFactory = bitmapFactory || @bitmapFactory
 
-          @_bitmapFactory = oldBitmapFactory
-          resolve
-            bitmap: bitmap
-            elementToBitmapMatrix: elementToBitmapMatrix
+      bitmap = @bitmapFactory.newBitmap size
+      bitmap.pixelsPerPoint = pixelsPerPoint
+      bitmap.clear backgroundColor if backgroundColor
+      @draw bitmap, elementToBitmapMatrix
 
-          callback? bitmap, elementToBitmapMatrix
+      @_bitmapFactory = oldBitmapFactory
+
+      bitmap: bitmap
+      elementToBitmapMatrix: elementToBitmapMatrix
 
     logBitmap: (options = {})->
       options.pixelsPerPoint ||= @devicePixelsPerPoint
