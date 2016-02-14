@@ -98,7 +98,8 @@ module.exports = class V1Loader extends BaseObject
     return callBack bitmaps if index >= keys.length
 
     key = keys[index]
-    EncodedImage.toImage bitmaps[key], (decodedBitmap) =>
+    EncodedImage.toImage bitmaps[key]
+    .then (decodedBitmap) =>
       bitmaps[key] = if @bitmapFactory
         @bitmapFactory.newBitmap decodedBitmap
       else

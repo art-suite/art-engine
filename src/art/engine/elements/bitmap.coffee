@@ -102,6 +102,7 @@ module.exports = createWithPostCreate class Bitmap extends FillableBase
       @onNextReady => @queueEvent "load", => bitmap:bitmap
       @setBitmap bitmap
     , (error) =>
+      console.error error.stack
       @onNextReady => @queueEvent "error", => error:e
 
   @drawLayoutProperty
