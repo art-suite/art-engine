@@ -439,7 +439,7 @@ define [
       metaProperties = @metaProperties
       for property, mp of metaProperties when !mp.virtual
         externalName = mp.externalName
-        @[mp.setterName] if propertySet.hasOwnProperty(externalName)
+        @[mp.setterName]? if propertySet.hasOwnProperty(externalName)
           propertySet[externalName]
         else
           mp.defaultValue
@@ -447,12 +447,12 @@ define [
 
     setProperty: (property, value) ->
       if mp = @metaProperties[property]
-        @[mp.setterName] value
+        @[mp.setterName]? value
 
     # reset property to its default
     resetProperty: (property) ->
       if mp = @metaProperties[property]
-        @[mp.setterName] mp.defaultValue
+        @[mp.setterName]? mp.defaultValue
 
     # used by Animator / Foundation.Transaction to normalize to/from values
     preprocessProperties: (propertySet) ->
