@@ -43,6 +43,7 @@ define [
     isFunction
     mergeInto
     floatEq
+    floatEq0
     Join
     rubyTrue
     createWithPostCreate
@@ -50,6 +51,7 @@ define [
     repeat
     present
     Promise
+    modulo
   } = Foundation
 
   cacheAggressively = false
@@ -263,15 +265,15 @@ define [
       # TODO: I think currentSize should not be an epoched property. It should litterally be the currentSize - it gets updated during the stateEpoch
       currentSize:
         default: defaultSize
-        setter: -> throw new Error "you cannot set currentSize directly"
+        setter: (_new, _old) -> _old # setting this property is ignored
 
       currentPadding:
         default: perimeter0
-        setter: -> throw new Error "you cannot set currentPadding directly"
+        setter: (_new, _old) -> _old # setting this property is ignored
 
       currentMargin:
         default: perimeter0
-        setter: -> throw new Error "you cannot set currentMargin directly"
+        setter: (_new, _old) -> _old # setting this property is ignored
 
     @virtualProperty
       currentLocationX:
@@ -651,7 +653,7 @@ define [
           "axis" if @_axis && !@axis.eq point()
           "location" if !@location.eq point0
           "size" if @_currentSize
-          "angle" if !floatEq @angle, 0
+          "angle" if !floatEq0 @angle
           "scale" if !@scale.eq point(1,1)
           "compositeMode" if @_compositeMode && @_compositeMode != "normal"
           "opacity" if @_opacity? && @_opacity < 1
@@ -1150,7 +1152,8 @@ define [
 
       e2p = identityMatrix
       shouldScale = !scale.eq point1
-      shouldRotate = !floatEq(angle)
+      shouldRotate = !floatEq0 modulo angle, Math.PI * 2
+
       if shouldScale || shouldRotate
         e2p = e2p.translate -asx, -asy
         e2p = e2p.scale scale if shouldScale

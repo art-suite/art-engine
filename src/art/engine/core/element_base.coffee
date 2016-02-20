@@ -13,6 +13,7 @@ define [
     isPlainObject
     peek
     present
+    isFunction
   } = Foundation
 
   # stats =
@@ -416,7 +417,7 @@ define [
       for i in [0...virtualCount]
         mp = virtualPropertySecondPassMetaProperties[i]
         v = virtualPropertySecondPassValues[i]
-        @[mp.setterName] v
+        @[mp.setterName]? v
 
       @_elementChanged true, true, true
       null

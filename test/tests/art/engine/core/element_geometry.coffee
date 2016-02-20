@@ -3,9 +3,10 @@ Atomic = require 'art-atomic'
 Engine = require 'art-engine'
 
 {inspect, log, isArray} = Foundation
-{point, matrix, Point} = Atomic
+{point, matrix, Point, Matrix} = Atomic
 {point1} = Point
-{Element, StateEpoch} = Engine.Core
+{StateEpoch} = Engine.Core
+{Element, Rectangle} = Engine
 {stateEpoch} = StateEpoch
 
 stateEpochTest = (name, setup) ->
@@ -112,6 +113,7 @@ suite "Art.Engine.Core.Element.geometry", ->
       assert.eq ao.currentLocation, point 100
       done()
 
+
   test "transformToAncestorSpace", (done) ->
     (gp   = new Element location: 100,
       p   = new Element location: 10,
@@ -129,3 +131,38 @@ suite "Art.Engine.Core.Element.geometry", ->
       assert.eq a.transformToAncestorSpace(point(), b), null
       assert.eq a.transformToAncestorSpace(point()), null
       done()
+
+suite "Art.Engine.Core.Element.geometry.angle", ->
+  test "Math.PI/2", ->
+    root = new Element
+      size: 200
+      clip: true
+      new Rectangle color: "yellow"
+      el = new Rectangle
+        location: ps: .5
+        size: w:100, h:50
+        color: "red"
+        angle: Math.PI/2
+    stateEpoch.onNextReady()
+    .then ->
+      root.toBitmap()
+    .then ({bitmap})->
+      log bitmap:bitmap
+      assert.eq el.elementToParentMatrix.angle, Math.PI/2
+
+  test "Math.PI", ->
+    root = new Element
+      size: 200
+      clip: true
+      new Rectangle color: "yellow"
+      el = new Rectangle
+        location: ps: .5
+        size: w:100, h:50
+        color: "red"
+        angle: Math.PI
+    stateEpoch.onNextReady()
+    .then ->
+      root.toBitmap()
+    .then ({bitmap})->
+      log bitmap:bitmap
+      assert.eq el.elementToParentMatrix.angle, Math.PI
