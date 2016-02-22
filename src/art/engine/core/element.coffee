@@ -1240,8 +1240,9 @@ define [
       {x, y} = v
       element = @
       while element
-        x = element._elementToParentMatrix.transformX x, y
-        y = element._elementToParentMatrix.transformY x, y
+        x1 = element._elementToParentMatrix.transformX x, y
+        y1 = element._elementToParentMatrix.transformY x, y
+        x = x1; y = y1
         element = element.parent
         return point x, y if element == ancestor
       null
