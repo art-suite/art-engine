@@ -1,14 +1,13 @@
-define [
-  'art-foundation'
-  'art-atomic'
-  './filter'
-], (Foundation, Atomic, Filter) ->
-  {createWithPostCreate} = Foundation
-  {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+Filter = require './filter'
 
-  createWithPostCreate class Blur extends Filter
-    defaultRadius: 10
-    defaultCompositeMode: "replace"
+{createWithPostCreate} = Foundation
+{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
-    filter: (elementSpaceTarget, scale) ->
-      elementSpaceTarget.blur @radius * scale
+module.exports = createWithPostCreate class Blur extends Filter
+  defaultRadius: 10
+  defaultCompositeMode: "replace"
+
+  filter: (elementSpaceTarget, scale) ->
+    elementSpaceTarget.blur @radius * scale
