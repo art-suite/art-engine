@@ -90,7 +90,7 @@ define [
             console.warn "#{@inspectedName}: no ancestor's name matches filterSource:#{inspect filterSource}"
         @getParent()
 
-    drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
+    fillShape: (target, elementToTargetMatrix, options) ->
       filterSource = @getFilterSourceElement()
 
       elementSpaceDrawArea = @elementSpaceDrawArea
@@ -107,5 +107,5 @@ define [
       filterScratch = @filter filterScratch, scale
 
       m = Matrix.scale(1/scale).translate(-@radius).mul elementToTargetMatrix
-      target.drawBitmap m, filterScratch, compositeMode:compositeMode, opacity:opacity
+      target.drawBitmap m, filterScratch, options
 

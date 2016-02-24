@@ -5,10 +5,10 @@ define [
   '../fillable_base'
 ], (Foundation, Atomic, {Paths}, FillableBase) ->
   {pureMerge, floatEq, base, createWithPostCreate} = Foundation
-  {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+  {color, Color, point, Point, rect, matrix, Matrix} = Atomic
   {curriedRoundedRectangle} = Paths
 
-  createWithPostCreate class Rectangle extends FillableBase
+  createWithPostCreate class RectangleElement extends FillableBase
 
     @drawProperty
       radius:

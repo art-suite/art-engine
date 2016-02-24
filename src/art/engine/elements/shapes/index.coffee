@@ -5,8 +5,8 @@ module.exports =
 Shapes                    = require './namespace'
 Shapes.BitmapElement      = require './bitmap_element'
 Shapes.CustomShapeElement = require './custom_shape_element'
-Shapes.Rectangle          = require './rectangle'
+Shapes.RectangleElement   = require './rectangle_element'
 Shapes.TextElement        = require './text_element'
 Shapes.finishLoad(
-  ["BitmapElement","CustomShapeElement","Rectangle","TextElement"]
+  ["BitmapElement","CustomShapeElement","RectangleElement","TextElement"]
 )

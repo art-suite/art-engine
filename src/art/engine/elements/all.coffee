@@ -8,6 +8,12 @@ createAllClass Elements,
   Filters       = require './filters'
   Widgets       = require './widgets'
   ShapeChildren = require './shape_children'
+
+  # DEPRICATED names:
+  Rectangle:      Shapes.RectangleElement
   Bitmap:         Shapes.BitmapElement
+  Fill:           ShapeChildren.FillElement
+  Outline:        ShapeChildren.OutlineElement
+
   Element:        Core.Element
   CanvasElement:  Core.CanvasElement

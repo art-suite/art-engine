@@ -4,7 +4,7 @@ FillableBase = require '../fillable_base'
 {merge, createWithPostCreate, log} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
-module.exports = createWithPostCreate class Outline extends FillableBase
+module.exports = createWithPostCreate class OutlineElement extends FillableBase
 
   validLineCaps = ["butt", "round", "square"]
   validLineJoins = ["round", "bevel", "miter"]
