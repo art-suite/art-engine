@@ -15,7 +15,31 @@ define [
 
   {stateEpochTest} = StateEpochTestHelper
 
-  suite "Art.Engine.Elements.TextElement", ->
+  layoutFragmentTester = (element, result) ->
+    for areaPart, correctValues of result
+      values = for {alignedLayoutArea} in element._textLayout.fragments
+        Math.round alignedLayoutArea[areaPart]
+      assert.eq values, correctValues, "testing: element._textLayout.fragments.alignedLayoutArea.#{areaPart}"
+
+  roundedEq = (testValue, correctValue, note) ->
+    if (testValue instanceof Atomic.Rectangle) || (testValue instanceof Point)
+      testValue = testValue.rounded
+    else if isNumber testValue
+      Math.round testValue
+    assert.eq testValue, correctValue, note
+
+  layoutTester = (element, tests) ->
+    {fragments} = tests
+    fragments && layoutFragmentTester element, fragments
+    if tests.element
+      for k, correctValue of tests.element
+        testValue = element[k]
+        roundedEq  testValue, correctValue, "testing: element.#{k}"
+    for k, correctValue of tests when k != "fragments" && k != "element"
+      testValue = element._textLayout[k]
+      roundedEq testValue, correctValue, "testing: element._textLayout.#{k}"
+
+  suite "Art.Engine.Elements.TextElement.basic", ->
     stateEpochTest "Layout basic", ->
       textElement = new TextElement text:"foo"
       ->
@@ -51,31 +75,173 @@ define [
           assert.eq textElement.currentLocation, point 123, 123
           assert.eq textElement.currentSize.rounded, point 42, 12
 
-    layoutFragmentTester = (element, result) ->
-      for areaPart, correctValues of result
-        values = for {alignedLayoutArea} in element._textLayout.fragments
-          Math.round alignedLayoutArea[areaPart]
-        assert.eq values, correctValues, "testing: element._textLayout.fragments.alignedLayoutArea.#{areaPart}"
+    drawTest3 "TEXT layoutMode: textual",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement
+          color:"red", text:"Thing()", fontSize:48
+          new Rectangle color: "#0003"
+          new Fill()
 
-    roundedEq = (testValue, correctValue, note) ->
-      if (testValue instanceof Atomic.Rectangle) || (testValue instanceof Point)
-        testValue = testValue.rounded
-      else if isNumber testValue
-        Math.round testValue
-      assert.eq testValue, correctValue, note
+    drawTest3 "layoutMode: textualBaseline",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement
+          color:"red"
+          text:"Thing()\nThang"
+          fontSize:48
+          layoutMode: "textualBaseline"
+          new Rectangle color: "#0003"
+          new Fill()
 
-    layoutTester = (element, tests) ->
-      {fragments} = tests
-      fragments && layoutFragmentTester element, fragments
-      if tests.element
-        for k, correctValue of tests.element
-          testValue = element[k]
-          roundedEq  testValue, correctValue, "testing: element.#{k}"
-      for k, correctValue of tests when k != "fragments" && k != "element"
-        testValue = element._textLayout[k]
-        roundedEq testValue, correctValue, "testing: element._textLayout.#{k}"
+    drawTest3 "layoutMode: textualBaseline with word-wrap",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement
+          size:
+            w: (ps, cs) -> min 100, cs.w
+            hch:1
+          color:"red"
+          text:"I am a dog."
+          fontSize:32
+          layoutMode: "textualBaseline"
+          new Rectangle color: "#0003"
+          new Fill()
 
-    suite "alignment", ->
+    drawTest3 "tight layoutMode",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new Element
+          size: cs:1
+          new Rectangle color:"#ff7"
+          new TextElement text:"test", layoutMode:"tight", fontSize:50
+      test: (element) ->
+        assert.eq element.currentSize, point 68, 29
+
+    drawTest3 "compositeMode",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new Element {},
+          new Rectangle size:point(40, 60), color:"red"
+          new Rectangle size:point(40, 60), location:point(40,0), color:"blue"
+          new TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
+
+    drawTest3 "opacity",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement color:"red", fontSize:50, text:"test", opacity:.5
+
+    drawTest3 "all options",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement
+          color:      "green"
+          text:       "Dude!"
+          fontSize:   40
+          fontFamily: "Times New Roman"
+          fontWeight: "bold"
+          fontStyle: "italic"
+          fontVariant:"small-caps"
+          layoutMode: "tight"
+          align:      "center"
+
+    drawTest3 "children",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new TextElement color:"red", fontSize:50, text:"test",
+          new Fill
+          new Rectangle
+            color:"#70F7"
+            axis:point(.5)
+            location: ps: .5
+            size: w:60, h:60
+            angle: Math.PI * .3
+
+    drawTest3 "children with mask",
+      stagingBitmapsCreateShouldBe: 2
+      element: ->
+        new TextElement color:"red", fontSize:50, text:"test",
+          new Rectangle
+            color:"#F0F"
+            axis: .5
+            location: ps: .5
+            size: w:60, h:60
+            angle: Math.PI * .3
+          new Fill isMask:true
+
+    drawTest3 "basic",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new Element
+          size: w:100, hch:1
+          new Rectangle color: "#fcc"
+          new TextElement color:"red", text:"That darn quick, brown fox. He always gets away!", fontSize:16, size: wpw:1
+
+    drawTest3 "centered-aligned",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new Element
+          size: w:100, hch:1
+          new Rectangle color: "#fcc"
+          new TextElement color:"red", text:"That!", fontSize:16, align: "center", size: wpw:1
+
+    drawTest3 "right-aligned",
+      stagingBitmapsCreateShouldBe: 0
+      element: ->
+        new Element
+          size: w:100, hch:1
+          new Rectangle color: "#fcc"
+          new TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
+
+    test "flow two paragraphTexts", ->
+      e = new Element
+        size: w:200, hch:1
+        childrenLayout: "flow"
+        e1 = new TextElement color:"red", text:"This is going to be great, don't you think?", fontSize:32
+        e2 = new TextElement color:"red", text:"-------", fontSize:32
+      e1.onNextReady()
+      .then ->
+        e.toBitmap {}
+      .then (bitmap) ->
+        log bitmap
+        assert.neq e1.currentLocation, e2.currentLocation
+
+    test "drawArea", ->
+      el = new TextElement text:"hi", fontSize:16, align: "center", size: w:300
+      el.onNextReady ->
+        assert.within el.elementSpaceDrawArea.right, 150, 300
+
+    test "drawArea width wordWrap", (done)->
+      el =
+        new Element
+          size: w:100, hch:1
+          new TextElement
+            text:"The quick brown fox jumped over the lazy dog."
+            size: wpw:1, hch:1
+      el.onNextReady ->
+        log el.elementSpaceDrawArea
+        el.logBitmap()
+        assert.within el.elementSpaceDrawArea.width, 90, 100
+        assert.within el.elementSpaceDrawArea.height, 85, 100
+        done()
+
+  suite "Art.Engine.Elements.TextElement.as shape", ->
+    drawTest3 "gradient",
+      element: ->
+        new TextElement
+          colors: ["red", "yellow"]
+          text: "Red-yellow gradient."
+          fontSize: 32
+
+    drawTest3 "shadow",
+      element: ->
+        new TextElement
+          color: "red"
+          shadow: offsetY: 2, blur: 2, color: "#0005"
+          text: "Shadow"
+          fontSize: 32
+
+  suite "Art.Engine.Elements.TextElement.alignment", ->
       suite "multi-line, layoutMode: textual", ->
 
         suite "layout ps:1", ->
@@ -305,168 +471,3 @@ define [
                   new Rectangle color: "#0002"
                   new Fill()
               test: (element) -> layoutFragmentTester element, result
-
-    drawTest3 "TEXT layoutMode: textual",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement
-          color:"red", text:"Thing()", fontSize:48
-          new Rectangle color: "#0003"
-          new Fill()
-
-    drawTest3 "layoutMode: textualBaseline",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement
-          color:"red"
-          text:"Thing()\nThang"
-          fontSize:48
-          layoutMode: "textualBaseline"
-          new Rectangle color: "#0003"
-          new Fill()
-
-    drawTest3 "layoutMode: textualBaseline with word-wrap",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement
-          size:
-            w: (ps, cs) -> min 100, cs.w
-            hch:1
-          color:"red"
-          text:"I am a dog."
-          fontSize:32
-          layoutMode: "textualBaseline"
-          new Rectangle color: "#0003"
-          new Fill()
-
-    drawTest3 "tight layoutMode",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new Element
-          size: cs:1
-          new Rectangle color:"#ff7"
-          new TextElement text:"test", layoutMode:"tight", fontSize:50
-      test: (element) ->
-        assert.eq element.currentSize, point 68, 29
-
-    drawTest3 "compositeMode",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new Element {},
-          new Rectangle size:point(40, 60), color:"red"
-          new Rectangle size:point(40, 60), location:point(40,0), color:"blue"
-          new TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
-
-    drawTest3 "opacity",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement color:"red", fontSize:50, text:"test", opacity:.5
-
-    drawTest3 "all options",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement
-          color:      "green"
-          text:       "Dude!"
-          fontSize:   40
-          fontFamily: "Times New Roman"
-          fontWeight: "bold"
-          fontStyle: "italic"
-          fontVariant:"small-caps"
-          layoutMode: "tight"
-          align:      "center"
-
-    drawTest3 "children",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new TextElement color:"red", fontSize:50, text:"test",
-          new Fill
-          new Rectangle
-            color:"#70F7"
-            axis:point(.5)
-            location: ps: .5
-            size: w:60, h:60
-            angle: Math.PI * .3
-
-    drawTest3 "children with mask",
-      stagingBitmapsCreateShouldBe: 2
-      element: ->
-        new TextElement color:"red", fontSize:50, text:"test",
-          new Rectangle
-            color:"#F0F"
-            axis: .5
-            location: ps: .5
-            size: w:60, h:60
-            angle: Math.PI * .3
-          new Fill isMask:true
-
-    drawTest3 "basic",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new Element
-          size: w:100, hch:1
-          new Rectangle color: "#fcc"
-          new TextElement color:"red", text:"That darn quick, brown fox. He always gets away!", fontSize:16, size: wpw:1
-
-    drawTest3 "centered-aligned",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new Element
-          size: w:100, hch:1
-          new Rectangle color: "#fcc"
-          new TextElement color:"red", text:"That!", fontSize:16, align: "center", size: wpw:1
-
-    drawTest3 "right-aligned",
-      stagingBitmapsCreateShouldBe: 0
-      element: ->
-        new Element
-          size: w:100, hch:1
-          new Rectangle color: "#fcc"
-          new TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
-
-    test "flow two paragraphTexts", ->
-      e = new Element
-        size: w:200, hch:1
-        childrenLayout: "flow"
-        e1 = new TextElement color:"red", text:"This is going to be great, don't you think?", fontSize:32
-        e2 = new TextElement color:"red", text:"-------", fontSize:32
-      e1.onNextReady()
-      .then ->
-        e.toBitmap {}
-      .then (bitmap) ->
-        log bitmap
-        assert.neq e1.currentLocation, e2.currentLocation
-
-    test "drawArea", (done)->
-      el = new TextElement text:"hi", fontSize:16, align: "center", size: w:300
-      el.onNextReady ->
-        assert.within el.elementSpaceDrawArea.right, 150, 300
-        done()
-
-    test "drawArea width wordWrap", (done)->
-      el =
-        new Element
-          size: w:100, hch:1
-          new TextElement
-            text:"The quick brown fox jumped over the lazy dog."
-            size: wpw:1, hch:1
-      el.onNextReady ->
-        log el.elementSpaceDrawArea
-        el.logBitmap()
-        assert.within el.elementSpaceDrawArea.width, 90, 100
-        assert.within el.elementSpaceDrawArea.height, 85, 100
-        done()
-
-    # test "max layout", (done)->
-    #   el = new TextElement
-    #     align: "center"
-    #     axis: .5
-    #     location: ps: .5
-    #     text:"The quick brown fox jumped over the lazy dog."
-    #     size: (ps, cs) -> cs.min ps
-
-    #   el.onNextReady ->
-    #     assert.eq el.currentSize, point
-    #     done()
-
-

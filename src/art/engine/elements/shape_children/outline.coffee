@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-FillableBase = require './fillable_base'
+FillableBase = require '../fillable_base'
 {merge, createWithPostCreate, log} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
