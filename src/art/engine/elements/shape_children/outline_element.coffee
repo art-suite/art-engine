@@ -13,6 +13,7 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
     lineWidth:  default: 1,         validate: (v) -> typeof v is "number"
     lineCap:    default: "butt",    validate: (v) -> v in validLineCaps
     lineJoin:   default: "miter",   validate: (v) -> v in validLineJoins
+    filled:     default: false
     miterLimit:
       default: 10,
       validate: (v) -> !v || typeof v is "number"
@@ -28,6 +29,8 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
     cacheable: -> @getHasChildren()
 
   fillShape: (target, elementToTargetMatrix, options) ->
+    if @_filled
+      @_parent.fillShape target, elementToTargetMatrix, options
     @_parent.strokeShape target, elementToTargetMatrix, options
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
