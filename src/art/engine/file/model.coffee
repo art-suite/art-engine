@@ -1,1 +1,1 @@
-module.exports = class Model extends require '..//core/element'
+module.exports = class Model extends require '../core/element'
