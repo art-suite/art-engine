@@ -2,10 +2,10 @@
 # file: tests/art/engine/elements/filters/index.coffee
 
 module.exports =
-Filters        = require './namespace'
-Filters.Blur   = require './blur'
-Filters.Filter = require './filter'
-Filters.Shadow = require './shadow'
+Filters               = require './namespace'
+Filters.BlurElement   = require './blur_element'
+Filters.FilterElement = require './filter_element'
+Filters.ShadowElement = require './shadow_element'
 Filters.finishLoad(
-  ["Blur","Filter","Shadow"]
+  ["BlurElement","FilterElement","ShadowElement"]
 )

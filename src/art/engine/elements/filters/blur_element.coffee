@@ -1,11 +1,11 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-Filter = require './filter'
+FilterElement = require './filter_element'
 
 {createWithPostCreate} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
-module.exports = createWithPostCreate class Blur extends Filter
+module.exports = createWithPostCreate class BlurElement extends FilterElement
   defaultRadius: 10
   defaultCompositeMode: "replace"
 

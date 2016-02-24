@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-Filter = require './filter'
+FilterElement = require './filter_element'
 {createWithPostCreate} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
-module.exports = createWithPostCreate class Shadow extends Filter
+module.exports = createWithPostCreate class ShadowElement extends FilterElement
   constructor: (options = {}) ->
     options.radius = 10 unless options.radius?
     options.compositeMode ||= "destover"

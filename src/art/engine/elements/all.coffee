@@ -10,6 +10,8 @@ createAllClass Elements,
   ShapeChildren = require './shape_children'
 
   # DEPRICATED names:
+  Blur:           Filters.BlurElement
+  Shadow:         Filters.ShadowElement
   Rectangle:      Shapes.RectangleElement
   Bitmap:         Shapes.BitmapElement
   Fill:           ShapeChildren.FillElement

@@ -5,10 +5,10 @@ Helper = require '../helper'
 
 {insepct, log, bound} = Foundation
 {point, rect, Matrix, matrix} = Atomic
-{Filter, Rectangle, Fill} = Elements
+{FilterElement, RectangleElement, FillElement} = Elements
 {drawTest, drawTest2, drawTest3} = Helper
 
-class InvertFilter extends Filter
+class InvertFilter extends FilterElement
   filterPixelData: (elementSpaceTarget, pixelData) ->
     for r, i in pixelData by 4
       g = pixelData[i+1]
@@ -18,7 +18,7 @@ class InvertFilter extends Filter
       pixelData[i+2] = 255 - b
     pixelData
 
-class WaveFilter extends Filter
+class WaveFilter extends FilterElement
 
   copy: (data1, x1, y1, data2, x2, y2, xStep, yStep) ->
     l1 = y1 * yStep + x1 * xStep
@@ -51,62 +51,62 @@ class WaveFilter extends Filter
         # x1 = w - 1 if x1 >= w
         @copy src, x1, y, dst, x, y, xStep, yStep
 
-suite "Art.Engine.Elements.Filters.Filter", ->
+suite "Art.Engine.Elements.Filters.FilterElement", ->
   drawTest2 "basic invert", ->
-    ao = new Rectangle color:"red", location:50,
-      new Fill
-      new Rectangle color:"orange", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"yellow", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"red", location:50,
+      new FillElement
+      new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new InvertFilter location: 30
 
   drawTest2 "basic invert draw with scale == 2", ->
-    ao = new Rectangle color:"red", location:25, elementToParentMatrix: Matrix.scale(2),
-      new Fill
-      new Rectangle color:"orange", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"yellow", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"red", location:25, elementToParentMatrix: Matrix.scale(2),
+      new FillElement
+      new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new InvertFilter location: 15
 
   drawTest2 "basic wave", ->
-    ao = new Rectangle color:"red", location:50,
-      new Fill
-      new Rectangle color:"orange", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"yellow", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"red", location:50,
+      new FillElement
+      new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new WaveFilter radius:10
 
   drawTest2 "basic wave draw with scale == 2", ->
-    ao = new Rectangle color:"red", location:25, elementToParentMatrix: Matrix.scale(2),
-      new Fill
-      new Rectangle color:"orange", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"yellow", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"red", location:25, elementToParentMatrix: Matrix.scale(2),
+      new FillElement
+      new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new WaveFilter radius:5
 
   drawTest2 "parentSourceArea", ->
-    ao = new Rectangle color:"red", location:50,
-      new Fill
-      new Rectangle color:"orange", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"yellow", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"red", location:50,
+      new FillElement
+      new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new InvertFilter parentSourceArea: rect(10,0,30,40), opacity:.66
 
   drawTest2 "basic, rotated", ->
-    ao = new Rectangle color:"#0ff", location:50,
-      new Fill
-      new Rectangle color:"#70f", location: {ps:.2}, size: ps:.4
-      new Rectangle color:"#f0f", location: {ps:.4}, size: ps:.4
+    ao = new RectangleElement color:"#0ff", location:50,
+      new FillElement
+      new RectangleElement color:"#70f", location: {ps:.2}, size: ps:.4
+      new RectangleElement color:"#f0f", location: {ps:.4}, size: ps:.4
       new InvertFilter axis:.5, angle:1, opacity:.9, location: ps: .5
 
   drawTest2 "parent overdraw required - partially offscreen elements should look identical to fully onscreen element - should see red along the entire lefthand side", ->
-    new Rectangle
+    new RectangleElement
       color:"red"
       location:point(80, 60)
       location: point(-30, 0)
-      new Fill
-      new Rectangle color:"yellow", location: {ps:.25}, size: ps:.5
+      new FillElement
+      new RectangleElement color:"yellow", location: {ps:.25}, size: ps:.5
       new WaveFilter opacity:.75, radius:10
 
   drawTest2 "parent overdraw required - control", ->
-    new Rectangle
+    new RectangleElement
       color:"red"
       location:point(80, 60)
-      new Fill
-      new Rectangle color:"yellow", location: {ps:.25}, size: ps:.5
+      new FillElement
+      new RectangleElement color:"yellow", location: {ps:.25}, size: ps:.5
       new WaveFilter opacity:.75, radius:10

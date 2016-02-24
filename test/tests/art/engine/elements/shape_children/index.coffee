@@ -2,8 +2,8 @@
 # file: tests/art/engine/elements/shape_children/index.coffee
 
 module.exports =
-ShapeChildren         = require './namespace'
-ShapeChildren.Outline = require './outline'
+ShapeChildren                = require './namespace'
+ShapeChildren.OutlineElement = require './outline_element'
 ShapeChildren.finishLoad(
-  ["Outline"]
+  ["OutlineElement"]
 )

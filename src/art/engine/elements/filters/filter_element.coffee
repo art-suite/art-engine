@@ -5,7 +5,7 @@ CoreElementsBase = require '../base'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 ###
-A Filter is any Element with a draw method that takes uses "target's" pixels as input to its own draw computations.
+A FilterElement is any Element with a draw method that takes uses "target's" pixels as input to its own draw computations.
 
 Ex: Blur and Shadow
 
@@ -13,8 +13,8 @@ TODO - Fully implelement Blur and Shadow's new semantics:
 
   Each has a sourceArea, in parent-space, default: rect @parent.size
 ###
-module.exports = createWithPostCreate class Filter extends CoreElementsBase
-  @registerWithElementFactory: -> @ != Filter
+module.exports = createWithPostCreate class FilterElement extends CoreElementsBase
+  @registerWithElementFactory: -> @ != FilterElement
 
   @virtualProperty
     baseDrawArea:
