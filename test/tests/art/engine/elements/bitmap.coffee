@@ -24,6 +24,9 @@ define [
     drawTest2 "basic", ->
       new Elements.Bitmap bitmap:source
 
+    drawTest2 "shadow", ->
+      new Elements.Bitmap bitmap:source, shadow: offsetY:4, offsetX:4, blur:2, color: "#0005"
+
     drawTest2 "zoom", ->
       new Elements.Bitmap bitmap:source, mode:"zoom", size:100
 

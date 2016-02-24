@@ -1,15 +1,15 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-FillableBase = require './fillable_base'
+FillableBase = require '../fillable_base'
 
 {ceil, round} = Math
 {inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 
-module.exports = createWithPostCreate class Bitmap extends FillableBase
+module.exports = createWithPostCreate class BitmapElement extends FillableBase
 
-  class Bitmap.SourceToBitmapCache extends BaseObject
+  class BitmapElement.SourceToBitmapCache extends BaseObject
     @singletonClass()
 
     constructor: ->
@@ -40,7 +40,7 @@ module.exports = createWithPostCreate class Bitmap extends FillableBase
       else
         false
 
-  sourceToBitmapCache = Bitmap.SourceToBitmapCache.singleton
+  sourceToBitmapCache = BitmapElement.SourceToBitmapCache.singleton
 
   constructor: (options) ->
     super

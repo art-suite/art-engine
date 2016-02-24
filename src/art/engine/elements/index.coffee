@@ -2,15 +2,14 @@
 # file: art/engine/elements/index.coffee
 
 module.exports =
-Elements                     = require './namespace'
-Elements.Filters             = require './filters'
-Elements.ShapeChildren       = require './shape_children'
-Elements.Shapes              = require './shapes'
-Elements.All                 = require './all'
-Elements.Base                = require './base'
-Elements.Bitmap              = require './bitmap'
-Elements.FillableBase        = require './fillable_base'
-Elements.PagingScrollElement = require './paging_scroll_element'
+Elements               = require './namespace'
+Elements.Filters       = require './filters'
+Elements.ShapeChildren = require './shape_children'
+Elements.Shapes        = require './shapes'
+Elements.Widgets       = require './widgets'
+Elements.All           = require './all'
+Elements.Base          = require './base'
+Elements.FillableBase  = require './fillable_base'
 Elements.finishLoad(
-  ["All","Base","Bitmap","FillableBase","PagingScrollElement"]
+  ["All","Base","FillableBase"]
 )
