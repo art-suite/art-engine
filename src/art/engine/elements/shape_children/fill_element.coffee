@@ -2,6 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 FillableBase = require '../fillable_base'
+
 {log, createWithPostCreate} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
@@ -14,8 +15,15 @@ module.exports = createWithPostCreate class FillElement extends FillableBase
   getBaseDrawArea:        -> @getParent().getBaseDrawArea()
   getPendingBaseDrawArea: -> @getPendingParent().getPendingBaseDrawArea()
 
+  ###
+  NOTE:
+
+  _prepareDrawOptions replaces values, even with null ones.
+  Hence, we prepare two separate draw optons and the merge them.
+  ###
+  _drawOptionsTemp = {}
   drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
     @_parent._prepareDrawOptions? @_drawOptions, compositeMode, opacity
-    @_prepareDrawOptions @_drawOptions, compositeMode, opacity
-
+    @_prepareDrawOptions _drawOptionsTemp, compositeMode, opacity
+    @_drawOptions[k] = v for k, v of _drawOptionsTemp when v
     @_parent.fillShape target, elementToTargetMatrix, @_drawOptions
