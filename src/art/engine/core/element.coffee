@@ -1039,6 +1039,8 @@ define [
           callback? results.bitmap, results.elementToBitmapMatrix
 
     toBitmapSync: (options={}) ->
+      if options.elementToDrawAreaMatrix && !options.area
+        options.area = "targetDrawArea"
       areaOptions = switch options.area || "drawArea"
         when "logicalArea"        then drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
         when "paddedArea"         then drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
