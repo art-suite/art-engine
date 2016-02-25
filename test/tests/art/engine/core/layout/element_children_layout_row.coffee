@@ -22,7 +22,7 @@ define [
         log bitmap, name
         test?()
 
-  suite "Art.Engine.Core.Element.layout.childrenLayout.row", ->
+  suite "Art.Engine.Core.layout.childrenLayout.row", ->
 
     suite "basic", ->
       testLogBitmap "basic row layout", ->

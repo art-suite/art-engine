@@ -41,7 +41,7 @@ define [
       location:
         preprocess: (l) -> point l
         setter: (l) -> @setElementToParentMatrix @getPendingElementToParentMatrix().withLocation l
-        getter: (o) -> o._elementToParentMatrix.getLocation()
+        getterNew: (pending) -> @getState(pending)._elementToParentMatrix.getLocation()
 
     @getter
       redrawRequired: -> true

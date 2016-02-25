@@ -30,11 +30,9 @@ define [
             done()
       testR root, test
 
-  suite "Art.Engine.Core.Element", ->
-    suite "layout", ->
-      suite "TextElement", ->
-        testLogBitmap "elementSpaceDrawArea should include descender", ->
-          root: root = new TextElement text: "Descending", layoutMode: "textualBaseline"
-          test: ->
-            assert.within root.currentSize, point(75, 12), point(76, 12)
-            assert.eq root.elementSpaceDrawArea, rect -8, -8, 90, 31
+  suite "Art.Engine.Core.layout.TextElement", ->
+    testLogBitmap "elementSpaceDrawArea should include descender", ->
+      root: root = new TextElement text: "Descending", layoutMode: "textualBaseline"
+      test: ->
+        assert.within root.currentSize, point(75, 12), point(76, 12)
+        assert.eq root.elementSpaceDrawArea, rect -8, -8, 90, 31

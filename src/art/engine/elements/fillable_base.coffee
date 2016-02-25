@@ -25,8 +25,8 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   @virtualProperty
     colors:
+      getterNew: (pending) -> @getState(pending).gradient?.colors
       setter: (v) -> @setGradient v && new GradientFillStyle point0, point1, v
-      getter: (o) -> o.gradient?.colors
 
   _expandRectangleByShadow: _expandRectangleByShadow = (r, shadow) ->
     return r unless shadow

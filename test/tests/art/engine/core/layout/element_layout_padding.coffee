@@ -14,7 +14,7 @@ define [
   {Element, Rectangle, TextElement} = Elements
 
 
-  suite "Art.Engine.Core.Element.layout.padding.forms", ->
+  suite "Art.Engine.Core.layout.padding.forms", ->
     stateEpochTest "default", ->
       ao = new Element()
       -> assert.eq ao.currentPadding.toObject(),        left: 0, right: 0, top: 0, bottom: 0
@@ -65,7 +65,7 @@ define [
           padding: (ps) -> ps.x * .25
       -> assert.eq ao.currentPadding.toObject(),        left: 25, right: 25, top: 25, bottom: 25
 
-  suite "Art.Engine.Core.Element.layout.padding.layout", ->
+  suite "Art.Engine.Core.layout.padding.layout", ->
     stateEpochTest "padding:10 doesn't effect size", ->
       ao = new Element size:100, padding:10
       ->

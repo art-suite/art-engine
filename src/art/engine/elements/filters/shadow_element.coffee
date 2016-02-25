@@ -5,15 +5,11 @@ FilterElement = require './filter_element'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 module.exports = createWithPostCreate class ShadowElement extends FilterElement
-  constructor: (options = {}) ->
-    options.radius = 10 unless options.radius?
-    options.compositeMode ||= "destover"
-    @inverted = options.inverted
-    super
+  defaultCompositeMode: "destover"
 
   @drawProperty
-    radius:   default: 0, validate: (v) -> typeof v is "number"
+    inverted: default: false
 
   filter: (elementSpaceTarget, scale) ->
-    elementSpaceTarget.blurAlpha @_radius * scale, inverted:@inverted
+    elementSpaceTarget.blurAlpha @_radius * scale, inverted: @inverted
     elementSpaceTarget.drawRectangle null, elementSpaceTarget.size, color:@_color, compositeMode:"target_alphamask"

@@ -16,9 +16,16 @@ TODO - Fully implelement Blur and Shadow's new semantics:
 module.exports = createWithPostCreate class FilterElement extends CoreElementsBase
   @registerWithElementFactory: -> @ != FilterElement
 
+  @drawProperty
+    filterSource: default: null,  validate:   (v) -> !v || isString v
+
   @virtualProperty
-    baseDrawArea:
-      getter: (o) -> rect(o._currentSize).grow o._radius
+    baseDrawArea: getterNew: (pending) ->
+      {_currentSize, _radius} = @getState pending
+      rect(_currentSize).grow _radius
+
+    filterSourceElement:      getterNew: (pending) -> @_getFilterSourceElement pending
+    filterSourceChildElement: getterNew: (pending) -> @_getFilterSourceElement pending, true
 
   @drawProperty parentSourceArea: default: null, preprocess: (v) -> if v then rect v else null
   @drawAreaProperty radius: default: 0, validate: (v) -> typeof v is "number"
@@ -72,22 +79,6 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     elementSpaceTarget.putImageData imageData
     elementSpaceTarget
 
-  @drawProperty
-    filterSource: default: null,  validate:   (v) -> !v || isString v
-
-  @getter
-    filterSourceElement: ->
-      filterSource = @getFilterSource()
-      if filterSource
-        p = @getParent()
-        while p && p.name != filterSource
-          p = p.getParent()
-        if p
-          return p
-        else
-          console.warn "#{@inspectedName}: no ancestor's name matches filterSource:#{inspect filterSource}"
-      @getParent()
-
   fillShape: (target, elementToTargetMatrix, options) ->
     filterSource = @getFilterSourceElement()
 
@@ -107,3 +98,18 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     m = Matrix.scale(1/scale).translate(-@radius).mul elementToTargetMatrix
     target.drawBitmap m, filterScratch, options
 
+  ################
+  # PRIVATE
+  ################
+  _getFilterSourceElement: (pending, returnChild) ->
+    state = @getState pending
+    if filterSource = state._filterSource
+      p = state._parent
+      c = @
+      while p && p.name != filterSource
+        c = p
+        p = p.getState(pending)._parent
+      if p
+        return if returnChild then c else p
+      console.warn "#{@inspectedName}: no ancestor's name matches filterSource:#{inspect filterSource}"
+    if returnChild then @ else state._parent

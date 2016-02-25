@@ -8,8 +8,7 @@ define [
   {inspect, log, isArray} = Foundation
   {point, matrix, rect, Matrix} = Atomic
   {Element} = Engine.Core
-  {Outline, Shapes} = Engine.Elements
-  {Rectangle} = Shapes
+  {OutlineElement, RectangleElement} = Engine
   {stateEpochTest} = StateEpochTestHelper
 
   suite "Art.Engine.Core.Element", ->
@@ -98,8 +97,8 @@ define [
           assert.eq o.drawAreaIn(m).roundOut(), rect -283, 0, 566, 566
 
       stateEpochTest "with outline", ->
-        o = new Rectangle color:"#ff0", size: 50,
-          outline = new Outline
+        o = new RectangleElement color:"#ff0", size: 50,
+          outline = new OutlineElement
             lineWidth:20
             lineJoin: "round"
 

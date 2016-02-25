@@ -277,36 +277,41 @@ define [
 
     @virtualProperty
       currentLocationX:
-        getter: (o) ->
-          s = o._currentSize;
-          a = o._axis;
-          p = o._currentPadding;
-          o._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
+        getterNew: (pending) ->
+          state = @getState pending
+          s = state._currentSize;
+          a = state._axis;
+          p = state._currentPadding;
+          state._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
 
       currentLocationY:
-        getter: (o) ->
-          s = o._currentSize
-          a = o._axis
-          p = o._currentPadding
-          o._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
+        getterNew: (pending) ->
+          state = @getState pending
+          s = state._currentSize
+          a = state._axis
+          p = state._currentPadding
+          state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
 
       currentLocation:
-        getter: (o) ->
-          s = o._currentSize
-          a = o._axis
-          p = o._currentPadding
-          o._elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
+        getterNew: (pending) ->
+          state = @getState pending
+          s = state._currentSize
+          a = state._axis
+          p = state._currentPadding
+          state._elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
 
       layout:
-        getter: (o) -> throw new Error "get layout is depricated"
-        setter: (v) -> throw new Error "set layout is depricated"
+        getterNew: -> throw new Error "get layout is depricated"
+        setter:    -> throw new Error "set layout is depricated"
 
       elementToAbsMatrix:
-        getter: (o) ->
-          o._elementToAbsMatrix ||= if o._parent
-            o._elementToParentMatrix.mul o._parent.getElementToAbsMatrix()
+        getterNew: (pending) ->
+          state = @getState pending
+
+          state._elementToAbsMatrix ||= if state._parent
+            state._elementToParentMatrix.mul state._parent.getElementToAbsMatrix()
           else
-            o._elementToParentMatrix
+            state._elementToParentMatrix
 
         setter: (eToA) ->
           @setElementToParentMatrix if @_parent
@@ -488,129 +493,135 @@ define [
 
     @virtualProperty
       key:
+        getterNew: (pending) -> @getState(pending)._name
         setter: (v) -> @setName v
-        getter: (o) -> o._name
 
       invisible:
-        getter: (o) -> !o._visible
+        getterNew: (pending) -> @getState(pending)._visible
         setter: (v) -> @setVisible !v
 
       isMask:
-        getter: (o) -> o._compositeMode == "alphamask"
+        getterNew: (pending) -> @getState(pending)._compositeMode == "alphamask"
         setter: (v) -> @setCompositeMode if v then "alphamask" else "normal"
 
-      opacityPercent: getter: (o) -> o._opacity * 100 | 0
-      hasMask:        getter: (o) -> return true for child in o._children when child.isMask; false
-      firstMask:      getter: (o) -> return child for child in o._children when child.isMask
-      sizeAffectsLocation: getter: (o) -> o._axis.x != 0 || o._axis.y != 0
-      absoluteAxis:   getter: (o) -> o._currentSize.mul o._axis
+      opacityPercent: getterNew: (pending) -> state = @getState(pending); state._opacity * 100 | 0
+      hasMask:        getterNew: (pending) -> state = @getState(pending); return true for child in state._children when child.isMask; false
+      firstMask:      getterNew: (pending) -> state = @getState(pending); return child for child in state._children when child.isMask
+      sizeAffectsLocation: getterNew: (pending) -> state = @getState(pending); state._axis.x != 0 || state._axis.y != 0
+      absoluteAxis:   getterNew: (pending) -> state = @getState(pending); state._currentSize.mul state._axis
 
       sizeForChildren:
-        getter: (o) -> o._currentPadding.subtractedFromSize o._currentSize
+        getterNew: (pending) ->
+          state = @getState pending
+          state._currentPadding.subtractedFromSize state._currentSize
 
-      parentSize:
-        getter:        (o) -> throw new Error "parentSize depricated"
-        # getter:        (o) -> o._parent?.getSize() || defaultSize
-        # pendingGetter: (o) -> o._parent?.getPendingSize() || defaultSize
+      parentSize: getterNew: -> throw new Error "parentSize depricated"
 
       parentSizeForChildren:
-        # getter:        (o) -> throw new Error "parentSizeForChildren depricated"
-        getter:        (o) -> o._parent?.getSizeForChildren() || defaultSize
-        pendingGetter: (o) -> o._parent?.getPendingSizeForChildren() || defaultSize
+        getterNew: (pending) -> @getState(pending)._parent?.getSizeForChildren(pending) || defaultSize
 
       nextSibling:
-        getter:        (o) -> [o._parent, (o._parent && o._parent._children[o._parent.childIndex(o) + 1]) || null]
-        pendingGetter: (o) -> [o._parent, (o._parent && o._parent.getPendingChildren()[o._parent.pendingChildIndex(o) + 1]) || null]
+        getterNew: (pending) ->
+          parent = @getState(pending)._parent
+          [
+            parent
+            parent?.getChildren(pending)[parent.getChildIndex(@, pending) + 1] || null
+          ]
+
         setter: (siblingOrPair) -> @placeRelativeToSibling siblingOrPair, 0
 
       prevSibling:
-        getter:        (o) -> [o._parent, (o._parent && o._parent._children[o._parent.childIndex(o) - 1]) || null]
-        pendingGetter: (o) -> [o._parent, (o._parent && o._parent.getPendingChildren()[o._parent.pendingChildIndex(o) - 1]) || null]
+        getterNew: (pending) ->
+          parent = @getState(pending)._parent
+          [
+            parent
+            parent?.getChildren(pending)[parent.getChildIndex(@, pending) - 1] || null
+          ]
+
         setter: (siblingOrPair) -> @placeRelativeToSibling siblingOrPair, 1
 
-      maxXInParentSpace: getter: (o) ->
-        padding = o._currentPadding
+      maxXInParentSpace: getterNew: (pending) ->
+        {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
+        padding = _currentPadding
+
+        left   = -padding.left
+        top    = -padding.top
+        right  = _currentSize.x + left
+        bottom = _currentSize.y + top
+
+        max (
+          _elementToParentMatrix.transformX left, top
+          _elementToParentMatrix.transformX left, bottom
+          _elementToParentMatrix.transformX right, top
+          _elementToParentMatrix.transformX right, bottom
+        )
+
+      maxYInParentSpace: getterNew: (pending) ->
+        {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
+        padding = _currentPadding
+
+        left   = -padding.left
+        top    = -padding.top
+        right  = _currentSize.x + left
+        bottom = _currentSize.y + top
+
+        max (
+          _elementToParentMatrix.transformY left, top
+          _elementToParentMatrix.transformY left, bottom
+          _elementToParentMatrix.transformY right, top
+          _elementToParentMatrix.transformY right, bottom
+        )
+
+      widthInParentSpace: getterNew: (pending) ->
+        state = @getState pending
+        padding = state._currentPadding
         left = -padding.left
         top = -padding.top
 
-        right = o._currentSize.x + left
-        bottom = o._currentSize.y + top
+        right = state._currentSize.x + left
+        bottom = state._currentSize.y + top
 
-        a = o._elementToParentMatrix.transformX left, top
-        b = o._elementToParentMatrix.transformX left, bottom
-        c = o._elementToParentMatrix.transformX right, top
-        d = o._elementToParentMatrix.transformX right, bottom
-        max a, b, c, d
-
-      maxYInParentSpace: getter: (o) ->
-        padding = o._currentPadding
-        left = -padding.left
-        top = -padding.top
-
-        right = o._currentSize.x + left
-        bottom = o._currentSize.y + top
-
-        a = o._elementToParentMatrix.transformY left, top
-        b = o._elementToParentMatrix.transformY left, bottom
-        c = o._elementToParentMatrix.transformY right, top
-        d = o._elementToParentMatrix.transformY right, bottom
-        max a, b, c, d
-
-      widthInParentSpace: getter: (o) ->
-        padding = o._currentPadding
-        left = -padding.left
-        top = -padding.top
-
-        right = o._currentSize.x + left
-        bottom = o._currentSize.y + top
-
-        a = o._elementToParentMatrix.transformX left, top
-        b = o._elementToParentMatrix.transformX left, bottom
-        c = o._elementToParentMatrix.transformX right, top
-        d = o._elementToParentMatrix.transformX right, bottom
+        a = state._elementToParentMatrix.transformX left, top
+        b = state._elementToParentMatrix.transformX left, bottom
+        c = state._elementToParentMatrix.transformX right, top
+        d = state._elementToParentMatrix.transformX right, bottom
         max(a, b, c, d) - min(a, b, c, d)
 
-      heightInParentSpace: getter: (o) ->
-        padding = o._currentPadding
+      heightInParentSpace: getterNew: (pending) ->
+        state = @getState pending
+        padding = state._currentPadding
         left = -padding.left
         top = -padding.top
 
-        right = o._currentSize.x + left
-        bottom = o._currentSize.y + top
+        right = state._currentSize.x + left
+        bottom = state._currentSize.y + top
 
-        a = o._elementToParentMatrix.transformY left, top
-        b = o._elementToParentMatrix.transformY left, bottom
-        c = o._elementToParentMatrix.transformY right, top
-        d = o._elementToParentMatrix.transformY right, bottom
+        a = state._elementToParentMatrix.transformY left, top
+        b = state._elementToParentMatrix.transformY left, bottom
+        c = state._elementToParentMatrix.transformY right, top
+        d = state._elementToParentMatrix.transformY right, bottom
         max(a, b, c, d) - min(a, b, c, d)
 
       # should @parent include this child in any child-dependent layout calculations?
       # true unless @_layout's size is parent-relative
       #   NOTE, upLayout true even if max and min layouts are parent-relative as long as the primary layout is not.
       layoutLocationParentCircular:
-        getter:        (o) -> !!o._location.layoutIsCircular o._parent?._size
-        pendingGetter: (o) -> !!o._location.layoutIsCircular o._parent?.getPendingSize()
+        getterNew: (pending) ->
+          state = @getState pending
+          !!state._location.layoutIsCircular state._parent?.getState(pending)._size
 
       layoutSizeParentCircular:
-        getter:        (o) -> !!o._size.layoutIsCircular o._parent?._size
-        pendingGetter: (o) -> !!o._size.layoutIsCircular o._parent?.getPendingSize()
+        getterNew: (pending) ->
+          state = @getState pending
+          !!state._size.layoutIsCircular state._parent?.getState(pending)._size
 
-      # layoutAreaParentCircular:
-      #   getter:        (o) -> !!o._layout?.areaLayoutCircular o._parent?._layout
-      #   pendingGetter: (o) -> !!o._layout?.areaLayoutCircular o._parent?.getPendingLayout()
-
-      layoutMovesChildren:          getter: (o) -> !!o._childrenLayout
-      # layoutLocationParentRelative: getter: (o) -> o._layout?.getLocationParentRelative()
-      # layoutSizeParentRelative:     getter: (o) -> o._layout?.getSizeParentRelative()
-      # layoutHeightParentRelative:   getter: (o) -> o._layout?.getHeightParentRelative()
-      # layoutWidthParentRelative:    getter: (o) -> o._layout?.getWidthParentRelative()
-      # layoutSizeChildRelative:      getter: (o) -> o._layout?.getSizeChildRelative()
-      # layoutParentRelative:         getter: (o) -> o._layout?.getParentRelative()
+      layoutMovesChildren:
+        getterNew: (pending) ->
+          !!(@getState pending)._childrenLayout
 
       animate:
         default: null
-        getter: -> @_activeAnimator
-        pendingGetter: -> @_activeAnimator
+        getterNew: (pending) -> @_activeAnimator
         setter: (options) ->
           return if @_animatingOut
           @finishAnimations()
@@ -618,10 +629,11 @@ define [
             new Animator @, options if options
 
       baseDrawArea:
-        getter: (o) ->
-          p = o._currentPadding
-          s = o._currentSize
-          rect 0, 0, s.x - p.getWidth(), s.y - p.getHeight()
+        getterNew: (pending) ->
+          {_currentPadding, _currentSize} = @getState pending
+          {x, y} = _currentSize
+          {w, h} = _currentPadding
+          rect 0, 0, x - w, y - h
 
     @getter
       allChildrenAreUpLayout: -> false
@@ -1388,11 +1400,8 @@ define [
     ##########################
     # CHILDREN INFO
     ##########################
-    childIndex: (child) ->
-      @_children.indexOf child
-
-    pendingChildIndex: (child) ->
-      @getPendingChildren().indexOf child
+    getChildIndex: (child, pending) ->
+      @getChildren(pending).indexOf child
 
     # findAll: t/f  # by default find won't return children of matching Elements, set to true to return all matches
     # verbose: t/f  # log useful information on found objects

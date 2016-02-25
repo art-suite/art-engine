@@ -46,7 +46,9 @@ define [
           afterDraw: -> stagingBitmapsCreated = Element.stats.stagingBitmapsCreated - stagingBitmapsCreatedBefore
           done: ->
             if (v = options.stagingBitmapsCreateShouldBe)?
-              assert.equal stagingBitmapsCreated, v, "stagingBitmapsCreateShouldBe"
+              assert.eq stagingBitmapsCreated, v, "stagingBitmapsCreateShouldBe"
+            if (v = options.elementSpaceDrawAreaShouldBe)?
+              assert.eq element.elementSpaceDrawArea, v, "stagingBitmapsCreateShouldBe"
 
             options.test? element
 

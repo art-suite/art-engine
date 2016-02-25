@@ -71,6 +71,7 @@ define [
     ###
 
     CONCRETE PROPERTIES
+    -------------------
 
     Concrete-properties (non-virtual properties), once declared, take care of many common property tasks.
     For a property "foo":
@@ -95,15 +96,14 @@ define [
 
     options:
       default:  # default value set when the Element is created
-      setter: (rawNewValue, oldValue, preprocessorAndValidator) ->
+      setter: (rawNewValue, oldValue, preprocessAndValidate) ->
+        THIS: the Element
         IN:
           rawNewValue: the exact, unprocessed, unvalidated value of 'foo' passed by the setYourProp(foo) or @yourProp = foo statement.
           oldValue: the (custom-setter-processed) value that was last set (i.e. the value in @_pendingState)
-          preprocessorAndValidator: your custom preprocessor and validator are merged into a single function you can use
+          preprocessAndValidate: your custom preprocessor and validator are merged into a single function you can use
             as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
-          this/@: set to the Element the setter was called on
         OUT: It should return the value to set in @_pendingState.
-        THIS/@: set to the Element the setter was called on
         SIDE EFFECTS:
           It should NOT actually set the value in @ or @_pendingState.
           It is best to use setProperty calls for all side-effects. This maintains the epoch
@@ -122,11 +122,11 @@ define [
              NOTE: animations use the preprocessor when initializing their to and from values.
 
       postSetter: (newValue, oldValue) ->
+        THIS: the Element
         IN:
           newValue: the value after it has passed through the preprocessor and/or setter
           oldValue: the (custom-setter-processed) value that was last set
             i.e. the value in @_pendingState before the setter was called
-        THIS/@: set to the Element the setter was called on
         OUT: ignored
         STATE: @_pendingState has been updated with newValue; getPendingPropertyName() will return newValue
         SIDE EFFECTS:
@@ -143,12 +143,12 @@ define [
 
       preprocess: (rawValue) -> processedValue
         IN: raw setter input
-        THIS/@: not set
+        THIS: not set
         OUT: normalized value to actually set
 
       validate: (rawValue) -> boolean
         IN: raw value
-        THIS/@: not set
+        THIS: not set
         OUT: true or false
         Return false if the input is invalid which will trigger an exception.
 
@@ -156,59 +156,51 @@ define [
     .setter takes precidence over .preprocess takes precidence over .validate; you can only have one
 
     VIRTUAL PROPERTIES
+    ------------------
 
     Virtual properties are specified with the class method: @virtualProperty
 
     VPs have the same API from the client's perspective, but they don't have any storage in @ or @_pendingState.
     Virtual properties are used as alternative "views" into the Element's state. Ex:
 
-       @location isn't actually stored as a point. It is derived from @elementToParentMatrix and @axis.
+       @currentLocation isn't actually stored as a point. It is derived from @elementToParentMatrix and @axis.
 
-    For a virtual property, "bar":
+    virtual property options:
+
+      getterNew: (pending) ->
+        REQUIRED
+        THIS: the Element
+        IN:   pending: true/false
+        OUT:  if pending, return the pending value, else the current value
+
+      setter: (rawNewValue, preprocessAndValidate) ->
+        OPTIONAL
+          If not provided, this virtual property cannot be set.
+          Attempting to set this virtual property will be IGNORED
+          I.E. attempting to set this property does not trigger errors.
+
+        THIS: the Element
+        IN:
+          rawNewValue: the value passed in by the client
+          preprocessAndValidate: your custom preprocessor and validator are merged into a single function you can use
+            as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
+        OUT: ignored
+
+      validate: (v) ->
+      preprocess: (v) ->
+        works the same as the options for concrete-properties
+        except they are only used by:
+          preprocessAndValidate function passed to the setter
+          animations
+
     Virtual vs Concrete properties:
 
       * Virutal props don't have default values
       * Virtual props don't create property slots in Element instances or their _pendingState, BUT
-      * Virtual props can have their setters invoked from initializers: new Element bar: 456
+      * Virtual props can have their setters invoked from initializers
       * preprocessors and validators can be specified
-      * getter and setter specification/semantics are a little different. See below:
-
-    options:
-      setter: (rawNewvalue, preprocessorAndValidator) ->
-        THIS/@: set to the Element the setter was called on
-        IN:
-          rawNewValue: the exact, unprocessed, unvalidated value of 'foo' passed by the setYourProp(foo) or @yourProp = foo statement.
-          preprocessorAndValidator: your custom preprocessor and validator are merged into a single function you can use
-            as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
-        OUT: ignored
-        SIDE-EFFECTS
-          To maintain Epoch consistency, only use property setters to store side-effects.
-
-    There are two ways to specify your getters:
-
-    1) Specify a getter with one argument. That argument is the object you should read state values from.
-       It may either be the Element instance or its @_pendingState depending on if getFoo or getPendingFoo was called.
-       NOTE: 1-argument getters do NOT have "@" bound to the Element instance. @ should not be used.
-
-       Ex: getter: (o) -> o._foo
-
-       You can optionally also specify a pendingGetter in the same way if you have to do something special.
-       This is typically needed when reading values from related Elements. Ex:
-
-         parentFoo:
-           getter:        (o) ->  o._parent._foo
-           pendingGetter: (o) ->  o._parent.getPendingFoo()
-
-       TODO: I may depricated 1-argument pendingGetters. Getter-pattern #2 tends to be a better way to handle
-       this special-case.
-
-    2) No-argument getters and pendingGetters DO have @ bound to the Element instance. If you specify
-       a no-argument getter, you MUST also specify it's mirror pendingGetter.
-
-         parentFoo:
-           getter:        ->  @._parent._foo
-           pendingGetter: ->  @.getPendingParent().getPendingFoo()
-
+      * getter - you must specify a custom getter, see getterNew option above
+      * setter specification/semantics are a little different. See setter option above
 
     ###
     @_defineElementProperty: (externalName, options={})  ->
@@ -245,22 +237,36 @@ define [
         setterName: @_propSetterName externalName
 
       if options.virtual
-        _getter = options.getter
-        _pendingGetter = options.pendingGetter || options.getter
-
-        if _getter.length ==1
-          pendingGetter = -> _pendingGetter @_pendingState
-          getter = -> _getter @
-        else
-          pendingGetter = _pendingGetter || _getter
-          getter = _getter
-        setter = options.setter
         metaProperties.virtual = true
+
+        {getter, getterNew, setter, pendingGetter} = options
+        if getter || pendingGetter || !getterNew
+          log externalName:externalName, options:options
+          throw new Error "use getterNew: (pending) -> "
+
+        _getterNew = options.getterNew
+        _setter = options.setter
+
+        # if no setter, setting a virtual property is simply ignored
+        setter ||= ->
+
+        getter        = (pending) ->
+          # log
+          #   virtual_getter: externalName
+          #   pending: pending
+          #   self: @inspectedName
+            _getterNew.call @, pending
+        pendingGetter = ->
+          # log
+          #   virtual_pendingGetter: externalName
+          #   self: @inspectedName
+            _getterNew.call @, true
+        setter        = (rawValue) -> _setter.call @, rawValue, preprocessor
+
       else
-        metaProperties.internalName = internalName
         metaProperties.defaultValue = defaultValue = preprocessor options.default
 
-        getter = -> @[internalName]
+        getter        = (pending) -> if pending then @_pendingState[internalName] else @[internalName]
         pendingGetter = -> @_pendingState[internalName]
 
         {layoutProperty, drawProperty, drawAreaProperty, postSetter, setter} = options
@@ -540,65 +546,6 @@ define [
     # PROTECTED (ok for inheriting classes to use)
     ############################
 
-    # Element Property Types:
-    # --------------------
-    # All setters set state in @_pendingState and queue the next StateEpoch
-    #
-    # core:     Special case, core properties. Only Element should define these.
-    #           Ex: elementToParentMatrix, layout, parent, children, size, cursor
-    # draw:     Properties which effect drawing (other than core properties)
-    #           Changing an element's draw properties triggers a redraw of that element if it is visible.
-    #           Ex: color
-    # inert:    Properties which don't have any dependencies that need updating to maintain consistency. They are still Epoched, though.
-    #           Ex: name & axis
-    # drawArea: Same as 'draw' plus sets .pendingeStateChanges.drawAreaUpdateRequired = true
-    #
-    #
-    # Concreate property options:
-    #     default: value
-    #       # initial value for the concrete property, unless initializer is provided in Element's constructor options
-    #       # "value" is validated and preprocessed if custom validators or preprocessors are provided, but only once for the entire class.
-    #     validate: (v) ->
-    #       # if no custom setter, this is run first, before setting the property
-    #       # return true/false if the to-be-set value "v" is legal; results in exception thrown if illegal; "this/@" is not set
-    #     preprocess: (v) ->
-    #       # if no custom setter, this is run second, before setting the property
-    #       # normalize the to-be-set value "v"; "this/@" is not set
-    #     setter: (v) ->
-    #       # Generally, you shouldn't do a custom setter.
-    #       # Only use this if you need to modify other properties as well as the concrete property.
-    #       # If this is provided, custom validate and preprocess functions are not called when setting the property.
-    #       # "v" is raw. It is not preprocssed or validated
-    #       # "this/@" IS set
-    #       # return the value to set the concrete-property to.
-    #       # _pendingState[internalName] will be set from the returned value
-
-    # Virtual Properties
-    #   Virtual Properties (VPs) represent a "property" which is solely computed based on other properties.
-    #   VPs don't take up any javascript property slots in the Element or _pendingChanges.
-    #   Therefor, VPs don't have "internal" names.
-    #
-    # Virtual property options:
-    #     getter: (obj) ->
-    #       # required if you want to get the VP
-    #       # obj may be either the Element instance or its _pendingChanges.
-    #       # This is used to implement the property's getter, pendingGetter and propertyChanged getters.
-    #       # "this/@" is not set
-    #     pendingGetter: (obj) ->
-    #       getter: is used if pendingGetter is not provided
-    #       This was needed for "Element#pendingParentSize".
-    #     setter: (v) ->
-    #       # required if you want to set the VP.
-    #       # v is the new value
-    #       # "this/@" is set to the Element
-    #     validate: (v) ->
-    #       # same as concrete-property, except it is ONLY used in preprocessProperties
-    #     preprocess: (v) ->
-    #       # same as concrete-property, except it is ONLY used in preprocessProperties
-    #       # if your setter accepts "v" in any format different than what getter returns, add a preprocessor
-    #       # to convert any accepted format into the normalized format.
-    #       # Ex: preprocessor: (v) -> point v
-
     @coreProperty = @inertProperty = (map)->
       for prop, options of map
         @_defineElementProperty prop, options
@@ -633,6 +580,9 @@ define [
     _layoutPropertyChanged:   -> @_elementChanged true
     _drawPropertyChanged:     -> @_elementChanged false, true, false
     _drawAreaPropertyChanged: -> @_elementChanged false, true, true
+
+    getState: (pending = false) ->
+      if pending then @_pendingState else @
 
     ############################
     # Overrides

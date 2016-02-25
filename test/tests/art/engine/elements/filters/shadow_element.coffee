@@ -5,25 +5,25 @@ Helper = require '../helper'
 
 {insepct, log} = Foundation
 {point, rect, Matrix, matrix} = Atomic
-{Fill, Shadow, Rectangle, Outline, Element, TextElement} = Elements
+{FillElement, ShadowElement, RectangleElement, OutlineElement, Element, TextElement} = Elements
 {drawTest, drawTest2, drawTest3} = Helper
 
-suite "Art.Engine.Elements.Filters.Shadow", ->
+suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
   drawTest3 "basic",
     stagingBitmapsCreateShouldBe: 1
     element: ->
-      new Rectangle color:"red", size:point(80, 60),
-        new Fill
-        new Shadow radius: 10, location: 10
+      new RectangleElement color:"red", size:point(80, 60),
+        new FillElement
+        new ShadowElement radius: 10, location: 10
 
   drawTest3 "shadow shadow",
     stagingBitmapsCreateShouldBe: 1
     elementSpaceDrawAreaShouldBe: rect 0, 0, 110, 90
     element: ->
-      new Rectangle color: "red", size: point(80, 60),
-        new Fill
-        new Shadow radius: 0, color: "orange", location: 10
-        new Shadow
+      new RectangleElement color: "red", size: point(80, 60),
+        new FillElement
+        new ShadowElement radius: 0, color: "orange", location: 10
+        new ShadowElement
           size: ps:1, w:10, h:10
           location: 10
           parentSourceArea: point 90, 70
@@ -33,14 +33,14 @@ suite "Art.Engine.Elements.Filters.Shadow", ->
     stagingBitmapsCreateShouldBe: 1
     elementSpaceDrawAreaShouldBe: rect -5, -5, 110, 90
     element: ->
-      new Rectangle color:"red", size:point(80, 60),
-        new Fill
-        new Outline
+      new RectangleElement color:"red", size:point(80, 60),
+        new FillElement
+        new OutlineElement
           color: "orange"
           lineWidth: 10
           lineJoin: "round"
           compositeMode: "destover"
-        new Shadow
+        new ShadowElement
           radius:10
           parentSourceArea: rect -5, -5, 90, 70
           location: 5
@@ -48,21 +48,21 @@ suite "Art.Engine.Elements.Filters.Shadow", ->
 
 
   drawTest2 "parent overdraw required", ->
-    new Rectangle color:"red", size:point(80, 60), location: point(-100, -20),
-      new Fill
-      new Shadow radius:10, location:point 10
+    new RectangleElement color:"red", size:point(80, 60), location: point(-100, -20),
+      new FillElement
+      new ShadowElement radius:10, location:point 10
 
   drawTest2 "gradient child filterSource", ->
-    new Rectangle
+    new RectangleElement
       color:          "red"
       size:           point(80, 60)
       radius:         50
       name:           "myFilterSource"
-      new Fill
+      new FillElement
       new Element
         location: 10
         compositeMode: "destover"
-        new Rectangle
+        new RectangleElement
           size: plus:20, ps:1
           location: -10
           colors: [
@@ -72,53 +72,53 @@ suite "Art.Engine.Elements.Filters.Shadow", ->
             "#f0f", "#ff0"
             "#f0f", "#ff0"
           ]
-        new Shadow
+        new ShadowElement
           radius: 4
           isMask: true
           filterSource: "myFilterSource"
 
   drawTest3 "opacity 50%",
     element: ->
-      new Rectangle color:"red", size:point(80, 60),
-        new Fill
-        new Shadow radius:10, opacity:.5, location:point 10
+      new RectangleElement color:"red", size:point(80, 60),
+        new FillElement
+        new ShadowElement radius:10, opacity:.5, location:point 10
 
   drawTest2 "sourcein", ->
-    new Rectangle color:"red", size:point(80, 60),
-      new Fill
-      new Shadow radius:10, compositeMode:"sourcein", location:point 10
+    new RectangleElement color:"red", size:point(80, 60),
+      new FillElement
+      new ShadowElement radius:10, compositeMode:"sourcein", location:point 10
 
   drawTest2 "inverted shadow", ->
-    new Rectangle color:"red", size:point(80, 60),
-      new Fill
-      new Shadow inverted:true, radius:10, compositeMode:"sourcein", location:point 10
+    new RectangleElement color:"red", size:point(80, 60),
+      new FillElement
+      new ShadowElement inverted:true, radius:10, compositeMode:"sourcein", location:point 10
 
   drawTest2 "with 50% scaled drawMatrix", ->
-    new Rectangle color:"red", size:point(80, 60), scale:point(.5),
-      new Fill
-      new Shadow radius:10, location:point 10
+    new RectangleElement color:"red", size:point(80, 60), scale:point(.5),
+      new FillElement
+      new ShadowElement radius:10, location:point 10
 
   drawTest2 "parent rotated 180deg - shadow should be to the upper-left", ->
-    new Rectangle color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI,
-      new Fill
-      new Shadow radius:10, location:point 10
+    new RectangleElement color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI,
+      new FillElement
+      new ShadowElement radius:10, location:point 10
 
   drawTest2 "parent rotated 45deg - shadow should offset directly down", ->
-    new Rectangle color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI/4,
-      new Fill
-      new Shadow radius:10, location:point 10
+    new RectangleElement color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI/4,
+      new FillElement
+      new ShadowElement radius:10, location:point 10
 
   drawTest2 "shadow rotated 60deg", ->
-    new Rectangle color:"red", size:point(80, 60),
-      new Fill
-      new Shadow radius:10, axis:.5, angle:Math.PI/3, location: wpw:.5, hph:.5, x:10, y:10
+    new RectangleElement color:"red", size:point(80, 60),
+      new FillElement
+      new ShadowElement radius:10, axis:.5, angle:Math.PI/3, location: wpw:.5, hph:.5, x:10, y:10
 
   drawTest3 "child of TextElement basic",
     stagingBitmapsCreateShouldBe: 1
     element: ->
       new TextElement fontFamily:"impact", fontSize:80, text:"TextElement",
-        new Fill color: "red"
-        new Shadow radius:10, location:10
+        new FillElement color: "red"
+        new ShadowElement radius:10, location:10
 
   drawTest3 "child of TextElement gradient",
     stagingBitmapsCreateShouldBe: 3
@@ -128,11 +128,11 @@ suite "Art.Engine.Elements.Filters.Shadow", ->
         fontSize:       80
         text:           "TextElement"
         name: "myTextElement"
-        new Fill color: "red"
+        new FillElement color: "red"
         new Element
           location:10
           compositeMode: "destover"
-          new Rectangle
+          new RectangleElement
             size: ps:1, plus:20
             location: -10
             colors: [
@@ -142,5 +142,30 @@ suite "Art.Engine.Elements.Filters.Shadow", ->
               "#f0f", "#ff0"
               "#f0f", "#ff0"
             ]
-          new Shadow radius:10, isMask:true, filterSource:"myTextElement"
+          new ShadowElement radius:10, isMask:true, filterSource:"myTextElement"
 
+  drawTest3 "drawArea with location",
+    stagingBitmapsCreateShouldBe: 1
+    elementSpaceDrawAreaShouldBe: rect 0, 0, 105, 105
+    element: -> new RectangleElement
+      size: 100
+      new FillElement color: "red"
+      new ShadowElement location: 5
+
+  drawTest3 "drawArea with outline",
+    elementSpaceDrawAreaShouldBe: rect -5, -5, 115, 115
+    element: -> new RectangleElement
+      size: 100
+      new FillElement color: "yellow"
+      new OutlineElement lineWidth:10, lineJoin: "round", color: "red"
+      new ShadowElement location: 5
+
+  drawTest3 "drawArea with radius",
+    stagingBitmapsCreateShouldBe: 1
+    elementSpaceDrawAreaShouldBe: rect -1, -1, 112, 112
+    element: -> new RectangleElement
+      size: 100
+      new FillElement color: "red"
+      new ShadowElement location: 5, radius: 6
+    test: (element) ->
+      assert.eq element.drawAreaIn(Matrix.scale 2), rect(-1, -1, 112, 112).mul 2

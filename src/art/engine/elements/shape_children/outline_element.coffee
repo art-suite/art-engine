@@ -20,10 +20,14 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
       preprocess: (v) -> if v? then v else 10
 
   @virtualProperty
-    drawAreaPadding: getter: (o)-> o._lineWidth * if o._lineJoin == "miter" then o._miterLimit / 2 else .5
+    drawAreaPadding:
+      getterNew: (pending) ->
+        {_lineWidth, _lineJoin, _miterLimit} = @getState pending
+        _lineWidth * if _lineJoin == "miter" then _miterLimit / 2 else .5
+
     baseDrawArea:
-      getter:        -> @_parent.getBaseDrawArea().grow @getDrawAreaPadding()
-      pendingGetter: -> @getPendingParent().getPendingBaseDrawArea().grow @getPendingDrawAreaPadding()
+      getterNew: (pending) ->
+        @getState(pending)._parent.getBaseDrawArea(pending).grow @getDrawAreaPadding pending
 
   @getter
     cacheable: -> @getHasChildren()
