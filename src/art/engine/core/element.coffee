@@ -786,7 +786,12 @@ define [
         @_clipDraw null, stagingBitmap, elementToTargetMatrix
       else
         @_drawChildren stagingBitmap, elementToTargetMatrix, true
-      # @log stagingBitmap, text:"renderStagingBitmap"
+
+      # log _renderStagingBitmap:
+      #   element: @inspectedName
+      #   targetSpaceDrawArea:targetSpaceDrawArea
+      #   elementToTargetMatrix: elementToTargetMatrix
+      #   stagingBitmap: stagingBitmap
 
       stagingBitmap
 

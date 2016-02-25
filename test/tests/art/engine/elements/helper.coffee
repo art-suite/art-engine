@@ -15,7 +15,7 @@ define [
     @drawTest: (element, text, options={})->
 
       stateEpoch.onNextReady ->
-        b = new Canvas.Bitmap element.currentSize.add 20
+        b = new Canvas.Bitmap element.currentSize.add 50
         b.clear "#eee"
         m = element.elementToParentMatrix.mul Matrix.translate 10
 

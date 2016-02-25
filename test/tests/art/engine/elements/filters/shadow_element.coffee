@@ -22,18 +22,47 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
     element: ->
       new RectangleElement color: "red", size: point(80, 60),
         new FillElement
-        new ShadowElement radius: 0, color: "orange", location: 10
+        new ShadowElement key:"shadow1", radius: 0, color: "orange", location: 10
         new ShadowElement
-          size: ps:1, w:10, h:10
+          key:"shadow2"
+          # size: ps:1, w:10, h:10
+          location: 10
+          parentSourceArea: point 90, 70
+          radius: 10
+
+  drawTest3 "non-standard size with base source draw-area",
+    stagingBitmapsCreateShouldBe: 1
+    elementSpaceDrawAreaShouldBe: rect 0, 0, 120, 100
+    element: ->
+      new RectangleElement color: "red", size: point(80, 60),
+        new FillElement
+        new ShadowElement
+          key:"shadow2"
+          size: ps:1, plus:20
+          location: 10
+          parentSourceArea: point 90, 70
+          radius: 10
+
+  drawTest3 "non-standard size with expanded source draw-area",
+    stagingBitmapsCreateShouldBe: 1
+    elementSpaceDrawAreaShouldBe: rect -10, -16, 170, 140
+    element: ->
+      new RectangleElement color: "red", size: point(80, 60),
+        new FillElement
+        new FillElement location: x:-8, y:-12
+        new FillElement location: x:32, y:18
+        new ShadowElement
+          key:"shadow2"
+          size: ps:1, plus:20
           location: 10
           parentSourceArea: point 90, 70
           radius: 10
 
   drawTest3 "outline shadow",
     stagingBitmapsCreateShouldBe: 1
-    elementSpaceDrawAreaShouldBe: rect -5, -5, 110, 90
+    elementSpaceDrawAreaShouldBe: rect -10, -10, 120, 100
     element: ->
-      new RectangleElement color:"red", size:point(80, 60),
+      new RectangleElement color:"red", size:point(90, 70),
         new FillElement
         new OutlineElement
           color: "orange"
@@ -152,13 +181,31 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
       new FillElement color: "red"
       new ShadowElement location: 5
 
-  drawTest3 "drawArea with outline",
+  drawTest3 "drawArea with outline basic",
     elementSpaceDrawAreaShouldBe: rect -5, -5, 115, 115
     element: -> new RectangleElement
       size: 100
       new FillElement color: "yellow"
       new OutlineElement lineWidth:10, lineJoin: "round", color: "red"
       new ShadowElement location: 5
+
+  drawTest3 "drawArea with outline with blur",
+    elementSpaceDrawAreaShouldBe: rect -5, -5, 120, 120
+    element: -> new RectangleElement
+      size: 100
+      new FillElement color: "yellow"
+      new OutlineElement lineWidth:10, lineJoin: "round", color: "red"
+      new ShadowElement location: 5, radius: 5
+
+  drawTest3 "drawArea with outline with offset",
+    stagingBitmapsCreateShouldBe: 1
+    elementSpaceDrawAreaShouldBe: rect -5, 0, 111, 116
+    element: -> new RectangleElement
+      # radius: 100
+      size: 100
+      new FillElement color: "yellow"
+      new OutlineElement lineWidth:10, lineJoin: "round", color: "red", location: y: 10
+      new ShadowElement location: 1
 
   drawTest3 "drawArea with radius",
     stagingBitmapsCreateShouldBe: 1
