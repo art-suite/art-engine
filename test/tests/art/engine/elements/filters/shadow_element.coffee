@@ -173,6 +173,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
             ]
           new ShadowElement radius:10, isMask:true, filterSource:"myTextElement"
 
+suite "Art.Engine.Elements.Filters.ShadowElement.drawArea", ->
   drawTest3 "drawArea with location",
     stagingBitmapsCreateShouldBe: 1
     elementSpaceDrawAreaShouldBe: rect 0, 0, 105, 105

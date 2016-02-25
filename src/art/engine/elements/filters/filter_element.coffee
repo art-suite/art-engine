@@ -58,32 +58,17 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     filterSourceToElementMatrix: getterNew: (pending) ->
       Matrix.scale @getFilterSourceSizeRatio pending
 
-  # @drawProperty parentSourceArea: default: null, preprocess: (v) -> if v then rect v else null
   @drawAreaProperty radius: default: 0, validate: (v) -> typeof v is "number"
 
   @getter
     requiresParentStagingBitmap: -> true
     isFilter: -> true
-    # don't override, set @_parentSourceArea instead
-    parentSourceLocation: -> @_parentSourceArea?.location || point()
-    parentSourceSize: -> @_parentSourceArea?.getSize() || @parent?.getCurrentSize()
-    parentSourceArea: -> @_parentSourceArea || (@parent && rect @parent.getCurrentSize())
-
-  elementAreaToParentSourceArea: (r)->
-    if @_parentSourceArea
-      psa = @_parentSourceArea
-      sx = psa.w / @_currentSize.x
-      sy = psa.h / @_currentSize.y
-      rect -psa.x, -psa.y, sx * r.w, sy * r.h
-    else
-      # for the default parentSourceArea, this is just an identity-function
-      r
 
   overDraw: (proposedTargetSpaceDrawArea, parentToTargetMatrix) ->
     targetToElementMatrix = parentToTargetMatrix.inv.mul @parentToElementMatrix
     propsedElementSpaceDrawArea = targetToElementMatrix.transformBoundingRect proposedTargetSpaceDrawArea
     minimumElementSpaceDrawArea = propsedElementSpaceDrawArea.grow(@radius).intersection @elementSpaceDrawArea
-    requiredTargetSpaceDrawArea = parentToTargetMatrix.transformBoundingRect @elementAreaToParentSourceArea minimumElementSpaceDrawArea
+    requiredTargetSpaceDrawArea = parentToTargetMatrix.transformBoundingRect minimumElementSpaceDrawArea
     proposedTargetSpaceDrawArea.union requiredTargetSpaceDrawArea
 
   # override this for the "simplest" filter control
