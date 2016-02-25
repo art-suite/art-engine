@@ -276,24 +276,21 @@ define [
         setter: (_new, _old) -> _old # setting this property is ignored
 
     @virtualProperty
-      currentLocationX:
-        getterNew: (pending) ->
+      currentLocationX: (pending) ->
           state = @getState pending
           s = state._currentSize;
           a = state._axis;
           p = state._currentPadding;
           state._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
 
-      currentLocationY:
-        getterNew: (pending) ->
+      currentLocationY: (pending) ->
           state = @getState pending
           s = state._currentSize
           a = state._axis
           p = state._currentPadding
           state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
 
-      currentLocation:
-        getterNew: (pending) ->
+      currentLocation: (pending) ->
           state = @getState pending
           s = state._currentSize
           a = state._axis
@@ -504,21 +501,19 @@ define [
         getterNew: (pending) -> @getState(pending)._compositeMode == "alphamask"
         setter: (v) -> @setCompositeMode if v then "alphamask" else "normal"
 
-      opacityPercent: getterNew: (pending) -> state = @getState(pending); state._opacity * 100 | 0
-      hasMask:        getterNew: (pending) -> state = @getState(pending); return true for child in state._children when child.isMask; false
-      firstMask:      getterNew: (pending) -> state = @getState(pending); return child for child in state._children when child.isMask
-      sizeAffectsLocation: getterNew: (pending) -> state = @getState(pending); state._axis.x != 0 || state._axis.y != 0
-      absoluteAxis:   getterNew: (pending) -> state = @getState(pending); state._currentSize.mul state._axis
+      opacityPercent:       (pending) -> state = @getState(pending); state._opacity * 100 | 0
+      hasMask:              (pending) -> state = @getState(pending); return true for child in state._children when child.isMask; false
+      firstMask:            (pending) -> state = @getState(pending); return child for child in state._children when child.isMask
+      sizeAffectsLocation:  (pending) -> state = @getState(pending); state._axis.x != 0 || state._axis.y != 0
+      absoluteAxis:         (pending) -> state = @getState(pending); state._currentSize.mul state._axis
 
-      sizeForChildren:
-        getterNew: (pending) ->
-          state = @getState pending
-          state._currentPadding.subtractedFromSize state._currentSize
+      sizeForChildren: (pending) ->
+        state = @getState pending
+        state._currentPadding.subtractedFromSize state._currentSize
 
-      parentSize: getterNew: -> throw new Error "parentSize depricated"
+      parentSize: -> throw new Error "parentSize depricated"
 
-      parentSizeForChildren:
-        getterNew: (pending) -> @getState(pending)._parent?.getSizeForChildren(pending) || defaultSize
+      parentSizeForChildren: (pending) -> @getState(pending)._parent?.getSizeForChildren(pending) || defaultSize
 
       nextSibling:
         getterNew: (pending) ->
@@ -540,7 +535,7 @@ define [
 
         setter: (siblingOrPair) -> @placeRelativeToSibling siblingOrPair, 1
 
-      maxXInParentSpace: getterNew: (pending) ->
+      maxXInParentSpace: (pending) ->
         {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
         padding = _currentPadding
 
@@ -556,7 +551,7 @@ define [
           _elementToParentMatrix.transformX right, bottom
         )
 
-      maxYInParentSpace: getterNew: (pending) ->
+      maxYInParentSpace: (pending) ->
         {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
         padding = _currentPadding
 
@@ -572,7 +567,7 @@ define [
           _elementToParentMatrix.transformY right, bottom
         )
 
-      widthInParentSpace: getterNew: (pending) ->
+      widthInParentSpace: (pending) ->
         state = @getState pending
         padding = state._currentPadding
         left = -padding.left
@@ -587,7 +582,7 @@ define [
         d = state._elementToParentMatrix.transformX right, bottom
         max(a, b, c, d) - min(a, b, c, d)
 
-      heightInParentSpace: getterNew: (pending) ->
+      heightInParentSpace: (pending) ->
         state = @getState pending
         padding = state._currentPadding
         left = -padding.left
@@ -605,19 +600,16 @@ define [
       # should @parent include this child in any child-dependent layout calculations?
       # true unless @_layout's size is parent-relative
       #   NOTE, upLayout true even if max and min layouts are parent-relative as long as the primary layout is not.
-      layoutLocationParentCircular:
-        getterNew: (pending) ->
-          state = @getState pending
-          !!state._location.layoutIsCircular state._parent?.getState(pending)._size
+      layoutLocationParentCircular: (pending) ->
+        state = @getState pending
+        !!state._location.layoutIsCircular state._parent?.getState(pending)._size
 
-      layoutSizeParentCircular:
-        getterNew: (pending) ->
-          state = @getState pending
-          !!state._size.layoutIsCircular state._parent?.getState(pending)._size
+      layoutSizeParentCircular: (pending) ->
+        state = @getState pending
+        !!state._size.layoutIsCircular state._parent?.getState(pending)._size
 
-      layoutMovesChildren:
-        getterNew: (pending) ->
-          !!(@getState pending)._childrenLayout
+      layoutMovesChildren: (pending) ->
+        !!(@getState pending)._childrenLayout
 
       animate:
         default: null
@@ -628,12 +620,11 @@ define [
           stateEpoch.onNextReady =>
             new Animator @, options if options
 
-      baseDrawArea:
-        getterNew: (pending) ->
-          {_currentPadding, _currentSize} = @getState pending
-          {x, y} = _currentSize
-          {w, h} = _currentPadding
-          rect 0, 0, x - w, y - h
+      baseDrawArea: (pending) ->
+        {_currentPadding, _currentSize} = @getState pending
+        {x, y} = _currentSize
+        {w, h} = _currentPadding
+        rect 0, 0, x - w, y - h
 
     @getter
       allChildrenAreUpLayout: -> false
