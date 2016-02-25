@@ -22,7 +22,13 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
   @virtualProperty
     baseDrawArea: getterNew: (pending) ->
       {_currentSize, _radius} = @getState pending
-      rect(_currentSize).grow _radius
+      filterSourceElement = @getFilterSourceElement pending
+      filterSourceChildElement = @getFilterSourceChildElement pending
+      filterSourceDrawArea = filterSourceElement._computeElementSpaceDrawArea filterSourceChildElement
+      if !_currentSize.eq fseCurrentSize = filterSourceElement.getCurrentSize pending
+        filterSourceDrawArea = filterSourceDrawArea.mul _currentSize.div fseCurrentSize
+      # filterSourceDrawArea = rect _currentSize
+      filterSourceDrawArea.grow _radius
 
     filterSourceElement:      getterNew: (pending) -> @_getFilterSourceElement pending
     filterSourceChildElement: getterNew: (pending) -> @_getFilterSourceElement pending, true
@@ -85,7 +91,7 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     elementSpaceDrawArea = @elementSpaceDrawArea
     scale = elementToTargetMatrix.exactScaler
 
-    filterScratch = @bitmapFactory.newBitmap elementSpaceDrawArea.size.mul scale
+    filterScratch = target.newBitmap elementSpaceDrawArea.size.mul scale
 
     clipRect = rect -elementSpaceDrawArea.x * scale, -elementSpaceDrawArea.y * scale, @_currentSize.x * scale, @_currentSize.y * scale
     filterScratch.clippedTo clipRect, =>

@@ -1352,11 +1352,12 @@ define [
     # The main reason for this is if we enable Layouts based on child drawAreas. This is useful sometimes.
     #   Ex: KimiEditor fonts effects.
     # returns computed elementSpaceDrawArea
-    _computeElementSpaceDrawArea: ->
+    _computeElementSpaceDrawArea: (upToChild)->
 
-      if @getPendingChildren().length > 0 && !@getPendingClip()
+      if (children = @getPendingChildren()).length > 0 && !@getPendingClip()
         elementSpaceDrawArea = rect()
-        for child in @children
+        for child in children
+          break if child == upToChild
           elementSpaceChildDrawArea = child.getParentSpaceDrawArea()
           switch child.compositeMode
             when "alphamask"
