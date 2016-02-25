@@ -35,7 +35,6 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
       if _currentSize.eq filterSourceSize
         1
       else
-        # log filterSourceSizeRatio:_currentSize.div filterSourceSize
         _currentSize.div filterSourceSize
 
     elementSpaceSourceDrawArea: getterNew: (pending) ->
@@ -44,13 +43,8 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     baseDrawArea: getterNew: (pending) ->
       {_currentSize, _radius} = @getState pending
 
-      elementSpaceSourceDrawArea = @getElementSpaceSourceDrawArea pending
-
-      # log baseDrawArea:
-      #   elementSpaceSourceDrawArea: elementSpaceSourceDrawArea
-      #   baseDrawArea: elementSpaceSourceDrawArea.grow _radius
-
-      elementSpaceSourceDrawArea.grow _radius
+      @getElementSpaceSourceDrawArea pending
+      .grow _radius
 
     filterSourceElement:      getterNew: (pending) -> @_getFilterSourceElement pending
     filterSourceChildElement: getterNew: (pending) -> @_getFilterSourceElement pending, true
@@ -88,11 +82,9 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
 
   fillShape: (target, elementToTargetMatrix, options) ->
     filterSource = @getFilterSourceElement()
+    elementSpaceDrawArea = @getElementSpaceDrawArea()
 
-    elementSpaceDrawArea = @elementSpaceDrawArea
     scale = elementToTargetMatrix.exactScaler
-
-    filterScratch = target.newBitmap elementSpaceDrawArea.size.add(@radius * 2).mul(scale)
 
     elementToFilterScratchMatrix = Matrix.translate elementSpaceDrawArea.location.neg.add @radius
     .scale scale
@@ -101,28 +93,14 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     .scale @getFilterSourceSizeRatio()
     .mul elementToFilterScratchMatrix
 
-    filterScratchToTargetMatrix = elementToFilterScratchMatrix.inv.mul elementToTargetMatrix
+    filterScratch = target.newBitmap elementSpaceDrawArea.size.add(@radius * 2).mul scale
+    .drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
 
-    # log
-    #   scale: scale
-    #   targetToFilterSource: filterSource._currentToTargetMatrix.inv
-    #   elementSpaceDrawArea: elementSpaceDrawArea
-    #   filterSourceTargetToFilterScratchMatrix:filterSourceTargetToFilterScratchMatrix
-
-    filterScratch.drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
-
-    # log fsBefore = filterScratch.clone()
-
-    filterScratch = @filter filterScratch, scale
-
-    # log FilterElement:
-    #   filterScratch: before: fsBefore, after: filterScratch
-    #   elementSpaceDrawArea: elementSpaceDrawArea
-    #   scale: scale
-    #   filterScratchToTargetMatrix:filterScratchToTargetMatrix
-    #   options: options
-
-    target.drawBitmap filterScratchToTargetMatrix, filterScratch, options
+    target.drawBitmap(
+      elementToFilterScratchMatrix.inv.mul elementToTargetMatrix
+      @filter filterScratch, scale
+      options
+    )
 
   ################
   # PRIVATE
