@@ -165,7 +165,13 @@ define [
 
        @currentLocation isn't actually stored as a point. It is derived from @elementToParentMatrix and @axis.
 
-    virtual property options:
+    As a short-cut, you can supply just a getterNew function instead of options to define a
+    virtual property. See getterNew below for details. Here is how to use this shortcut:
+
+      @virtualProperty
+        foo: (pending) -> ...
+
+    Virtual property options (when isPlainObject options)
 
       getterNew: (pending) ->
         REQUIRED
