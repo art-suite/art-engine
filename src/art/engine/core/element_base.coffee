@@ -244,23 +244,12 @@ define [
           log externalName:externalName, options:options
           throw new Error "use getterNew: (pending) -> "
 
-        _getterNew = options.getterNew
-        _setter = options.setter
-
         # if no setter, setting a virtual property is simply ignored
-        setter ||= ->
+        _setter = options.setter || ->
+        _getterNew = options.getterNew
 
-        getter        = (pending) ->
-          # log
-          #   virtual_getter: externalName
-          #   pending: pending
-          #   self: @inspectedName
-            _getterNew.call @, pending
-        pendingGetter = ->
-          # log
-          #   virtual_pendingGetter: externalName
-          #   self: @inspectedName
-            _getterNew.call @, true
+        getter        = _getterNew
+        pendingGetter = -> _getterNew.call @, true
         setter        = (rawValue) -> _setter.call @, rawValue, preprocessor
 
       else
@@ -423,7 +412,7 @@ define [
       for i in [0...virtualCount]
         mp = virtualPropertySecondPassMetaProperties[i]
         v = virtualPropertySecondPassValues[i]
-        @[mp.setterName]? v
+        @[mp.setterName] v
 
       @_elementChanged true, true, true
       null
