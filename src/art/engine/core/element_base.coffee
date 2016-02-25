@@ -165,15 +165,15 @@ define [
 
        @currentLocation isn't actually stored as a point. It is derived from @elementToParentMatrix and @axis.
 
-    As a short-cut, you can supply just a getterNew function instead of options to define a
-    virtual property. See getterNew below for details. Here is how to use this shortcut:
+    As a short-cut, you can supply just a getter function instead of options to define a
+    virtual property. See getter below for details. Here is how to use this shortcut:
 
       @virtualProperty
         foo: (pending) -> ...
 
     Virtual property options (when isPlainObject options)
 
-      getterNew: (pending) ->
+      getter: (pending) ->
         REQUIRED
         THIS: the Element
         IN:   pending: true/false
@@ -205,7 +205,7 @@ define [
       * Virtual props don't create property slots in Element instances or their _pendingState, BUT
       * Virtual props can have their setters invoked from initializers
       * preprocessors and validators can be specified
-      * getter - you must specify a custom getter, see getterNew option above
+      * getter - you must specify a custom getter, see getter option above
       * setter specification/semantics are a little different. See setter option above
 
     ###
@@ -245,17 +245,12 @@ define [
       if options.virtual
         metaProperties.virtual = true
 
-        {getter, getterNew, setter, pendingGetter} = options
-        if getter || pendingGetter || !getterNew
-          log externalName:externalName, options:options
-          throw new Error "use getterNew: (pending) -> "
-
         # if no setter, setting a virtual property is simply ignored
         _setter = options.setter || ->
-        _getterNew = options.getterNew
+        _getter = options.getter
 
-        getter        = _getterNew
-        pendingGetter = -> _getterNew.call @, true
+        getter        = _getter
+        pendingGetter = -> _getter.call @, true
         setter        = (rawValue) -> _setter.call @, rawValue, preprocessor
 
       else
@@ -547,7 +542,7 @@ define [
 
     @virtualProperty: (map)->
       for prop, options of map
-        options = getterNew: options if isFunction options
+        options = getter: options if isFunction options
         options.virtual = true
         @_defineElementProperty prop, options
 

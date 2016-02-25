@@ -298,11 +298,11 @@ define [
           state._elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
 
       layout:
-        getterNew: -> throw new Error "get layout is depricated"
+        getter: -> throw new Error "get layout is depricated"
         setter:    -> throw new Error "set layout is depricated"
 
       elementToAbsMatrix:
-        getterNew: (pending) ->
+        getter: (pending) ->
           state = @getState pending
 
           state._elementToAbsMatrix ||= if state._parent
@@ -490,15 +490,15 @@ define [
 
     @virtualProperty
       key:
-        getterNew: (pending) -> @getState(pending)._name
+        getter: (pending) -> @getState(pending)._name
         setter: (v) -> @setName v
 
       invisible:
-        getterNew: (pending) -> @getState(pending)._visible
+        getter: (pending) -> @getState(pending)._visible
         setter: (v) -> @setVisible !v
 
       isMask:
-        getterNew: (pending) -> @getState(pending)._compositeMode == "alphamask"
+        getter: (pending) -> @getState(pending)._compositeMode == "alphamask"
         setter: (v) -> @setCompositeMode if v then "alphamask" else "normal"
 
       opacityPercent:       (pending) -> state = @getState(pending); state._opacity * 100 | 0
@@ -516,7 +516,7 @@ define [
       parentSizeForChildren: (pending) -> @getState(pending)._parent?.getSizeForChildren(pending) || defaultSize
 
       nextSibling:
-        getterNew: (pending) ->
+        getter: (pending) ->
           parent = @getState(pending)._parent
           [
             parent
@@ -526,7 +526,7 @@ define [
         setter: (siblingOrPair) -> @placeRelativeToSibling siblingOrPair, 0
 
       prevSibling:
-        getterNew: (pending) ->
+        getter: (pending) ->
           parent = @getState(pending)._parent
           [
             parent
@@ -613,7 +613,7 @@ define [
 
       animate:
         default: null
-        getterNew: (pending) -> @_activeAnimator
+        getter: (pending) -> @_activeAnimator
         setter: (options) ->
           return if @_animatingOut
           @finishAnimations()

@@ -41,7 +41,7 @@ module.exports = createWithPostCreate class TextElement extends FillableBase
         for subPropName, defaultValue of setOptions.default
           do (subPropName) =>
             virtualProperties[subPropName] =
-              getterNew: (pending) -> @getState()[internalName]?[subPropName]
+              getter: (pending) -> @getState()[internalName]?[subPropName]
               setter: (v) ->
                 if (oldOptions = @[internalName]) == (newOptions = @_pendingState[internalName])
                   newOptions = shallowClone oldOptions

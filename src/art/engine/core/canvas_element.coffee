@@ -71,9 +71,9 @@ define [
       self.canvasElement ||= @
 
     @virtualProperty
-      parentSizeForChildren: getterNew: (pending) -> @getParentSize pending
+      parentSizeForChildren: (pending) -> @getParentSize pending
 
-      parentSize: getterNew: (pending) ->
+      parentSize: (pending) ->
         if @_canvas
 
           ###
