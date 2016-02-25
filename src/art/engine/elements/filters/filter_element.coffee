@@ -16,47 +16,80 @@ TODO - Fully implelement Blur and Shadow's new semantics:
 module.exports = createWithPostCreate class FilterElement extends CoreElementsBase
   @registerWithElementFactory: -> @ != FilterElement
 
-  @drawProperty
-    filterSource: default: null,  validate:   (v) -> !v || isString v
+  ########################
+  # PUBLIC PROPERTIES
+  ########################
+  ###
+  SBD 2016-02-25: I don't think filterSource is fully supported for anything other than the direct parent
+    I have tried to make FilterElement fully support it, but
+    I think Core.Element is missing critical features for Elements with distant decendent filters.
+    Lines that mention filterSource in Core.Element are all commented out.
+    Somehow, whenever things change, FilterSources need to get an updated list of their FilterElement decendents.
+    Then methods like Element#_accountForOverdraw can correctly check each FilterElement decendent instead of only children.
+  ###
+  @drawProperty filterSource: default: null, validate: (v) -> !v || isString v
 
-  @virtualProperty
-    filterSourceDrawArea: getterNew: (pending) ->
-      filterSourceElement = @getFilterSourceElement pending
-      filterSourceChildElement = @getFilterSourceChildElement pending
-      filterSourceElement._computeElementSpaceDrawArea filterSourceChildElement
-
-    filterSourceSize: getterNew: (pending) ->
-      @getFilterSourceElement(pending).getCurrentSize pending
-
-    # currentSize / filterSourceSize
-    filterSourceSizeRatio: getterNew: (pending) ->
-      {_currentSize} = @getState pending
-      filterSourceSize = @getFilterSourceSize pending
-      if _currentSize.eq filterSourceSize
-        1
-      else
-        _currentSize.div filterSourceSize
-
-    elementSpaceSourceDrawArea: getterNew: (pending) ->
-      @getFilterSourceDrawArea(pending).mul @getFilterSourceSizeRatio pending
-
-    baseDrawArea: getterNew: (pending) ->
-      {_currentSize, _radius} = @getState pending
-
-      @getElementSpaceSourceDrawArea pending
-      .grow _radius
-
-    filterSourceElement:      getterNew: (pending) -> @_getFilterSourceElement pending
-    filterSourceChildElement: getterNew: (pending) -> @_getFilterSourceElement pending, true
-
-    filterSourceToElementMatrix: getterNew: (pending) ->
-      Matrix.scale @getFilterSourceSizeRatio pending
-
+  ###
+  Radius is interpeted by FilterElement as the size of the convolution kernel the filter will apply.
+  I.E. each output pixel can only be based on at most:
+    - all pixels +/- "radius" pixel-units on the X and Y dimensions
+    - I.E. the (2 * radius + 1)-square pixels centered on the output pixel
+  ###
   @drawAreaProperty radius: default: 0, validate: (v) -> typeof v is "number"
 
-  @getter
-    requiresParentStagingBitmap: -> true
-    isFilter: -> true
+  ########################
+  # SUBCLASS OVERRIDES
+  ########################
+  ###
+  Override this for the "simplest" filter control
+
+  IN:
+    filterScratchBitmap:
+      at start contains the pixels to be filtered
+
+    pixelData: is an array of RGBA values extracted from filterScratchBitmap
+      length: 4 * filterScratchBitmap.size.area (RGBA sets)
+
+    scale: number
+      If the scale is 1, then the filter's currentSize is 1:1 pixels in filterScratchBitmap.
+
+  NOTE: Convert x, y coordinates to array index:
+    (x, y) -> (@filterScratchBitmap.size.x * y + x) * 4
+  ###
+  filterPixelData: (filterScratchBitmap, pixelData, scale) ->
+    pixelData
+
+  ###
+  override this for "normal" filter control.
+  IN:
+    filterScratchBitmap:
+      at start contains the pixels to be filtered
+
+    scale: number
+      If the scale is 1, then the filter's currentSize is 1:1 pixels in filterScratchBitmap.
+
+  OUT: filterScratchBitmap with filter results or new bitmap of the same size
+    NOTE: you can, and should if possible, re-use filterScratchBitmap
+  ###
+  filter: (filterScratchBitmap, scale) ->
+    imageData = filterScratchBitmap.getImageData()
+    @filterPixelData filterScratchBitmap, imageData.data, scale
+    filterScratchBitmap.putImageData imageData
+    filterScratchBitmap
+
+  ########################
+  # SUPERCLASS OVERRIDES
+  ########################
+  fillShape: (target, elementToTargetMatrix, options) ->
+    scale = elementToTargetMatrix.exactScaler
+
+    {filterTargetToElementMatrix, filterTarget} = @_filterFilterSource scale, target
+
+    target.drawBitmap(
+      filterTargetToElementMatrix.mul elementToTargetMatrix
+      filterTarget
+      options
+    )
 
   overDraw: (proposedTargetSpaceDrawArea, parentToTargetMatrix) ->
     targetToElementMatrix = parentToTargetMatrix.inv.mul @parentToElementMatrix
@@ -65,46 +98,31 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     requiredTargetSpaceDrawArea = parentToTargetMatrix.transformBoundingRect minimumElementSpaceDrawArea
     proposedTargetSpaceDrawArea.union requiredTargetSpaceDrawArea
 
-  # override this for the "simplest" filter control
-  # pixelData is an array of RGBA values. There are @_currentSize.x * 4 numbers per row, and @_currentSize.y rows
-  # Convert x, y coordinates to array index:
-  #   (x, y) -> (@_currentSize.x * y + x) * 4
-  filterPixelData: (elementSpaceTarget, pixelData, scale) ->
-    pixelData
+  @virtualProperty
+    baseDrawArea: (pending) ->
+      {_currentSize, _radius} = @getState pending
 
-  # override this for "normal" filter control. Replace elementSpaceTarget with the new filtered data.
-  # return bitmap of the same size as elementSpaceTarget (optionally elementSpaceTarget, optionally altered)
-  filter: (elementSpaceTarget, scale) ->
-    imageData = elementSpaceTarget.getImageData()
-    @filterPixelData elementSpaceTarget, imageData.data, scale
-    elementSpaceTarget.putImageData imageData
-    elementSpaceTarget
+      @getElementSpaceSourceDrawArea pending
+      .grow _radius
 
-  fillShape: (target, elementToTargetMatrix, options) ->
-    filterSource = @getFilterSourceElement()
-    elementSpaceDrawArea = @getElementSpaceDrawArea()
-
-    scale = elementToTargetMatrix.exactScaler
-
-    elementToFilterScratchMatrix = Matrix.translate elementSpaceDrawArea.location.neg.add @radius
-    .scale scale
-
-    filterSourceTargetToFilterScratchMatrix = filterSource._currentToTargetMatrix.inv
-    .scale @getFilterSourceSizeRatio()
-    .mul elementToFilterScratchMatrix
-
-    filterScratch = target.newBitmap elementSpaceDrawArea.size.add(@radius * 2).mul scale
-    .drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
-
-    target.drawBitmap(
-      elementToFilterScratchMatrix.inv.mul elementToTargetMatrix
-      @filter filterScratch, scale
-      options
-    )
+  @getter
+    requiresParentStagingBitmap: -> true
+    isFilter: -> true
 
   ################
   # PRIVATE
   ################
+
+  ###
+  IN:
+    pending: if true, use pending data
+    returnChild: see OUT
+
+  OUT: if returnChild
+      the child of FilterSourceElement which is @ or an ancestor of @
+    else
+      FilterSourceElement
+  ###
   _getFilterSourceElement: (pending, returnChild) ->
     state = @getState pending
     if filterSource = state._filterSource
@@ -117,3 +135,51 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
         return if returnChild then c else p
       console.warn "#{@inspectedName}: no ancestor's name matches filterSource:#{inspect filterSource}"
     if returnChild then @ else state._parent
+
+  ###
+  Can only be called when filterSource._currentToTargetMatrix is valid.
+  I.E. in the middle of a draw cycle.
+  ###
+  _filterFilterSource: (scale, bitmapFactory) ->
+    filterSource = @getFilterSourceElement()
+    elementSpaceDrawArea = @getElementSpaceDrawArea()
+
+    elementToFilterScratchMatrix = Matrix.translate elementSpaceDrawArea.location.neg.add @radius
+    .scale scale
+
+    filterSourceTargetToFilterScratchMatrix = filterSource._currentToTargetMatrix.inv
+    .scale @getFilterSourceSizeRatio()
+    .mul elementToFilterScratchMatrix
+
+    filterScratch = bitmapFactory.newBitmap elementSpaceDrawArea.size.add(@radius * 2).mul scale
+    .drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
+
+    filterTargetToElementMatrix: elementToFilterScratchMatrix.inv
+    filterTarget: @filter filterScratch, scale
+
+  #####################################
+  # PRIVATE HELPER VIRTUAL PROPSERTIES
+  #####################################
+  @virtualProperty
+    filterSourceDrawArea: (pending) ->
+      filterSourceElement = @getFilterSourceElement pending
+      filterSourceChildElement = @getFilterSourceChildElement pending
+      filterSourceElement._computeElementSpaceDrawArea filterSourceChildElement
+
+    filterSourceSize: (pending) ->
+      @getFilterSourceElement(pending).getCurrentSize pending
+
+    # currentSize / filterSourceSize
+    filterSourceSizeRatio: (pending) ->
+      {_currentSize} = @getState pending
+      filterSourceSize = @getFilterSourceSize pending
+      if _currentSize.eq filterSourceSize
+        1
+      else
+        _currentSize.div filterSourceSize
+
+    elementSpaceSourceDrawArea: (pending) ->
+      @getFilterSourceDrawArea(pending).mul @getFilterSourceSizeRatio pending
+
+    filterSourceElement:      (pending) -> @_getFilterSourceElement pending
+    filterSourceChildElement: (pending) -> @_getFilterSourceElement pending, true

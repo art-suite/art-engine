@@ -541,6 +541,7 @@ define [
 
     @virtualProperty: (map)->
       for prop, options of map
+        options = getterNew: options if isFunction options
         options.virtual = true
         @_defineElementProperty prop, options
 
