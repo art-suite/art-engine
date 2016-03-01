@@ -117,11 +117,6 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
       new FillElement
       new ShadowElement radius:10, compositeMode:"sourcein", location:point 10
 
-  drawTest2 "inverted shadow", ->
-    new RectangleElement color:"red", size:point(80, 60),
-      new FillElement
-      new ShadowElement inverted:true, radius:10, compositeMode:"sourcein", location:point 10
-
   drawTest2 "with 50% scaled drawMatrix", ->
     new RectangleElement color:"red", size:point(80, 60), scale:point(.5),
       new FillElement
@@ -217,3 +212,20 @@ suite "Art.Engine.Elements.Filters.ShadowElement.drawArea", ->
       new ShadowElement location: 5, radius: 6
     test: (element) ->
       assert.eq element.drawAreaIn(Matrix.scale 2), rect(-1, -1, 112, 112).mul 2
+
+suite "Art.Engine.Elements.Filters.ShadowElement.inverted", ->
+  drawTest2 "blurred", ->
+    new RectangleElement color:"red", size:point(80, 60),
+      new FillElement
+      new ShadowElement inverted:true, radius:10, compositeMode:"sourcein", location:point 10
+
+  drawTest2 "no blur", ->
+    new RectangleElement color:"red", size:point(80, 60), radius: 20,
+      new FillElement
+      new ShadowElement inverted:true, compositeMode:"sourcein", location:point 10
+
+  drawTest2 "transform", ->
+    new RectangleElement color:"red", size:point(80, 60), radius: 20,
+      new FillElement
+      new ShadowElement inverted:true, compositeMode:"sourcein", angle: Math.PI/12, location:point 10
+

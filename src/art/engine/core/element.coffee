@@ -962,7 +962,7 @@ define [
 
       # @log cacheElement:@inspectedName, area:cacheDrawArea, matrix: @_drawCacheToElementMatrix
       @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-      log _generateDrawCache: @_drawCacheBitmap, element: @inspectedName
+      # log _generateDrawCache: @_drawCacheBitmap, element: @inspectedName
       @_drawCacheBitmapInvalid = false
 
       unless cacheAggressively
