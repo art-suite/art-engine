@@ -224,8 +224,24 @@ suite "Art.Engine.Elements.Filters.ShadowElement.inverted", ->
       new FillElement
       new ShadowElement inverted:true, compositeMode:"sourcein", location:point 10
 
-  drawTest2 "transform", ->
+  drawTest2 "rotate", ->
     new RectangleElement color:"red", size:point(80, 60), radius: 20,
       new FillElement
       new ShadowElement inverted:true, compositeMode:"sourcein", angle: Math.PI/12, location:point 10
+
+  drawTest2 "half scale", ->
+    new RectangleElement color:"red", size:point(80, 60), radius: 20,
+      new FillElement
+      new ShadowElement axis: .5, inverted:true, compositeMode:"sourcein", scale: 1/2, radius: 10, location: ps: .5
+
+  drawTest2 "half size", ->
+    new RectangleElement color:"red", size:point(80, 60), radius: 20,
+      new FillElement
+      new ShadowElement
+        axis: .5
+        inverted:true
+        compositeMode:"sourcein"
+        size: ps: .5
+        radius: 10
+        location: ps: .5
 

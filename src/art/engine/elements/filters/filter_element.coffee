@@ -102,8 +102,9 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
     baseDrawArea: (pending) ->
       {_currentSize, _radius} = @getState pending
 
-      @getElementSpaceSourceDrawArea pending
-      .grow _radius
+      baseDrawArea = @getElementSpaceSourceDrawArea pending
+      @filterSourceDrawAreaInElementSpace.unionInto baseDrawArea if @_inverted
+      baseDrawArea.grow _radius
 
   @getter
     requiresParentStagingBitmap: -> true
@@ -179,7 +180,14 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
         _currentSize.div filterSourceSize
 
     elementSpaceSourceDrawArea: (pending) ->
-      @getFilterSourceDrawArea(pending).mul @getFilterSourceSizeRatio pending
+      @getFilterSourceDrawArea pending
+      .mul @getFilterSourceSizeRatio pending
 
     filterSourceElement:      (pending) -> @_getFilterSourceElement pending
     filterSourceChildElement: (pending) -> @_getFilterSourceElement pending, true
+
+    filterSourceDrawAreaInElementSpace: (pending) ->
+      @getFilterSourceElement pending
+      .elementToElementMatrix @
+      .transformBoundingRect @getFilterSourceDrawArea pending
+
