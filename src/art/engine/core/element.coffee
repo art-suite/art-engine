@@ -970,9 +970,50 @@ define [
       unless cacheAggressively
         Element._drawCachingEnabled = _drawCachingEnabled
 
+    ###
+    TODO:
+
+      Support for "pixel-exact-caching":
+
+        If @_useStagingBitmap() is true, we should cache even if _cacheDraw is false.
+
+        NOTE: cached bitmaps are automatically released and recycled as needed, so over-caching
+          is only a question of overhead. In the case where we are going to generate
+          a staging bitmap ANYWAY, there IS no overhead - just keep the results around in case
+          we need it next time.
+
+        HOWEVER, this is currently a problem because _generateDrawCache always generates
+        a cache bitmap at a fixed scale - the devicePixelsPerPoint.
+
+        This can be very wrong. Example: With the Flashy Text-renderer in the Kimi-editor the rendered
+        resolution becomes rediculously low - 1/10th the desired resolution or so.
+
+        So, we need the option to always cache in such a way that is pixel-exact with would would
+        have been output without caching. If the the draw-matrix changes in anyway other than whole
+        pixel translations then the cache should be invalidated and redrawn.
+
+        We still want the current mode, which renders the draw-cache at the element's logical size
+        multipled by the devicePixelsPerPoint. This is faster, and often not a quality concern.
+
+        Additional options:
+          We may add another option which lets of add a "cache-at" scale factor to force lower or
+          higher resolution caching.
+
+          In the old C++ Art.Engine we had a global "fast" mode where caches were not invalidated under
+          any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
+          where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
+          followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
+          for for the current purpose-built kimi-editor, it isn't needed.
+
+
+    ###
     _generateDrawCacheIfNeeded: ->
       {_cacheDraw} = @
-      if !_cacheDraw
+      if _cacheDraw && @_useStagingBitmap() && @_elementDrawChangedThisFrame
+        @_elementDrawChangedThisFrame = false
+        @_generateDrawCache()
+        true
+      else if !_cacheDraw
         @_clearDrawCache() if @_drawCacheBitmap
         false
       else if _cacheDraw == 'locked' && @_drawCacheBitmap
