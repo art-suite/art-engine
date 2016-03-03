@@ -129,10 +129,9 @@ module.exports = class GlobalEpochCycle extends Epoch
     @processingCycle = false
 
   _processCycleExceptDraw: ->
+    @processEventEpoch()
     @processFluxEpoch() #if @getIdle() || currentSecond() < @_fluxOnIdleOkUntil
     @processIdleEpoch() if @getIdle()
-
-    @processEventEpoch()
 
     reactEpoch.updateGlobalCounts()
     @processReactEpoch()
