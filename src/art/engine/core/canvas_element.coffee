@@ -149,7 +149,7 @@ define [
     #   once before and once after it "moves"
     #   As such, if we are invalidating rectangular areas, we need to do it immediately with each call.
     #   Queuing a list of dirty descendants will only give us the final positions, not the before-positions.
-    _descendantNeedsRedrawing: (descendant) ->
+    _needsRedrawing: (descendant) ->
       super
       @queueDrawEpoch()
 

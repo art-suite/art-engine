@@ -14,6 +14,7 @@ define [
     peek
     present
     isFunction
+    select
   } = Foundation
 
   # stats =
@@ -494,6 +495,13 @@ define [
 
     ###
     _applyStateChanges: ->
+      # oldValues = {}
+      # newValues = {}
+      # for k, v of @_pendingState when !(k.match /^__/) && !plainObjectsDeepEq v, @[k]
+      #   oldValues[k] = @[k]
+      #   newValues[k] = v
+      # log "ElementBase#_applyStateChanges #{@inspectedName}", oldValues, newValues
+
       @_sizeChanged @_pendingState._currentSize, @_currentSize if @getCurrentSizeChanged()
       @queueEvent "parentChanged", oldParent:@_parent, parent:@_pendingState._parent if @getParentChanged()
       @queueEvent "ready"
@@ -609,7 +617,7 @@ define [
 
     # overridden by CanvasElement to trigger the actual redraw
     # overridden by any element with draw-caching to invalidate the cache so, on next redraw, the decendant is also redrawn
-    _descendantNeedsRedrawing: (descendant) ->
+    _needsRedrawing: (descendant) ->
 
     ############################
     # PUBLIC

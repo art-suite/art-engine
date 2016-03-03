@@ -64,10 +64,7 @@ define [
     #   the screen correctly.
     # Basically, if el has filterDecendants, then we may need to expand the redrawArea.
     informAncestorsElementNeedsRedrawing: (el) ->
-      p = el
-      while p = p.getParent()
-        p._descendantNeedsRedrawing el
-
+      el._needsRedrawing()
       null
 
     _applyStateChanges: (changingElements)->

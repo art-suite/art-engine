@@ -899,9 +899,11 @@ define [
 
     _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
-    _descendantNeedsRedrawing: (descendant) ->
+    _needsRedrawing: (descendant = @) ->
       @_clearDrawCache() if @_drawCacheBitmap
       @_elementDrawChangedThisFrame = true
+      if @getPendingVisible() && @getPendingOpacity() > 1/512
+        @getPendingParent()?._needsRedrawing descendant
 
     ###
 
@@ -1406,7 +1408,7 @@ define [
       matchFound = if usedFunction = isFunction pattern
         !!(functionResult = pattern @)
       else
-        @pathStringWithNames.match pattern
+        "#{@pathStringWithNames}:#{@objectId}".match pattern
 
       if matchFound
         if verbose
@@ -1459,6 +1461,9 @@ define [
 
       fullPathString: ->
         (p.classPathNameAndId for p in @elementPath).join '/'
+
+      childrenInspectedNames: ->
+        c.inspectedName for c in @_children
 
     childrenWithout = (children, child) ->
       children = children.slice()
