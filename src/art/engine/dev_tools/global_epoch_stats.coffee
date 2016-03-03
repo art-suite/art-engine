@@ -10,8 +10,6 @@ define [
   {globalEpochCycle} = GlobalEpochCycle
   {floor} = Math
 
-  DomConsole = Neptune.Art.DevTools?.DomConsole
-
   reactColor = color("gold")
   aimColor = color "#9c3"
 
@@ -166,7 +164,7 @@ define [
     log: ->
       return unless @stats.length > 0
 
-      !DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
+      !Neptune.Art.DevTools.DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
 
       bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
       {w, h} = size
