@@ -53,16 +53,9 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
   @getter
     cacheable: -> false
 
+  # returns childrenSize
   customLayoutChildrenFirstPass: (size) ->
-    if @getPendingSize().getChildrenRelative() && bitmap = @getPendingBitmap()
-      p = @getPendingBitmap().size
-
-      if (dPPP = @devicePixelsPerPoint) != 1
-        p = p.div dPPP
-      else
-        p
-    else
-      point0
+    @getPendingBitmap()?.pointSize || point0
 
   customLayoutChildrenSecondPass: (size) ->
 

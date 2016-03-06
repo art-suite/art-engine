@@ -672,6 +672,7 @@ define [
       requiresParentStagingBitmap: ->
         switch @_compositeMode
           when "alphamask", "target_alphamask", "destover", "sourcein", "inverse_alphamask" then true
+          when "targetAlphamask", "destOver", "sourceIn", "inverseAlphamask" then true
           when "add", "normal" then false
           else throw new Error "unknown compositeMode: #{@_compositeMode}"
 
@@ -1408,10 +1409,10 @@ define [
               # This way, if only children below a mask change, there is no need to propogate up.
               elementSpaceChildDrawArea.intersectInto elementSpaceDrawArea
 
-            when "sourcein", "target_alphamask", "inverse_alphamask"
+            when "sourcein", "target_alphamask", "inverse_alphamask", "sourceIn", "targetAlphamask", "inverseAlphamask"
               null # doesn't change drawArea
 
-            when "normal", "add", "destover", "replace"
+            when "normal", "add", "destover", "replace", "destOver"
               elementSpaceChildDrawArea.unionInto elementSpaceDrawArea
 
             else throw new Error "unknown compositeMode:#{child.compositeMode}"
