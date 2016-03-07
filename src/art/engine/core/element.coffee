@@ -173,6 +173,9 @@ define [
         else
           null
 
+    transformToParentSpace: (p) -> @_elementToParentMatrix.transform p
+    transformFromParentSpace: (p) -> @_elementToParentMatrix.inverseTransform p
+
     _clearRootElement: ->
       if oldRootElement = @_rootElement
         @_rootElement = null
@@ -290,12 +293,13 @@ define [
           p = state._currentPadding
           state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
 
-      currentLocation: (pending) ->
+      currentLocation: (pending, elementToParentMatrix) ->
           state = @getState pending
           s = state._currentSize
           a = state._axis
           p = state._currentPadding
-          state._elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
+          elementToParentMatrix ||= state._elementToParentMatrix
+          elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
 
       layout:
         getter: -> throw new Error "get layout is depricated"
