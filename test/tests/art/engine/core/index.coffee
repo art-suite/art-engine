@@ -3,12 +3,11 @@
 
 module.exports =
 Core                         = require './namespace'
+Core.Element                 = require './element'
 Core.Layout                  = require './layout'
 Core.ElementBase             = require './element_base'
-Core.ElementCacheDraw        = require './element_cache_draw'
 Core.ElementChildren         = require './element_children'
 Core.ElementDrawArea         = require './element_drawArea'
-Core.ElementDrawing          = require './element_drawing'
 Core.ElementFamilyEvents     = require './element_family_events'
 Core.ElementGeometry         = require './element_geometry'
 Core.ElementInstanceRegistry = require './element_instance_registry'
@@ -16,5 +15,5 @@ Core.ElementPointerEvents    = require './element_pointer_events'
 Core.ElementStateEpoch       = require './element_state_epoch'
 Core.StateEpochTestHelper    = require './state_epoch_test_helper'
 Core.finishLoad(
-  ["ElementBase","ElementCacheDraw","ElementChildren","ElementDrawArea","ElementDrawing","ElementFamilyEvents","ElementGeometry","ElementInstanceRegistry","ElementPointerEvents","ElementStateEpoch","StateEpochTestHelper"]
+  ["ElementBase","ElementChildren","ElementDrawArea","ElementFamilyEvents","ElementGeometry","ElementInstanceRegistry","ElementPointerEvents","ElementStateEpoch","StateEpochTestHelper"]
 )
