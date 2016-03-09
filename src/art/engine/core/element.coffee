@@ -1224,16 +1224,6 @@ define [
         @_pendingState._elementToParentMatrix = e2p
         @_elementChanged()
 
-      # e2p = @getPendingElementToParentMatrix()
-      # {tx, ty} = e2p
-
-      # newTx = tx + x - @getPendingCurrentLocationX()
-      # newTy = ty + y - @getPendingCurrentLocationY()
-
-      # if tx != newTx || ty != newTy
-      #   @_pendingState._elementToParentMatrix = e2p.withLocationXY newTx, newTy
-      #   @_elementChanged()
-
       @
 
     _sizeDirectlyEffectsDrawing: ->
