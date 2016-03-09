@@ -60,7 +60,7 @@ suite "Art.Engine.Core.Element.family events", ->
 
 
 suite "Art.Engine.Core.Element.family events.rootElementChanged", ->
-  test "basic", ->
+  test "basic - KNOWN FAILING", ->
     canvasElement = null
     new Promise (resolve) ->
       p = new Element name: "parent",
@@ -75,9 +75,19 @@ suite "Art.Engine.Core.Element.family events.rootElementChanged", ->
         canvasElement = new CanvasElement {}, p
 
     .then ({c, target, oldRootElement, p}) ->
+      knownFailingExplanation = """
+        KNOWN FAILURE:
+
+        The end-result is correct, but two events are
+        fired when only one should be. The first event
+        is incorrect.
+
+        SBD: I just haven't looked closely at this yet.
+        It should be solvable.
+        """
       assert.eq c.canvasElement, canvasElement
       assert.eq target, c
-      assert.eq oldRootElement, p, "oldRootElement should be 'parent', which a previous assertion checked - it was set to parent at the begining. The rootElementChanged event is geting fired twice when it should only fire once. The end result is basically correct."
+      assert.eq oldRootElement, p, knownFailingExplanation
 
   stateEpochTest "handler added later", ->
     p = new Element
