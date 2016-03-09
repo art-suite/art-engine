@@ -11,7 +11,7 @@ define [
   {point, matrix, Matrix, rect} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, TextElement, Rectangle} = Elements
+  {Element, TextElement, RectangleElement} = Elements
   {LinearLayout} = Layout
 
   testLogBitmap = (name, setup, tests...) ->

@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
 {inspect, log, min, isNumber} = Foundation
 {point, matrix, Matrix, Point, rect} = Atomic
-{Element, Rectangle, Fill, TextElement, Shapes} = Elements
+{Element, RectangleElement, Fill, TextElement, Shapes} = Elements
 {drawTest, drawTest2, drawTest3} =  Helper
 {pow} = Math
 
@@ -77,7 +77,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new TextElement
         color:"red", text:"Thing()", fontSize:48
-        new Rectangle color: "#0003"
+        new RectangleElement color: "#0003"
         new Fill()
 
   drawTest3 "layoutMode: textualBaseline",
@@ -88,7 +88,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         text:"Thing()\nThang"
         fontSize:48
         layoutMode: "textualBaseline"
-        new Rectangle color: "#0003"
+        new RectangleElement color: "#0003"
         new Fill()
 
   drawTest3 "layoutMode: textualBaseline with word-wrap",
@@ -102,7 +102,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         text:"I am a dog."
         fontSize:32
         layoutMode: "textualBaseline"
-        new Rectangle color: "#0003"
+        new RectangleElement color: "#0003"
         new Fill()
 
   drawTest3 "tight layoutMode",
@@ -110,7 +110,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new Element
         size: cs:1
-        new Rectangle color:"#ff7"
+        new RectangleElement color:"#ff7"
         new TextElement text:"test", layoutMode:"tight", fontSize:50
     test: (element) ->
       assert.eq element.currentSize, point 68, 29
@@ -119,8 +119,8 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     stagingBitmapsCreateShouldBe: 0
     element: ->
       new Element {},
-        new Rectangle size:point(40, 60), color:"red"
-        new Rectangle size:point(40, 60), location:point(40,0), color:"blue"
+        new RectangleElement size:point(40, 60), color:"red"
+        new RectangleElement size:point(40, 60), location:point(40,0), color:"blue"
         new TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
 
   drawTest3 "opacity",
@@ -147,7 +147,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new TextElement color:"red", fontSize:50, text:"test",
         new Fill
-        new Rectangle
+        new RectangleElement
           color:"#70F7"
           axis:point(.5)
           location: ps: .5
@@ -158,7 +158,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     stagingBitmapsCreateShouldBe: 2
     element: ->
       new TextElement color:"red", fontSize:50, text:"test",
-        new Rectangle
+        new RectangleElement
           color:"#F0F"
           axis: .5
           location: ps: .5
@@ -171,7 +171,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new Element
         size: w:100, hch:1
-        new Rectangle color: "#fcc"
+        new RectangleElement color: "#fcc"
         new TextElement color:"red", text:"That darn quick, brown fox. He always gets away!", fontSize:16, size: wpw:1
 
   drawTest3 "centered-aligned",
@@ -179,7 +179,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new Element
         size: w:100, hch:1
-        new Rectangle color: "#fcc"
+        new RectangleElement color: "#fcc"
         new TextElement color:"red", text:"That!", fontSize:16, align: "center", size: wpw:1
 
   drawTest3 "right-aligned",
@@ -187,7 +187,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     element: ->
       new Element
         size: w:100, hch:1
-        new Rectangle color: "#fcc"
+        new RectangleElement color: "#fcc"
         new TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
 
   test "flow two paragraphTexts", ->
@@ -330,7 +330,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                     align: align
                     padding: bottom: 9
                     leading: 1.1
-                    new Rectangle color: "#0002"
+                    new RectangleElement color: "#0002"
                     new Fill
 
               test: (element) -> layoutTester element.children[0], result
@@ -366,7 +366,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   size: ww:.5, hh:1
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
-                  new Rectangle color: "#0002"
+                  new RectangleElement color: "#0002"
                   new Fill()
               test: (element) -> layoutFragmentTester element, result
 
@@ -388,7 +388,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   size: ww:1, hch:1
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
-                  new Rectangle color: "#0002"
+                  new RectangleElement color: "#0002"
                   new Fill()
               test: (element) -> layoutFragmentTester element, result
 
@@ -410,7 +410,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                 size: cs:1
                 align: value
                 color:"red", text:"Thingy", fontSize:16
-                new Rectangle color: "#0002"
+                new RectangleElement color: "#0002"
                 new Fill()
             test: (element) -> layoutFragmentTester element, result
 
@@ -465,6 +465,6 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                 size: ps: 1
                 align: value
                 color:"red", text:"(Q)", fontSize:32
-                new Rectangle color: "#0002"
+                new RectangleElement color: "#0002"
                 new Fill()
             test: (element) -> layoutFragmentTester element, result

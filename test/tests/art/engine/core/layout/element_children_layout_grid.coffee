@@ -11,7 +11,7 @@ define [
   {point, matrix, Matrix} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, TextElement, Rectangle} = Elements
+  {Element, TextElement, RectangleElement} = Elements
   {LinearLayout} = Layout
 
   testLogBitmap = (name, setup) ->
@@ -30,9 +30,9 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: "abc"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize.rounded for c in root.children), [point(33, 100), point(33, 100), point(33, 100)]
@@ -43,9 +43,9 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: "a b c"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(20, 100), point(20, 100), point(20, 100)]
@@ -56,9 +56,9 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: " a  b  c "
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize.rounded for c in root.children), [point(11, 100), point(11, 100), point(11, 100)]
@@ -69,11 +69,11 @@ define [
           size: w:280, h:100
           childrenLayout: "row"
           childrenGrid: " abc"
-          new Rectangle inFlow: false, color: "#ccc"
+          new RectangleElement inFlow: false, color: "#ccc"
           children = [
-            new Rectangle color:"red"    , axis: .5, location: {yh:.5}, size: hh:1, w:20
-            new Rectangle color:"green"  , axis: .5, location: {yh:.5}, size: hh:1, w:20
-            new Rectangle color:"blue"   , axis: .5, location: {yh:.5}, size: hh:1, w:20
+            new RectangleElement color:"red"    , axis: .5, location: {yh:.5}, size: hh:1, w:20
+            new RectangleElement color:"green"  , axis: .5, location: {yh:.5}, size: hh:1, w:20
+            new RectangleElement color:"blue"   , axis: .5, location: {yh:.5}, size: hh:1, w:20
           ]
 
         test: ->
@@ -88,17 +88,17 @@ define [
           size: w:280, h:100
           childrenLayout: "row"
           childrenGrid: "dAeBfCg" # instead of " A B C ", d, e, f, and g are inserted for visulization purposes
-          new Rectangle inFlow: false, color: "#ccc"
+          new RectangleElement inFlow: false, color: "#ccc"
           children = [
-            new Rectangle color:"red"    , axis: .5, location: {ps:.5}, size: hh:1, w:20
-            new Rectangle color:"green"  , axis: .5, location: {ps:.5}, size: hh:1, w:20
-            new Rectangle color:"blue"   , axis: .5, location: {ps:.5}, size: hh:1, w:20
+            new RectangleElement color:"red"    , axis: .5, location: {ps:.5}, size: hh:1, w:20
+            new RectangleElement color:"green"  , axis: .5, location: {ps:.5}, size: hh:1, w:20
+            new RectangleElement color:"blue"   , axis: .5, location: {ps:.5}, size: hh:1, w:20
           ]
           # d, e, f, and g provided below to help visualize what's going on
-          new Rectangle color:"#ddd"
-          new Rectangle color:"#ddd"
-          new Rectangle color:"#ddd"
-          new Rectangle color:"#ddd"
+          new RectangleElement color:"#ddd"
+          new RectangleElement color:"#ddd"
+          new RectangleElement color:"#ddd"
+          new RectangleElement color:"#ddd"
 
         test: ->
           assert.eq locations = (c.currentLocation.rounded for c in children), [
@@ -112,9 +112,9 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: "abbbc"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq (c.currentSize for c in root.children), [point(20, 100), point(60, 100), point(20, 100)]
@@ -125,8 +125,8 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: " AaaAaaAaaAaa BbbBbbBbbBbb "
-          new Rectangle color:"red"
-          new Rectangle color:"green"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
 
         test: ->
           assert.eq (c.currentSize.rounded for c in root.children), [point(44, 100), point(44, 100)]
@@ -137,9 +137,9 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: "cbbba"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq (c.color.toString() for c in root.children), ["#ff0000", "#008000", "#0000ff"]
@@ -149,8 +149,8 @@ define [
           size: 100
           childrenLayout: "row"
           childrenGrid: "abc"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
 
         test: ->
           assert.eq sizes = (c.currentSize.rounded for c in root.children), [point(33, 100), point(33, 100)]
@@ -162,7 +162,7 @@ define [
           childrenLayout: "row"
           childrenGrid: " a "
 
-          new Rectangle
+          new RectangleElement
             color:"red"
             size: ww:2, hh:.5
             axis: .5
@@ -177,7 +177,7 @@ define [
           size: w:30, h:20
           childrenLayout: "row"
           childrenGrid: "  a  "
-          new Rectangle color:"red", size: hh:1, wh:1
+          new RectangleElement color:"red", size: hh:1, wh:1
 
         test: ->
           assert.eq locations = (c.currentLocation for c in root.children), [point(12, 0)]
@@ -188,7 +188,7 @@ define [
           size: w:30, h:20
           childrenLayout: "row"
           childrenGrid: "  a  "
-          new Rectangle color:"red", size: hh:1, ww:1
+          new RectangleElement color:"red", size: hh:1, ww:1
 
         test: ->
           assert.eq locations = (c.currentLocation for c in root.children), [point(12, 0)]
@@ -201,9 +201,9 @@ define [
           size: 100
           childrenLayout: "column"
           childrenGrid: "abc"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize.rounded for c in root.children), [point(100, 33), point(100, 33), point(100, 33)]
@@ -214,9 +214,9 @@ define [
           size: 100
           childrenLayout: "column"
           childrenGrid: "a b c"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(100, 20), point(100, 20), point(100, 20)]
@@ -227,9 +227,9 @@ define [
           size: 100
           childrenLayout: "column"
           childrenGrid: " a  b  c "
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq sizes = (c.currentSize.rounded for c in root.children), [point(100, 11), point(100, 11), point(100, 11)]

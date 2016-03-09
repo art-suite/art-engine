@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
-{Fill, Blur, Rectangle, Element} = Elements
+{Fill, Blur, RectangleElement, Element} = Elements
 
 {stateEpochTest} = StateEpochTestHelper
 
@@ -17,20 +17,20 @@ testArtStructure = ->
   new Element
     location: x:123, y:456
     size:     w: 80, h:60
-    new Rectangle color:"orange"
+    new RectangleElement color:"orange"
     new Element
       angle:-Math.PI/6
       location: xpw:.25, yph:.5
       size:     wpw:.5,  hph:.25
       name: "child"
-      new Rectangle color: "#700"
+      new RectangleElement color: "#700"
 
 suite "Art.Engine.Core.Element.drawing", ->
     stateEpochTest "drawing rectangles", (done)->
       o = new Element
         size: 4
-        new Rectangle color: "#000", size: 4
-        new Rectangle color: "#fff", location: 1, size: 3
+        new RectangleElement color: "#000", size: 4
+        new RectangleElement color: "#fff", location: 1, size: 3
 
       ->
         b = new Canvas.Bitmap o.currentSize
@@ -45,8 +45,8 @@ suite "Art.Engine.Core.Element.drawing", ->
 
     stateEpochTest "unconstrained drawing", ->
       o = new Element size: 2, location: 1,
-        new Rectangle size: 2, color: "#070"
-        new Rectangle size: 10, location: 1, color: "#700"
+        new RectangleElement size: 2, color: "#070"
+        new RectangleElement size: 10, location: 1, color: "#700"
 
       ->
         b = new Canvas.Bitmap 4
@@ -63,9 +63,9 @@ suite "Art.Engine.Core.Element.drawing", ->
 
     stateEpochTest "aligned rectangle mask drawing", ->
       o = new Element size: 2, location: 1,
-        new Rectangle size:2, color: "#070"
-        new Rectangle size:10, location: 1, color: "#700"
-        new Rectangle size:2, isMask:true
+        new RectangleElement size:2, color: "#070"
+        new RectangleElement size:10, location: 1, color: "#700"
+        new RectangleElement size:2, isMask:true
 
       ->
         b = new Canvas.Bitmap 4
@@ -83,19 +83,19 @@ suite "Art.Engine.Core.Element.drawing", ->
     test "rotated rectangle drawing", ->
       o = new Element
         size: 6
-        new Rectangle color: "#ff0"
+        new RectangleElement color: "#ff0"
         el = new Element
           location: ps: .5
           size:     ps: 2/3
           axis: .5
           angle: Math.PI/4
           layoutPixelSnap: false
-          new Rectangle color: "#000"
-          new Rectangle
+          new RectangleElement color: "#000"
+          new RectangleElement
             color: "#700"
             location: ps: .5
             size:     ps: .75
-          new Rectangle isMask: true
+          new RectangleElement isMask: true
 
       o.toBitmap area: "logicalArea"
       .then ({bitmap}) ->
@@ -184,7 +184,7 @@ suite "Art.Engine.Core.Element.drawing", ->
 
     test "toBitmap with out of bounds child and backgroundColor", ->
       o = testArtStructure()
-      o.addChild new Rectangle
+      o.addChild new RectangleElement
         color:  "#700"
         location: xpw:-.25, yph:.75
         size: ps: .5
@@ -216,8 +216,8 @@ suite "Art.Engine.Core.Element.drawing", ->
               location: ps: .5
               size: w:40, h:15
               padding: -5
-              new Rectangle color: "#f00"
-              new Rectangle color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
+              new RectangleElement color: "#f00"
+              new RectangleElement color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
 
           child.toBitmap (merge v, area:k, backgroundColor:"#ddd")
           .then ({bitmap, elementToBitmapMatrix})->
@@ -234,7 +234,7 @@ suite "Art.Engine.Core.Element.drawing", ->
         test "toBitmap mode: #{inspect mode}", ->
           element = new Element
             size: w: 200, h:100
-            new Rectangle color: "orange"
+            new RectangleElement color: "orange"
 
           element.toBitmap size:100, mode: mode, backgroundColor:"#ddd"
           .then ({bitmap, elementToBitmapMatrix})->

@@ -11,7 +11,7 @@ define [
   {point, matrix, Matrix} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, TextElement, Rectangle} = Elements
+  {Element, TextElement, RectangleElement} = Elements
   {LinearLayout} = Layout
 
   testLogBitmap = (name, setup, tests...) ->
@@ -28,9 +28,9 @@ define [
       root: root = new Element
         size: 100
         childrenLayout: "flow"
-        new Rectangle color:"red",   size: 30
-        new Rectangle color:"green", size: 50
-        new Rectangle color:"blue",  size: 40
+        new RectangleElement color:"red",   size: 30
+        new RectangleElement color:"green", size: 50
+        new RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50), point(40)]
@@ -56,9 +56,9 @@ define [
               size: 100
               childrenLayout: "flow"
               childrenAlignment: alignment
-              new Rectangle color:"red",   size: 30
-              new Rectangle color:"green", size: 50
-              new Rectangle color:"blue",  size: 40
+              new RectangleElement color:"red",   size: 30
+              new RectangleElement color:"green", size: 50
+              new RectangleElement color:"blue",  size: 40
 
             test: -> assert.eq locations, (c.currentLocation for c in root.children)
 
@@ -67,9 +67,9 @@ define [
     #     size: 100
     #     childrenLayout: "flow"
     #     childrenAlignment: "right"
-    #     new Rectangle color:"red", size: 30
-    #     new Rectangle color:"green", size: 50
-    #     new Rectangle color:"blue", size: 40
+    #     new RectangleElement color:"red", size: 30
+    #     new RectangleElement color:"green", size: 50
+    #     new RectangleElement color:"blue", size: 40
 
     #   test: ->
     #     assert.eq (c.currentLocation for c in root.children), [point(100-50-30, 0), point(100-50, 0), point(100-40, 50)]
@@ -79,9 +79,9 @@ define [
     #     size: 100
     #     childrenLayout: "flow"
     #     childrenAlignment: "centerLeft"
-    #     new Rectangle color:"red", size: 30
-    #     new Rectangle color:"green", size: 50
-    #     new Rectangle color:"blue", size: 40
+    #     new RectangleElement color:"red", size: 30
+    #     new RectangleElement color:"green", size: 50
+    #     new RectangleElement color:"blue", size: 40
 
     # test: ->
     #     assert.eq (c.currentLocation for c in root.children), [
@@ -95,9 +95,9 @@ define [
     #     size: 100
     #     childrenLayout: "flow"
     #     childrenAlignment: "centerCenter"
-    #     new Rectangle color:"red", size: 30
-    #     new Rectangle color:"green", size: 50
-    #     new Rectangle color:"blue", size: 40
+    #     new RectangleElement color:"red", size: 30
+    #     new RectangleElement color:"green", size: 50
+    #     new RectangleElement color:"blue", size: 40
 
     #   test: ->
     #     assert.eq (c.currentLocation for c in root.children), [
@@ -111,9 +111,9 @@ define [
     #     size: 100
     #     childrenLayout: "flow"
     #     childrenAlignment: "bottomLeft"
-    #     new Rectangle color:"red", size: 30
-    #     new Rectangle color:"green", size: 50
-    #     new Rectangle color:"blue", size: 40
+    #     new RectangleElement color:"red", size: 30
+    #     new RectangleElement color:"green", size: 50
+    #     new RectangleElement color:"blue", size: 40
 
     #   test: ->
     #     assert.eq (c.currentLocation for c in root.children), [
@@ -128,9 +128,9 @@ define [
     #     size: 100
     #     childrenLayout: "flow"
     #     childrenAlignment: "center"
-    #     new Rectangle color:"red", size: 30
-    #     new Rectangle color:"green", size: 50
-    #     new Rectangle color:"blue", size: 40
+    #     new RectangleElement color:"red", size: 30
+    #     new RectangleElement color:"green", size: 50
+    #     new RectangleElement color:"blue", size: 40
 
     #   test: ->
     #     assert.eq (c.currentLocation for c in root.children), [point(10, 0), point(40, 0), point(30, 50)]
@@ -173,7 +173,7 @@ define [
           hch: 1
         childrenLayout: "flow"
         c1 = new TextElement text: "Hi"
-        c2 = new Rectangle color: '#ccc', size: wpw:1, h:10
+        c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
         c3 = new TextElement text: "world."
 
       # test: ->
@@ -189,7 +189,7 @@ define [
         childrenLayout: "flow"
         childrenAlignment: "right"
         c1 = new TextElement text: "Hi"
-        c2 = new Rectangle color: '#ccc', size: wpw:1, h:10
+        c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
         c3 = new TextElement text: "world."
 
       test: ->
@@ -205,8 +205,8 @@ define [
           w: (ps, cs) -> min 50, cs.x
           hch: 1
         childrenLayout: "flow"
-        c1 = new Rectangle color: '#ccc'  # has size:point0 for flow because it's size is parent-circular
-        c2 = new Rectangle color: '#ccc', inFlow: false
+        c1 = new RectangleElement color: '#ccc'  # has size:point0 for flow because it's size is parent-circular
+        c2 = new RectangleElement color: '#ccc', inFlow: false
         new TextElement text: "Hi"
         new TextElement text: "world."
 
@@ -222,7 +222,7 @@ define [
       root = new Element
         size: 50
         childrenLayout: "flow"
-        c1 = new Rectangle color: '#ccc', inFlow: false
+        c1 = new RectangleElement color: '#ccc', inFlow: false
         new TextElement text: "Hi"
         new TextElement text: "world."
 
@@ -236,7 +236,7 @@ define [
       root = new Element
         size: 50
         childrenLayout: "flow"
-        c1 = new Rectangle color: '#ccc', size: ps:.5
+        c1 = new RectangleElement color: '#ccc', size: ps:.5
         new TextElement text: "Hi"
         new TextElement text: "world."
 
@@ -252,9 +252,9 @@ define [
       root = new Element
         size: hch:1, w:50
         childrenLayout: "flow"
-        new Rectangle color: '#fcc', size: wpw:1, h:10
-        new Rectangle color: '#cfc', size: wpw:1, h:10
-        new Rectangle color: '#ccf', size: wpw:1, h:10
+        new RectangleElement color: '#fcc', size: wpw:1, h:10
+        new RectangleElement color: '#cfc', size: wpw:1, h:10
+        new RectangleElement color: '#ccf', size: wpw:1, h:10
 
       root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
       .then (bitmap) ->
@@ -265,9 +265,9 @@ define [
       root = new Element
         size: wcw:1, h:50
         childrenLayout: "flow"
-        new Rectangle color: '#fcc', size: hph:1, w:10
-        new Rectangle color: '#cfc', size: hph:1, w:10
-        new Rectangle color: '#ccf', size: hph:1, w:10
+        new RectangleElement color: '#fcc', size: hph:1, w:10
+        new RectangleElement color: '#cfc', size: hph:1, w:10
+        new RectangleElement color: '#ccf', size: hph:1, w:10
 
       root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
       .then (bitmap) ->
@@ -277,15 +277,15 @@ define [
     testLogBitmap "flow with child ss:1 and child ww:1, h:10", ->
       root:newRoot = new Element
         size: cs:1
-        new Rectangle color: '#eee', size: ps:1
+        new RectangleElement color: '#eee', size: ps:1
 
         root = new Element
           size: cs:1
           padding: 10
           childrenLayout: "flow"
-          c1 = new Rectangle color: '#ccc'
+          c1 = new RectangleElement color: '#ccc'
           new TextElement text: "Hi"
-          c2 = new Rectangle color: '#777', size: wpw:1, h:10
+          c2 = new RectangleElement color: '#777', size: wpw:1, h:10
           new TextElement text: "world."
 
       test: ->
@@ -300,9 +300,9 @@ define [
           padding: 10
           childrenLayout: "flow"
           childrenAlignment: "right"
-          c1 = new Rectangle name:"inflowfalse", color: '#ccc', inFlow: false
+          c1 = new RectangleElement name:"inflowfalse", color: '#ccc', inFlow: false
           new TextElement text: "Hi"
-          c2 = new Rectangle name:"h-line", color: '#777', size: wpw:1, h:10
+          c2 = new RectangleElement name:"h-line", color: '#777', size: wpw:1, h:10
           new TextElement text: "world."
 
       test: ->
@@ -333,7 +333,7 @@ define [
         child = new Element
           size: w:125, hch:1
 
-          grandchild = new Rectangle
+          grandchild = new RectangleElement
             size: w:125, h:50
             color: "red"
 

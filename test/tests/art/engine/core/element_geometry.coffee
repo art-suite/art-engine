@@ -6,7 +6,7 @@ Engine = require 'art-engine'
 {point, matrix, Point, Matrix} = Atomic
 {point1} = Point
 {StateEpoch} = Engine.Core
-{Element, Rectangle} = Engine
+{Element, RectangleElement} = Engine
 {stateEpoch} = StateEpoch
 
 stateEpochTest = (name, setup) ->
@@ -137,8 +137,8 @@ suite "Art.Engine.Core.Element.geometry.angle", ->
     root = new Element
       size: 200
       clip: true
-      new Rectangle color: "yellow"
-      el = new Rectangle
+      new RectangleElement color: "yellow"
+      el = new RectangleElement
         location: ps: .5
         size: w:100, h:50
         color: "red"
@@ -154,8 +154,8 @@ suite "Art.Engine.Core.Element.geometry.angle", ->
     root = new Element
       size: 200
       clip: true
-      new Rectangle color: "yellow"
-      el = new Rectangle
+      new RectangleElement color: "yellow"
+      el = new RectangleElement
         location: ps: .5
         size: w:100, h:50
         color: "red"

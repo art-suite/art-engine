@@ -11,7 +11,7 @@ define [
   {point, matrix} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, Rectangle, TextElement} = Elements
+  {Element, RectangleElement, TextElement} = Elements
 
 
   suite "Art.Engine.Core.layout.margin", ->
@@ -24,7 +24,7 @@ define [
       parent = new Element
         size:100
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: 30
           color: "red"
           margin: 10
@@ -38,11 +38,11 @@ define [
       parent = new Element
         size:100
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: s = 30
           color: "red"
           margin: m = 10
-        c2 = new Rectangle
+        c2 = new RectangleElement
           size: s
           color: "blue"
           margin: m
@@ -56,11 +56,11 @@ define [
       parent = new Element
         size:100
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: s = 30
           color: "red"
           margin: m1 = 10
-        c2 = new Rectangle
+        c2 = new RectangleElement
           size: s
           color: "blue"
           margin: m2 = 15
@@ -74,11 +74,11 @@ define [
       parent = new Element
         size: point 80, 120
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: s = 45
           color: "red"
           margin: m = 10
-        c2 = new Rectangle
+        c2 = new RectangleElement
           size: s
           color: "blue"
           margin: m
@@ -92,15 +92,15 @@ define [
       parent = new Element
         size: point 85, 120
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: s = 35
           color: "red"
           margin: m1 = 10
-        c2 = new Rectangle
+        c2 = new RectangleElement
           size: s
           color: "blue"
           margin: m2 = 15
-        c3 = new Rectangle
+        c3 = new RectangleElement
           size: s
           color: "green"
           margin: m3 = 20
@@ -116,14 +116,14 @@ define [
       parent = new Element
         size: point 85, 120
         childrenLayout: "flow"
-        c1 = new Rectangle
+        c1 = new RectangleElement
           size: s = ww:1, h:20
           color: "red"
-        c2 = new Rectangle
+        c2 = new RectangleElement
           size: s
           color: "blue"
           margin: top: 10, bottom: 20
-        c3 = new Rectangle
+        c3 = new RectangleElement
           size: s
           color: "green"
 

@@ -7,7 +7,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
-{Rectangle, Bitmap} = Engine.Elements
+{RectangleElement, Bitmap} = Engine.Elements
 
 imageDataEqual = (a, b) ->
   a = a.data
@@ -41,12 +41,12 @@ doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement, d
 newPropChangeTestElements = (cacheMode = 'always')->
   new Element
     size: point 100, 50
-    new Rectangle colors: ["#000", "#fff", "#000"]
+    new RectangleElement colors: ["#000", "#fff", "#000"]
     new Element
       key: "testElement"
       cacheDraw: cacheMode
-      new Rectangle color: "#f00"
-      new Rectangle key: "testChild", color: "#ff0", padding: 10
+      new RectangleElement color: "#f00"
+      new RectangleElement key: "testChild", color: "#ff0", padding: 10
 
 propChangeTest = (resetsCache, propName, propValue, cacheMode = 'always')->
   testName = "#{inspect cacheMode}, changing #{propName} " + if resetsCache
@@ -65,7 +65,7 @@ Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->
     el = new Element
       cacheDraw: 'always'
       size: point 100, 50
-      new Rectangle color:"red"
+      new RectangleElement color:"red"
 
     el.toBitmap()
     .then (rendered) ->
@@ -75,7 +75,7 @@ Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->
     el = new Element
       cacheDraw: 'auto'
       size: point 100, 50
-      rectangle = new Rectangle color:"red"
+      rectangle = new RectangleElement color:"red"
 
     el.toBitmap {}
     .then ->
@@ -89,7 +89,7 @@ Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->
       assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, 0, 0
 
   test "rectangle does not cache", ->
-    el = new Rectangle
+    el = new RectangleElement
       cacheDraw: 'always'
       size: point 100, 50
 
@@ -116,11 +116,11 @@ Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->
     el = new Element
       cacheDraw: 'always'
       size: point 100, 50
-      new Rectangle
+      new RectangleElement
         color: "#f70"
         size: ps: 1, plus: 10
         location: -5
-      new Rectangle color:"red"
+      new RectangleElement color:"red"
 
     el.toBitmap {}
     .then (rendered) ->

@@ -11,7 +11,7 @@ define [
   {point, matrix, rect} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, Rectangle, TextElement} = Elements
+  {Element, RectangleElement, TextElement} = Elements
 
 
   suite "Art.Engine.Core.layout.padding.forms", ->
@@ -169,7 +169,7 @@ define [
         size: 100
         padding: 10
         name: "parent"
-        new Rectangle color: "red"
+        new RectangleElement color: "red"
 
       parent.toBitmap area: "logicalArea"
       .then ({bitmap})->
@@ -181,8 +181,8 @@ define [
         size: 100
         padding: 10
         name: "parent"
-        r1 = new Rectangle color: "blue", padding:-10
-        r2 = new Rectangle color: "red"
+        r1 = new RectangleElement color: "blue", padding:-10
+        r2 = new RectangleElement color: "red"
 
       parent.toBitmap area: "logicalArea"
       .then ({bitmap})->
@@ -196,8 +196,8 @@ define [
         padding: 10
         childrenLayout: "flow"
         name: "parent"
-        r1 = new Rectangle color: "blue", size:45
-        r2 = new Rectangle color: "red", size:45
+        r1 = new RectangleElement color: "blue", size:45
+        r2 = new RectangleElement color: "red", size:45
 
       parent.toBitmap area: "logicalArea"
       .then (bitmap)->
@@ -211,7 +211,7 @@ define [
         padding: 10
         childrenLayout: "flow"
         name: "parent"
-        r1 = new Rectangle color: "blue", size: hph:1, w:45
+        r1 = new RectangleElement color: "blue", size: hph:1, w:45
 
       parent.toBitmap area: "logicalArea"
       .then (bitmap)->
@@ -290,10 +290,10 @@ define [
     test "parent with 4-part padding", ->
       grandParent = new Element
         size: 100
-        new Rectangle color: "#ff7"
+        new RectangleElement color: "#ff7"
         parent = new Element
           padding: left: 5, top: 10, right: 15, bottom: 20
-          child = new Rectangle color: "#0007"
+          child = new RectangleElement color: "#0007"
 
       grandParent.toBitmap area: "logicalArea"
       .then (bitmap)->
@@ -307,12 +307,12 @@ define [
       grandParent = new Element
         size: cs: 1
         name: "gp"
-        new Rectangle inFlow: false, color: "#ff7"
+        new RectangleElement inFlow: false, color: "#ff7"
         parent = new Element
           name: "p"
           padding: left: 40, top: 30, right: 20, bottom: 10
           size: cs: 1
-          child = new Rectangle color: "#0007", name: "c", size: 40
+          child = new RectangleElement color: "#0007", name: "c", size: 40
 
       grandParent.toBitmap area: "logicalArea"
       .then (bitmap)->

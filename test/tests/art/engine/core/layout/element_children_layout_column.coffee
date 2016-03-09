@@ -11,7 +11,7 @@ define [
   {point, matrix, Matrix} = Atomic
   {stateEpochTest} = StateEpochTestHelper
 
-  {Element, TextElement, Rectangle} = Elements
+  {Element, TextElement, RectangleElement} = Elements
   {LinearLayout} = Layout
 
   testLogBitmap = (name, setup) ->
@@ -30,7 +30,7 @@ define [
           size: cs:1
           childrenLayout: "column"
           c1 = new TextElement text: "Hi"
-          c2 = new Rectangle color: '#ccc', size: wpw:1, h:10
+          c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
           c3 = new TextElement text: "world."
         test: ->
           assert.eq (c.currentSize.rounded for c in root.children), [point(16, 12), point(41, 10), point(41, 12)]
@@ -41,7 +41,7 @@ define [
           size: cs: 1, max: w: 100
           childrenLayout: "column"
           new TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
-          new Rectangle color: 'orange', size: wpw:1, h:10
+          new RectangleElement color: 'orange', size: wpw:1, h:10
           new TextElement text: "!", size: cs: 1, max: ww: 1
 
         test: ->
@@ -55,7 +55,7 @@ define [
           childrenLayout: "column"
           childrenAlignment: "right"
           new TextElement align: "right", text: "The quick brown fox...", size: cs: 1, max: ww: 1
-          new Rectangle color: 'orange', size: wpw:.75, h:10
+          new RectangleElement color: 'orange', size: wpw:.75, h:10
           new TextElement text: "!", size: cs: 1, max: ww: 1
 
         test: ->
@@ -69,7 +69,7 @@ define [
           childrenLayout: "column"
           childrenAlignment: "center"
           new TextElement align: "center", text: "The quick brown fox...", size: cs: 1, max: ww: 1
-          new Rectangle color: 'orange', size: wpw:.75, h:10
+          new RectangleElement color: 'orange', size: wpw:.75, h:10
           new TextElement text: "!", size: cs: 1, max: ww: 1
 
         test: ->
@@ -82,7 +82,7 @@ define [
           size: cs: 1, max: w: 100
           childrenLayout: "flow"
           new TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
-          new Rectangle color: '#ccc', size: wpw:1, h:10
+          new RectangleElement color: '#ccc', size: wpw:1, h:10
           new TextElement text: "word", size: cs: 1, max: ww: 1
 
         test: ->
@@ -94,9 +94,9 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color: "red"
-          new Rectangle color: "gray", size: wpw:1, h:10
-          new Rectangle color: "blue"
+          new RectangleElement color: "red"
+          new RectangleElement color: "gray", size: wpw:1, h:10
+          new RectangleElement color: "blue"
         test: ->
           assert.eq (c.currentSize     for c in root.children), [point(100, 45), point(100, 10), point(100, 45)]
           assert.eq (c.currentLocation for c in root.children), [point(  0,  0), point(  0, 45), point(  0, 55)]
@@ -108,8 +108,8 @@ define [
             size: wcw:1
             childrenLayout: "row"
 
-            new Rectangle color: "blue", size: wh:1, hh:1
-            new Rectangle color: "red",  size: wh:1, hh:1
+            new RectangleElement color: "blue", size: wh:1, hh:1
+            new RectangleElement color: "red",  size: wh:1, hh:1
         test: ->
           assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point(25, 0)]
           assert.eq (c.currentSize     for c in root.children), [point(25, 25), point(25, 25)]
@@ -129,8 +129,8 @@ define [
           size: w:100, hch:1
           padding: h:10
           childrenLayout: "column"
-          new Rectangle color: "#0002", inFlow: false
-          child = new Rectangle
+          new RectangleElement color: "#0002", inFlow: false
+          child = new RectangleElement
             color:"red"
             size: ww: 1/2, h:50
             location: xw: .5
@@ -145,8 +145,8 @@ define [
           size: w:100, hch:1
           padding: v:10
           childrenLayout: "column"
-          new Rectangle color: "#0002", inFlow: false
-          child = new Rectangle
+          new RectangleElement color: "#0002", inFlow: false
+          child = new RectangleElement
             color:"red"
             size: ww: 1/2, h:50
             location: xw: .5
@@ -162,9 +162,9 @@ define [
         root: root = new Element
           size: w:100, hch:1
           childrenLayout: "column"
-          new Rectangle color:"red",   size: 30
-          new Rectangle color:"green", size: 50
-          new Rectangle color:"blue",  size: 40
+          new RectangleElement color:"red",   size: 30
+          new RectangleElement color:"green", size: 50
+          new RectangleElement color:"blue",  size: 40
 
         test: ->
           assert.eq root.currentSize, point 100, 120
@@ -174,9 +174,9 @@ define [
         root: root = new Element
           size: w: 100, hch:1
           childrenLayout: "column"
-          new Rectangle color:"red",   size: 30
-          new Rectangle color:"green", size: hph:1, w:50
-          new Rectangle color:"blue",  size: 40
+          new RectangleElement color:"red",   size: 30
+          new RectangleElement color:"green", size: hph:1, w:50
+          new RectangleElement color:"blue",  size: 40
 
         test: ->
           assert.eq root.currentSize, point 100, 70
@@ -187,9 +187,9 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red",   size: 30
-          new Rectangle color:"green", size: 50
-          new Rectangle color:"blue",  size: 40
+          new RectangleElement color:"red",   size: 30
+          new RectangleElement color:"green", size: 50
+          new RectangleElement color:"blue",  size: 40
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50), point(40)]
@@ -200,9 +200,9 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red",   size: 30
-          new Rectangle color:"green", size: hph:1, w:50
-          new Rectangle color:"blue",  size: 40
+          new RectangleElement color:"red",   size: 30
+          new RectangleElement color:"green", size: hph:1, w:50
+          new RectangleElement color:"blue",  size: 40
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50, 30), point(40)]
@@ -214,11 +214,11 @@ define [
           size: 100
           childrenLayout: "column"
           new Element {},
-            new Rectangle color: "yellow"
+            new RectangleElement color: "yellow"
 
           new Element
             size: ww:1, hw: .4
-            new Rectangle color: "#f007"
+            new RectangleElement color: "#f007"
 
         test: ->
           assert.eq (c.currentSize for c in root.children), [point(100, 60), point(100, 40)]
@@ -230,8 +230,8 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red",   size: hph:1, w:30
-          new Rectangle color:"green", size: hph:1, w:50
+          new RectangleElement color:"red",   size: hph:1, w:30
+          new RectangleElement color:"green", size: hph:1, w:50
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30, 50), point(50, 50)]
@@ -243,9 +243,9 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red"
-          new Rectangle color:"green"
-          new Rectangle color:"blue"
+          new RectangleElement color:"red"
+          new RectangleElement color:"green"
+          new RectangleElement color:"blue"
 
         test: ->
           assert.eq (c.currentSize     for c in root.children), [point(100, 100/3), point(100, 100/3), point(100, 100/3)]
@@ -258,7 +258,7 @@ define [
             childrenLayout: "column"
             new Element
               size: hh:1, wcw:1
-              new Rectangle color:"black", size: hh:1, w:30
+              new RectangleElement color:"black", size: hh:1, w:30
 
         test: ->
           assert.eq root.currentSize, point 30, 100
@@ -267,8 +267,8 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red",   size: hph:1.5, w:30
-          new Rectangle color:"green", size: hph:.5, w:50
+          new RectangleElement color:"red",   size: hph:1.5, w:30
+          new RectangleElement color:"green", size: hph:.5, w:50
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30, 75), point(50, 12.5)]
@@ -279,8 +279,8 @@ define [
         root: root = new Element
           size: 100
           childrenLayout: "column"
-          new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-          new Rectangle color:"green", size: hph:1, w:50
+          new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+          new RectangleElement color:"green", size: hph:1, w:50
 
         test: ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30, 60), point(50, 40)]
@@ -294,19 +294,19 @@ define [
       skipKnownFailingTest "order of variable children when one has a minimum height shouldn't matter", ->
         root: root = new Element
           size: w: 200, h: 100
-          new Rectangle color: "#ddd"
+          new RectangleElement color: "#ddd"
           root1 = new Element
             size: 100
             childrenLayout: "column"
-            new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-            new Rectangle color:"green", size: hph:1, w:50
+            new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+            new RectangleElement color:"green", size: hph:1, w:50
 
           root2 = new Element
             location: x: 100
             size: 100
             childrenLayout: "column"
-            new Rectangle color:"green", size: hph:1, w:50
-            new Rectangle color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+            new RectangleElement color:"green", size: hph:1, w:50
+            new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
 
         test: ->
           knownFailingExplanation = """
@@ -325,9 +325,9 @@ define [
         root: root = new Element
           size: cs:1
           childrenLayout: "column"
-          new Rectangle color:"red",   margin: 10, size: 30
-          new Rectangle color:"green", margin: 10, size: 50
-          new Rectangle color:"blue",  margin: 10, size: 40
+          new RectangleElement color:"red",   margin: 10, size: 30
+          new RectangleElement color:"green", margin: 10, size: 50
+          new RectangleElement color:"blue",  margin: 10, size: 40
         test: ->
           assert.eq root.currentSize, point 50, 140
           assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point( 0, 40), point( 0, 100)]
@@ -336,9 +336,9 @@ define [
         root: root = new Element
           size: cs:1
           childrenLayout: "column"
-          new Rectangle color:"red",   size: 30, margin: 10
-          new Rectangle color:"green", size: 50, margin: top: 15, bottom: 5, left: 11, right: 7
-          new Rectangle color:"blue",  size: 40, margin: 10
+          new RectangleElement color:"red",   size: 30, margin: 10
+          new RectangleElement color:"green", size: 50, margin: top: 15, bottom: 5, left: 11, right: 7
+          new RectangleElement color:"blue",  size: 40, margin: 10
         test: ->
           assert.eq root.currentSize, point 50, 145
           assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point( 0, 45), point( 0, 105)]
@@ -363,9 +363,9 @@ define [
               padding: 10
               childrenLayout: "column"
               childrenAlignment: alignment
-              new Rectangle color:"red",   size: 30
-              new Rectangle color:"green", size: 50
-              new Rectangle color:"blue",  size: 40
+              new RectangleElement color:"red",   size: 30
+              new RectangleElement color:"green", size: 50
+              new RectangleElement color:"blue",  size: 40
 
             test: -> assert.eq locations, (c.currentLocation for c in root.children)
 
