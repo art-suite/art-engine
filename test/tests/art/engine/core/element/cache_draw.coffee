@@ -7,7 +7,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
-{RectangleElement, Bitmap} = Engine.Elements
+{RectangleElement, BitmapElement} = Engine.Elements
 
 imageDataEqual = (a, b) ->
   a = a.data
@@ -101,7 +101,7 @@ Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->
       assert.eq false, !!result = el._drawCacheBitmap
 
   test "bitmap does not cache", ->
-    el = new Bitmap
+    el = new BitmapElement
       cacheDraw: 'always'
       bitmap: new Canvas.Bitmap point 50
 
