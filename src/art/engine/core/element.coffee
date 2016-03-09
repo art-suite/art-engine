@@ -320,6 +320,14 @@ define [
           else
             eToA
 
+    @getter
+      # TODO: SBD 03-2016: I plan to make currentElementToParentMatrix a concrete property.
+      currentElementToParentMatrix: (pending, withLocation) ->
+        if withLocation
+          @_getElementToParentMatrixForXY pending, withLocation.x, withLocation.y
+        else
+          @getState(pending)._elementToParentMatrix
+
     @coreProperty
       cursor:                 default: null,                  validate:   (v) -> v == null || typeof v is "string"
       elementToParentMatrix:
@@ -1194,15 +1202,16 @@ define [
       @_setLocationFromLayoutXY l.x, l.y
 
 
-    _getElementToParentMatrixForXY: (x, y) ->
-      {left, top} = @getPendingCurrentPadding()
-      size  = @getPendingCurrentSize()
-      axis  = @getPendingAxis()
+    _getElementToParentMatrixForXY: (pending, x, y) ->
+      {_currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix} = @getState pending
+
+      {left, top} = _currentPadding
+      size  = _currentSize
+      axis  = _axis
       axisXInElementSpace = axis.x * size.x - left
       axisYInElementSpace = axis.y * size.y - top
 
       if @_locationLayoutDisabled
-        {_elementToParentMatrix} = @
         currentX = _elementToParentMatrix.transformX axisXInElementSpace, axisYInElementSpace
         currentY = _elementToParentMatrix.transformY axisXInElementSpace, axisYInElementSpace
 
@@ -1210,14 +1219,14 @@ define [
       else
 
         (new Matrix).translateXY -axisXInElementSpace, -axisYInElementSpace, true
-        .scale  @getPendingScale(), true
-        .rotate @getPendingAngle(), true
+        .scale  _scale, true
+        .rotate _angle, true
         .translateXY x, y, true
 
     _setLocationFromLayoutXY: (x, y) ->
       return if @_locationLayoutDisabled
 
-      e2p = @_getElementToParentMatrixForXY x, y
+      e2p = @_getElementToParentMatrixForXY true, x, y
 
       if !@_pendingState._elementToParentMatrix.eq e2p
         @_pendingState._elementToParentMatrix = e2p
