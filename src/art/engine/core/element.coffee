@@ -763,7 +763,7 @@ define [
     # create, draw and return stagingBitmap
     _renderStagingBitmap: (targetSpaceDrawArea, elementToTargetMatrix, stagingBitmap)->
       targetSpaceDrawArea = targetSpaceDrawArea.roundOut()
-      elementToTargetMatrix = elementToTargetMatrix.translate -targetSpaceDrawArea.x, -targetSpaceDrawArea.y unless targetSpaceDrawArea.getLocationIsZero()
+      elementToTargetMatrix = elementToTargetMatrix.translateXY -targetSpaceDrawArea.x, -targetSpaceDrawArea.y unless targetSpaceDrawArea.getLocationIsZero()
       stats.stagingBitmapsCreated++
 
       stagingBitmap ||= @bitmapFactory.newBitmap targetSpaceDrawArea.size
@@ -960,7 +960,7 @@ define [
         return
       @_clearDrawCache()
 
-      @_drawCacheToElementMatrix = Matrix.translate(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
+      @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
 
       # disable draw-caching for children
       unless cacheAggressively
@@ -1193,32 +1193,31 @@ define [
     _setLocationFromLayout: (l) ->
       @_setLocationFromLayoutXY l.x, l.y
 
+
+    _getElementToParentMatrixForXY: (x, y) ->
+      {left, top} = @getPendingCurrentPadding()
+      size  = @getPendingCurrentSize()
+      axis  = @getPendingAxis()
+      axisXInElementSpace = axis.x * size.x - left
+      axisYInElementSpace = axis.y * size.y - top
+
+      if @_locationLayoutDisabled
+        {_elementToParentMatrix} = @
+        currentX = _elementToParentMatrix.transformX axisXInElementSpace, axisYInElementSpace
+        currentY = _elementToParentMatrix.transformY axisXInElementSpace, axisYInElementSpace
+
+        _elementToParentMatrix.translate x - currentX, y - currentY
+      else
+
+        (new Matrix).translateXY -axisXInElementSpace, -axisYInElementSpace, true
+        .scale  @getPendingScale(), true
+        .rotate @getPendingAngle(), true
+        .translateXY x, y, true
+
     _setLocationFromLayoutXY: (x, y) ->
       return if @_locationLayoutDisabled
 
-      angle = @getPendingAngle()
-      size  = @getPendingCurrentSize()
-      scale = @getPendingScale()
-      axis  = @getPendingAxis()
-      padding = @getPendingCurrentPadding()
-
-      x += padding.left
-      y += padding.top
-
-      asx = axis.x * size.x
-      asy = axis.y * size.y
-
-      e2p = identityMatrix
-      shouldScale = !scale.eq point1
-      shouldRotate = !floatEq0 modulo angle, Math.PI * 2
-
-      if shouldScale || shouldRotate
-        e2p = e2p.translate -asx, -asy
-        e2p = e2p.scale scale if shouldScale
-        e2p = e2p.rotate angle if shouldRotate
-        e2p = e2p.translate x, y
-      else
-        e2p = e2p.translate x - asx, y - asy
+      e2p = @_getElementToParentMatrixForXY x, y
 
       if !@_pendingState._elementToParentMatrix.eq e2p
         @_pendingState._elementToParentMatrix = e2p
@@ -1266,7 +1265,7 @@ define [
         x2 = m.transformX ax, ay
         y2 = m.transformY ax, ay
 
-        @setElementToParentMatrix m.translate x1 - x2, y1 - y2
+        @setElementToParentMatrix m.translateXY x1 - x2, y1 - y2
 
     ##########################
     # GEOMETRY INFO
