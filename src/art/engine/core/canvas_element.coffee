@@ -233,8 +233,8 @@ define [
     _updateCanvasToDocumentMatricies: ->
       {left, top} = domElementOffset @_canvas
       @_canvasDocumentOffset = point left, top
-      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translate left, top
-      @_documentToElementMatrix = Matrix.translate(-left, -top).scale @_devicePixelsPerPoint
+      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translateXY left, top
+      @_documentToElementMatrix = Matrix.translateXY(-left, -top).scale @_devicePixelsPerPoint
       @_parentToElementMatrix = null
       @setElementToParentMatrix @_elementToAbsMatrix = Matrix.scale @_devicePixelsPerPoint
 
