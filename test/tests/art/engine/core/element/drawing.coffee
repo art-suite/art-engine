@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
-{Fill, Blur, RectangleElement, Element} = Elements
+{FillElement, Blur, RectangleElement, Element} = Elements
 
 {stateEpochTest} = StateEpochTestHelper
 

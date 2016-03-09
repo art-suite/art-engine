@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
 {inspect, log, min, isNumber} = Foundation
 {point, matrix, Matrix, Point, rect} = Atomic
-{Element, RectangleElement, Fill, TextElement, Shapes} = Elements
+{Element, RectangleElement, FillElement, TextElement, Shapes} = Elements
 {drawTest, drawTest2, drawTest3} =  Helper
 {pow} = Math
 
@@ -78,7 +78,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
       new TextElement
         color:"red", text:"Thing()", fontSize:48
         new RectangleElement color: "#0003"
-        new Fill()
+        new FillElement()
 
   drawTest3 "layoutMode: textualBaseline",
     stagingBitmapsCreateShouldBe: 0
@@ -89,7 +89,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         fontSize:48
         layoutMode: "textualBaseline"
         new RectangleElement color: "#0003"
-        new Fill()
+        new FillElement()
 
   drawTest3 "layoutMode: textualBaseline with word-wrap",
     stagingBitmapsCreateShouldBe: 0
@@ -103,7 +103,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         fontSize:32
         layoutMode: "textualBaseline"
         new RectangleElement color: "#0003"
-        new Fill()
+        new FillElement()
 
   drawTest3 "tight layoutMode",
     stagingBitmapsCreateShouldBe: 0
@@ -146,7 +146,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     stagingBitmapsCreateShouldBe: 0
     element: ->
       new TextElement color:"red", fontSize:50, text:"test",
-        new Fill
+        new FillElement
         new RectangleElement
           color:"#70F7"
           axis:point(.5)
@@ -164,7 +164,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
           location: ps: .5
           size: w:60, h:60
           angle: Math.PI * .3
-        new Fill isMask:true
+        new FillElement isMask:true
 
   drawTest3 "basic",
     stagingBitmapsCreateShouldBe: 0
@@ -286,7 +286,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
               test: (element) -> layoutTester element, result
 
-      suite "drawAreas, Fill and size: w:200, hch:1", ->
+      suite "drawAreas, FillElement and size: w:200, hch:1", ->
         for value, result of {
             top:
               area:      rect 0, 0, 135, 52
@@ -307,7 +307,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   color:"red"
                   text:"The quick brown fox jumped over the lazy dog."
                   # fontSize:16
-                  new Fill() # IMPORTANT FOR THIS TEST - DONT REMOVE
+                  new FillElement() # IMPORTANT FOR THIS TEST - DONT REMOVE
               test: (element) -> layoutTester element, result
 
       suite "width change in second layout pass should update alignments", ->
@@ -331,7 +331,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                     padding: bottom: 9
                     leading: 1.1
                     new RectangleElement color: "#0002"
-                    new Fill
+                    new FillElement
 
               test: (element) -> layoutTester element.children[0], result
 
@@ -367,7 +367,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
                   new RectangleElement color: "#0002"
-                  new Fill()
+                  new FillElement()
               test: (element) -> layoutFragmentTester element, result
 
       suite "layout ww:1, hch:1", ->
@@ -389,7 +389,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
                   new RectangleElement color: "#0002"
-                  new Fill()
+                  new FillElement()
               test: (element) -> layoutFragmentTester element, result
 
     suite "one line, cs: 1 should mean alignment has no effect", ->
@@ -411,7 +411,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                 align: value
                 color:"red", text:"Thingy", fontSize:16
                 new RectangleElement color: "#0002"
-                new Fill()
+                new FillElement()
             test: (element) -> layoutFragmentTester element, result
 
     suite "layoutMode: tight", ->
@@ -466,5 +466,5 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                 align: value
                 color:"red", text:"(Q)", fontSize:32
                 new RectangleElement color: "#0002"
-                new Fill()
+                new FillElement()
             test: (element) -> layoutFragmentTester element, result
