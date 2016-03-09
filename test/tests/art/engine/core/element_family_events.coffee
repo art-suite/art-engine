@@ -60,7 +60,7 @@ suite "Art.Engine.Core.Element.family events", ->
 
 
 suite "Art.Engine.Core.Element.family events.rootElementChanged", ->
-  test "basic - KNOWN FAILING", ->
+  skipKnownFailingTest "basic", ->
     canvasElement = null
     new Promise (resolve) ->
       p = new Element name: "parent",

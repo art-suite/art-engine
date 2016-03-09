@@ -291,7 +291,7 @@ define [
             assert.eq sizes = (c.currentSize for c in root.children), [point(30, 100), point(50, 100)]
             assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
 
-      testLogBitmap "order of variable children when one has a minimum height shouldn't matter - KNOWN FAILING", ->
+      skipKnownFailingTest "order of variable children when one has a minimum height shouldn't matter", ->
         root: root = new Element
           size: w: 200, h: 100
           new Rectangle color: "#ddd"
