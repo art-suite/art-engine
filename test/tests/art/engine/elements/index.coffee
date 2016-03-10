@@ -3,11 +3,11 @@
 
 module.exports =
 Elements               = require './namespace'
+Elements.Helper        = require './helper'
 Elements.Filters       = require './filters'
 Elements.ShapeChildren = require './shape_children'
 Elements.Shapes        = require './shapes'
 Elements.Widgets       = require './widgets'
-Elements.Helper        = require './helper'
 Elements.finishLoad(
   ["Helper"]
 )

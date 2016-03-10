@@ -3,13 +3,13 @@
 
 module.exports =
 Elements               = require './namespace'
+Elements.All           = require './all'
+Elements.Base          = require './base'
+Elements.FillableBase  = require './fillable_base'
 Elements.Filters       = require './filters'
 Elements.ShapeChildren = require './shape_children'
 Elements.Shapes        = require './shapes'
 Elements.Widgets       = require './widgets'
-Elements.All           = require './all'
-Elements.Base          = require './base'
-Elements.FillableBase  = require './fillable_base'
 Elements.finishLoad(
   ["All","Base","FillableBase"]
 )
