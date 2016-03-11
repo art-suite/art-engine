@@ -4,6 +4,7 @@ StateEpoch = require "./state_epoch"
 
 {
   log
+  mergeInto
   BaseObject
   capitalize
   compactFlatten
@@ -475,8 +476,16 @@ module.exports = class EpochedObject extends BaseObject
 
       a) move all the __* properties out of _pendingState
         Probably just promote them to the Element itself
+        DONE
 
       b) replace _pendingState with a new, empty object after _applyStateChanges
+        SBD March-2016: I think this is still a good idea.
+          @_pendingState currently contains every property.
+          That's a lot of extra work every state epoch!
+          The problem is, we currently rely on that in many places!
+          One thing to perf-test: We could make an array of the names of props that changed.
+            Then, _applyStateChanges could iterate through that array, pulling values out of @_pendingState.
+            (in this scenario we would keep @_pendingState fully of all properties, as it currently is)
 
       c) for faster Element creation
         - could we just say the Element "consumes" the props passed to it on creation?
@@ -484,13 +493,19 @@ module.exports = class EpochedObject extends BaseObject
         - every prop in the passed-in props object gets run through the preprocessors/validators
         - and the result is assigned back to the props object
         - then the props object BECOMES the first @_pendingState
+        SBD March-2016: I'm less sure this makes sense.
+
+      d) SBD March-2016
+        I have no idea if this would work, but what would be really cool is if new
+        elements could directly apply there initial properties rather then putting them through
+        the state-epoch pending cycle. This would probalby be a huge savings for object creation,
+        which currently is one of out biggest performance problems.
+
+        The problem is, new elements still need to go through a StateEpoch for layout...
 
   ###
   _applyStateChanges: ->
-
-    for k, v of @_pendingState
-      @[k] = v if statePropertyKeyTest.test k
-
+    mergeInto @, @_pendingState
     @__stateChangeQueued = false
 
   ######################
@@ -500,12 +515,14 @@ module.exports = class EpochedObject extends BaseObject
     super
     @remoteId = null
 
-    @_pendingState =
-      __depth: 0
+    @_pendingState = {}
+    @__stateChangeQueued = false
+
+    # __depth and __redrawRequired are only used while processing the state epoch
+    @__depth = 0
+    @__redrawRequired = false
 
     @__layoutPropertiesChanged = false
-    @__stateChangeQueued = false
-    @__redrawRequired = true
     @__drawAreaChanged = true
     @__drawPropertiesChanged = true
 

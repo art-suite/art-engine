@@ -36,19 +36,14 @@ define [
 
     computeDepth: (element) ->
       return 0 unless element
-      return element._pendingState.__depth if element._pendingState?.__depth
-
-      depth = 1 + @computeDepth element.getPendingParent()
-      element._pendingState.__depth = depth
-
-      depth
+      element.__depth = 1 + @computeDepth element.getPendingParent()
 
     computeDepths: (changingElements)->
       @computeDepth element for element in changingElements
       null
 
     sortChangingElementsDepthsAscending: (changingElements)->
-      changingElements.sort (a, b) -> a._pendingState.__depth - b._pendingState.__depth
+      changingElements.sort (a, b) -> a.__depth - b.__depth
 
     notifyLayoutPropertiesChanged: (changingElements)->
       for element in changingElements when element.__layoutPropertiesChanged
@@ -175,7 +170,7 @@ define [
               old: oldV
               new: newV
 
-        o.__depth = ce._pendingState.__depth
+        o.__depth = ce.__depth
         o.drawAreaChanged = true if ce.__drawAreaChanged
         o.drawPropertiesChanged = true if ce.__redrawRequired
         [

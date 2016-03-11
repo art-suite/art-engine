@@ -1635,7 +1635,9 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_drawAreaChanged()       if @__drawAreaChanged
     @_drawPropertiesChanged() if @__drawPropertiesChanged
     @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
+
     @__drawAreaChanged = false
+    @__redrawRequired = false
     @__drawPropertiesChanged = false
     @__layoutPropertiesChanged = false
 
