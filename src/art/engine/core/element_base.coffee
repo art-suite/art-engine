@@ -63,36 +63,6 @@ module.exports = class ElementBase extends EpochedObject
     @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
 
   ############################
-  # PROTECTED (ok for inheriting classes to use)
-  ############################
-
-  @layoutProperty: (map)->
-    for prop, options of map
-      options.layoutProperty = true
-      @_defineElementProperty prop, options
-
-  @drawProperty: (map)->
-    for prop, options of map
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  @drawLayoutProperty: (map)->
-    for prop, options of map
-      options.layoutProperty = true
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  @drawAreaProperty: (map)->
-    for prop, options of map
-      options.drawAreaProperty = true
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  _layoutPropertyChanged:   -> @_elementChanged true
-  _drawPropertyChanged:     -> @_elementChanged false, true, false
-  _drawAreaPropertyChanged: -> @_elementChanged false, true, true
-
-  ############################
   # NAME Property and Inspectors
   ############################
 
@@ -196,4 +166,3 @@ module.exports = class ElementBase extends EpochedObject
 
   ###
   preprocessEventHandlers: defaultEventHandlerPreprocessor = (handlerMap) -> handlerMap
-

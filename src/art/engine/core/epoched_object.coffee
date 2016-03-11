@@ -360,7 +360,7 @@ module.exports = class EpochedObject extends BaseObject
   emptyEventHandlers = {}
 
   # ensure we set "on" if we have a non-default @preprocessEventHandlers
-  _initEventHandlers: (options) ->
+  _initDefaultEventHandlers: (options) ->
     if !options.on && @preprocessEventHandlers != defaultEventHandlerPreprocessor
       @setOn emptyEventHandlers
 
@@ -373,8 +373,6 @@ module.exports = class EpochedObject extends BaseObject
       @__proto__._initPropertiesAuto = @class.generateSetPropertyDefaults()
 
     @_initPropertiesAuto options
-
-    @_initEventHandlers options
 
     # IMPRORTANT OPTIMIZATION NOTE:
     # Creating _initPropertiesAuto the first time we instantiate the class is 2-4x faster than:
@@ -481,11 +479,6 @@ module.exports = class EpochedObject extends BaseObject
 
   ###
   _applyStateChanges: ->
-    # @_logPendingStateChanges()
-
-    # @_sizeChanged @_pendingState._currentSize, @_currentSize if @getCurrentSizeChanged()
-    # if @getElementToParentMatrixChanged()
-    #   oldElementToParentMatrix = @_elementToParentMatrix
 
     @queueEvent "parentChanged", oldParent:@_parent, parent:@_pendingState._parent if @getParentChanged()
     @queueEvent "ready"
@@ -494,15 +487,6 @@ module.exports = class EpochedObject extends BaseObject
       @[k] = v if statePropertyKeyTest.test k
 
     @_pendingState.__addedToChangingElements = false
-
-    # unless @_parent
-    #   releaseCount = @_releaseAllCacheBitmaps()
-    # @_drawAreaChanged()       if @_pendingState.__drawAreaChanged
-    # @_drawPropertiesChanged() if @_pendingState.__drawPropertiesChanged
-    # @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
-    # @_pendingState.__drawAreaChanged = false
-    # @_pendingState.__drawPropertiesChanged = false
-    # @_pendingState.__layoutPropertiesChanged = false
 
   @getter
     props: ->
@@ -516,6 +500,7 @@ module.exports = class EpochedObject extends BaseObject
       for k, {internalName, virtual} of @metaProperties when !virtual
         ret[k] = @[internalName]
       ret
+
     virtualProps: ->
       ret = {}
       for k, {virtual} of @metaProperties when virtual
@@ -536,6 +521,7 @@ module.exports = class EpochedObject extends BaseObject
       __depth: 0
       __addedToChangingElements: false
     @_initProperties options
+    @_initDefaultEventHandlers options
 
   ###
   TODO:

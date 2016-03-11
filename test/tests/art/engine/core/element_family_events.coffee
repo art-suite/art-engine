@@ -5,7 +5,7 @@ Engine = require 'art-engine'
 StateEpochTestHelper = require './state_epoch_test_helper'
 
 {point, matrix, Matrix} = Atomic
-{inspect, nextTick, eq, log} = Foundation
+{inspect, nextTick, eq, log, merge} = Foundation
 {Element, CanvasElement} = Engine.Core
 
 {stateEpochTest} = StateEpochTestHelper
@@ -13,7 +13,33 @@ StateEpochTestHelper = require './state_epoch_test_helper'
 reducedRange = (data, factor = 32) ->
   parseInt (a + factor/2) / factor for a in data
 
-suite "Art.Engine.Core.Element.family events", ->
+suite "Art.Engine.Core.Element.events.preprocessEventHandlers", ->
+
+  test "no preprocessEventHandlers", (done) ->
+    e = new Element on: myEvent: -> done()
+    e.onNextReady -> e.queueEvent "myEvent"
+
+  test "preprocessEventHandlers with no on-property", (done) ->
+    class MyElement extends Element
+
+      preprocessEventHandlers: (handlerMap) ->
+        merge handlerMap,
+          myEvent: -> done()
+
+    e = new MyElement
+    e.onNextReady -> e.queueEvent "myEvent"
+
+  test "preprocessEventHandlers with on-property", (done) ->
+    class MyElement extends Element
+
+      preprocessEventHandlers: (handlerMap) ->
+        merge handlerMap,
+          myEvent: -> done()
+
+    e = new MyElement on: myOtherEvent: -> e.queueEvent "myEvent"
+    e.onNextReady -> e.queueEvent "myOtherEvent"
+
+suite "Art.Engine.Core.Element.events.family", ->
   # return false
   test "parentChanged - addChild", (done)->
     p = new Element
