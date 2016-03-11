@@ -11,9 +11,10 @@ Core.ElementGeometry         = require './element_geometry'
 Core.ElementInstanceRegistry = require './element_instance_registry'
 Core.ElementPointerEvents    = require './element_pointer_events'
 Core.ElementStateEpoch       = require './element_state_epoch'
+Core.EpochedObject           = require './epoched_object'
 Core.StateEpochTestHelper    = require './state_epoch_test_helper'
 Core.Element                 = require './element'
 Core.Layout                  = require './layout'
 Core.finishLoad(
-  ["ElementBase","ElementChildren","ElementDrawArea","ElementFamilyEvents","ElementGeometry","ElementInstanceRegistry","ElementPointerEvents","ElementStateEpoch","StateEpochTestHelper"]
+  ["ElementBase","ElementChildren","ElementDrawArea","ElementFamilyEvents","ElementGeometry","ElementInstanceRegistry","ElementPointerEvents","ElementStateEpoch","EpochedObject","StateEpochTestHelper"]
 )

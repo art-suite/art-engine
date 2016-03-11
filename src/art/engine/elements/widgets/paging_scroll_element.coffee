@@ -378,7 +378,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
     page: null
     atEndEdge: false
 
-  @inertProperty
+  @concreteProperty
     referenceFrame:
       default: defaultReferenceFrame
 

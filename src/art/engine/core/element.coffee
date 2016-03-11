@@ -251,7 +251,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
         v.length == 2 || v.length == 4
       else isNumber(v) || isFunction(v) || isPlainObject(v)
 
-  @coreProperty
+  @concreteProperty
     # TODO: I think currentSize should not be an epoched property. It should litterally be the currentSize - it gets updated during the stateEpoch
     currentSize:
       default: defaultSize
@@ -315,7 +315,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       else
         @getState(pending)._elementToParentMatrix
 
-  @coreProperty
+  @concreteProperty
     cursor:                 default: null,                  validate:   (v) -> v == null || typeof v is "string"
     elementToParentMatrix:
       default: Matrix.identityMatrix
@@ -453,14 +453,10 @@ module.exports = createWithPostCreate class Element extends ElementBase
   @drawLayoutProperty
     visible:                default: true,                  preprocess: (v) -> !!v
 
-  @inertProperty
+  @concreteProperty
     opacity:                default: 1,                     validate:   (v) -> typeof v is "number"
     compositeMode:          default: "normal",              validate:   (v) -> typeof v is "string"
     pointerEventPriority:   default: 0,                     preprocess: (v) -> v | 0
-    name:
-      default: null
-      validate: (v) -> v == null || isFunction v.toString
-      preprocess: (v) -> if v == null then v else v.toString()
     userProperties:         default: null,                  preprocess: (v, oldValue) -> merge oldValue, v
     childAddedAnimation:    default: null,                  validate:   (v) -> !v? || isPlainObject v
     childRemovedAnimation:  default: null,                  validate:   (v) -> !v? || isPlainObject v
@@ -472,7 +468,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       v == "inPaddedArea" ||
       v == "passToChildren"
 
-  @inertProperty
+  @concreteProperty
     cacheDraw:
       default: false
       validate: (v) -> v == false || v == true || v == "locked" || v == "always" || v == "auto"

@@ -67,7 +67,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     mode:       default: "stretch", preprocess: (v) -> v?.toString() || null
     sourceArea: default: null,      preprocess: (v) -> if v? then rect v else null
 
-  @inertProperty
+  @concreteProperty
     ###
     This works pretty-much like the HTMLImageElement's "src" field.
     It will fetch a bitmap from the specified URL.

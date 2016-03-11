@@ -10,10 +10,11 @@ Core.Element          = require './element'
 Core.ElementBase      = require './element_base'
 Core.ElementFactory   = require './element_factory'
 Core.EngineStat       = require './engine_stat'
+Core.EpochedObject    = require './epoched_object'
 Core.GlobalEpochCycle = require './global_epoch_cycle'
 Core.IdleEpoch        = require './idle_epoch'
 Core.StateEpoch       = require './state_epoch'
 Core.Layout           = require './layout'
 Core.finishLoad(
-  ["CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","GlobalEpochCycle","IdleEpoch","StateEpoch"]
+  ["CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","EpochedObject","GlobalEpochCycle","IdleEpoch","StateEpoch"]
 )
