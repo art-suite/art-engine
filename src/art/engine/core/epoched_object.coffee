@@ -16,7 +16,6 @@ StateEpoch = require "./state_epoch"
 {propInternalName} = BaseObject
 blankOptions = {}
 {stateEpoch} = StateEpoch
-statePropertyKeyTest = /^_[a-z].*$/    # anything with an underscore then letter at the beginning
 
 module.exports = class EpochedObject extends BaseObject
   @propsEq: propsEq = plainObjectsDeepEq
@@ -409,7 +408,7 @@ module.exports = class EpochedObject extends BaseObject
     ret
 
   _getChangingStateKeys: ->
-    k for k, v of @_pendingState when statePropertyKeyTest.test(k) && (!shallowPropsEq @[k], @_pendingState[k])
+    k for k, v of @_pendingState when !shallowPropsEq @[k], @_pendingState[k]
 
   _logPendingStateChanges: ->
     oldValues = {}
