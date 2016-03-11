@@ -18,6 +18,9 @@ ElementBase adds:
   2. Element instance registration
   3. name/key property
   4. Inspectors
+
+TODO:
+  5. parent and children relationships
 ###
 
 module.exports = class ElementBase extends EventedEpochedObject
@@ -27,10 +30,30 @@ module.exports = class ElementBase extends EventedEpochedObject
     elementFactory.register @ if @registerWithElementFactory()
     super
 
+  ############################
+  # name/key property
+  ############################
+
+  @concreteProperty
+    name:
+      default: null
+      validate:   (v) -> v == null || isFunction v.toString
+      preprocess: (v) -> if v == null then v else v.toString()
+
+  @virtualProperty
+    key:
+      getter: (pending) -> @getState(pending)._name
+      setter: (v) -> @setName v
+
+
   ##########################
   # Element Registry
   ##########################
   @_elementInstanceRegistry: _elementInstanceRegistry = {}
+
+  @getter
+    isRegistered: -> !!_elementInstanceRegistry[@getInstanceId()]
+
   @getElementByInstanceId: (instanceId) -> _elementInstanceRegistry[instanceId]
 
   _register: ->
@@ -50,9 +73,6 @@ module.exports = class ElementBase extends EventedEpochedObject
     @queueEvent "unregistered"
     null
 
-  @getter
-    isRegistered: -> !!_elementInstanceRegistry[@getInstanceId()]
-
   _updateRegistryFromPendingState: ->
     if pendingParent = @getPendingParent()
       @_register() if pendingParent.getIsRegistered()
@@ -60,19 +80,8 @@ module.exports = class ElementBase extends EventedEpochedObject
       @_unregister()
 
   ############################
-  # NAME Property and Inspectors
+  # Inspectors
   ############################
-
-  @concreteProperty
-    name:
-      default: null
-      validate: (v) -> v == null || isFunction v.toString
-      preprocess: (v) -> if v == null then v else v.toString()
-
-  @virtualProperty
-    key:
-      getter: (pending) -> @getState(pending)._name
-      setter: (v) -> @setName v
 
   @getter
     instanceId: -> @remoteId || @getUniqueId()
@@ -82,8 +91,10 @@ module.exports = class ElementBase extends EventedEpochedObject
 
     inspectedName: ->
       "#{@getShortClassPathName()}:#{@instanceId}#{if name = @getPendingName() then ":" + name else ""}"
+
     inspectedNameWithoutIds: ->
       "#{@getShortClassPathName()}#{if name = @getPendingName() then ":" + name else ""}"
+
     inspectedString: -> @inspectedName
 
   inspectedPropsNotToInclude = ["children", "name", "on"]
