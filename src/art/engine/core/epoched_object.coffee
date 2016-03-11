@@ -462,8 +462,8 @@ module.exports = class EpochedObject extends BaseObject
         console.error "__layoutPropertiesChanged while _stateEpochLayoutInProgress"
       _pendingState.__layoutPropertiesChanged  = true
 
-    _pendingState.__drawPropertiesChanged     = true if drawPropertyChanged
-    _pendingState.__drawAreaChanged           = true if drawAreaPropertyChanged
+    @__drawPropertiesChanged     = true if drawPropertyChanged
+    @__drawAreaChanged           = true if drawAreaPropertyChanged
 
     unless _pendingState.__addedToChangingElements
       _pendingState.__addedToChangingElements = true
@@ -499,11 +499,13 @@ module.exports = class EpochedObject extends BaseObject
   constructor: (options = blankOptions)->
     super
     @remoteId = null
+
     @_pendingState =
-      __drawAreaChanged: true
-      __drawPropertiesChanged: true
-      __redrawRequired: true
       __layoutPropertiesChanged: false
       __depth: 0
       __addedToChangingElements: false
     @_initProperties options
+
+    @__redrawRequired = true
+    @__drawAreaChanged = true
+    @__drawPropertiesChanged = true

@@ -371,7 +371,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     children:
       default: initialChildren = []
       setter: (newChildren, oldChildren) ->
-        @_pendingState.__drawPropertiesChanged = true # TODO - this is a hack-fix; is this the right way to do this?
+        @__drawPropertiesChanged = true # TODO - this is a hack-fix; is this the right way to do this?
         newChildren = compactFlatten newChildren, keepIfRubyTrue
         firstTimeSettingChildren = oldChildren == initialChildren
 
@@ -1189,7 +1189,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
   @getter
     redrawRequired: ->
       {_pendingState} = @
-      _pendingState.__drawPropertiesChanged ||
+      @__drawPropertiesChanged ||
       (@._opacity               !=  _pendingState._opacity) ||
       (@._compositeMode         !=  _pendingState._compositeMode) ||
       (@._parent                !=  _pendingState._parent) ||
@@ -1257,7 +1257,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     if !s.eq @getPendingCurrentSize()
       @_pendingState._currentSize = s
-      @_pendingState.__drawPropertiesChanged = true if @_sizeDirectlyEffectsDrawing()
+      @__drawPropertiesChanged = true if @_sizeDirectlyEffectsDrawing()
       @_elementChanged()
       s
 
@@ -1632,11 +1632,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     super
 
-    @_drawAreaChanged()       if @_pendingState.__drawAreaChanged
-    @_drawPropertiesChanged() if @_pendingState.__drawPropertiesChanged
+    @_drawAreaChanged()       if @__drawAreaChanged
+    @_drawPropertiesChanged() if @__drawPropertiesChanged
     @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
-    @_pendingState.__drawAreaChanged = false
-    @_pendingState.__drawPropertiesChanged = false
+    @__drawAreaChanged = false
+    @__drawPropertiesChanged = false
     @_pendingState.__layoutPropertiesChanged = false
 
     unless @_parent

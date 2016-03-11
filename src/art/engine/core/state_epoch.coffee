@@ -56,7 +56,7 @@ define [
       null
 
     getDrawChangedElements: (changingElements)->
-      el for el in changingElements when el._pendingState.__redrawRequired
+      el for el in changingElements when el.__redrawRequired
 
     # TODO: what about blurs / shadows?
     #   If pixel A is below a blur and it changes, it will be in the redrawArea by definition.
@@ -74,12 +74,12 @@ define [
     markChildrenRedrawRequired = (element) ->
       if element.getChildrenChanged()
         for child in childrenDrawChanged element.children, element.getPendingChildren()
-          child._pendingState.__redrawRequired = true
+          child.__redrawRequired = true
       null
 
     markRedrawRequired: (changingElements)->
       for element in changingElements
-        element._pendingState.__redrawRequired = element.getRedrawRequired()
+        element.__redrawRequired = element.getRedrawRequired()
         markChildrenRedrawRequired element
       null
 
@@ -87,12 +87,12 @@ define [
     # This just takes care of the case when an element's drawArea isn't changing, but it moved, so it's parents will.
     markDrawAreaChanged: (changingElements)->
       for element in changingElements
-        element._pendingState.__drawAreaChanged ||= element.getChildrenChanged() ||
+        element.__drawAreaChanged ||= element.getChildrenChanged() ||
           (element.getCurrentSizeChanged() && (element.getPendingChildren().length == 0 || element.getPendingClip()))
 
         if element.getElementToParentMatrixChanged()
           if parent = element.getPendingParent()
-            parent._pendingState.__drawAreaChanged = true
+            parent.__drawAreaChanged = true
             parent._elementChanged()
 
       null
@@ -176,8 +176,8 @@ define [
               new: newV
 
         o.__depth = ce._pendingState.__depth
-        o.drawAreaChanged = true if ce._pendingState.__drawAreaChanged
-        o.drawPropertiesChanged = true if ce._pendingState.__redrawRequired
+        o.drawAreaChanged = true if ce.__drawAreaChanged
+        o.drawPropertiesChanged = true if ce.__redrawRequired
         [
           ce.inspectLocal()
           o
@@ -235,7 +235,7 @@ define [
       @resetAbsMatricies elementToAbsMatrixChangedElementsDepthAscending
 
       # notifyDrawAreasChanged
-      el._drawAreaChanged() for el in changingElements when el._pendingState.__drawAreaChanged
+      el._drawAreaChanged() for el in changingElements when el.__drawAreaChanged
 
       # recompute cursor and pointer paths
       # TODO: this should be uncommented out, but we only need this on Desktop; I don't want to do the computation on mobile.
