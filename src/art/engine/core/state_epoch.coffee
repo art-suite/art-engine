@@ -51,7 +51,7 @@ define [
       changingElements.sort (a, b) -> a._pendingState.__depth - b._pendingState.__depth
 
     notifyLayoutPropertiesChanged: (changingElements)->
-      for element in changingElements when element._pendingState.__layoutPropertiesChanged
+      for element in changingElements when element.__layoutPropertiesChanged
         element._layoutPropertiesChanged()
       null
 

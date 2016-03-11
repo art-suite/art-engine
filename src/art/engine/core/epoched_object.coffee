@@ -460,7 +460,7 @@ module.exports = class EpochedObject extends BaseObject
     if layoutPropertyChanged
       if StateEpoch._stateEpochLayoutInProgress
         console.error "__layoutPropertiesChanged while _stateEpochLayoutInProgress"
-      _pendingState.__layoutPropertiesChanged  = true
+      @__layoutPropertiesChanged  = true
 
     @__drawPropertiesChanged     = true if drawPropertyChanged
     @__drawAreaChanged           = true if drawAreaPropertyChanged
@@ -501,8 +501,9 @@ module.exports = class EpochedObject extends BaseObject
     @remoteId = null
 
     @_pendingState =
-      __layoutPropertiesChanged: false
       __depth: 0
+
+    @__layoutPropertiesChanged = false
     @__stateChangeQueued = false
     @__redrawRequired = true
     @__drawAreaChanged = true

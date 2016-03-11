@@ -53,8 +53,8 @@ module.exports = class StateEpochLayout extends BaseObject
         (element.getParentChanged() && element.getPendingParent()) ||
         (element.getChildrenChanged() && element.getPendingLayoutMovesChildren())
       )
-        unless element._pendingState.__layoutPropertiesChanged
-          element._pendingState.__layoutPropertiesChanged = true
+        unless element.__layoutPropertiesChanged
+          element.__layoutPropertiesChanged = true
           element._elementChanged()
 
       markParentLayoutPropertiesChanged element
@@ -64,7 +64,7 @@ module.exports = class StateEpochLayout extends BaseObject
 
       # @_elementsLayedOut = {}
 
-      for element in layoutChangedElements when element._pendingState.__layoutPropertiesChanged
+      for element in layoutChangedElements when element.__layoutPropertiesChanged
         layoutElement element, element.getPendingParentSizeForChildren()
 
       # apply layouts for sortedLayoutDirtyElements
@@ -84,8 +84,8 @@ module.exports = class StateEpochLayout extends BaseObject
     while (element = element.getPendingParent()) && (
         element.getPendingSize().getChildrenRelative() ||
         element.getPendingLayoutMovesChildren()
-      ) && !element._pendingState.__layoutPropertiesChanged
-      element._pendingState.__layoutPropertiesChanged = true
+      ) && !element.__layoutPropertiesChanged
+      element.__layoutPropertiesChanged = true
       element._elementChanged()
 
 
@@ -339,13 +339,13 @@ module.exports = class StateEpochLayout extends BaseObject
     #     @_elementsLayedOut[key] = element
 
     return element.getPendingCurrentSize() unless (
-      element._pendingState.__layoutPropertiesChanged ||
+      element.__layoutPropertiesChanged ||
       !shallowEq element._lastParentSize, parentSize
     )
 
     # Mark this element "laid out"
     element._lastParentSize = parentSize
-    element._pendingState.__layoutPropertiesChanged = false
+    element.__layoutPropertiesChanged = false
 
     ##############################
     # Gather Information
