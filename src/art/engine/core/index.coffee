@@ -2,19 +2,20 @@
 # file: art/engine/core/index.coffee
 
 module.exports =
-Core                  = require './namespace'
-Core.CanvasElement    = require './canvas_element'
-Core.DrawCacheManager = require './draw_cache_manager'
-Core.DrawEpoch        = require './draw_epoch'
-Core.Element          = require './element'
-Core.ElementBase      = require './element_base'
-Core.ElementFactory   = require './element_factory'
-Core.EngineStat       = require './engine_stat'
-Core.EpochedObject    = require './epoched_object'
-Core.GlobalEpochCycle = require './global_epoch_cycle'
-Core.IdleEpoch        = require './idle_epoch'
-Core.StateEpoch       = require './state_epoch'
-Core.Layout           = require './layout'
+Core                      = require './namespace'
+Core.CanvasElement        = require './canvas_element'
+Core.DrawCacheManager     = require './draw_cache_manager'
+Core.DrawEpoch            = require './draw_epoch'
+Core.Element              = require './element'
+Core.ElementBase          = require './element_base'
+Core.ElementFactory       = require './element_factory'
+Core.EngineStat           = require './engine_stat'
+Core.EpochedObject        = require './epoched_object'
+Core.EventedEpochedObject = require './evented_epoched_object'
+Core.GlobalEpochCycle     = require './global_epoch_cycle'
+Core.IdleEpoch            = require './idle_epoch'
+Core.StateEpoch           = require './state_epoch'
+Core.Layout               = require './layout'
 Core.finishLoad(
-  ["CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","EpochedObject","GlobalEpochCycle","IdleEpoch","StateEpoch"]
+  ["CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","EpochedObject","EventedEpochedObject","GlobalEpochCycle","IdleEpoch","StateEpoch"]
 )

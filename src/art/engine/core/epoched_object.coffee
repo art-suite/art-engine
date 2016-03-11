@@ -271,38 +271,6 @@ module.exports = class EpochedObject extends BaseObject
       options.virtual = true
       @_defineElementProperty prop, options
 
-  ##########################
-  # EPOCHED STATE
-  ##########################
-  _getIsChangingElement: -> stateEpoch._isChangingElement @
-
-  onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  @onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  onIdle: (callback) ->
-    stateEpoch.onNextReady callback
-
-  getState: (pending = false) ->
-    if pending then @_pendingState else @
-
-  _elementChanged: (layoutPropertyChanged, drawPropertyChanged, drawAreaPropertyChanged)->
-    {_pendingState} = @
-
-    if layoutPropertyChanged
-      if StateEpoch._stateEpochLayoutInProgress
-        console.error "__layoutPropertiesChanged while _stateEpochLayoutInProgress"
-      _pendingState.__layoutPropertiesChanged  = true
-
-    _pendingState.__drawPropertiesChanged     = true if drawPropertyChanged
-    _pendingState.__drawAreaChanged           = true if drawAreaPropertyChanged
-
-    unless _pendingState.__addedToChangingElements
-      _pendingState.__addedToChangingElements = true
-      stateEpoch._addChangingElement @
-
   # list of tupples, one per property:
   #   [externalName, preprocessor, setter]
   # @_getVirtualPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "virtualPropertyInitializerList", []
@@ -352,17 +320,6 @@ module.exports = class EpochedObject extends BaseObject
       "})"
     ]).join "\n"
     eval functionString
-
-  initFirstPropertiesHack =
-    layout: true
-
-  # should forever be empty
-  emptyEventHandlers = {}
-
-  # ensure we set "on" if we have a non-default @preprocessEventHandlers
-  _initDefaultEventHandlers: (options) ->
-    if !options.on && @preprocessEventHandlers != defaultEventHandlerPreprocessor
-      @setOn emptyEventHandlers
 
   virtualPropertySecondPassMetaProperties = []
   virtualPropertySecondPassValues = []
@@ -461,33 +418,6 @@ module.exports = class EpochedObject extends BaseObject
       newValues[k] = v
     log "ElementBase pending state changes": element: @inspectedName, old: oldValues, new: newValues
 
-  ###
-  TODO:
-    It would probably be faster overall to:
-
-      a) move all the __* properties out of _pendingState
-        Probably just promote them to the Element itself
-
-      b) replace _pendingState with a new, empty object after _applyStateChanges
-
-      c) for faster Element creation
-        - could we just say the Element "consumes" the props passed to it on creation?
-        - then we can alter that props object
-        - every prop in the passed-in props object gets run through the preprocessors/validators
-        - and the result is assigned back to the props object
-        - then the props object BECOMES the first @_pendingState
-
-  ###
-  _applyStateChanges: ->
-
-    @queueEvent "parentChanged", oldParent:@_parent, parent:@_pendingState._parent if @getParentChanged()
-    @queueEvent "ready"
-
-    for k, v of @_pendingState
-      @[k] = v if statePropertyKeyTest.test k
-
-    @_pendingState.__addedToChangingElements = false
-
   @getter
     props: ->
       ret = {}
@@ -507,6 +437,62 @@ module.exports = class EpochedObject extends BaseObject
         ret[k] = @[k]
       ret
 
+  ##########################
+  # EPOCHED STATE
+  ##########################
+  _getIsChangingElement: -> stateEpoch._isChangingElement @
+
+  onNextReady: (callback, forceEpoch = true) ->
+    stateEpoch.onNextReady callback, forceEpoch
+
+  @onNextReady: (callback, forceEpoch = true) ->
+    stateEpoch.onNextReady callback, forceEpoch
+
+  onIdle: (callback) ->
+    stateEpoch.onNextReady callback
+
+  getState: (pending = false) ->
+    if pending then @_pendingState else @
+
+  _elementChanged: (layoutPropertyChanged, drawPropertyChanged, drawAreaPropertyChanged)->
+    {_pendingState} = @
+
+    if layoutPropertyChanged
+      if StateEpoch._stateEpochLayoutInProgress
+        console.error "__layoutPropertiesChanged while _stateEpochLayoutInProgress"
+      _pendingState.__layoutPropertiesChanged  = true
+
+    _pendingState.__drawPropertiesChanged     = true if drawPropertyChanged
+    _pendingState.__drawAreaChanged           = true if drawAreaPropertyChanged
+
+    unless _pendingState.__addedToChangingElements
+      _pendingState.__addedToChangingElements = true
+      stateEpoch._addChangingElement @
+
+  ###
+  TODO:
+    It would probably be faster overall to:
+
+      a) move all the __* properties out of _pendingState
+        Probably just promote them to the Element itself
+
+      b) replace _pendingState with a new, empty object after _applyStateChanges
+
+      c) for faster Element creation
+        - could we just say the Element "consumes" the props passed to it on creation?
+        - then we can alter that props object
+        - every prop in the passed-in props object gets run through the preprocessors/validators
+        - and the result is assigned back to the props object
+        - then the props object BECOMES the first @_pendingState
+
+  ###
+  _applyStateChanges: ->
+
+    for k, v of @_pendingState
+      @[k] = v if statePropertyKeyTest.test k
+
+    @_pendingState.__addedToChangingElements = false
+
   ######################
   # Public
   ######################
@@ -521,18 +507,3 @@ module.exports = class EpochedObject extends BaseObject
       __depth: 0
       __addedToChangingElements: false
     @_initProperties options
-    @_initDefaultEventHandlers options
-
-  ###
-  TODO:
-
-    I'd like to have a "preprocessProps" function rather than one function which is
-    special-cased for event-handlers. I didn't do this with the first pass because
-    Element props can be set one at a time. They aren't set in batch like ArtReact.
-    But, I realized, they are effectively batch-set in the StateEpoch. Can we run
-    preprocessProps at the beginning of the StateEpoch???
-
-  ###
-  preprocessEventHandlers: defaultEventHandlerPreprocessor = (handlerMap) -> handlerMap
-
-

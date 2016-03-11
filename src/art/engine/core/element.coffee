@@ -517,10 +517,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
         "
 
   @virtualProperty
-    key:
-      getter: (pending) -> @getState(pending)._name
-      setter: (v) -> @setName v
-
     invisible:
       getter: (pending) -> @getState(pending)._visible
       setter: (v) -> @setVisible !v
@@ -1623,6 +1619,9 @@ module.exports = createWithPostCreate class Element extends ElementBase
   ###########################
   # EPOCH STUFF
   ###########################
+
+  _sizeChanged: (newSize, oldSize) ->
+    @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
 
   _applyStateChanges: ->
 

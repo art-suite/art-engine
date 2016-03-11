@@ -1,23 +1,27 @@
 Atomic = require 'art-atomic'
 Foundation = require 'art-foundation'
-Events = require 'art-events'
 {elementFactory} = require "./element_factory"
-EpochedObject = require './epoched_object'
-
-{EventedObjectBase} = Events
+EventedEpochedObject = require './evented_epoched_object'
 
 {
   log, inspect
   merge
-  isPlainObject
   peek
   present
   isFunction
 } = Foundation
 
-module.exports = class ElementBase extends EpochedObject
+###
+ElementBase adds:
+
+  1. automatic ElementFactory registration
+  2. Element instance registration
+  3. name/key property
+  4. Inspectors
+###
+
+module.exports = class ElementBase extends EventedEpochedObject
   @registerWithElementFactory: -> false
-  @include EventedObjectBase
 
   @postCreate: ->
     elementFactory.register @ if @registerWithElementFactory()
@@ -55,13 +59,6 @@ module.exports = class ElementBase extends EpochedObject
     else
       @_unregister()
 
-  ##########################
-  # Epoch stuff
-  ##########################
-
-  _sizeChanged: (newSize, oldSize) ->
-    @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
-
   ############################
   # NAME Property and Inspectors
   ############################
@@ -72,7 +69,11 @@ module.exports = class ElementBase extends EpochedObject
       validate: (v) -> v == null || isFunction v.toString
       preprocess: (v) -> if v == null then v else v.toString()
 
-  inspectedPropsNotToInclude =
+  @virtualProperty
+    key:
+      getter: (pending) -> @getState(pending)._name
+      setter: (v) -> @setName v
+
   @getter
     instanceId: -> @remoteId || @getUniqueId()
     shortClassPathName: ->
@@ -110,59 +111,3 @@ module.exports = class ElementBase extends EpochedObject
       result
 
   inspectLocal: -> @getInspectedName()
-
-  ##########################
-  # Evented Object
-  ##########################
-  ###
-  To respect stateEpochs, events will never be sent to pending event handlers.
-  This would only be a concern if @_on changed between the last stateEpoch and
-  the current eventEpoch.
-  ###
-  _sendToEventHandler: (event) ->
-    {_on} = @
-    if _on
-      {type} = processedEvent = event
-      if preprocessor = _on.preprocess?[type]
-        try
-          processedEvent = preprocessor event
-        catch e
-          processedEvent = null
-          @_handleErrorInHandler event, preprocessor, e
-
-      if processedEvent && handler = _on[type]
-        try
-          handler processedEvent
-        catch e
-          @_handleErrorInHandler processedEvent, handler, e
-
-  ###
-  NOTE: by checking @_pendingState also, we can receive events triggered in the same
-  epoch as the Element's creation - such as "parentChanged." Actual handling
-  will be done later, in the eventEpoch, where _hasEventHandler is double-checked.
-  ###
-  _hasEventHandler: (eventType) ->
-    # log _hasEventHandler:
-    #   this: @inspectedName
-    #   eventType:eventType
-    #   on: @_on && Object.keys @_on
-    (_on = @_pendingState._on || @_on) &&
-    !!(_on[eventType] || _on.preprocess?[eventType])
-
-  @concreteProperty
-    on:
-      default: {}
-      validate: (v) -> isPlainObject v
-      setter: (v) -> @preprocessEventHandlers v
-
-  ###
-  TODO:
-
-    I'd like to have a "preprocessProps" function rather than one function which is
-    special-cased for event-handlers. I didn't do this with the first pass because
-    Element props can be set one at a time. They aren't set in batch like ArtReact.
-    But, I realized, they are effectively batch-set in the StateEpoch. Can we run
-    preprocessProps at the beginning of the StateEpoch???
-
-  ###
-  preprocessEventHandlers: defaultEventHandlerPreprocessor = (handlerMap) -> handlerMap
