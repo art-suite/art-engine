@@ -1,41 +1,32 @@
 Atomic = require 'art-atomic'
 Foundation = require 'art-foundation'
 Events = require 'art-events'
-StateEpoch = require "./state_epoch"
 {elementFactory} = require "./element_factory"
 EpochedObject = require './epoched_object'
 
 {EventedObjectBase} = Events
-{stateEpoch} = StateEpoch
 
 {
-  capitalize, shallowEq, plainObjectsDeepEq, BaseObject, merge, inspect, log, extendClone, isNumber,
-  compactFlatten, globalCount
+  log, inspect
+  merge
   isPlainObject
   peek
   present
   isFunction
-  select
 } = Foundation
-
-# stats =
-#   stagingBitmapsCreated: 0
-#   drawAreaUpdates: 0
-
-statePropertyKeyTest = /^_[a-z].*$/    # anything with an underscore then letter at the beginning
-blankOptions = {}
-
-propInternalName = BaseObject.propInternalName
 
 module.exports = class ElementBase extends EpochedObject
   @registerWithElementFactory: -> false
-  @_elementInstanceRegistry: _elementInstanceRegistry = {}
   @include EventedObjectBase
 
   @postCreate: ->
     elementFactory.register @ if @registerWithElementFactory()
     super
 
+  ##########################
+  # Element Registry
+  ##########################
+  @_elementInstanceRegistry: _elementInstanceRegistry = {}
   @getElementByInstanceId: (instanceId) -> _elementInstanceRegistry[instanceId]
 
   _register: ->
@@ -64,7 +55,9 @@ module.exports = class ElementBase extends EpochedObject
     else
       @_unregister()
 
-  _getIsChangingElement: -> stateEpoch._isChangingElement @
+  ##########################
+  # Epoch stuff
+  ##########################
 
   _sizeChanged: (newSize, oldSize) ->
     @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
@@ -155,7 +148,7 @@ module.exports = class ElementBase extends EpochedObject
   _needsRedrawing: (descendant) ->
 
   ############################
-  # PUBLIC
+  # NAME Property and Inspectors
   ############################
 
   @concreteProperty
@@ -208,7 +201,7 @@ module.exports = class ElementBase extends EpochedObject
   ##########################
   ###
   To respect stateEpochs, events will never be sent to pending event handlers.
-  This would only be a consern if @_on changed between the last stateEpoch and
+  This would only be a concern if @_on changed between the last stateEpoch and
   the current eventEpoch.
   ###
   _sendToEventHandler: (event) ->

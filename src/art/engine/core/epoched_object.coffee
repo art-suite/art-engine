@@ -274,6 +274,7 @@ module.exports = class EpochedObject extends BaseObject
   ##########################
   # EPOCHED STATE
   ##########################
+  _getIsChangingElement: -> stateEpoch._isChangingElement @
 
   onNextReady: (callback, forceEpoch = true) ->
     stateEpoch.onNextReady callback, forceEpoch
