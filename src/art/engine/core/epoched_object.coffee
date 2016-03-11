@@ -465,8 +465,8 @@ module.exports = class EpochedObject extends BaseObject
     @__drawPropertiesChanged     = true if drawPropertyChanged
     @__drawAreaChanged           = true if drawAreaPropertyChanged
 
-    unless _pendingState.__addedToChangingElements
-      _pendingState.__addedToChangingElements = true
+    unless @__stateChangeQueued
+      @__stateChangeQueued = true
       stateEpoch._addChangingElement @
 
   ###
@@ -491,7 +491,7 @@ module.exports = class EpochedObject extends BaseObject
     for k, v of @_pendingState
       @[k] = v if statePropertyKeyTest.test k
 
-    @_pendingState.__addedToChangingElements = false
+    @__stateChangeQueued = false
 
   ######################
   # Public
@@ -503,9 +503,10 @@ module.exports = class EpochedObject extends BaseObject
     @_pendingState =
       __layoutPropertiesChanged: false
       __depth: 0
-      __addedToChangingElements: false
-    @_initProperties options
-
+    @__stateChangeQueued = false
     @__redrawRequired = true
     @__drawAreaChanged = true
     @__drawPropertiesChanged = true
+
+    @_initProperties options
+

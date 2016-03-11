@@ -180,7 +180,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
         opacity *= parent.getAbsOpacity()
       opacity
 
-    isChanging: -> @_pendingState.__addedToChangingElements
+    isChanging: -> @__stateChangeQueued
     # isFilter:      -> false
     # filterSource:  -> @_filterSource || @_parent
     rootElement:   -> @_rootElement ||= if @_parent then @_parent.getRootElement() else @
@@ -1637,7 +1637,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
     @__drawAreaChanged = false
     @__drawPropertiesChanged = false
-    @_pendingState.__layoutPropertiesChanged = false
+    @__layoutPropertiesChanged = false
 
     unless @_parent
       releaseCount = @_releaseAllCacheBitmaps()
