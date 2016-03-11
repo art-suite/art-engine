@@ -2,13 +2,23 @@ Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
 
-{log, BaseObject, capitalize, compactFlatten, isNumber, shallowEq, isFunction} = Foundation
+{
+  log
+  BaseObject
+  capitalize
+  compactFlatten
+  isNumber
+  isFunction
+  shallowEq
+  plainObjectsDeepEq
+} = Foundation
 {propInternalName} = BaseObject
 blankOptions = {}
 {stateEpoch} = StateEpoch
 statePropertyKeyTest = /^_[a-z].*$/    # anything with an underscore then letter at the beginning
 
 module.exports = class EpochedObject extends BaseObject
+  @propsEq: propsEq = plainObjectsDeepEq
   @shallowPropsEq: shallowPropsEq = shallowEq
 
   ############################

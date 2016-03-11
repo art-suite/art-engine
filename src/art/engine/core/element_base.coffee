@@ -30,8 +30,6 @@ propInternalName = BaseObject.propInternalName
 module.exports = class ElementBase extends EpochedObject
   @registerWithElementFactory: -> false
   @_elementInstanceRegistry: _elementInstanceRegistry = {}
-  @propsEq: propsEq = plainObjectsDeepEq
-  @shallowPropsEq: shallowPropsEq = shallowEq
   @include EventedObjectBase
 
   @postCreate: ->
@@ -67,7 +65,6 @@ module.exports = class ElementBase extends EpochedObject
       @_unregister()
 
   _getIsChangingElement: -> stateEpoch._isChangingElement @
-
 
   _sizeChanged: (newSize, oldSize) ->
     @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
@@ -190,7 +187,7 @@ module.exports = class ElementBase extends EpochedObject
 
       for k, {internalName, virtual, defaultValue} of @metaProperties when !virtual and
           k not in inspectedPropsNotToInclude and
-          !propsEq defaultValue, value = @[internalName]
+          !EpochedObject.propsEq defaultValue, value = @[internalName]
         props[k] = value
 
       props
@@ -205,15 +202,6 @@ module.exports = class ElementBase extends EpochedObject
       result
 
   inspectLocal: -> @getInspectedName()
-
-  onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  @onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  onIdle: (callback) ->
-    stateEpoch.onNextReady callback
 
   ##########################
   # Evented Object
