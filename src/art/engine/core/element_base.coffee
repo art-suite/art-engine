@@ -93,42 +93,6 @@ module.exports = class ElementBase extends EpochedObject
   _drawAreaPropertyChanged: -> @_elementChanged false, true, true
 
   ############################
-  # Overrides
-  ############################
-
-  _releaseAllCacheBitmaps: ->
-
-  # override if any addional work needs to be done when these properties change:
-  _drawAreaChanged: ->
-
-  # called if a drawProperty changed
-  _drawPropertiesChanged: ->
-
-  # called if the elementToParentMatrixChanged.
-  # @_elementToParentMatrix is current, compare with oldElementToParentMatrix for delta.
-  _elementToParentMatrixChanged: (oldElementToParentMatrix)->
-
-  _layoutPropertiesChanged: ->
-  _updateDrawArea: ->
-
-  # compute new size and location
-  # these should not modify anything
-  # return the new size or location OR
-  # return null/false/undefined if there is no layout
-  _layoutSize: (parentSize, childrenSize)-> @getPendingSize().layout parentSize, childrenSize
-  _layoutLocation:           (parentSize)-> @getPendingLocation().layout parentSize
-
-  _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize
-  _layoutLocationY:          (parentSize)-> @getPendingLocation().layoutY parentSize
-
-  _sizeForChildren: (size) ->
-    @getPendingCurrentPadding().subtractedFromSize size
-
-  # overridden by CanvasElement to trigger the actual redraw
-  # overridden by any element with draw-caching to invalidate the cache so, on next redraw, the decendant is also redrawn
-  _needsRedrawing: (descendant) ->
-
-  ############################
   # NAME Property and Inspectors
   ############################
 

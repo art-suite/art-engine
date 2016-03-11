@@ -1610,6 +1610,21 @@ module.exports = createWithPostCreate class Element extends ElementBase
     unless @_parent
       releaseCount = @_releaseAllCacheBitmaps()
 
+  _layoutPropertiesChanged: ->
+  _updateDrawArea: ->
+
+  # compute new size and location
+  # these should not modify anything
+  # return the new size or location OR
+  # return null/false/undefined if there is no layout
+  _layoutSize: (parentSize, childrenSize)-> @getPendingSize().layout parentSize, childrenSize
+  _layoutLocation:           (parentSize)-> @getPendingLocation().layout parentSize
+
+  _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize
+  _layoutLocationY:          (parentSize)-> @getPendingLocation().layoutY parentSize
+
+  _sizeForChildren: (size) ->
+    @getPendingCurrentPadding().subtractedFromSize size
 
   ##########################
   # EVENTS
