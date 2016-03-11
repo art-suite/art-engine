@@ -10,7 +10,7 @@ GlobalEpochCycle = require '../../core/global_epoch_cycle'
 
 {globalEpochCycle} = GlobalEpochCycle
 
-propInternalName = BaseObject._propInternalName
+propInternalName = BaseObject.propInternalName
 propSetterName = BaseObject._propSetterName
 module.exports = createWithPostCreate class TextElement extends FillableBase
 

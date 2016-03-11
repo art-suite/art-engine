@@ -24,7 +24,7 @@ define [
   statePropertyKeyTest = /^_[a-z].*$/    # anything with an underscore then letter at the beginning
   blankOptions = {}
 
-  propInternalName = BaseObject._propInternalName
+  propInternalName = BaseObject.propInternalName
 
   class ElementBase extends BaseObject
     @registerWithElementFactory: -> false
