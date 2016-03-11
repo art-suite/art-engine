@@ -2,24 +2,15 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require './state_epoch_test_helper'
 
 {color, point, matrix, Matrix, perimeter} = Atomic
 {inspect, eq, log, peek} = Foundation
-{ElementBase, StateEpoch} = Engine.Core
+{ElementBase, Element, StateEpoch} = Engine.Core
 {PointLayout} = Engine.Layout
 
-{stateEpochTest} = StateEpochTestHelper
 {stateEpoch} = StateEpoch
 
-class ElementBaseTest extends ElementBase
-  @concreteProperty
-    # minimum properties require to be compatible with Element for StateEpoch processing
-    parent:                 default: null
-    elementToParentMatrix:  default: new Matrix,            preprocess: (v) -> matrix v
-    currentSize:            default: point 100
-    children:               default: []
-    isFilterSource:         default: false
+class ElementTest extends Element
 
   @drawAreaProperty
     # basic property
@@ -36,43 +27,14 @@ class ElementBaseTest extends ElementBase
     # This would be a virtual property if we didn't want to also store the gray value as its own unit
     gray:                                                   setter: (v) -> color v, v, v
 
-  @virtualProperty
-    location:
-      preprocess: (l) -> point l
-      setter: (l) -> @setElementToParentMatrix @getPendingElementToParentMatrix().withLocation l
-      getter: -> @getState(pending)._elementToParentMatrix.getLocation()
-
-  @getter
-    redrawRequired: -> true
-
-  getPendingParentSizeForChildren: ->
-    point 10
-
-  @layoutProperty
-    padding:  default: 0
-    margin:  default: 0
-    location: default: 0, preprocess: (v) -> new PointLayout v
-    size:     default: 1, preprocess: (v) -> new PointLayout v
-    currentPadding: default: perimeter()
-    childrenLayout: default: null
-
-  _setPaddingFromLayout: ->
-  _setMarginFromLayout: ->
-  _setSizeFromLayout: ->
-  _setLocationFromLayout: ->
-
-  # getPendingLocation: -> new PointLayout
-  # getPendingSize: -> new PointLayout
-  # getPendingPadding:
-
-suite "Art.Engine.Core.ElementBase", ->
+suite "Art.Engine.Core.Element.extending", ->
   test "_color in instance and _pendingState", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     assert.ok "_color" in Object.keys ebd
     assert.ok "_color" in Object.keys ebd._pendingState
 
   test "init with default color property", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     assert.eq ebd.color, c = color "#ff0"
     assert.eq ebd.color, c
     assert.eq ebd.getColor(), c
@@ -80,33 +42,33 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.getPendingColor(), c
 
   test "init with basic property", ->
-    ebd = new ElementBaseTest radius: 1
+    ebd = new ElementTest radius: 1
 
     assert.eq ebd.radiusChanged, true
     assert.eq ebd.pendingRadius, 1
 
   test "init with preprocessed property", ->
-    ebd = new ElementBaseTest color: "red"
+    ebd = new ElementTest color: "red"
     assert.eq ebd.colorChanged, true
     assert.eq ebd.pendingColor, color "red"
 
   test "init with invalid property", ->
     errorCount = 0
     try
-      ebd = new ElementBaseTest cursor: {}
+      ebd = new ElementTest cursor: {}
     catch e
       errorCount++
 
     assert.eq errorCount, 1
 
   test "init with valid property", ->
-    ebd = new ElementBaseTest cursor: "pointer"
+    ebd = new ElementTest cursor: "pointer"
 
     assert.eq ebd.cursorChanged, true
     assert.eq ebd.pendingCursor, "pointer"
 
   test "set basic property", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     before = ebd.radius
     ebd.radius = 1
 
@@ -115,7 +77,7 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.pendingRadius, 1
 
   test "set with preprocessor", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     before = ebd.color
     ebd.color = "red"
 
@@ -124,7 +86,7 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.pendingColor, color "red"
 
   test "set with invalid property", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     errorCount = 0
     try
       ebd.cursor = {}
@@ -135,14 +97,14 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.cursorChanged, false
 
   test "set with valid property", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     ebd.cursor = "pointer"
 
     assert.eq ebd.cursorChanged, true
     assert.eq ebd.pendingCursor, "pointer"
 
   test "set with setter", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     before = ebd.color
     ebd.gray = .5
 
@@ -151,7 +113,7 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.grayChanged, true
 
   test "set, get, pendingGet color property", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     ebd.color = "white"
     assert.eq ebd.color, color "#ff0"
     assert.eq ebd.pendingColor, color "white"
@@ -160,19 +122,19 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.eq ebd.color, color "#ff0"
     assert.eq ebd.pendingColor, color "brown"
 
-  stateEpochTest "colorChanged", ->
-    ebd = new ElementBaseTest
+  test "colorChanged", ->
+    ebd = new ElementTest
 
     ebd.color = "white"
     assert.eq true, ebd.colorChanged
     assert.eq true, ebd.getColorChanged()
 
-    ->
+    ebd.onNextReady ->
       assert.eq false, ebd.colorChanged
       assert.eq false, ebd.getColorChanged()
 
   test "applyChanges && _drawPropertiesChanged override", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     count = 0
     ebd._drawPropertiesChanged = -> count++
 
@@ -191,7 +153,7 @@ suite "Art.Engine.Core.ElementBase", ->
   test "change properties adds element to stateEpoch.changingElements exactly once", ->
     countBefore = stateEpoch.epochLength
     log countBefore:countBefore
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     # ebd.color = color "red"
     # assert.eq stateEpoch.epochLength, countBefore + 1
     assert.eq true, stateEpoch._isChangingElement ebd
@@ -199,17 +161,17 @@ suite "Art.Engine.Core.ElementBase", ->
     ebd.color = color "gold"
     assert.eq stateEpoch.epochLength, countBefore + 1
 
-  stateEpochTest "stateEpoch", ->
+  test "stateEpoch", ->
     stateEpoch.flushEpochNow()
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     ebd.color = color "red"
-    ->
+    ebd.onNextReady ->
       assert.eq ebd.color, ebd.pendingColor
       assert.eq ebd.color, color "red"
       assert.eq false, ebd.colorChanged
 
   test "metaProperties", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     assert.ok ebd.metaProperties.parent
     assert.ok ebd.metaProperties.elementToParentMatrix
 
@@ -219,7 +181,7 @@ suite "Art.Engine.Core.ElementBase", ->
     assert.ok ebd.metaProperties.color.hasOwnProperty "defaultValue"
 
   test "preprocessProperties", ->
-    ebd = new ElementBaseTest
+    ebd = new ElementTest
     props =
       foo: "non-existent properties are left alone instead of erroring"
       radius: "something completely wrong but with no preprocessor"
@@ -231,16 +193,16 @@ suite "Art.Engine.Core.ElementBase", ->
       color: color "#f00"
 
   test "get[Pending]PropertyValues", ->
-    ebd = new ElementBaseTest color:"red"
+    ebd = new ElementTest color:"red"
     assert.eq ebd.getPendingPropertyValues(["foo", "radius", "color"]), radius: 0, color: color "red"
     assert.eq ebd.getPropertyValues(["foo", "radius", "color"]), radius: 0, color: color "#ff0"
 
   test "setProperties only alters specified props", ->
-    ebd = new ElementBaseTest color:"red", cursor: "pointer"
+    ebd = new ElementTest color:"red", cursor: "pointer"
     ebd.setProperties color:"blue"
     assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: "pointer", color: color "blue"
 
   test "replaceProperties sets all properties, using defaults as needed", ->
-    ebd = new ElementBaseTest color:"red", cursor: "pointer"
+    ebd = new ElementTest color:"red", cursor: "pointer"
     ebd.replaceProperties color:"blue"
     assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: null, color: color "blue"

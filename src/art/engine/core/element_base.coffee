@@ -62,25 +62,6 @@ module.exports = class ElementBase extends EpochedObject
   _sizeChanged: (newSize, oldSize) ->
     @queueEvent "sizeChanged", oldSize:oldSize, size:newSize
 
-  _applyStateChanges: ->
-
-    @_sizeChanged @_pendingState._currentSize, @_currentSize if @getCurrentSizeChanged()
-
-    if @getElementToParentMatrixChanged()
-      oldElementToParentMatrix = @_elementToParentMatrix
-
-    super
-
-    @_drawAreaChanged()       if @_pendingState.__drawAreaChanged
-    @_drawPropertiesChanged() if @_pendingState.__drawPropertiesChanged
-    @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
-    @_pendingState.__drawAreaChanged = false
-    @_pendingState.__drawPropertiesChanged = false
-    @_pendingState.__layoutPropertiesChanged = false
-
-    unless @_parent
-      releaseCount = @_releaseAllCacheBitmaps()
-
   ############################
   # PROTECTED (ok for inheriting classes to use)
   ############################

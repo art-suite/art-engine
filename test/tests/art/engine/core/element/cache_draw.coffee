@@ -19,7 +19,7 @@ imageDataEqual = (a, b) ->
   else
     false
 
-doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement, done) ->
+doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement) ->
   wrapperElement.onNextReady ->
     testElement = wrapperElement.find("testElement")[0]
     wrapperElement.toBitmap {}
@@ -36,7 +36,6 @@ doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement, d
         secondCache = testElement._drawCacheBitmap
         secondImageData = secondCache.getImageData()
         assert.eq resetsCache, !imageDataEqual firstImageData, secondImageData
-        done()
 
 newPropChangeTestElements = (cacheMode = 'always')->
   new Element
@@ -55,9 +54,9 @@ propChangeTest = (resetsCache, propName, propValue, cacheMode = 'always')->
     "does NOT reset cache"
 
   propChangeFunction = if isFunction propValue then propValue else (el) -> el[propName] = propValue
-  test testName, (done)->
+  test testName, ->
     wrapperElement = newPropChangeTestElements cacheMode
-    doPropChangeTest resetsCache, testName, propChangeFunction, wrapperElement, done
+    doPropChangeTest resetsCache, testName, propChangeFunction, wrapperElement
 
 {stateEpochTest} = StateEpochTestHelper
 Element.drawCachingEnabled && suite "Art.Engine.Core.Element.cache draw", ->

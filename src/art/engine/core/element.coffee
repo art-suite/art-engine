@@ -1588,18 +1588,27 @@ module.exports = createWithPostCreate class Element extends ElementBase
   moveBelowMask:            -> @getPendingParent()?.addChildBelowMask @
 
   ###########################
-  # private children API
+  # EPOCH STUFF
   ###########################
 
-  # parentSizeChanged: -> @requestLayout()
+  _applyStateChanges: ->
 
-  # should rename parentSet - it only gets triggered with parent is set to a new, valid parent, not when parent goes NULL
-  # parentChanged: (oldParent)->
-  #   @updateCanvasElement()
-  #   @queueEvent "parentChanged",
-  #     oldParent: oldParent
-  #     parent: @parent
-  #     element: @
+    @_sizeChanged @_pendingState._currentSize, @_currentSize if @getCurrentSizeChanged()
+
+    if @getElementToParentMatrixChanged()
+      oldElementToParentMatrix = @_elementToParentMatrix
+
+    super
+
+    @_drawAreaChanged()       if @_pendingState.__drawAreaChanged
+    @_drawPropertiesChanged() if @_pendingState.__drawPropertiesChanged
+    @_elementToParentMatrixChanged oldElementToParentMatrix if oldElementToParentMatrix
+    @_pendingState.__drawAreaChanged = false
+    @_pendingState.__drawPropertiesChanged = false
+    @_pendingState.__layoutPropertiesChanged = false
+
+    unless @_parent
+      releaseCount = @_releaseAllCacheBitmaps()
 
 
   ##########################
