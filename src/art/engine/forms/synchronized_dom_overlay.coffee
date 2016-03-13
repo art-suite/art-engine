@@ -10,10 +10,10 @@ Element = require '../core/element'
 
 module.exports = class SynchronizedDomOverlay extends Element
   constructor: (options={}) ->
-    super
     @_attachedToCanvasElement = null
     @_updateQueued = false
     @setDomElement options.domElement
+    super
 
   @getter domElement: -> @_domElement
   @setter domElement: (domElement) ->

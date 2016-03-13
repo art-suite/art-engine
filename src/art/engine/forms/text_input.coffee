@@ -74,13 +74,16 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
         value: @value
         lastValue: @lastValue
 
-  @getter
-    value: -> @domElement.value
-    color: -> color @domElement.css "color"
+  @virtualProperty
+    value:
+      getter: (pending) -> @domElement.value
+      setter: (v) -> @domElement.value = v
 
-  @setter
-    value: (v)-> @domElement.value = v
-    color: (c)-> @domElement.css "color", c
+    color:
+      getter: -> color @domElement.style.color
+      setter: (c)->
+        self.domElement = @domElement
+        @domElement.style.color = color(c).toString()
 
   selectAll: ->
     @domElement.select()
