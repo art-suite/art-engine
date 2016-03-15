@@ -91,6 +91,7 @@ module.exports = class FullScreenApp
             margin: 0px;
             background-color: #eee;
             overflow: hidden;
+            font-size: 0px;
           }
           canvas {
             width: 100%;
