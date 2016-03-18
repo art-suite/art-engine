@@ -142,6 +142,13 @@ module.exports = class GlobalEpochCycle extends Epoch
     globalCount "stateEpochAfter", stateEpoch.getEpochLength()
 
   processEpochItems: (items) ->
+    fluxEpoch._frameSecond =
+    idleEpoch._frameSecond =
+    eventEpoch._frameSecond =
+    reactEpoch._frameSecond =
+    stateEpoch._frameSecond =
+    drawEpoch._frameSecond = @_frameSecond
+
     Foundation.resetGlobalCounts()
     startTime = currentSecond()
 

@@ -2,8 +2,9 @@
 # file: tests/art/engine/animation/index.coffee
 
 module.exports =
-Animation          = require './namespace'
-Animation.Animator = require './animator'
+Animation                    = require './namespace'
+Animation.Animator           = require './animator'
+Animation.PersistantAnimator = require './persistant_animator'
 Animation.finishLoad(
-  ["Animator"]
+  ["Animator","PersistantAnimator"]
 )

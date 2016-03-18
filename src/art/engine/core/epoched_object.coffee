@@ -1,6 +1,7 @@
 Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
+EasingPersistantAnimator = require '../animation/easing_persistant_animator'
 
 {
   log
@@ -12,6 +13,8 @@ StateEpoch = require "./state_epoch"
   isFunction
   shallowEq
   plainObjectsDeepEq
+  isString
+  inspect
 } = Foundation
 {propInternalName} = BaseObject
 blankOptions = {}
@@ -504,8 +507,34 @@ module.exports = class EpochedObject extends BaseObject
 
   ###
   _applyStateChanges: ->
-    mergeInto @, @_pendingState
     @__stateChangeQueued = false
+    pendingAnimators = @_pendingState._animators
+    {frameSecond} = stateEpoch
+    for prop, v of @_pendingState
+      do (v) =>
+        currentValue = @[prop]
+        if pendingAnimators && (animator = pendingAnimators[prop]) && (animator.active || !propsEq currentValue, v)
+          v = animator.animateAbsoluteTime @, @[prop], v, frameSecond
+        @[prop] = v
+
+  ######################
+  #
+  ######################
+  @concreteProperty
+    animators:
+      default: null
+      preprocess: (v) ->
+        processed = null
+        addProp = (prop, options) ->
+          processed ||= {}
+          processed["_" + prop] = new EasingPersistantAnimator BaseObject._propSetterName(prop), options
+
+        if isString v
+          addProp prop for prop in v.match /[a-z]+/gi
+        else
+          addProp prop, options for prop, options of v
+
+        processed
 
   ######################
   # Public

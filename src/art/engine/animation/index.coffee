@@ -2,10 +2,11 @@
 # file: art/engine/animation/index.coffee
 
 module.exports =
-Animation                 = require './namespace'
-Animation.Animator        = require './animator'
-Animation.Animator2       = require './animator2'
-Animation.EasingFunctions = require './easing_functions'
+Animation                          = require './namespace'
+Animation.Animator                 = require './animator'
+Animation.EasingFunctions          = require './easing_functions'
+Animation.EasingPersistantAnimator = require './easing_persistant_animator'
+Animation.PersistantAnimator       = require './persistant_animator'
 Animation.finishLoad(
-  ["Animator","Animator2","EasingFunctions"]
+  ["Animator","EasingFunctions","EasingPersistantAnimator","PersistantAnimator"]
 )
