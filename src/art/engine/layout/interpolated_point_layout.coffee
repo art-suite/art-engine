@@ -41,6 +41,15 @@ define [
 
     toString: -> "(#{@layout1} * #{@p} + #{@layout2} * #{1 - @p})"
 
+    @getter inspectedString: -> @toString()
+
+    inspect: (inspector)->
+      v = @inspect2()
+      inspector?.put v
+      v
+
+    inspect2: -> @toString()
+
     @interpolate1D: interpolate1D = (p, hasFrom, hasTo, from, to) ->
       if hasFrom
         if hasTo
