@@ -158,6 +158,11 @@ module.exports = class EpochedObject extends BaseObject
         preprocessAndValidate function passed to the setter
         animations
 
+  Virtual property getter-function-only (if the 'options' passed in is actually a function)
+
+    If you pass in a function only when defining a virtual property, you are setting the getter.
+    Thus you can define a virtual property with just a getter.
+
   Virtual vs Concrete properties:
 
     * Virutal props don't have default values
@@ -167,6 +172,31 @@ module.exports = class EpochedObject extends BaseObject
     * getter - you must specify a custom getter, see getter option above
     * setter specification/semantics are a little different. See setter option above
 
+  ###
+
+  ###################
+  # PRIVATE / Must be before DEFINE PROPS section below
+  ###################
+  ###
+  propertyInitializerList:
+    list of tupples, one per property:
+      [externalName, internalName, preprocessor, defaultValue]
+  ###
+  @_getPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerList", []
+
+  ###
+  metaProperties fields:
+    externalName:
+    internalName:
+    preprocessor:
+    defaultValue:
+    setterName:
+    getterName:
+  ###
+  @_getMetaProperties: -> @getPrototypePropertyExtendedByInheritance "metaProperties", {}
+
+  ###
+  Main method for defining properties. Used by concreteProp, virtualProp and others.
   ###
   @_defineElementProperty: (externalName, options={})  ->
     internalName = propInternalName externalName
@@ -264,35 +294,159 @@ module.exports = class EpochedObject extends BaseObject
     @_addGetter @::, externalName + "Changed",             -> !shallowPropsEq getter.call(@), pendingGetter.call(@)
     @_addSetter @::, externalName,                         setter
 
+  ###################
+  # DEFINE PROPS
+  ###################
   @concreteProperty: (map)->
     for prop, options of map
       @_defineElementProperty prop, options
 
+  ###
+  IN: map from prop names to:
+    a) property options object: see 'Virtual property options' above
+    b) OR getter function f. Equivelent to (propName: getter: f)
+  ###
   @virtualProperty: (map)->
     for prop, options of map
       options = getter: options if isFunction options
       options.virtual = true
       @_defineElementProperty prop, options
 
-  # list of tupples, one per property:
-  #   [externalName, preprocessor, setter]
-  # @_getVirtualPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "virtualPropertyInitializerList", []
+  ###################
+  # SET PROPS
+  ###################
 
-  # list of tupples, one per property:
-  #   [externalName, internalName, preprocessor, defaultValue]
-  @_getPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerList", []
-  # @_getPropertyInitializerDefaultValuesList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerDefaultValuesList", []
+  ###
+  EFFECT: set each property in propertySet if it is a legitimate property; otherwise it is ignored
+  ###
+  setProperties: (propertySet) ->
+    metaProperties = @metaProperties
+    for property, value of propertySet
+      mp = metaProperties[property]
+      unless mp.virtual
+        @[setterName] value if setterName = mp?.setterName
 
-  # properties of properties:
-  #   externalName:
-  #   internalName:
-  #   preprocessor:
-  #   defaultValue:
-  #   setterName:
-  #   getterName:
-  @_getMetaProperties: -> @getPrototypePropertyExtendedByInheritance "metaProperties", {}
+    propertySet
 
-  @generateSetPropertyDefaults: ->
+  ###
+  EFFECT: set all properties, use propertySet values if present, otherwise use defaults
+
+  TODO: this sets @parent and @children, it shouldn't, but they aren't virtual...
+  TODO: if this is used much, it would be faster to have a concreteMetaProperties array so we don't have to test mp.virtual
+    this "concreteMetaProperties" array would not include parent or children
+  ###
+  replaceProperties: (propertySet) ->
+    metaProperties = @metaProperties
+    for property, mp of metaProperties when !mp.virtual
+      externalName = mp.externalName
+      @[mp.setterName]? if propertySet.hasOwnProperty(externalName)
+        propertySet[externalName]
+      else
+        mp.defaultValue
+    propertySet
+
+  setProperty: (property, value) ->
+    if mp = @metaProperties[property]
+      @[mp.setterName]? value
+
+  ###
+  EFFECT: reset one property to its default
+  ###
+  resetProperty: (property) ->
+    if mp = @metaProperties[property]
+      @[mp.setterName]? mp.defaultValue
+
+  ###################
+  # READ/INSPECT PROPS
+  ###################
+
+  # used by Animator / Foundation.Transaction to normalize to/from values
+  preprocessProperties: (propertySet) ->
+    metaProperties = @metaProperties
+    for property, value of propertySet when mp = metaProperties[property]
+      propertySet[property] = mp.preprocessor value, @[mp.internalName]
+    propertySet
+
+  getPendingPropertyValues: (propertyNames) ->
+    ret = {}
+    for property in propertyNames when metaProp = @metaProperties[property]
+      ret[property] = @_pendingState[metaProp.internalName]
+    ret
+
+  getPropertyValues: (propertyNames) ->
+    ret = {}
+    for property in propertyNames when metaProp = @metaProperties[property]
+      ret[property] = @[metaProp.internalName]
+    ret
+
+  @getter
+    props: ->
+      ret = {}
+      for k, {virtual} of @metaProperties
+        ret[k] = @[k]
+      ret
+
+    concreteProps: ->
+      ret = {}
+      for k, {internalName, virtual} of @metaProperties when !virtual
+        ret[k] = @[internalName]
+      ret
+
+    virtualProps: ->
+      ret = {}
+      for k, {virtual} of @metaProperties when virtual
+        ret[k] = @[k]
+      ret
+
+  ##########################
+  # EPOCHED STATE
+  ##########################
+
+  onNextReady:  (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
+  @onNextReady: (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
+  onIdle:       (callback) -> stateEpoch.onNextReady callback
+
+  getState: (pending = false) -> if pending then @_pendingState else @
+
+  ######################
+  # CONSTRUCTOR
+  ######################
+  @concreteProperty
+    animators:
+      default: null
+      preprocess: (v) ->
+        processed = null
+        addProp = (prop, options) ->
+          processed ||= {}
+          processed["_" + prop] = new EasingPersistantAnimator BaseObject._propSetterName(prop), options
+
+        if isString v
+          addProp prop for prop in v.match /[a-z]+/gi
+        else
+          addProp prop, options for prop, options of v
+
+        processed
+
+  ######################
+  # Public
+  ######################
+  constructor: (options = blankOptions)->
+    super
+
+    @_pendingState = {}
+    @__stateChangeQueued = false
+
+    @__layoutPropertiesChanged = false
+    @__drawAreaChanged = true
+    @__drawPropertiesChanged = true
+
+    @_initProperties options
+
+  ######################
+  # PRIVATE: PROPS
+  ######################
+
+  @_generateSetPropertyDefaults: ->
     propertyInitializerList = @_getPropertyInitializerList()
     metaProperties = @_getMetaProperties()
     functionString = compactFlatten([
@@ -324,13 +478,14 @@ module.exports = class EpochedObject extends BaseObject
     ]).join "\n"
     eval functionString
 
+
   virtualPropertySecondPassMetaProperties = []
   virtualPropertySecondPassValues = []
   _initProperties: (options) ->
     {metaProperties} = @
 
     unless @__proto__.hasOwnProperty "_initPropertiesAuto"
-      @__proto__._initPropertiesAuto = @class.generateSetPropertyDefaults()
+      @__proto__._initPropertiesAuto = @class._generateSetPropertyDefaults()
 
     @_initPropertiesAuto options
 
@@ -358,58 +513,6 @@ module.exports = class EpochedObject extends BaseObject
     @_elementChanged true, true, true
     null
 
-  # set each property in propertySet if it is a legitimate property; otherwise it is ignored
-  setProperties: (propertySet) ->
-    metaProperties = @metaProperties
-    for property, value of propertySet
-      mp = metaProperties[property]
-      unless mp.virtual
-        @[setterName] value if setterName = mp?.setterName
-
-    propertySet
-
-  # set all properties, use propertySet values if present, otherwise use defaults
-  # TODO: this sets @parent and @children, it shouldn't, but they aren't virtual...
-  # TODO: if this is used much, it would be faster to have a concreteMetaProperties array so we don't have to test mp.virtual
-  #   this "concreteMetaProperties" array would not include parent or children
-  replaceProperties: (propertySet) ->
-    metaProperties = @metaProperties
-    for property, mp of metaProperties when !mp.virtual
-      externalName = mp.externalName
-      @[mp.setterName]? if propertySet.hasOwnProperty(externalName)
-        propertySet[externalName]
-      else
-        mp.defaultValue
-    propertySet
-
-  setProperty: (property, value) ->
-    if mp = @metaProperties[property]
-      @[mp.setterName]? value
-
-  # reset property to its default
-  resetProperty: (property) ->
-    if mp = @metaProperties[property]
-      @[mp.setterName]? mp.defaultValue
-
-  # used by Animator / Foundation.Transaction to normalize to/from values
-  preprocessProperties: (propertySet) ->
-    metaProperties = @metaProperties
-    for property, value of propertySet when mp = metaProperties[property]
-      propertySet[property] = mp.preprocessor value, @[mp.internalName]
-    propertySet
-
-  getPendingPropertyValues: (propertyNames) ->
-    ret = {}
-    for property in propertyNames when metaProp = @metaProperties[property]
-      ret[property] = @_pendingState[metaProp.internalName]
-    ret
-
-  getPropertyValues: (propertyNames) ->
-    ret = {}
-    for property in propertyNames when metaProp = @metaProperties[property]
-      ret[property] = @[metaProp.internalName]
-    ret
-
   _getChangingStateKeys: ->
     k for k, v of @_pendingState when !shallowPropsEq @[k], @_pendingState[k]
 
@@ -421,41 +524,11 @@ module.exports = class EpochedObject extends BaseObject
       newValues[k] = v
     log "ElementBase pending state changes": element: @inspectedName, old: oldValues, new: newValues
 
-  @getter
-    props: ->
-      ret = {}
-      for k, {virtual} of @metaProperties
-        ret[k] = @[k]
-      ret
 
-    concreteProps: ->
-      ret = {}
-      for k, {internalName, virtual} of @metaProperties when !virtual
-        ret[k] = @[internalName]
-      ret
-
-    virtualProps: ->
-      ret = {}
-      for k, {virtual} of @metaProperties when virtual
-        ret[k] = @[k]
-      ret
-
-  ##########################
-  # EPOCHED STATE
-  ##########################
+  ######################
+  # PRIVATE: STATE EPOCH
+  ######################
   _getIsChangingElement: -> stateEpoch._isChangingElement @
-
-  onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  @onNextReady: (callback, forceEpoch = true) ->
-    stateEpoch.onNextReady callback, forceEpoch
-
-  onIdle: (callback) ->
-    stateEpoch.onNextReady callback
-
-  getState: (pending = false) ->
-    if pending then @_pendingState else @
 
   _elementChanged: (layoutPropertyChanged, drawPropertyChanged, drawAreaPropertyChanged)->
     {_pendingState} = @
@@ -518,38 +591,3 @@ module.exports = class EpochedObject extends BaseObject
           @[prop] = v
     else
       mergeInto @, @_pendingState
-
-  ######################
-  #
-  ######################
-  @concreteProperty
-    animators:
-      default: null
-      preprocess: (v) ->
-        processed = null
-        addProp = (prop, options) ->
-          processed ||= {}
-          processed["_" + prop] = new EasingPersistantAnimator BaseObject._propSetterName(prop), options
-
-        if isString v
-          addProp prop for prop in v.match /[a-z]+/gi
-        else
-          addProp prop, options for prop, options of v
-
-        processed
-
-  ######################
-  # Public
-  ######################
-  constructor: (options = blankOptions)->
-    super
-
-    @_pendingState = {}
-    @__stateChangeQueued = false
-
-    @__layoutPropertiesChanged = false
-    @__drawAreaChanged = true
-    @__drawPropertiesChanged = true
-
-    @_initProperties options
-
