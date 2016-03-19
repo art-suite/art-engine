@@ -508,14 +508,16 @@ module.exports = class EpochedObject extends BaseObject
   ###
   _applyStateChanges: ->
     @__stateChangeQueued = false
-    pendingAnimators = @_pendingState._animators
-    {frameSecond} = stateEpoch
-    for prop, v of @_pendingState
-      do (v) =>
-        currentValue = @[prop]
-        if pendingAnimators && (animator = pendingAnimators[prop]) && (animator.active || !propsEq currentValue, v)
-          v = animator.animateAbsoluteTime @, @[prop], v, frameSecond
-        @[prop] = v
+    if pendingAnimators = @_pendingState._animators
+      {frameSecond} = stateEpoch
+      for prop, v of @_pendingState
+        do (v) =>
+          currentValue = @[prop]
+          if pendingAnimators && (animator = pendingAnimators[prop]) && (animator.active || !propsEq currentValue, v)
+            v = animator.animateAbsoluteTime @, @[prop], v, frameSecond
+          @[prop] = v
+    else
+      mergeInto @, @_pendingState
 
   ######################
   #
