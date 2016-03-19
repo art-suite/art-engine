@@ -16,11 +16,14 @@ ElementBase adds:
 
   1. automatic ElementFactory registration
   2. Element instance registration
-  3. name/key property
+  3. The name and key properties (TODO: reduce to just 'key')
   4. Inspectors
 
+ElementBase is the root for Element and eventually Span. All elements in the AIM
+must inherit from ElementBase.
+
 TODO:
-  5. parent and children relationships
+  5. parent and children relationships should be in ElementBase not Element
 ###
 
 module.exports = class ElementBase extends EventedEpochedObject
@@ -29,6 +32,21 @@ module.exports = class ElementBase extends EventedEpochedObject
   @postCreate: ->
     elementFactory.register @ if @registerWithElementFactory()
     super
+
+  constructor: ->
+    super
+
+    # Used by ArtEngineRemote to map Virtual-Elements on the worker thread to Elements on the main thread
+    @remoteId = null
+
+    # TODO: we probably don't need both remoteId and creator...
+    # Art.EngineRemote is just getting prototyped now. Expect to phase out creator as we switch
+    # to using Art.EngineRemote.
+    @creator = null # used by Art.React
+
+    # __depth and __redrawRequired are only used while processing the state epoch
+    @__depth = 0
+    @__redrawRequired = false
 
   ############################
   # name/key property
@@ -44,7 +62,6 @@ module.exports = class ElementBase extends EventedEpochedObject
     key:
       getter: (pending) -> @getState(pending)._name
       setter: (v) -> @setName v
-
 
   ##########################
   # Element Registry

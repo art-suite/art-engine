@@ -543,14 +543,9 @@ module.exports = class EpochedObject extends BaseObject
   ######################
   constructor: (options = blankOptions)->
     super
-    @remoteId = null
 
     @_pendingState = {}
     @__stateChangeQueued = false
-
-    # __depth and __redrawRequired are only used while processing the state epoch
-    @__depth = 0
-    @__redrawRequired = false
 
     @__layoutPropertiesChanged = false
     @__drawAreaChanged = true

@@ -13,6 +13,11 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
       assert.eq e.animators._opacity.duration, 1
 
 suite "Art.Engine.Animation.PersistantAnimator.works", ->
+  test "animators property doesnt have an effect for initial properties", ->
+    e1 = new Element opacity: .5
+    e2 = new Element opacity: .5, animators: "opacity"
+    e1.onNextReady ->
+      assert.eq e1.opacity, e2.opacity
 
   test "basic animation test", ->
     e = new Element animators: "opacity"
@@ -97,3 +102,11 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
         opacity: duration: .1, on: update: ->
           resolve() if e.animators._opacity.animationPos == 1
       e.onNextReady -> e.opacity = 0
+
+suite "Art.Engine.Animation.PersistantAnimator.location", ->
+  test "update gets called when done", ->
+    e = new Element
+      location: 10
+      animators: "location"
+    e.onNextReady ->
+      log e.location

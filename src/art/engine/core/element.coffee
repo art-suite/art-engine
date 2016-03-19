@@ -103,11 +103,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_animatingOut = false
     @_locationLayoutDisabled = false
 
-    # TODO: we probably don't need both remoteId and creator...
-    # Art.EngineRemote is just getting prototyped now. Expect to phase out creator as we switch
-    # to using Art.EngineRemote.
-    @creator = null # used by Art.React
-
   _initTemporaryFields: ->
     # only valid during drawing
     @_currentDrawTarget = null
