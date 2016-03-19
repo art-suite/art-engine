@@ -33,13 +33,14 @@ define [
       else if p == 1 then toLayout
       else new PointLayoutBase.InterpolatedPointLayout @, toLayout, p
 
+    @getter inspectedString: -> @toString()
+
     inspect: (inspector)->
       v = @inspect2()
       inspector?.put v
       v
 
-    inspect2: ->
-      @toString()
+    inspect2: -> @toString()
 
     @getter """
       xRelativeToParentW

@@ -289,9 +289,6 @@ define [
           # numbers, strings or arrays all get passed to point() and used as @initializer constant layout
           @_setupFromPoint @initializer
 
-    @getter
-      inspectedString: -> @toString()
-
     toString: ->
       "PointLayout(#{if @initializer then inspectLean @initializer else '0'})"
 
