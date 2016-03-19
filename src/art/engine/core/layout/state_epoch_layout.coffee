@@ -105,11 +105,8 @@ module.exports = class StateEpochLayout extends BaseObject
     childrenWidth  = 0
 
     for child in children when children
-      # if child.getPendingLayoutSizeParentCircular() #abs(right) < nearInfinityResult && abs(bottom) < nearInfinityResult
-      #   log "layoutChildrenComputeArea: move child to secondPassChildren: #{child.inspectedName}"
-      #   secondPassChildren.push child
-      if skipLocationLayout = child.getPendingLayoutLocationParentCircular()
 
+      if skipLocationLayout = child.getPendingLayoutLocationParentCircular()
 
         child._setLocationFromLayout point0
         preDeinfinitizedChildSize = layoutElement child, parentSize, true
@@ -326,17 +323,8 @@ module.exports = class StateEpochLayout extends BaseObject
           child._setLocationFromLayout point l.x + offsetX, l.y + offsetY
 
   CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
-    # console.error """
-    #   layoutElement-start: #{element.inspectedName}
-    #     parentSize:                 #{parentSize}
-    #   """
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
-    # unless skipLocation
-    #   if @_elementsLayedOut[key]
-    #     console.error "double layout of #{key}"
-    #   else
-    #     @_elementsLayedOut[key] = element
 
     return element.getPendingCurrentSize() unless (
       element.__layoutPropertiesChanged ||
@@ -390,13 +378,6 @@ module.exports = class StateEpochLayout extends BaseObject
     else
       secondPassChildren = pendingChildren
 
-    # log layoutElement1:
-    #   element: element.inspectedName
-    #   parentSize: parentSize
-    #   firstPassSize: firstPassSize
-    #   firstPassChildren: firstPassChildren && (c.inspectedName for c in firstPassChildren)
-    #   secondPassChildren: secondPassChildren && (c.inspectedName for c in secondPassChildren)
-    # Layout firstPassChildren, compute childrenSize and secondPassSize
     #####################################
     # Children First-Pass
     #####################################
@@ -471,16 +452,6 @@ module.exports = class StateEpochLayout extends BaseObject
       secondPassSize = element._layoutSize parentSize, childrenSize
       secondPassSizeForChildren = element._sizeForChildren secondPassSize
 
-      # log
-      #   layoutElement2:
-      #     element: element.inspectedName
-      #     parentSize: parentSize
-      #     childrenSize: childrenSize
-      #     secondPassSize: secondPassSize
-      #     secondPassSizeForChildren:secondPassSizeForChildren
-      #     firstPassChildren: firstPassChildren && (c.inspectedName for c in firstPassChildren)
-      #     secondPassChildren: secondPassChildren && (c.inspectedName for c in secondPassChildren)
-
       # finalize layout except location as needed
       if secondPassSizeLayoutChildren
         for child in secondPassSizeLayoutChildren
@@ -502,13 +473,6 @@ module.exports = class StateEpochLayout extends BaseObject
     else if hasCustomLayoutChildrenSecondPass
       element.customLayoutChildrenSecondPass secondPassSizeForChildren
 
-    # log
-    #   element: element.inspectedName
-    #   children: (c.inspectedName for c in element.children)
-    #   firstPassChildren: firstPassChildren && (c.inspectedName for c in firstPassChildren)
-    #   secondPassChildren: secondPassChildren && (c.inspectedName for c in secondPassChildren)
-    #   secondPassLocationLayoutChildren: secondPassLocationLayoutChildren && (c.inspectedName for c in secondPassLocationLayoutChildren)
-
     layoutElement child, secondPassSizeForChildren for child in secondPassChildren if secondPassChildren
 
     #####################################
@@ -518,12 +482,5 @@ module.exports = class StateEpochLayout extends BaseObject
     element._setSizeFromLayout     deinfinitize secondPassSize
     element._setLocationFromLayout deinfinitize finalLocation unless skipLocation
 
-    # console.error """
-    #   layoutElement-done: #{element.inspectedName}
-    #     parentSize:                 #{parentSize}
-    #     secondPassSize:             #{secondPassSize}
-    #     pendingCurrentSize:         #{element.getPendingCurrentSize()}
-    #     secondPassSizeForChildren:  #{secondPassSizeForChildren}
-    #   """
     secondPassSize
 
