@@ -281,23 +281,26 @@ module.exports = class PersistantAnimatorBase extends BaseObject
     @_active = false
     @_startSecond = null
     @_currentSecond = null
+    @_fromValue = null
     @on options.on if options?.on
 
   @getter
     deltaSecond: -> @_currentSecond - @_startSecond
 
-  animateAbsoluteTime: (element, fromValue, toValue, @_currentSecond) ->
+  animateAbsoluteTime: (element, currentValue, toValue, @_currentSecond) ->
     if !@_active
       @_startSecond = @_currentSecond
+      @_fromValue = currentValue
       @queueEvent "start"
       @_active = true
 
-    @queueEvent "update"
+    deltaSecond = @getDeltaSecond()
 
-    newValue = @animate fromValue, toValue, @getDeltaSecond()
+    newValue = @animate @_fromValue, toValue, deltaSecond, currentValue
 
     if @_active
-      element.onNextReady => element[@_setterName] toValue
+      @queueEvent "update" if deltaSecond > 0
+      element.onNextEpoch => element[@_setterName] toValue
     else
       @queueEvent "done"
 

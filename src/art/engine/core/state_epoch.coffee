@@ -62,8 +62,9 @@ define [
       el._needsRedrawing()
       null
 
-    _applyStateChanges: (changingElements)->
+    applyStateChanges: (changingElements)->
       el._applyStateChanges() for el in changingElements
+      null
 
     # children who's draw-order change need redrawing
     markChildrenRedrawRequired = (element) ->
@@ -178,9 +179,15 @@ define [
           o
         ]
 
+    applyAnimators: (changingElements)->
+      el._applyAnimators() for el in changingElements
+      null
+
     processEpochItems: (changingElements)->
       # log "StateEpoc#processEpochItems"
       # log @inspectChangingElements changingElements
+      @applyAnimators changingElements
+
       @computeDepths changingElements
       @notifyLayoutPropertiesChanged changingElements
 
@@ -219,7 +226,7 @@ define [
       ###########################################
       # apply all state-changes
       ###########################################
-      @_applyStateChanges changingElements
+      @applyStateChanges changingElements
 
       ###########################################
       # all state is now identical to pendingState

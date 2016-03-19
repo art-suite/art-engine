@@ -1,6 +1,7 @@
 Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
+GlobalEpochCycle = require './global_epoch_cycle'
 EasingPersistantAnimator = require '../animation/easing_persistant_animator'
 
 {
@@ -19,6 +20,7 @@ EasingPersistantAnimator = require '../animation/easing_persistant_animator'
 {propInternalName} = BaseObject
 blankOptions = {}
 {stateEpoch} = StateEpoch
+{globalEpochCycle} = GlobalEpochCycle
 
 module.exports = class EpochedObject extends BaseObject
   @propsEq: propsEq = plainObjectsDeepEq
@@ -404,12 +406,14 @@ module.exports = class EpochedObject extends BaseObject
 
   onNextReady:  (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
   @onNextReady: (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
+  onNextEpoch:  (callback, forceEpoch = true) -> globalEpochCycle.onNextReady callback, forceEpoch
+  @onNextEpoch: (callback, forceEpoch = true) -> globalEpochCycle.onNextReady callback, forceEpoch
   onIdle:       (callback) -> stateEpoch.onNextReady callback
 
   getState: (pending = false) -> if pending then @_pendingState else @
 
   ######################
-  # CONSTRUCTOR
+  # ANIMATORS for PROPS
   ######################
   @concreteProperty
     animators:
@@ -428,12 +432,13 @@ module.exports = class EpochedObject extends BaseObject
         processed
 
   ######################
-  # Public
+  # CONSTRUCTOR
   ######################
   constructor: (options = blankOptions)->
     super
 
     @_pendingState = {}
+    @__stateEpochCount = 0
     @__stateChangeQueued = false
 
     @__layoutPropertiesChanged = false
@@ -581,13 +586,19 @@ module.exports = class EpochedObject extends BaseObject
   ###
   _applyStateChanges: ->
     @__stateChangeQueued = false
-    if pendingAnimators = @_pendingState._animators
+    @__stateEpochCount++
+    mergeInto @, @_pendingState
+
+  _applyAnimators: ->
+    if @__stateEpochCount > 0 && pendingAnimators = @_pendingState._animators
       {frameSecond} = stateEpoch
-      for prop, v of @_pendingState
-        do (v) =>
-          currentValue = @[prop]
-          if pendingAnimators && (animator = pendingAnimators[prop]) && (animator.active || !propsEq currentValue, v)
-            v = animator.animateAbsoluteTime @, @[prop], v, frameSecond
-          @[prop] = v
-    else
-      mergeInto @, @_pendingState
+      for prop, pendingValue of @_pendingState when animator = pendingAnimators[prop]
+        currentValue = @[prop]
+
+        newValue = if animator.active || !propsEq currentValue, pendingValue
+          animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
+        else pendingValue
+
+        @_pendingState[prop] = newValue
+
+    null

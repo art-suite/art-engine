@@ -43,7 +43,7 @@ suite "Art.Engine.Animation.PersistantAnimator.works", ->
   test "animation updates to new target value", ->
     new Promise (resolve) ->
       updatedOnce = false
-      e = new Element animators: opacity: d: 0, on:
+      e = new Element animators: opacity: on:
         update: ->
           unless updatedOnce
             updatedOnce = true
@@ -69,7 +69,7 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
         log "triggered on init!!!"
         assert.fail()
 
-    e.onNextReady()
+    e.onNextEpoch().then -> e.onNextEpoch()
 
   test "done", ->
     new Promise (resolve) ->
@@ -79,34 +79,42 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
           resolve()
       e.onNextReady -> e.opacity = 0
 
-  test "update gets called when starting", ->
+  test "update only gets called inbetween", ->
+    testedUpdate = testedStart = false
     new Promise (resolve) ->
       e = new Element animators:
-        opacity: duration: .1, on: update: ->
-          resolve() if e.animators._opacity.animationPos == 0
-      e.onNextReady -> e.opacity = 0
-
-  test "update gets called inbetween", ->
-    resolved = false
-    new Promise (resolve) ->
-      e = new Element animators:
-        opacity: duration: .1, on: update: ->
-          if !resolved && e.animators._opacity.animationPos > 0 && e.animators._opacity.animationPos < 1
-            resolved = true
+        opacity: duration: .1, on:
+          start: ->
+            testedStart = true
+            assert.eq e.animators._opacity.animationPos, 0
+          update: ->
+            testedUpdate = true
+            assert.neq e.animators._opacity.animationPos, 0
+            assert.neq e.animators._opacity.animationPos, 1
+          done: ->
+            assert.eq e.animators._opacity.animationPos, 1
+            assert.eq testedUpdate, true
+            assert.eq testedStart, true
             resolve()
       e.onNextReady -> e.opacity = 0
 
-  test "update gets called when done", ->
-    new Promise (resolve) ->
-      e = new Element animators:
-        opacity: duration: .1, on: update: ->
-          resolve() if e.animators._opacity.animationPos == 1
-      e.onNextReady -> e.opacity = 0
-
 suite "Art.Engine.Animation.PersistantAnimator.location", ->
-  test "update gets called when done", ->
-    e = new Element
-      location: 10
-      animators: "location"
-    e.onNextReady ->
-      log e.location
+  test "location is animatable", ->
+    testedStart = testedUpdate = false
+    new Promise (resolve) ->
+      e = new Element
+        location: 10
+        animators: location: on:
+          start: ->
+            testedStart = true
+            assert.eq e.location.toString(), "PointLayout(10)"
+          update: ->
+            testedUpdate = true
+            assert.neq e.location.toString(), "PointLayout(10)"
+            assert.neq e.location.toString(), "PointLayout(20)"
+          done: ->
+            assert.eq testedStart, true
+            assert.eq testedUpdate, true
+            assert.eq e.location.toString(), "PointLayout(20)"
+            resolve()
+      e.onNextReady -> e.location = 20
