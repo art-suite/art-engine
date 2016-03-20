@@ -429,8 +429,8 @@ module.exports = class EpochedObject extends BaseObject
             options
           else if isFunction options
             new PersistantAnimator prop, animate: options
-          else if animate = options?.animate
-            new PersistantAnimator prop, animate: animate
+          else if options?.animate
+            new PersistantAnimator prop, options
           else
             new EasingPersistantAnimator prop, options
 

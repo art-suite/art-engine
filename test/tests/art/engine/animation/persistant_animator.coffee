@@ -55,6 +55,17 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
 
       e.onNextReady -> e.opacity = 0
 
+  test "animator.options are the options passed to animators:", ->
+    new Promise (resolve) ->
+      e = new Element animators:
+        opacity:
+          foo: 123
+          animate: ({options, stop}) ->
+            assert.eq options.foo, 123
+            resolve();stop()
+
+      e.onNextReady -> e.opacity = 0
+
   test "animator.state persists", ->
     new Promise (resolve) ->
       e = new Element animators: opacity: ({state, stop, toValue}) ->
