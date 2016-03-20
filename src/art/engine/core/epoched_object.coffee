@@ -293,7 +293,6 @@ module.exports = class EpochedObject extends BaseObject
     @_getMetaProperties()[externalName] = metaProperties
 
     capitalizedExternalName = capitalize externalName
-    @::["preprocess" + capitalizedExternalName] = preprocessor
     @_addGetter @::, externalName,                         getter
     @_addGetter @::, "pending" + capitalizedExternalName, pendingGetter
     @_addGetter @::, externalName + "Changed",             -> !shallowPropsEq getter.call(@), pendingGetter.call(@)
@@ -353,6 +352,10 @@ module.exports = class EpochedObject extends BaseObject
   setProperty: (property, value) ->
     if mp = @metaProperties[property]
       @[mp.setterName]? value
+
+  preprocessProperty: (property, value) ->
+    if mp = @metaProperties[property]
+      mp.preprocessor value
 
   ###
   EFFECT: reset one property to its default

@@ -310,9 +310,6 @@ module.exports = class PersistantAnimator extends BaseObject
   ###
   constructor: (prop, options)->
     @_prop = prop
-    upperCamelCaseProp = capitalize prop
-    @_setterName = "set" + upperCamelCaseProp
-    @_preprocessorName = "preprocess" + upperCamelCaseProp
     @_options = options
     @_active = false
     @_startSecond = null
@@ -359,10 +356,10 @@ module.exports = class PersistantAnimator extends BaseObject
 
     if @_active
       @queueEvent "update" if animationSeconds > 0
-      @_element.onNextEpoch => @_element[@_setterName] @_toValue
+      @_element.onNextEpoch => @_element[@_prop] = @_toValue
     else
       @queueEvent "done"
 
     @_lastSecond = @_currentSecond
 
-    @_element[@_preprocessorName] newValue
+    @_element.preprocessProperty @_prop, newValue
