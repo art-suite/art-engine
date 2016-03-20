@@ -266,37 +266,76 @@ Options:
 
 ###
 
-module.exports = class PersistantAnimatorBase extends BaseObject
+module.exports = class PersistantAnimator extends BaseObject
   @include EventedObject
 
-  @interpolate: (fromValue, toValue, pos) ->
-    if isFunction fromValue.interpolate
-      fromValue.interpolate toValue, pos
+  @interpolate: (startValue, toValue, pos) ->
+    if isFunction startValue.interpolate
+      startValue.interpolate toValue, pos
     else
-      fromValue + (toValue - fromValue) * pos
+      startValue + (toValue - startValue) * pos
 
-  @getter "active"
+  @getter "active options prop"
+  @getter
+    # state is provided for custom "animate" functions use.
+    # animate can store anything in state it chooses.
+    state: -> @_state ||= {}
 
-  constructor: (@_setterName, options)->
+  ###
+  IN:
+    options:
+      animate: (startValue, currentValue, toValue, secondsSinceStart, animator) -> nextValue
+        IN:
+          startValue: the value when the aniation started
+          currentValue: the element's current value
+          toValue: the requested target value for the animation
+          secondsSinceStart: seconds since the animation started
+          animator: this PersistantAnimator object
+
+        OUT: the next value in the animation
+
+        SHOULD:
+          Call animator.stop() when the animation is done.
+          The animation can run forever and never call stop if desired.
+          TODO: how do we release a forever animation?
+
+        STATE:
+          Use animator.state object to store any persistant state the animation function needs.
+          animator.state is reserved for exclusive use by the animate function.
+  ###
+  constructor: (prop, options)->
+    @_prop = prop
+    @_setterName = BaseObject._propSetterName prop
+    @_options = options
     @_active = false
     @_startSecond = null
     @_currentSecond = null
-    @_fromValue = null
+    @_startValue = null
+    @_animate = options.animate
     @on options.on if options?.on
 
   @getter
     deltaSecond: -> @_currentSecond - @_startSecond
 
+  stop: -> @_active = false
+
+  animate: (startValue, currentValue, toValue, secondsSinceStart) ->
+    if @_animate
+      @_animate startValue, currentValue, toValue, secondsSinceStart, @
+    else
+      @_active = false
+      toValue
+
   animateAbsoluteTime: (element, currentValue, toValue, @_currentSecond) ->
     if !@_active
       @_startSecond = @_currentSecond
-      @_fromValue = currentValue
+      @_startValue = currentValue
       @queueEvent "start"
       @_active = true
 
     deltaSecond = @getDeltaSecond()
 
-    newValue = @animate @_fromValue, toValue, deltaSecond, currentValue
+    newValue = @animate @_startValue, currentValue, toValue, deltaSecond
 
     if @_active
       @queueEvent "update" if deltaSecond > 0

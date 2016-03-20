@@ -2,6 +2,7 @@ Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
 GlobalEpochCycle = require './global_epoch_cycle'
+PersistantAnimator = require '../animation/persistant_animator'
 EasingPersistantAnimator = require '../animation/easing_persistant_animator'
 
 {
@@ -419,17 +420,24 @@ module.exports = class EpochedObject extends BaseObject
     animators:
       default: null
       preprocess: (v) ->
-        processed = null
+        processedAnimators = null
         addProp = (prop, options) ->
-          processed ||= {}
-          processed["_" + prop] = new EasingPersistantAnimator BaseObject._propSetterName(prop), options
+          processedAnimators ||= {}
+          processedAnimators["_" + prop] = if options instanceof PersistantAnimator
+            options
+          else if isFunction options
+            new PersistantAnimator prop, animate: options
+          else if animate = options?.animate
+            new PersistantAnimator prop, animate: animate
+          else
+            new EasingPersistantAnimator prop, options
 
         if isString v
           addProp prop for prop in v.match /[a-z]+/gi
         else
           addProp prop, options for prop, options of v
 
-        processed
+        processedAnimators
 
   ######################
   # CONSTRUCTOR

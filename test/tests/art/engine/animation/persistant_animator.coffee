@@ -6,6 +6,32 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
     e = new Element animators: 'opacity'
     e.onNextReady -> assert.ok e.animators._opacity instanceof PersistantAnimator
 
+  test "animators: opacity: null", ->
+    e = new Element animators: opacity: null
+    e.onNextReady -> assert.ok e.animators._opacity instanceof PersistantAnimator
+
+  test "animators: opacity: ->", ->
+    new Promise (resolve) ->
+      e = new Element animators: opacity: (fromValue, currentValue, toValue, animationSecond, animator) ->
+        e.onNextReady ->
+          assert.eq e.opacity, 0
+          resolve()
+        animator.stop()
+        toValue
+
+      e.onNextReady -> e.opacity = 0
+
+  test "animators: opacity: animate: ->", ->
+    new Promise (resolve) ->
+      e = new Element animators: opacity: animate: (fromValue, currentValue, toValue, animationSecond, animator) ->
+        e.onNextReady ->
+          assert.eq e.opacity, 0
+          resolve()
+        animator.stop()
+        toValue
+
+      e.onNextReady -> e.opacity = 0
+
   test "animators: opacity: d: 1", ->
     e = new Element animators: opacity: d: 1
     e.onNextReady ->

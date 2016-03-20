@@ -36,10 +36,10 @@ module.exports = class EasingPersistantAnimator extends PersistantAnimator
     @setFunction options.f || options.function
     @setDuration if options.d? then options.d else options.duration
 
-  animate: (fromValue, toValue, animationSecond) ->
-    if 1 < animationPos = animationSecond / @_duration
+  animate: (startValue, currentValue, toValue, secondsSinceStart) ->
+    if 1 < animationPos = secondsSinceStart / @_duration
       @_active = false
       animationPos = 1
 
-    interpolate fromValue, toValue, easedPos = @_function animationPos
+    interpolate startValue, toValue, easedPos = @_function animationPos
 
