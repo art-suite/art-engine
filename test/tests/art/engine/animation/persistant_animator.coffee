@@ -13,6 +13,8 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
   test "animators: opacity: ->", ->
     new Promise (resolve) ->
       e = new Element animators: opacity: (fromValue, currentValue, toValue, animationSecond, animator) ->
+        assert.ok animator.element instanceof Element
+        assert.eq animator.state, {}
         e.onNextReady ->
           assert.eq e.opacity, 0
           resolve()

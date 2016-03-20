@@ -275,7 +275,7 @@ module.exports = class PersistantAnimator extends BaseObject
     else
       startValue + (toValue - startValue) * pos
 
-  @getter "active options prop"
+  @getter "active options prop element"
   @getter
     # state is provided for custom "animate" functions use.
     # animate can store anything in state it chooses.
@@ -291,6 +291,9 @@ module.exports = class PersistantAnimator extends BaseObject
           toValue: the requested target value for the animation
           secondsSinceStart: seconds since the animation started
           animator: this PersistantAnimator object
+            animator.state: place to store state
+            animator.element: the element being animated
+            animator.stop: call this when done animating
 
         OUT: the next value in the animation
 
@@ -312,6 +315,7 @@ module.exports = class PersistantAnimator extends BaseObject
     @_currentSecond = null
     @_startValue = null
     @_animate = options.animate
+    @_element = null
     @on options.on if options?.on
 
   @getter
@@ -326,7 +330,7 @@ module.exports = class PersistantAnimator extends BaseObject
       @_active = false
       toValue
 
-  animateAbsoluteTime: (element, currentValue, toValue, @_currentSecond) ->
+  animateAbsoluteTime: (@_element, currentValue, toValue, @_currentSecond) ->
     if !@_active
       @_startSecond = @_currentSecond
       @_startValue = currentValue
@@ -339,7 +343,7 @@ module.exports = class PersistantAnimator extends BaseObject
 
     if @_active
       @queueEvent "update" if deltaSecond > 0
-      element.onNextEpoch => element[@_setterName] toValue
+      @_element.onNextEpoch => @_element[@_setterName] toValue
     else
       @queueEvent "done"
 
