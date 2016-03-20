@@ -248,6 +248,7 @@ EasingFunctions = require './easing_functions'
 {
   log, BaseObject
   isFunction, isString
+  capitalize
 } = Foundation
 {EventedObject} = Events
 
@@ -275,7 +276,7 @@ module.exports = class PersistantAnimator extends BaseObject
     else
       startValue + (toValue - startValue) * pos
 
-  @getter "active options prop element"
+  @getter "active options prop element startValue currentValue toValue"
   @getter
     # state is provided for custom "animate" functions use.
     # animate can store anything in state it chooses.
@@ -294,6 +295,7 @@ module.exports = class PersistantAnimator extends BaseObject
             animator.state: place to store state
             animator.element: the element being animated
             animator.stop: call this when done animating
+            animator.frameSeconds: seconds since the last frame
 
         OUT: the next value in the animation
 
@@ -308,43 +310,59 @@ module.exports = class PersistantAnimator extends BaseObject
   ###
   constructor: (prop, options)->
     @_prop = prop
-    @_setterName = BaseObject._propSetterName prop
+    upperCamelCaseProp = capitalize prop
+    @_setterName = "set" + upperCamelCaseProp
+    @_preprocessorName = "preprocess" + upperCamelCaseProp
     @_options = options
     @_active = false
     @_startSecond = null
     @_currentSecond = null
+    @_lastSecond = null
+
     @_startValue = null
+    @_currentValue = null
+    @_toValue = null
+
     @_animate = options.animate
     @_element = null
     @on options.on if options?.on
 
   @getter
-    deltaSecond: -> @_currentSecond - @_startSecond
+    animationSeconds: -> @_currentSecond - @_startSecond
+    frameSeconds: -> @_currentSecond - @_lastSecond
 
-  stop: -> @_active = false
+    ###
+    returns a bound function to stop this animator
+    OUT: -> toValue
+      OUT: toValue
+      EFFECT: stops the animator
+    ###
+    stop: -> @_stop ||= => @_active = false; @_toValue
 
-  animate: (startValue, currentValue, toValue, secondsSinceStart) ->
+  animate: ->
     if @_animate
-      @_animate startValue, currentValue, toValue, secondsSinceStart, @
+      @_animate @
     else
-      @_active = false
-      toValue
+      @stop()
 
-  animateAbsoluteTime: (@_element, currentValue, toValue, @_currentSecond) ->
+  animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
+
     if !@_active
-      @_startSecond = @_currentSecond
-      @_startValue = currentValue
+      @_lastSecond = @_startSecond = @_currentSecond
+      @_startValue = @_currentValue
       @queueEvent "start"
       @_active = true
 
-    deltaSecond = @getDeltaSecond()
+    animationSeconds = @getAnimationSeconds()
 
-    newValue = @animate @_startValue, currentValue, toValue, deltaSecond
+    newValue = @animate()
 
     if @_active
-      @queueEvent "update" if deltaSecond > 0
-      @_element.onNextEpoch => @_element[@_setterName] toValue
+      @queueEvent "update" if animationSeconds > 0
+      @_element.onNextEpoch => @_element[@_setterName] @_toValue
     else
       @queueEvent "done"
 
-    newValue
+    @_lastSecond = @_currentSecond
+
+    @_element[@_preprocessorName] newValue

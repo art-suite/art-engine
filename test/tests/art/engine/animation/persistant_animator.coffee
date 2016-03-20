@@ -1,5 +1,5 @@
 {log, isPlainObject} = require 'art-foundation'
-{Element, PersistantAnimator} = require 'art-engine'
+{Element, RectangleElement, PersistantAnimator} = require 'art-engine'
 
 suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
   test "animators: 'opacity'", ->
@@ -12,25 +12,23 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
 
   test "animators: opacity: ->", ->
     new Promise (resolve) ->
-      e = new Element animators: opacity: (fromValue, currentValue, toValue, animationSecond, animator) ->
-        assert.ok animator.element instanceof Element
-        assert.eq animator.state, {}
+      e = new Element animators: opacity: (animator) ->
         e.onNextReady ->
           assert.eq e.opacity, 0
           resolve()
         animator.stop()
-        toValue
+        animator.toValue
 
       e.onNextReady -> e.opacity = 0
 
   test "animators: opacity: animate: ->", ->
     new Promise (resolve) ->
-      e = new Element animators: opacity: animate: (fromValue, currentValue, toValue, animationSecond, animator) ->
+      e = new Element animators: opacity: animate: (animator) ->
         e.onNextReady ->
           assert.eq e.opacity, 0
           resolve()
         animator.stop()
-        toValue
+        animator.toValue
 
       e.onNextReady -> e.opacity = 0
 
@@ -39,6 +37,47 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
     e.onNextReady ->
       assert.ok e.animators._opacity instanceof PersistantAnimator
       assert.eq e.animators._opacity.duration, 1
+
+suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
+  test "animator.element is set", ->
+    new Promise (resolve) ->
+      e = new Element animators: opacity: ({stop, element}) ->
+        assert.ok element instanceof Element
+        resolve();stop()
+
+      e.onNextReady -> e.opacity = 0
+
+  test "animator.state starts out as {}", ->
+    new Promise (resolve) ->
+      e = new Element animators: opacity: ({state, stop}) ->
+        assert.eq state, {}
+        resolve();stop()
+
+      e.onNextReady -> e.opacity = 0
+
+  test "animator.state persists", ->
+    new Promise (resolve) ->
+      e = new Element animators: opacity: ({state, stop, toValue}) ->
+        state.count ||= 0
+        state.count++
+        if state.count > 1
+          assert.eq state.count, 2
+          resolve()
+          stop()
+        toValue
+
+      e.onNextReady -> e.opacity = 0
+
+  test "return value is preprocessed", ->
+    new Promise (resolve) ->
+      e = new RectangleElement animators: location: ({stop}) ->
+        stop()
+        e.onNextReady ->
+          assert.eq e.location.toString(), "PointLayout(10)"
+          resolve()
+        10
+
+      e.onNextReady -> e.location = 20
 
 suite "Art.Engine.Animation.PersistantAnimator.works", ->
   test "animators property doesnt have an effect for initial properties", ->

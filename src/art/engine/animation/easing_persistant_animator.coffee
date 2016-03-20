@@ -14,32 +14,30 @@ PersistantAnimator = require './persistant_animator'
 
 module.exports = class EasingPersistantAnimator extends PersistantAnimator
 
-  @getter "duration", "function"
+  @getter "duration easingFunction"
 
   @getter animationPos: ->
-    min 1, @getDeltaSecond() / @_duration
+    min 1, @getAnimationSeconds() / @_duration
 
   @setter
     duration: (d) ->
       @_duration = if isNumber(d) then max .001, d else .25
 
-    function: (f) ->
-      @_function = f
+    easingFunction: (f) ->
+      @_easingFunction = f
       if isString f
-        unless @_function = EasingFunctions[f]
-          console.warn "invalid easing function: #{f}"
+        unless @_easingFunction = EasingFunctions[f]
+          console.warn "invalid easing easingFunction: #{f}"
 
-      @_function ||= EasingFunctions.linear
+      @_easingFunction ||= EasingFunctions.linear
 
   constructor: (_, options = {}) ->
     super
-    @setFunction options.f || options.function
+    @setEasingFunction options.f || options.easingFunction
     @setDuration if options.d? then options.d else options.duration
 
-  animate: (startValue, currentValue, toValue, secondsSinceStart) ->
-    if 1 < animationPos = secondsSinceStart / @_duration
-      @_active = false
-      animationPos = 1
-
-    interpolate startValue, toValue, easedPos = @_function animationPos
+  animate: () ->
+    {startValue, toValue, animationPos, easingFunction} = @
+    @stop() if 1 == animationPos
+    interpolate startValue, toValue, easingFunction animationPos
 

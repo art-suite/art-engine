@@ -292,8 +292,10 @@ module.exports = class EpochedObject extends BaseObject
 
     @_getMetaProperties()[externalName] = metaProperties
 
+    capitalizedExternalName = capitalize externalName
+    @::["preprocess" + capitalizedExternalName] = preprocessor
     @_addGetter @::, externalName,                         getter
-    @_addGetter @::, "pending" + capitalize(externalName), pendingGetter
+    @_addGetter @::, "pending" + capitalizedExternalName, pendingGetter
     @_addGetter @::, externalName + "Changed",             -> !shallowPropsEq getter.call(@), pendingGetter.call(@)
     @_addSetter @::, externalName,                         setter
 
@@ -600,6 +602,7 @@ module.exports = class EpochedObject extends BaseObject
   _applyAnimators: ->
     if @__stateEpochCount > 0 && pendingAnimators = @_pendingState._animators
       {frameSecond} = stateEpoch
+
       for prop, pendingValue of @_pendingState when animator = pendingAnimators[prop]
         currentValue = @[prop]
 
