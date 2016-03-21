@@ -92,7 +92,7 @@ suite "Art.Engine.Core.Element.family events.rootElementChanged", ->
       p = new Element name: "parent",
         c = new Element
           name: "child"
-          on: rootElementChanged: ({target, props:{rootElement,oldRootElement}}) ->
+          on: rootElementChanged: ({target, props: {rootElement,oldRootElement}}) ->
             if rootElement == canvasElement
               resolve target:target, c:c, oldRootElement:oldRootElement, p:p
 

@@ -4,7 +4,7 @@ Text = require 'art-text'
 FillableBase = require '../fillable_base'
 {pureMerge, isFunction, createWithPostCreate} = Foundation
 
-module.exports = createWithPostCreate class CustomShapeElement extends FillableBase
+module.exports = createWithPostCreate class ShapeElement extends FillableBase
 
   constructor: ->
     super
