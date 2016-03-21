@@ -163,6 +163,21 @@ define [
         if !@capturingElement || type == "pointerCancel" || element == @capturingElement
           new PointerEvent type, pointer, timeStampInPerformanceSeconds
 
+    ###
+    SBD NOTE 2016: This method of sorting priority is global and breaks the "parents encapsulate children"
+    Breaking that rule makes Elements/Components less modular. A Component (subranch of the AIM tree) could
+    move within the tree and have its own behavior or the behavior of ancesors change somewhat unpredictably.
+
+    Is there a better way??? We need to better understand the use-cases. Mostly it has to do with gestures.
+    Sometimes we want the child to have a chance to capture a gesture first, if it decides to, and then let
+    the parent have a default gesture of the child declines.
+
+    Idea: allow the parent to invert its own priority. It can set itself to have lower priority than its children.
+      This meets the encapsulation requirement.
+      It does limit us to only putting the parent before all children or after all children for events.
+        Do we need a way to put a parent in the middle of its children event-wise?
+
+    ###
     @prioritySortElements: prioritySortElements = (elements) ->
       stableSort elements, (a, b) -> b._pointerEventPriority - a._pointerEventPriority
 

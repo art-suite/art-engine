@@ -491,6 +491,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
     childRemovedAnimation:  default: null,                  validate:   (v) -> !v? || isPlainObject v
     addedAnimation:         default: null,                  validate:   (v) -> !v? || isPlainObject v
     removedAnimation:       default: null,                  validate:   (v) -> !v? || isPlainObject v
+
+    # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
     receivePointerEvents:   default: "inLogicalArea",       validate: (v) ->
       v == "never" ||
       v == "inLogicalArea" ||
