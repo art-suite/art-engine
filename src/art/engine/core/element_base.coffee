@@ -53,15 +53,15 @@ module.exports = class ElementBase extends EventedEpochedObject
   ############################
 
   @concreteProperty
-    name:
+    key:
       default: null
       validate:   (v) -> v == null || isFunction v.toString
       preprocess: (v) -> if v == null then v else v.toString()
 
   @virtualProperty
-    key:
-      getter: (pending) -> @getState(pending)._name
-      setter: (v) -> @setName v
+    name:
+      getter: (pending) -> @getState(pending)._key
+      setter: (v) -> @setKey v
 
   ##########################
   # Element Registry
