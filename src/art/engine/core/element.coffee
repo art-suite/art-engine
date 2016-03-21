@@ -218,7 +218,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       preprocess: (v, oldValue) -> if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
 
     ###
-    TODO: Update StateEpochLayout to use this.
+    TODO: Update StateEpochLayout to use: childrenSizePreprocessor
 
     How do we want to handle currentPadding?
       - is it always set; gut: yes
@@ -237,10 +237,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
           childrenSizePreprocessor(...).add currentPadding.getWidth(), currentPadding.getHeight()
           # note, this only creates a second point if there is non-zero padding.
-    ###
+
     childrenSizePreprocessor:
       default: (left, top, right, bottom) -> point right, bottom
       validate: (v) -> isFunction v
+    ###
 
     location:
       default: 0
