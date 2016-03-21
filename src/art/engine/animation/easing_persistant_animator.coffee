@@ -29,7 +29,7 @@ module.exports = class EasingPersistantAnimator extends PersistantAnimator
         unless @_easingFunction = EasingFunctions[f]
           console.warn "invalid easing easingFunction: #{f}"
 
-      @_easingFunction ||= EasingFunctions.linear
+      @_easingFunction ||= EasingFunctions.easeInQuad
 
   constructor: (_, options = {}) ->
     super
