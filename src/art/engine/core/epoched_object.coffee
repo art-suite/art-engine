@@ -515,9 +515,6 @@ module.exports = class EpochedObject extends BaseObject
     ]).join "\n"
     eval functionString
 
-
-  virtualPropertySecondPassMetaProperties = []
-  virtualPropertySecondPassValues = []
   _initProperties: (options) ->
     {metaProperties} = @
 
