@@ -290,7 +290,9 @@ define [
           @_setupFromPoint @initializer
 
     toString: ->
-      "PointLayout(#{if @initializer then inspectLean @initializer else '0'})"
+      "PointLayout(#{@toStringLean()})"
+
+    toStringLean: -> if @initializer then inspectLean @initializer else '0'
 
     #############
     # PRIVATE

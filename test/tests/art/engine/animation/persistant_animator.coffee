@@ -1,4 +1,5 @@
 {log, isPlainObject} = require 'art-foundation'
+{point} = require 'art-atomic'
 {Element, RectangleElement, PersistantAnimator} = require 'art-engine'
 
 suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
@@ -196,6 +197,59 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
             assert.eq e.location.toString(), "PointLayout(20)"
             resolve()
       e.onNextReady -> e.location = 20
+
+  test "from constant to dynamic", ->
+    testedStart = testedUpdate = false
+    new Promise (resolve) ->
+      parent = new Element
+        size: 100
+        e = new Element
+          location: 10
+          animators: location: on:
+            start:  -> assert.eq e.currentLocation, point 10
+            done: ->
+              assert.eq e.currentLocation, point 50
+              resolve()
+
+      parent.onNextReady ->
+        e.location = ps: .5
+
+  test "from constant to dynamic and back", ->
+    testedStart = testedUpdate = false
+    new Promise (resolve) ->
+      parent = new Element
+        size: 100
+        e = new Element
+          location: 10
+          animators: location: on:
+            update: ->
+              assert.ok e.currentLocation.gt point 10
+              assert.ok e.currentLocation.lt point 50
+            done: ->
+              if e.currentLocation.eq point 50
+                e.location = 10
+              else if e.currentLocation.eq point 10
+                resolve()
+
+      parent.onNextReady ->
+        e.location = ps: .5
+
+  test "from dynamic to constant", ->
+    testedStart = testedUpdate = false
+    new Promise (resolve) ->
+      parent = new Element
+        size: 100
+        e = new Element
+          location: ps: .5
+          animators: location: on:
+            start:  -> assert.eq e.currentLocation, point 50
+            done: ->
+              assert.eq e.currentLocation, point 10
+              resolve()
+
+      parent.onNextReady ->
+        e.location = 10
+
 
 suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
   test "basic animation test", ->
