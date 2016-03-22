@@ -196,3 +196,18 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
             assert.eq e.location.toString(), "PointLayout(20)"
             resolve()
       e.onNextReady -> e.location = 20
+
+suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
+  test "basic animation test", ->
+    new Promise (resolve) ->
+      e = new Element
+        animators: opacity: on:
+          start: -> assert.eq e.opacity, 0, "0 at start"
+          done: ->
+            assert.eq e.opacity, 1, "1 at done"
+            resolve()
+          update: ->
+            assert.ok e.opacity > 0
+            assert.ok e.opacity < 1
+
+        voidProps: opacity: 0

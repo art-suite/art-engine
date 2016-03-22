@@ -17,6 +17,7 @@ EasingPersistantAnimator = require '../animation/easing_persistant_animator'
   plainObjectsDeepEq
   isString
   inspect
+  isPlainObject
 } = Foundation
 {propInternalName} = BaseObject
 blankOptions = {}
@@ -323,14 +324,28 @@ module.exports = class EpochedObject extends BaseObject
   ###
   EFFECT: set each property in propertySet if it is a legitimate property; otherwise it is ignored
   ###
-  setProperties: (propertySet) ->
-    metaProperties = @metaProperties
-    for property, value of propertySet
-      mp = metaProperties[property]
-      unless mp.virtual
-        @[setterName] value if setterName = mp?.setterName
+  _setPropertiesTempVirtualPropSetterNames = []
+  _setPropertiesTempVirtualPropValues = []
 
-    propertySet
+  ###
+  Sets all properties in propertySet
+  undefined values and properties without setters are skipped
+  ###
+  setProperties: (props) ->
+    {metaProperties} = @
+    virtualPropCount = 0
+
+    for prop, value of props when value != undefined && (mp = metaProperties[prop]) && setterName = mp.setterName
+      if mp.virtual
+        _setPropertiesTempVirtualPropSetterNames[virtualPropCount] = setterName
+        _setPropertiesTempVirtualPropValues[virtualPropCount++] = value
+      else
+        @[setterName] value
+
+    for i in [0...virtualPropCount]
+      @[_setPropertiesTempVirtualPropSetterNames[i]] _setPropertiesTempVirtualPropValues[i]
+
+    props
 
   ###
   EFFECT: set all properties, use propertySet values if present, otherwise use defaults
@@ -444,6 +459,10 @@ module.exports = class EpochedObject extends BaseObject
 
         processedAnimators
 
+    voidProps:
+      default: null
+      validate: (v) -> !v || isPlainObject v
+
   ######################
   # CONSTRUCTOR
   ######################
@@ -505,28 +524,24 @@ module.exports = class EpochedObject extends BaseObject
     unless @__proto__.hasOwnProperty "_initPropertiesAuto"
       @__proto__._initPropertiesAuto = @class._generateSetPropertyDefaults()
 
-    @_initPropertiesAuto options
-
     # IMPRORTANT OPTIMIZATION NOTE:
     # Creating _initPropertiesAuto the first time we instantiate the class is 2-4x faster than:
     # {propertyInitializerList, _pendingState} = @
     # for internalName, defaultValue of propertyInitializerList
     #   @[internalName] = _pendingState[internalName] = defaultValue
+    @_initPropertiesAuto options
 
-    virtualCount = 0
-    for k, v of options when v != undefined && mp = metaProperties[k]
-      if mp.virtual
-        virtualPropertySecondPassMetaProperties[virtualCount] = mp
-        virtualPropertySecondPassValues[virtualCount++] = v
-      else
-        @[mp.setterName] v
+    @setProperties options
 
-    # set virtual properties after concrete
-    # for k, v of options when (mp = metaProperties[k]) && mp.virtual
-    for i in [0...virtualCount]
-      mp = virtualPropertySecondPassMetaProperties[i]
-      v = virtualPropertySecondPassValues[i]
-      @[mp.setterName] v
+    if voidProps = options.voidProps
+      @setProperties voidProps
+      @onNextEpoch =>
+        props = {}
+        for k, _ of voidProps
+          v = options[k]
+          v = metaProperties[k].defaultValue if v == undefined
+          props[k] = v
+        @setProperties props
 
     @_elementChanged true, true, true
     null

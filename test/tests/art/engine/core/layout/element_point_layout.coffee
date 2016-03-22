@@ -27,19 +27,19 @@ define [
           assert.eq parent.currentSize, point 256
           assert.eq child.currentSize, point 256
 
-      stateEpochTest "Ruby-false layout results in default layout", ->
+      stateEpochTest "undefined layout results in default layout", ->
         new Element
           size: 123
           child1 = new Element size: undefined  # should default to ps:1
-          child2 = new Element size: null       # should default to ps:1
-          child3 = new Element size: false      # should default to ps:1
+          child2 = new Element size: null       # should be set to 0
+          child3 = new Element size: false      # should be set to 0
           child4 = new Element size: 0          # should be set to 0
 
         ->
-          assert.eq child1.currentSize, point 123
-          assert.eq child2.currentSize, point 0
-          assert.eq child3.currentSize, point 0
-          assert.eq child4.currentSize, point 0
+          assert.eq child1.currentSize, point(123), "undefined"
+          assert.eq child2.currentSize, point(0), "null"
+          assert.eq child3.currentSize, point(0), "false"
+          assert.eq child4.currentSize, point(0), "0"
 
       stateEpochTest "layout location is not truncated", ->
         parent = new Element name:"parent", size: 3
