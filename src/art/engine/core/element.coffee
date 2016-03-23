@@ -338,9 +338,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   @getter
     # TODO: SBD 03-2016: I plan to make currentElementToParentMatrix a concrete property.
-    currentElementToParentMatrix: (pending, withLocation) ->
-      if withLocation
-        @_getElementToParentMatrixForXY pending, withLocation.x, withLocation.y
+    currentElementToParentMatrix: (pending, withLocation, withScale) ->
+
+      if withLocation || withScale
+        withLocation ||= @getCurrentLocation pending
+        @_getElementToParentMatrixForXY pending, withLocation.x, withLocation.y, withScale
       else
         @getState(pending)._elementToParentMatrix
 
@@ -1212,8 +1214,9 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_setLocationFromLayoutXY l.x, l.y
 
 
-  _getElementToParentMatrixForXY: (pending, x, y) ->
+  _getElementToParentMatrixForXY: (pending, x, y, withScale) ->
     {_currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix} = @getState pending
+    _scale = point withScale if withScale?
 
     {left, top} = _currentPadding
     size  = _currentSize
