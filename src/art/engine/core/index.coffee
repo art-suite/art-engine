@@ -3,6 +3,7 @@
 
 module.exports =
 Core                      = require './namespace'
+Core.All                  = require './all'
 Core.CanvasElement        = require './canvas_element'
 Core.DrawCacheManager     = require './draw_cache_manager'
 Core.DrawEpoch            = require './draw_epoch'
@@ -15,7 +16,7 @@ Core.EventedEpochedObject = require './evented_epoched_object'
 Core.GlobalEpochCycle     = require './global_epoch_cycle'
 Core.IdleEpoch            = require './idle_epoch'
 Core.StateEpoch           = require './state_epoch'
-Core.Layout               = require './layout'
+Core.EpochLayout          = require './epoch_layout'
 Core.finishLoad(
-  ["CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","EpochedObject","EventedEpochedObject","GlobalEpochCycle","IdleEpoch","StateEpoch"]
+  ["All","CanvasElement","DrawCacheManager","DrawEpoch","Element","ElementBase","ElementFactory","EngineStat","EpochedObject","EventedEpochedObject","GlobalEpochCycle","IdleEpoch","StateEpoch"]
 )

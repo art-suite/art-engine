@@ -1,27 +1,28 @@
-define [
-  'art-foundation'
-], (Foundation) ->
-  {BaseObject, timeout, inspect} = Foundation
-  class ElementFactory extends BaseObject
-    @singletonClass()
+Foundation = require 'art-foundation'
+{BaseObject, timeout, inspect} = Foundation
 
-    constructor: ->
-      super
-      @_elementClassesByName = {}
+module.exports = class ElementFactory extends BaseObject
+  @singletonClass()
 
-    register: (klass) ->
-      name = klass.name
-      if @_elementClassesByName[name]
-        timeout 100, -> # timeout so getClassPathName is updated
-          console.warn "ElementFactory: element with class-name #{name} already exists. ClassPaths: Existing: #{@_elementClassesByName[name].getClassPathName()}, Adding: #{klass.getClassPathName()}"
-      else
-        # timeout 100, -> # timeout so getClassPathName is updated
-        #   console.log "ElementFactory: registered #{name} => #{klass.getClassPathName()}"
-        @_elementClassesByName[name] = klass
+  @newElement: (elementClassName, props, children) => @singleton.newElement elementClassName, props, children
 
-    classForElement: (elementClassName) -> @_elementClassesByName[elementClassName]
+  constructor: ->
+    super
+    @_elementClassesByName = {}
 
-    newElement: (elementClassName, props) ->
-      klass = @_elementClassesByName[elementClassName]
-      throw new Error "ElementFactor: class not found for #{inspect elementClassName} (props: #{inspect props})" unless klass
-      new @_elementClassesByName[elementClassName] props
+  register: (klass) ->
+    name = klass.name
+    if @_elementClassesByName[name]
+      timeout 100, -> # timeout so getClassPathName is updated
+        console.warn "ElementFactory: element with class-name #{name} already exists. ClassPaths: Existing: #{@_elementClassesByName[name].getClassPathName()}, Adding: #{klass.getClassPathName()}"
+    else
+      # timeout 100, -> # timeout so getClassPathName is updated
+      #   console.log "ElementFactory: registered #{name} => #{klass.getClassPathName()}"
+      @_elementClassesByName[name] = klass
+
+  classForElement: (elementClassName) -> @_elementClassesByName[elementClassName]
+
+  newElement: (elementClassName, props, children) ->
+    klass = @_elementClassesByName[elementClassName]
+    throw new Error "ElementFactor: class not found for #{inspect elementClassName} (props: #{inspect props})" unless klass
+    new @_elementClassesByName[elementClassName] props, children

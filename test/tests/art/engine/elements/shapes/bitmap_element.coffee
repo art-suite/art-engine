@@ -1,12 +1,12 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-{Elements} = require 'art-engine'
+Engine = require 'art-engine'
 Helper = require '../helper'
 Canvas = require 'art-canvas'
 
 {inspect, log} = Foundation
 {point, rect, matrix, Matrix} = Atomic
-{BitmapElement} = Elements
+{BitmapElement} = Engine
 
 {drawTest, drawTest2} = Helper
 

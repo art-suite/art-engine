@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-{Elements} = require 'art-engine'
+Engine = require 'art-engine'
 
 {inspect, log, bound, flatten, first, second, last} = Foundation
 {point, point0, rect, Matrix, matrix} = Atomic
-{Element, RectangleElement, PagingScrollElement} = Elements
+{Element, RectangleElement, PagingScrollElement} = Engine
 
 newPage = (pageNumber, height = 10) ->
   new Element key:"page#{pageNumber}", size: ww:1, h:height

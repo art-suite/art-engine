@@ -7,6 +7,7 @@ Engine.Animation = require './animation'
 Engine.Core      = require './core'
 Engine.Elements  = require './elements'
 Engine.Events    = require './events'
+Engine.File      = require './file'
 Engine.Layout    = require './layout'
 Engine.finishLoad(
   []

@@ -1,11 +1,11 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-{Elements} = require 'art-engine'
+Engine = require 'art-engine'
 Helper = require '../helper'
 
 {insepct, log, bound} = Foundation
 {point, rect, Matrix, matrix} = Atomic
-{RectangleElement, FillElement, BlurElement} = Elements
+{RectangleElement, FillElement, BlurElement} = Engine
 {drawTest, drawTest2, drawTest3} = Helper
 
 suite "Art.Engine.Elements.Filters.BlurElement", ->

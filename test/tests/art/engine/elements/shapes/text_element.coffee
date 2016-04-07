@@ -1,12 +1,12 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-{Elements} = require 'art-engine'
+Engine = require 'art-engine'
 Helper = require '../helper'
 StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
 {inspect, log, min, isNumber} = Foundation
 {point, matrix, Matrix, Point, rect} = Atomic
-{Element, RectangleElement, FillElement, TextElement, Shapes} = Elements
+{Element, RectangleElement, FillElement, TextElement, Shapes} = Engine
 {drawTest, drawTest2, drawTest3} =  Helper
 {pow} = Math
 

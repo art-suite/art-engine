@@ -1,12 +1,12 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-{Elements} = require 'art-engine'
+Engine = require 'art-engine'
 StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
-{FillElement, Blur, RectangleElement, Element} = Elements
+{FillElement, BlurElement, RectangleElement, Element} = Engine
 
 {stateEpochTest} = StateEpochTestHelper
 
@@ -174,7 +174,7 @@ suite "Art.Engine.Core.Element.drawing", ->
 
     test "toBitmap with blur", ->
       o = testArtStructure()
-      o.addChild new Blur radius:10
+      o.addChild new BlurElement radius:10
       o.toBitmap {}
       .then ({bitmap})->
 

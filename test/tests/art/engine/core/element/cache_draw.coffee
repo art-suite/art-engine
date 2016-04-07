@@ -7,7 +7,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
-{RectangleElement, BitmapElement} = Engine.Elements
+{RectangleElement, BitmapElement} = Engine
 
 imageDataEqual = (a, b) ->
   a = a.data

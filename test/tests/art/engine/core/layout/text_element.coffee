@@ -1,38 +1,34 @@
-define [
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+Canvas = require 'art-canvas'
+Engine = require 'art-engine'
+StateEpochTestHelper = require '../state_epoch_test_helper'
 
-  'art-foundation'
-  'art-atomic'
-  'art-engine'
-  '../state_epoch_test_helper'
-], (Foundation, Atomic, {Elements, Layout}, StateEpochTestHelper) ->
+{inspect, log, isArray, min, max, isFunction} = Foundation
+{point, matrix, Matrix, rect} = Atomic
+{stateEpochTest} = StateEpochTestHelper
 
+{Element, TextElement, RectangleElement} = Engine
 
-  {inspect, log, isArray, min, max, isFunction} = Foundation
-  {point, matrix, Matrix, rect} = Atomic
-  {stateEpochTest} = StateEpochTestHelper
+testLogBitmap = (name, setup, tests...) ->
+  test name, (done) ->
+    {root, test} = setup()
+    testNum = 1
+    testR = (root, testFunction) ->
+      root.onNextReady ->
+        root._generateDrawCache()
+        bitmap = root._drawCacheBitmap
+        log bitmap, name, testNum
+        if isFunction nextTest = testFunction?()
+          testNum++
+          testR root, nextTest
+        else
+          done()
+    testR root, test
 
-  {Element, TextElement, RectangleElement} = Elements
-  {LinearLayout} = Layout
-
-  testLogBitmap = (name, setup, tests...) ->
-    test name, (done) ->
-      {root, test} = setup()
-      testNum = 1
-      testR = (root, testFunction) ->
-        root.onNextReady ->
-          root._generateDrawCache()
-          bitmap = root._drawCacheBitmap
-          log bitmap, name, testNum
-          if isFunction nextTest = testFunction?()
-            testNum++
-            testR root, nextTest
-          else
-            done()
-      testR root, test
-
-  suite "Art.Engine.Core.layout.TextElement", ->
-    testLogBitmap "elementSpaceDrawArea should include descender", ->
-      root: root = new TextElement text: "Descending", layoutMode: "textualBaseline"
-      test: ->
-        assert.within root.currentSize, point(75, 12), point(76, 12)
-        assert.eq root.elementSpaceDrawArea, rect -8, -8, 90, 31
+suite "Art.Engine.Core.layout.TextElement", ->
+  testLogBitmap "elementSpaceDrawArea should include descender", ->
+    root: root = new TextElement text: "Descending", layoutMode: "textualBaseline"
+    test: ->
+      assert.within root.currentSize, point(75, 12), point(76, 12)
+      assert.eq root.elementSpaceDrawArea, rect -8, -8, 90, 31
