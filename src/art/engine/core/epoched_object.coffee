@@ -421,6 +421,14 @@ module.exports = class EpochedObject extends BaseObject
         ret[k] = @[k]
       ret
 
+    # conrete props which are not the default values
+    saveProps: ->
+      ret = {}
+      for k, {internalName, virtual, defaultValue} of @metaProperties when !virtual
+        if !propsEq defaultValue, value = @[internalName]
+          ret[k] = value
+      ret
+
   ##########################
   # EPOCHED STATE
   ##########################
