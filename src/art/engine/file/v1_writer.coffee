@@ -75,7 +75,7 @@ module.exports = class V1Writer extends BaseObject
       ArtFileTag encodedProps, childrenTag, @bitmapsTag
 
   toEncodedArtFile: (element) =>
-    @toArtFileTags()
+    @toArtFileTags element
     .then (tag) ->
       tag.toXbd()
 
