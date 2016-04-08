@@ -17,7 +17,8 @@ Elements = require '../elements'
   ArtSolidFillTag
   BitmapsTag
   BitmapTag
-} = createTagFactories "bitmaps bitmap art_file pego art_bitmap children art_stencil_shape art_rectangle art_solid_fill"
+  RootTag
+} = createTagFactories "Root bitmaps bitmap art_file pego art_bitmap children art_stencil_shape art_rectangle art_solid_fill"
 
 elementNameToV1NameMap =
   Element: "pego"
@@ -72,7 +73,7 @@ module.exports = class V1Writer extends BaseObject
     .then ([encodedProps, childrenTag]) =>
       encodedProps.art_engine_version = "0.0.2"
       encodedProps.kimi_editor_version = "0.6.0"
-      ArtFileTag encodedProps, childrenTag, @bitmapsTag
+      RootTag ArtFileTag encodedProps, childrenTag, @bitmapsTag
 
   toEncodedArtFile: (element) =>
     @toArtFileTags element
@@ -102,7 +103,7 @@ module.exports = class V1Writer extends BaseObject
     .then (jpg) =>
       @bitmapTags[uniqueId] = BitmapTag
         bitmap_id: @bitmapTagCount++
-        bitmap: jpg
+        pixel_data: jpg
 
   _populateBitmapSubTagsRecursive: (element) ->
     {bitmap, children} = element
