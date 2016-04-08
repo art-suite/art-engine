@@ -63,16 +63,14 @@ layoutModes =
   8: "bothStretch"
 
 module.exports = class V1Loader extends BaseObject
-  @load: (data, bitmapFactory) ->
-    new V1Loader bitmapFactory || Canvas.Bitmap
-    .load data
+  @singletonClass()
 
-  constructor: (bitmapFactory)->
-    @bitmapFactory = bitmapFactory
+  @load: (data, bitmapFactory) -> @singleton.load data, bitmapFactory
 
-  load: (data) ->
+  load: (data, @bitmapFactory = Canvas.Bitmap) ->
     new Promise (resolve) =>
       xbd = Xbd.parse data
+      log "V1Loader.load": xbd
       topTag = xbd.tag("art_file")
       @decodeTopTag topTag, (artFile) =>
         artFile.axis = point()
@@ -98,8 +96,10 @@ module.exports = class V1Loader extends BaseObject
     return callBack bitmaps if index >= keys.length
 
     key = keys[index]
+    log "decodeBitmaps 1", bitmaps, key
     EncodedImage.toImage bitmaps[key]
     .then (decodedBitmap) =>
+      log "decodeBitmaps 2"
       bitmaps[key] = if @bitmapFactory
         @bitmapFactory.newBitmap decodedBitmap
       else
@@ -107,28 +107,35 @@ module.exports = class V1Loader extends BaseObject
       @decodeBitmaps bitmaps, keys, index+1, callBack
 
   decodeBitmapsTag: (bitmapsTag, callBack) ->
+    log "decodeBitmapsTag 1", bitmapsTag
     bitmaps = {}
     for tag in bitmapsTag.tags
       id = tag.attrs["bitmap_id"] | 0
       bitmapData = tag.attrs["pixel_data"]
       bitmaps[id] = bitmapData
 
+    log "decodeBitmapsTag 2"
     @decodeBitmaps bitmaps, Object.keys(bitmaps), 0, callBack
 
   decodeContext: (topTag, callBack) ->
+    log "decodeContext 1"
     bitmapsTag = topTag.tag "bitmaps"
 
     postDecodeBitmaps = (bitmaps)=>
+      log "decodeContext 2"
       @bitmaps = bitmaps
       callBack()
 
+    log "decodeContext 3"
     if bitmapsTag
       @decodeBitmapsTag bitmapsTag, postDecodeBitmaps
     else
       postDecodeBitmaps null
 
   decodeTopTag: (topTag, callBack) ->
+    log "decodeTopTag 1"
     @decodeContext topTag, =>
+      log "decodeTopTag 2"
       topElement = @createElementFromTag topTag
       callBack topElement
 
