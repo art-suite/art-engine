@@ -88,9 +88,9 @@ module.exports = class V1Loader extends BaseObject
     pego: -> new Element
     art_stencil_shape: -> new Element
     art_bitmap: (tag, loader) ->
-      bitmap_id = tag.attributes["bitmap_id"]
+      bitmap_id = tag.attrs["bitmap_id"]
       bitmap = loader.bitmaps[bitmap_id]
-      new Elements.Bitmap bitmap:bitmap
+      new Elements.BitmapElement bitmap:bitmap
 
   # decode all bitmaps through a seriese of asynchronous callBacks
   # after all is done, callBack is called with the processed bitmaps object (hash of IDs to ArtBitmaps)
@@ -109,8 +109,8 @@ module.exports = class V1Loader extends BaseObject
   decodeBitmapsTag: (bitmapsTag, callBack) ->
     bitmaps = {}
     for tag in bitmapsTag.tags
-      id = tag.attributes["bitmap_id"] | 0
-      bitmapData = tag.attributes["pixel_data"]
+      id = tag.attrs["bitmap_id"] | 0
+      bitmapData = tag.attrs["pixel_data"]
       bitmaps[id] = bitmapData
 
     @decodeBitmaps bitmaps, Object.keys(bitmaps), 0, callBack
@@ -154,7 +154,7 @@ module.exports = class V1Loader extends BaseObject
 
     for child in childrenTag.tags
       # route["normal"].push @createElementFromTag child, context, parent
-      route[child.attributes.stack_mode || "normal"].push @createElementFromTag child, parent
+      route[child.attrs.stack_mode || "normal"].push @createElementFromTag child, parent
 
     parent.setChildren children
 
@@ -186,12 +186,12 @@ module.exports = class V1Loader extends BaseObject
         @log "WARNING: unsupported layout #{layoutModes[layout]} for #{channel} loc=#{location} size=#{size}"
 
   decodeLayout: (object, tag, parent) ->
-    xLayout = (tag.attributes.x_layout_mode || layoutModes.leftAddWidthFixed) | 0
-    yLayout = (tag.attributes.y_layout_mode || layoutModes.leftAddWidthFixed) | 0
-    xVal = (tag.attributes.x_val || 0) - 0
-    yVal = (tag.attributes.y_val || 0) - 0
-    wVal = (tag.attributes.w_val || 0) - 0
-    hVal = (tag.attributes.h_val || 0) - 0
+    xLayout = (tag.attrs.x_layout_mode || layoutModes.leftAddWidthFixed) | 0
+    yLayout = (tag.attrs.y_layout_mode || layoutModes.leftAddWidthFixed) | 0
+    xVal = (tag.attrs.x_val || 0) - 0
+    yVal = (tag.attrs.y_val || 0) - 0
+    wVal = (tag.attrs.w_val || 0) - 0
+    hVal = (tag.attrs.h_val || 0) - 0
 
     location = {}
     size = {}
@@ -207,12 +207,12 @@ module.exports = class V1Loader extends BaseObject
 
   createElementFromTag: (tag, parent = null) ->
     object = @createElement tag
-    object.axis = point(tag.attributes.handle || point(.5, .5))  # default for V1
+    object.axis = point(tag.attrs.handle || point(.5, .5))  # default for V1
 
     @decodeLayout object, tag, parent
 
     userProperties = {}
-    for k, v of tag.attributes
+    for k, v of tag.attrs
       switch k
         when "name" then object.name = v
         when "matrix" then object.elementToParentMatrix = matrix v
