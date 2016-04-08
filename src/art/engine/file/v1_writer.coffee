@@ -125,10 +125,13 @@ module.exports = class V1Writer extends BaseObject
     for k, v of saveProps
       switch k
         when "key" then encodedProps.name = v.toString()
+        when "elementToParentMatrix" then encodedProps.matrix = v.toString()
         when "bitmap"
           unless bitmapTag = @bitmapTags[v.uniqueId]
             console.warn "Bitmap missing: #{v.uniqueId}"
           encodedProps.bitmap_id = bitmapTag.attrs.bitmap_id
+        when "location", "children", "parent", "currentSize", "size", "axis", "color", "scale", "angle"
+          # handled elsewhere
         else
           console.warn "Art.Engine.V1Writer: ignored unsupported prop type: elementType: #{element.class.name}, propType: #{k}"
     @_encodeLayout element, encodedProps
