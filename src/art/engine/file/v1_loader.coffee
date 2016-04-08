@@ -68,10 +68,7 @@ module.exports = class V1Loader extends BaseObject
   @load: (data, bitmapFactory) -> @singleton.load data, bitmapFactory
 
   load: (data, @bitmapFactory = Canvas.Bitmap) ->
-    xbd = Xbd.parse data
-    log "V1Loader.load": xbd
-    topTag = xbd.tag("art_file")
-    @decodeTopTag topTag
+    @decodeTopTag Xbd.parse(data).tag "art_file"
     .then (artFile) =>
       artFile.axis = point()
       artFile.location = point()
@@ -89,43 +86,22 @@ module.exports = class V1Loader extends BaseObject
       bitmap = loader.bitmaps[bitmap_id]
       new Elements.BitmapElement bitmap:bitmap
 
-  # decode all bitmaps through a seriese of asynchronous callBacks
-  # after all is done, callBack is called with the processed bitmaps object (hash of IDs to ArtBitmaps)
-  decodeBitmaps: (bitmaps, keys, index, callBack) ->
-    return callBack bitmaps if index >= keys.length
-
-    key = keys[index]
-    log "decodeBitmaps 1", bitmaps, key
-    EncodedImage.toImage bitmaps[key]
-    .then (decodedBitmap) =>
-      log "decodeBitmaps 2"
-      bitmaps[key] = if @bitmapFactory
-        @bitmapFactory.newBitmap decodedBitmap
-      else
-        new Canvas.Bitmap decodedBitmap
-      @decodeBitmaps bitmaps, keys, index+1, callBack
-
+  # OUT: promise.then ->
+  # EFFECT: @bitmaps is an array from bitmap_ids to Canvas.Bitmaps
   decodeBitmapsTag: (bitmapsTag) ->
-    new Promise (resolve) =>
-      log "decodeBitmapsTag 1", bitmapsTag
-      bitmaps = {}
-      for tag in bitmapsTag.tags
-        id = tag.attrs["bitmap_id"] | 0
-        bitmapData = tag.attrs["pixel_data"]
-        bitmaps[id] = bitmapData
+    return Promise.resolve() unless bitmapsTag
+    @bitmaps = []
+    promises = for tag in bitmapsTag.tags
+      do (tag) =>
+        EncodedImage.toImage tag.attrs.pixel_data
+        .then (image) =>
+          bitmapId = tag.attrs.bitmap_id | 0
+          @bitmaps[bitmapId] = @bitmapFactory.newBitmap image
 
-      log "decodeBitmapsTag 2"
-      @decodeBitmaps bitmaps, Object.keys(bitmaps), 0, resolve
-
-  decodeContext: (topTag) ->
-    Promise.resolve()
-    .then =>
-      if bitmapsTag = topTag.tag "bitmaps"
-        @decodeBitmapsTag bitmapsTag
-    .then (@bitmaps) => @bitmaps
+    Promise.all promises
 
   decodeTopTag: (topTag) ->
-    @decodeContext topTag
+    @decodeBitmapsTag topTag.tag "bitmaps"
     .then => @createElementFromTag topTag
 
   createElement: (tag) ->
