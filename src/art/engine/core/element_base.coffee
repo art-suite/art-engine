@@ -10,6 +10,7 @@ EventedEpochedObject = require './evented_epoched_object'
   present
   isFunction
   inspectLean
+  compact
 } = Foundation
 
 ###
@@ -139,22 +140,26 @@ module.exports = class ElementBase extends EventedEpochedObject
         result = result.concat (child.debugStructure for child in @children)
       result
 
-
     plainObjectProps: ->
       for k, v of out = @minimalProps
         out[k] = v.getPlainObjects() if v?.getPlainObjects
       out
 
     propsInspectObjects: ->
+      length = 0
       for k, v of out = @minimalProps
+        length++
         do (k, v) ->
           out[k] = switch v.class?.getName?()
             when "Bitmap" then v
-            when "Point" then (if v.x == v.y then v.x else inspect v.toArray())
-            else inspect: ->
-              v = v.getPlainObjects() if v?.getPlainObjects
-              inspectLean v
-      out
+            else
+              if v?.getInspectObjects
+                v.getInspectObjects()
+              else
+                inspect: ->
+                  v = v.getPlainObjects() if v?.getPlainObjects
+                  inspectLean v
+      if length == 0 then null else out
 
     inspectedProps: ->
       inspectLean @getPlainObjectProps()
@@ -163,7 +168,7 @@ module.exports = class ElementBase extends EventedEpochedObject
       [@class.getName(), @plainObjectProps].concat (child.plainObjects for child in @_children)
 
     inspectObjects: ->
-      [{inspect: => @class.getName()}, @propsInspectObjects].concat (child.inspectObjects for child in @_children)
+      compact [{inspect: => @class.getName()}, @propsInspectObjects].concat (child.inspectObjects for child in @_children)
 
     inspectTree: ->
       [@getInspectedName(),(c.inspectTree) for c in @_children]

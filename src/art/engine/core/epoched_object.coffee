@@ -426,10 +426,11 @@ module.exports = class EpochedObject extends BaseObject
     # conrete props which are not the default values
     minimalProps: ->
       ret = {}
-      for k, {externalName, internalName, virtual, defaultValue} of @metaProperties when !virtual
-        unless externalName in minimalPropsIngore
-          unless propsEq defaultValue, value = @[internalName]
-            ret[k] = value
+      for k, {externalName, internalName, virtual, defaultValue} of @metaProperties
+        unless virtual
+          unless externalName in minimalPropsIngore
+            unless propsEq defaultValue, value = @[internalName]
+              ret[k] = value
       ret
 
   ##########################

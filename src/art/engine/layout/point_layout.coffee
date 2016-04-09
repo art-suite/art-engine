@@ -276,9 +276,9 @@ define [
       vs nearInfinity.
 
     ###
-    constructor: (@initializer, previousLayout)->
+    constructor: (@initializer = point0, previousLayout)->
       super
-      @initializer && switch typeof @initializer
+      switch typeof @initializer
         when "function" then @_setupFromFunction @initializer
         when "object"
           if @initializer.constructor == Object
@@ -301,6 +301,13 @@ define [
         v = v.x if (v instanceof Point) && v.x == v.y
         v = v.getPlainObjects() if v.getPlainObjects
         v
+      inspectObjects: ->
+        if isPlainObject @initializer
+          inspect: => inspectLean @initializer
+        else if isFunction @initializer
+          inspect: => @initializer.toString().replace /\s+/g, ' '
+        else
+          @initializer
 
     #############
     # PRIVATE
@@ -312,6 +319,7 @@ define [
       @layoutX = -> p.x
       @layoutY = -> p.y
       @layout  = -> p
+      @initializer = p
 
     _setupFromFunction: (f) ->
       @_hasXLayout = @_hasYLayout = true
