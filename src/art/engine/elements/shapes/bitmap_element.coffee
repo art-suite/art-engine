@@ -60,7 +60,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
   customLayoutChildrenSecondPass: (size) ->
 
   inspectStructure: ->
-    [@inspectLocal(), bitmapSize:@_bitmap?.size].concat @_children
+    [@inspect(), bitmapSize:@_bitmap?.size].concat @_children
 
   @drawProperty
     focus:      default: null,      preprocess: (v) -> if v? then point(v).bound(point0, point1) else null

@@ -4,7 +4,6 @@ Canvas = require 'art-canvas'
 Xbd = require 'art-xbd'
 Core = require '../core'
 Elements = require '../elements'
-Model = require './model'
 
 {Binary, inspect, BaseObject, Promise, log, mergeInto, lowerCamelCase, merge} = Foundation
 {point, rect, matrix} = Atomic
@@ -78,7 +77,7 @@ module.exports = class V1Loader extends BaseObject
       stateEpoch.onNextReady -> artFile
 
   @objectFactory =
-    art_file: -> new Model
+    art_file: -> new Element
     pego: -> new Element
     art_stencil_shape: -> new Element
     art_bitmap: (tag, loader) ->

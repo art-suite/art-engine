@@ -19,7 +19,8 @@ truncateLayoutCoordinate = (v) ->
   floor v + 1/256
 
 {
-  inspect, clone, time, Map, plainObjectsDeepEq, shallowEq, Unique,
+  inspect, inspectLean
+  clone, time, Map, plainObjectsDeepEq, shallowEq, Unique,
   compact
   compactFlatten, keepIfRubyTrue, log, insert, remove, merge, max, min,
   arrayWithoutValue, minimumOrderedOverlappingMerge
@@ -662,18 +663,18 @@ module.exports = createWithPostCreate class Element extends ElementBase
     inspectTree: ->
       [@getInspectedName(),(c.inspectTree) for c in @_children]
 
-    inspectProps: ->
-      props = []
-      props.push "axis" if @_axis && !@axis.eq point()
-      props.push "scale" if !@scale.eq point(1,1)
-      props.push "currentSize" if @_currentSize
-      props.push "currentLocation" if !@getCurrentLocation().eq point0
-      props.push "compositeMode" if @_compositeMode && @_compositeMode != "normal"
-      props.push "opacity" if @_opacity? && @_opacity < 1
-      props = ("#{attr}:#{@[attr]}" for attr in props)
-      props.push "invisible" if @_visible? && !@_visible
-      props.push "staged" if @_children && @_useStagingBitmap()
-      props
+    inspectedProps: ->
+      out = for k, v of @minimalProps
+        if v instanceof PointLayout
+          v = v.initializer || 0
+          if (v instanceof Atomic.Base) && v.x == v.y
+            v = v.x
+        v = v.toArray() if v instanceof Atomic.Base
+        "#{k}: " + inspect v
+        #   when "axis", "scale", "currentSize", "currentLocation", "compositeMode", "opacity", "invisible", "staged", "size", "location"
+        #     v.inspect
+        #   else inspect v
+      out.join ' '
 
     coreProps: ->
       properties = [
@@ -738,14 +739,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
     toBitmapOptions.pixelsPerPoint ||= @devicePixelsPerPoint
     @inspectRender toBitmapOptions, (results)=>
       @log results
-
-  inspectLocal: ->
-    @getInspectedName() + " " + @inspectProps.join ", "
-
-  inspect: ->
-    @inspectLocal()
-
-  toVisualStructure: (callback) ->
 
   ##########################
   # ANIMATE

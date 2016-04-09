@@ -22,6 +22,7 @@ imageDataEqual = (a, b) ->
 doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement) ->
   wrapperElement.onNextReady ->
     testElement = wrapperElement.find("testElement")[0]
+    throw new Error "testElement not found" unless testElement
     wrapperElement.toBitmap {}
     .then (firstRendered) ->
       firstCache = testElement._drawCacheBitmap

@@ -3,9 +3,8 @@
 
 module.exports =
 File          = require './namespace'
-File.Model    = require './model'
 File.V1Loader = require './v1_loader'
 File.V1Writer = require './v1_writer'
 File.finishLoad(
-  ["Model","V1Loader","V1Writer"]
+  ["V1Loader","V1Writer"]
 )

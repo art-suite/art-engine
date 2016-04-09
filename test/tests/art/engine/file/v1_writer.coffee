@@ -18,7 +18,8 @@ Xbd = require 'art-xbd'
   ArtStencilShapeTag
   ArtRectangleTag
   ArtSolidFillTag
-} = createTagFactories "art_file pego art_bitmap children art_stencil_shape art_rectangle art_solid_fill"
+  RootTag
+} = createTagFactories "Root art_file pego art_bitmap children art_stencil_shape art_rectangle art_solid_fill"
 
 
 suite "Art.Engine.File.V1Writer", ->
@@ -27,7 +28,7 @@ suite "Art.Engine.File.V1Writer", ->
     e = Element()
     toArtFileTags e
     .then (artFileTag)->
-      assert.eq artFileTag, ArtFileTag
+      assert.eq artFileTag, RootTag ArtFileTag
         art_engine_version: "0.0.2"
         kimi_editor_version: "0.6.0"
         w_val: "100"
@@ -38,7 +39,7 @@ suite "Art.Engine.File.V1Writer", ->
     e = Element key: "hi"
     toArtFileTags e
     .then (artFileTag)->
-      assert.eq artFileTag, ArtFileTag
+      assert.eq artFileTag, RootTag ArtFileTag
         art_engine_version: "0.0.2"
         kimi_editor_version: "0.6.0"
         name: "hi"
@@ -50,7 +51,7 @@ suite "Art.Engine.File.V1Writer", ->
     e = Element Element()
     toArtFileTags e
     .then (artFileTag)->
-      assert.eq artFileTag, ArtFileTag
+      assert.eq artFileTag, RootTag ArtFileTag
         art_engine_version: "0.0.2"
         kimi_editor_version: "0.6.0"
         w_val: "100"
@@ -66,7 +67,7 @@ suite "Art.Engine.File.V1Writer", ->
     e = Element RectangleElement()
     toArtFileTags e
     .then (artFileTag)->
-      assert.eq artFileTag, ArtFileTag
+      assert.eq artFileTag, RootTag ArtFileTag
         art_engine_version: "0.0.2"
         kimi_editor_version: "0.6.0"
         w_val: "100"
@@ -94,12 +95,14 @@ suite "Art.Engine.File.V1Writer", ->
     toArtFileTags e
     .then (artFileTag)->
       assert.eq artFileTag.toXml('  '), """
-        <art_file w_val='100' h_val='100' handle='(0,0)' art_engine_version='0.0.2' kimi_editor_version='0.6.0'>
-          <children>
-            <art_bitmap bitmap_id='0' w_val='100' h_val='100' handle='(0,0)'/>
-          </children>
-          <bitmaps>
-            <bitmap bitmap_id='0' bitmap='<663 binary bytes>'/>
-          </bitmaps>
-        </art_file>
+        <Root>
+          <art_file w_val='100' h_val='100' handle='(0,0)' art_engine_version='0.0.2' kimi_editor_version='0.6.0'>
+            <children>
+              <art_bitmap bitmap_id='0' w_val='100' h_val='100' handle='(0,0)'/>
+            </children>
+            <bitmaps>
+              <bitmap bitmap_id='0' pixel_data='<663 binary bytes>'/>
+            </bitmaps>
+          </art_file>
+        </Root>
         """

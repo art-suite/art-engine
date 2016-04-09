@@ -120,10 +120,10 @@ module.exports = class V1Writer extends BaseObject
 
   # OUT: promise.then (encodedProps) ->
   _encodeProps: (element) ->
-    {saveProps} = element
+    {minimalProps} = element
 
     encodedProps = {}
-    for k, v of saveProps
+    for k, v of minimalProps
       switch k
         when "key" then encodedProps.name = v.toString()
         when "elementToParentMatrix" then encodedProps.matrix = v.toString()

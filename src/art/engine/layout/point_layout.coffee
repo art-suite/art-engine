@@ -294,6 +294,9 @@ define [
 
     toStringLean: -> if @initializer then inspectLean @initializer else '0'
 
+    @getter
+      inspectedInitializer: -> if @initializer then inspect @initializer else '0'
+
     #############
     # PRIVATE
     #############

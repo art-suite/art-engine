@@ -175,7 +175,7 @@ define [
         o.drawAreaChanged = true if ce.__drawAreaChanged
         o.drawPropertiesChanged = true if ce.__redrawRequired
         [
-          ce.inspectLocal()
+          ce.inspect()
           o
         ]
 

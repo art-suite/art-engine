@@ -9,6 +9,7 @@ EventedEpochedObject = require './evented_epoched_object'
   peek
   present
   isFunction
+  inspectLean
 } = Foundation
 
 ###
@@ -104,13 +105,13 @@ module.exports = class ElementBase extends EventedEpochedObject
     instanceId: -> @remoteId || @getUniqueId()
     shortClassPathName: ->
       name = @getClassPathName()
-      peek name.split /(Neptune\.Art\.)?Engine\.(Core|Elements)\./
+      peek name.split '.'
 
     inspectedName: ->
-      "#{@getShortClassPathName()}:#{@instanceId}#{if name = @getPendingName() then ":" + name else ""}"
+      "#{@shortClassPathName}:#{@pendingKey || @instanceId}"
 
     inspectedNameWithoutIds: ->
-      "#{@getShortClassPathName()}#{if name = @getPendingName() then ":" + name else ""}"
+      @shortClassPathName + if key = @pendingKey then ":#{key}" else ""
 
     inspectedString: -> @inspectedName
 
@@ -138,4 +139,8 @@ module.exports = class ElementBase extends EventedEpochedObject
         result = result.concat (child.debugStructure for child in @children)
       result
 
-  inspectLocal: -> @getInspectedName()
+    inspectedProps: ->
+      inspectLean @minimalProps
+
+  inspect: ->
+    @class.getName() + " " + @inspectedProps
