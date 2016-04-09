@@ -163,7 +163,7 @@ module.exports = class ElementBase extends EventedEpochedObject
       [@class.getName(), @plainObjectProps].concat (child.plainObjects for child in @_children)
 
     inspectObjects: ->
-      [@class.getName(), @propsInspectObjects].concat (child.inspectObjects for child in @_children)
+      [{inspect: => @class.getName()}, @propsInspectObjects].concat (child.inspectObjects for child in @_children)
 
     inspectTree: ->
       [@getInspectedName(),(c.inspectTree) for c in @_children]
