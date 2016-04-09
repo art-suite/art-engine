@@ -296,6 +296,11 @@ define [
 
     @getter
       inspectedInitializer: -> if @initializer then inspect @initializer else '0'
+      plainObjects: ->
+        v = @initializer || 0
+        v = v.x if (v instanceof Point) && v.x == v.y
+        v = v.getPlainObjects() if v.getPlainObjects
+        v
 
     #############
     # PRIVATE

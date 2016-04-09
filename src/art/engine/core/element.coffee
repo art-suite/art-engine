@@ -660,22 +660,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   @getter
 
-    inspectTree: ->
-      [@getInspectedName(),(c.inspectTree) for c in @_children]
-
-    inspectedProps: ->
-      out = for k, v of @minimalProps
-        if v instanceof PointLayout
-          v = v.initializer || 0
-          if (v instanceof Atomic.Base) && v.x == v.y
-            v = v.x
-        v = v.toArray() if v instanceof Atomic.Base
-        "#{k}: " + inspect v
-        #   when "axis", "scale", "currentSize", "currentLocation", "compositeMode", "opacity", "invisible", "staged", "size", "location"
-        #     v.inspect
-        #   else inspect v
-      out.join ' '
-
     coreProps: ->
       properties = [
         "axis" if @_axis && !@axis.eq point()

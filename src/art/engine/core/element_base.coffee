@@ -139,8 +139,41 @@ module.exports = class ElementBase extends EventedEpochedObject
         result = result.concat (child.debugStructure for child in @children)
       result
 
+
+    plainObjectProps: ->
+      for k, v of out = @minimalProps
+        out[k] = v.getPlainObjects() if v?.getPlainObjects
+      out
+
+    propsInspectObjects: ->
+      for k, v of out = @minimalProps
+        do (k, v) ->
+          out[k] = switch v.class?.getName?()
+            when "Bitmap" then v
+            when "Point" then (if v.x == v.y then v.x else inspect v.toArray())
+            else inspect: ->
+              v = v.getPlainObjects() if v?.getPlainObjects
+              inspectLean v
+      out
+
     inspectedProps: ->
-      inspectLean @minimalProps
+      inspectLean @getPlainObjectProps()
+
+    plainObjects: ->
+      [@class.getName(), @plainObjectProps].concat (child.plainObjects for child in @_children)
+
+    inspectObjects: ->
+      [@class.getName(), @propsInspectObjects].concat (child.inspectObjects for child in @_children)
+
+    inspectTree: ->
+      [@getInspectedName(),(c.inspectTree) for c in @_children]
+
+    inspectedStructure: ->
+      inspect @plainObjects
 
   inspect: ->
-    @class.getName() + " " + @inspectedProps
+    {inspectedProps} = @
+    a = @class.getName() + " " + inspectedProps
+    if 0 < len = @_children.length
+      a += "#{if inspectedProps.length > 0 then ',' else ''} children: [#{(child.class.getName() for child in @_children).join ', '}]"
+    a
