@@ -301,12 +301,7 @@ define [
         if @_minLayout then "min: " + @_minLayout.toString()
       ]).join(', ') + closeCap
 
-    inspect: (inspector)->
-      v = @inspect2()
-      inspector.put v if inspector
-      v
-
-    inspect2: ->
+    inspect: ->
       @toString()
 
     ################

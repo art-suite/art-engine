@@ -35,13 +35,7 @@ define [
       "(#{@layout1.toString showBracketedIfNotPresent} * #{1 - @p} + " +
       "#{@layout2.toString showBracketedIfNotPresent} * #{@p})"
 
-    inspect: (inspector)->
-      v = @inspect2()
-      inspector.put v if inspector
-      v
-
-    inspect2: ->
-      @toString()
+    inspect: -> @toString()
 
     @getter
       x:  -> @layout1.getX()  + @layout2.getX()

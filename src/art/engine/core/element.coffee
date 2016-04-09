@@ -742,15 +742,10 @@ module.exports = createWithPostCreate class Element extends ElementBase
   inspectLocal: ->
     @getInspectedName() + " " + @inspectProps.join ", "
 
-  inspect: (inspector)->
-    inspected = @inspectLocal()
-    inspector?.put? inspected
-    inspected
-
-  inspect2: -> @inspectedName
+  inspect: ->
+    @inspectLocal()
 
   toVisualStructure: (callback) ->
-
 
   ##########################
   # ANIMATE
