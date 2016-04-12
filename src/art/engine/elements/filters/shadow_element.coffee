@@ -12,7 +12,7 @@ module.exports = createWithPostCreate class ShadowElement extends FilterElement
 
   filter: (elementSpaceTarget, scale) ->
     elementSpaceTarget.blurAlpha @_radius * scale, inverted: @inverted
-    elementSpaceTarget.drawRectangle null, elementSpaceTarget.size, color:@_color, compositeMode:"target_alphamask"
+    elementSpaceTarget.drawRectangle null, elementSpaceTarget.size, color:@_color, compositeMode:"targetAlphaMask"
 
   ###
   NOTES

@@ -489,7 +489,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     opacity:                default: 1,                     validate:   (v) -> typeof v is "number"
     compositeMode:          default: "normal",              validate:   (v) -> typeof v is "string"
     pointerEventPriority:   default: 0,                     preprocess: (v) -> v | 0
-    userProperties:         default: null,                  preprocess: (v, oldValue) -> merge oldValue, v
+    userProps:         default: null,                  preprocess: (v, oldValue) -> merge oldValue, v
     childAddedAnimation:    default: null,                  validate:   (v) -> !v? || isPlainObject v
     childRemovedAnimation:  default: null,                  validate:   (v) -> !v? || isPlainObject v
     addedAnimation:         default: null,                  validate:   (v) -> !v? || isPlainObject v
@@ -681,7 +681,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     requiresParentStagingBitmap: ->
       switch @_compositeMode
         when "alphamask", "target_alphamask", "destover", "sourcein", "inverse_alphamask" then true
-        when "targetAlphamask", "destOver", "sourceIn", "inverseAlphamask" then true
+        when "alphaMask", "targetAlphaMask", "destOver", "sourceIn", "inverseAlphaMask" then true
         when "add", "normal" then false
         else throw new Error "unknown compositeMode: #{@_compositeMode}"
 
@@ -1387,7 +1387,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
         break if child == upToChild
         elementSpaceChildDrawArea = child.getParentSpaceDrawArea()
         switch child.compositeMode
-          when "alphamask"
+          when "alphamask", "alphaMask"
             # technically this is more accurate:
             #   elementSpaceDrawArea.intersection elementSpaceChildDrawArea
             # However, usually if there is a mask, it is "full", which makes "intersection" a no-op.
@@ -1396,7 +1396,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
             # This way, if only children below a mask change, there is no need to propogate up.
             elementSpaceChildDrawArea.intersectInto elementSpaceDrawArea
 
-          when "sourcein", "target_alphamask", "inverse_alphamask", "sourceIn", "targetAlphamask", "inverseAlphamask"
+          when "sourcein", "target_alphamask", "inverse_alphamask", "sourceIn", "targetAlphaMask", "inverseAlphaMask"
             null # doesn't change drawArea
 
           when "normal", "add", "destover", "replace", "destOver"

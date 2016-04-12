@@ -181,7 +181,7 @@ module.exports = class V1Loader extends BaseObject
 
     @decodeLayout object, tag, parent
 
-    userProperties = {}
+    userProps = {}
     for k, v of tag.attrs
       switch k
         when "name" then object.name = v
@@ -189,7 +189,7 @@ module.exports = class V1Loader extends BaseObject
         when "art_engine_version" then # ignored
         when "kimi_editor_version" then # ignored
         when "composite_mode" then @setCompositeMode object, v
-        when "drop_in_enabled" then userProperties.dropInEnabled = true
+        when "drop_in_enabled" then userProps.dropInEnabled = true
         when "lock_mode" then # ignored
 
         when "handle", "w_val", "h_val", "x_val", "y_val", "x_layout_mode", "y_layout_mode", "stack_mode" then # handled elsewhere
@@ -198,10 +198,10 @@ module.exports = class V1Loader extends BaseObject
           switch tagKey
             when "art_file:bitmaps", "art_bitmap:bitmap_id"
             else
-              userProperties[lowerCamelCase k] = v.toString()
+              userProps[lowerCamelCase k] = v.toString()
               @log "WARNING: unknown tag:attribute: #{tagKey} (ignored)"
 
-    object.userProperties = userProperties
+    object.userProps = userProps
 
     if children = tag.tags.children
       @populateChildrenFromTag object, children
