@@ -5,7 +5,7 @@ FilterElement = require './filter_element'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 module.exports = createWithPostCreate class ShadowElement extends FilterElement
-  defaultCompositeMode: "destover"
+  defaultCompositeMode: "destOver"
 
   @drawProperty
     inverted: default: false

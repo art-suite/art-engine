@@ -68,7 +68,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
           color: "orange"
           lineWidth: 10
           lineJoin: "round"
-          compositeMode: "destover"
+          compositeMode: "destOver"
         new ShadowElement
           radius:10
           parentSourceArea: rect -5, -5, 90, 70
@@ -90,7 +90,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
       new FillElement
       new Element
         location: 10
-        compositeMode: "destover"
+        compositeMode: "destOver"
         new RectangleElement
           size: plus:20, ps:1
           location: -10
@@ -155,7 +155,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
         new FillElement color: "red"
         new Element
           location:10
-          compositeMode: "destover"
+          compositeMode: "destOver"
           new RectangleElement
             size: ps:1, plus:20
             location: -10

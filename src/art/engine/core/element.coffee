@@ -523,8 +523,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
       setter: (v) -> @setVisible !v
 
     isMask:
-      getter: (pending) -> @getState(pending)._compositeMode == "alphamask"
-      setter: (v) -> @setCompositeMode if v then "alphamask" else "normal"
+      getter: (pending) -> @getState(pending)._compositeMode == "alphaMask"
+      setter: (v) -> @setCompositeMode if v then "alphaMask" else "normal"
 
     opacityPercent:       (pending) -> state = @getState(pending); state._opacity * 100 | 0
     hasMask:              (pending) -> state = @getState(pending); return true for child in state._children when child.isMask; false
@@ -680,7 +680,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     requiresParentStagingBitmap: ->
       switch @_compositeMode
-        when "alphamask", "target_alphamask", "destover", "sourcein", "inverse_alphamask" then true
         when "alphaMask", "targetAlphaMask", "destOver", "sourceIn", "inverseAlphaMask" then true
         when "add", "normal" then false
         else throw new Error "unknown compositeMode: #{@_compositeMode}"
@@ -1060,7 +1059,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
   Creates and returns an bitmap with the current element drawn on it
   options: [defaults]
     backgroundColor: [transparent]  #
-    area: ["drawArea"]
+    area: DEFAULT: "drawArea"
       "logicalArea"         means => drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
       "paddedArea"          means => drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
       "drawArea"            means => drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
@@ -1387,7 +1386,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
         break if child == upToChild
         elementSpaceChildDrawArea = child.getParentSpaceDrawArea()
         switch child.compositeMode
-          when "alphamask", "alphaMask"
+          when "alphaMask"
             # technically this is more accurate:
             #   elementSpaceDrawArea.intersection elementSpaceChildDrawArea
             # However, usually if there is a mask, it is "full", which makes "intersection" a no-op.
@@ -1396,10 +1395,10 @@ module.exports = createWithPostCreate class Element extends ElementBase
             # This way, if only children below a mask change, there is no need to propogate up.
             elementSpaceChildDrawArea.intersectInto elementSpaceDrawArea
 
-          when "sourcein", "target_alphamask", "inverse_alphamask", "sourceIn", "targetAlphaMask", "inverseAlphaMask"
+          when "sourceIn", "targetAlphaMask", "inverseAlphaMask"
             null # doesn't change drawArea
 
-          when "normal", "add", "destover", "replace", "destOver"
+          when "normal", "add", "replace", "destOver"
             elementSpaceChildDrawArea.unionInto elementSpaceDrawArea
 
           else throw new Error "unknown compositeMode:#{child.compositeMode}"
