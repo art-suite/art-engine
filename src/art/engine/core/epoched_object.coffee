@@ -437,9 +437,9 @@ module.exports = class EpochedObject extends BaseObject
   # EPOCHED STATE
   ##########################
 
-  onNextReady:  (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
+  onNextReady:  (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch, @
   @onNextReady: (callback, forceEpoch = true) -> stateEpoch.onNextReady callback, forceEpoch
-  onNextEpoch:  (callback, forceEpoch = true) -> globalEpochCycle.onNextReady callback, forceEpoch
+  onNextEpoch:  (callback, forceEpoch = true) -> globalEpochCycle.onNextReady callback, forceEpoch, @
   @onNextEpoch: (callback, forceEpoch = true) -> globalEpochCycle.onNextReady callback, forceEpoch
   onIdle:       (callback) -> stateEpoch.onNextReady callback
 
