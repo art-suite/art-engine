@@ -55,7 +55,7 @@ define [
 
       test "init isMask", ->
         el = new Element isMask:true
-        assert.eq el.pendingCompositeMode, "alphamask"
+        assert.eq el.pendingCompositeMode, "alphaMask"
 
       test "init angle", (done)->
         el = new Element location:123, axis:.5, size:456, angle: Math.PI/2

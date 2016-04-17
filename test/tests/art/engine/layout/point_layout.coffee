@@ -16,10 +16,11 @@ define [
   ps2 = point 10, 20
   suite "Art.Engine.Layout.PointLayout", ->
     suite "constructor", ->
-      test "new PointLayout",         -> assert.equal new PointLayout().toString(),         'PointLayout(0)'
-      test "new PointLayout ps:1",    -> assert.equal new PointLayout(ps:1).toString(),     'PointLayout(ps: 1)'
-      test "new PointLayout point0",  -> assert.equal new PointLayout(point0).toString(),   'PointLayout(point(0, 0))'
-      test "new PointLayout x: -> 1", -> assert.equal new PointLayout(x: -> 1).toString(),  'PointLayout(x: function())'
+      test "new PointLayout",             -> assert.equal new PointLayout().toString(),             'PointLayout(0)'
+      test "new PointLayout ps:1",        -> assert.equal new PointLayout(ps:1).toString(),         'PointLayout(ps: 1)'
+      test "new PointLayout point0",      -> assert.equal new PointLayout(point0).toString(),       'PointLayout(0)'
+      test "new PointLayout point(1,2)",  -> assert.equal new PointLayout(point 1, 2).toString(),   'PointLayout(point(1, 2))'
+      test "new PointLayout x: -> 1",     -> assert.equal new PointLayout(x: -> 1).toString(),      'PointLayout(x: function())'
 
     suite "layout", ->
       test "default", ->

@@ -112,10 +112,10 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
         new FillElement
         new ShadowElement radius:10, opacity:.5, location:point 10
 
-  drawTest2 "sourcein", ->
+  drawTest2 "sourceIn", ->
     new RectangleElement color:"red", size:point(80, 60),
       new FillElement
-      new ShadowElement radius:10, compositeMode:"sourcein", location:point 10
+      new ShadowElement radius:10, compositeMode:"sourceIn", location:point 10
 
   drawTest2 "with 50% scaled drawMatrix", ->
     new RectangleElement color:"red", size:point(80, 60), scale:point(.5),
@@ -217,22 +217,22 @@ suite "Art.Engine.Elements.Filters.ShadowElement.inverted", ->
   drawTest2 "blurred", ->
     new RectangleElement color:"red", size:point(80, 60),
       new FillElement
-      new ShadowElement inverted:true, radius:10, compositeMode:"sourcein", location:point 10
+      new ShadowElement inverted:true, radius:10, compositeMode:"sourceIn", location:point 10
 
   drawTest2 "no blur", ->
     new RectangleElement color:"red", size:point(80, 60), radius: 20,
       new FillElement
-      new ShadowElement inverted:true, compositeMode:"sourcein", location:point 10
+      new ShadowElement inverted:true, compositeMode:"sourceIn", location:point 10
 
   drawTest2 "rotate", ->
     new RectangleElement color:"red", size:point(80, 60), radius: 20,
       new FillElement
-      new ShadowElement inverted:true, compositeMode:"sourcein", angle: Math.PI/12, location:point 10
+      new ShadowElement inverted:true, compositeMode:"sourceIn", angle: Math.PI/12, location:point 10
 
   drawTest2 "half scale", ->
     new RectangleElement color:"red", size:point(80, 60), radius: 20,
       new FillElement
-      new ShadowElement axis: .5, inverted:true, compositeMode:"sourcein", scale: 1/2, radius: 10, location: ps: .5
+      new ShadowElement axis: .5, inverted:true, compositeMode:"sourceIn", scale: 1/2, radius: 10, location: ps: .5
 
   drawTest2 "half size", ->
     new RectangleElement color:"red", size:point(80, 60), radius: 20,
@@ -240,7 +240,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.inverted", ->
       new ShadowElement
         axis: .5
         inverted:true
-        compositeMode:"sourcein"
+        compositeMode:"sourceIn"
         size: ps: .5
         radius: 10
         location: ps: .5

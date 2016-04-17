@@ -84,7 +84,7 @@ define [
       stateEpochTest "with some masked and some unmasked children", ->
         o = new Element location:point(50,60), size: 400,
           new Element location:point(100,200), size: 400
-          new Element compositeMode:"alphamask"
+          new Element compositeMode:"alphaMask"
           new Element location:point(-100,-200), size: 40
 
         ->
