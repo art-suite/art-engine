@@ -144,6 +144,13 @@ suite "Art.Engine.Core.Element.geometry.elementToParentMatrix", ->
       assert.eq root.currentLocation, point 100, 200
       assert.eq root.currentAngle, Math.PI / 2
       assert.eq root.currentScale, point .5
+  test "init Element with elementToParentMatrix: null", ->
+    root = new Element
+      elementToParentMatrix: null
+
+    stateEpoch.onNextReady()
+    .then ->
+      assert.eq root.elementToParentMatrix, matrix()
 
 suite "Art.Engine.Core.Element.geometry.angle", ->
   test "Math.PI/2", ->

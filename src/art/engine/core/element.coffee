@@ -362,7 +362,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       preprocess: (v) -> matrix v
       setter: (v) ->
         @_locationLayoutDisabled = true
-        v
+        matrix v
 
     # isFilterSource:         default: false,                 preprocess: (v) -> !!v
     parent:
