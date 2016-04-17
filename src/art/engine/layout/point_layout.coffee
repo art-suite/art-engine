@@ -292,7 +292,13 @@ define [
     toString: ->
       "PointLayout(#{@toStringLean()})"
 
-    toStringLean: -> if @initializer then inspectLean @initializer else '0'
+    toStringLean: ->
+      if @initializer
+        if @initializer instanceof Point && @initializer.x == @initializer.y
+          @initializer.x
+        else
+          inspectLean @initializer
+      else '0'
 
     @getter
       inspectedInitializer: -> if @initializer then inspect @initializer else '0'
