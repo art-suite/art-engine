@@ -296,26 +296,34 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   @virtualProperty
     currentLocationX: (pending) ->
-        state = @getState pending
-        s = state._currentSize;
-        a = state._axis;
-        p = state._currentPadding;
-        state._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
+      state = @getState pending
+      s = state._currentSize;
+      a = state._axis;
+      p = state._currentPadding;
+      state._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
 
     currentLocationY: (pending) ->
-        state = @getState pending
-        s = state._currentSize
-        a = state._axis
-        p = state._currentPadding
-        state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
+      state = @getState pending
+      s = state._currentSize
+      a = state._axis
+      p = state._currentPadding
+      state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
 
     currentLocation: (pending, elementToParentMatrix) ->
-        state = @getState pending
-        s = state._currentSize
-        a = state._axis
-        p = state._currentPadding
-        elementToParentMatrix ||= state._elementToParentMatrix
-        elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
+      state = @getState pending
+      s = state._currentSize
+      a = state._axis
+      p = state._currentPadding
+      elementToParentMatrix ||= state._elementToParentMatrix
+      elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
+
+    currentAngle: (pending) ->
+      state = @getState pending
+      state._elementToParentMatrix.angle
+
+    currentScale: (pending) ->
+      state = @getState pending
+      state._elementToParentMatrix.getExactScale()
 
     layout:
       getter: -> throw new Error "get layout is depricated"
