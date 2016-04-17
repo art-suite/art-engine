@@ -35,7 +35,7 @@ module.exports = class ElementBase extends EventedEpochedObject
     elementFactory.register @ if @registerWithElementFactory()
     super
 
-  constructor: ->
+  _initFields: ->
     super
 
     # Used by ArtEngineRemote to map Virtual-Elements on the worker thread to Elements on the main thread

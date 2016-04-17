@@ -83,7 +83,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
     # Element.createdByType[key] = (Element.createdByType[key] || 0) + 1
 
     super options
-    @initFields()
 
     @_propertiesInitialized = false
 
@@ -354,7 +353,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       preprocess: (v) -> matrix v
       setter: (v) ->
         @_locationLayoutDisabled = true
-        matrix v
+        v
 
     # isFilterSource:         default: false,                 preprocess: (v) -> !!v
     parent:
@@ -748,7 +747,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       #   elementToTargetMatrix:elementToTargetMatrix,
       #   childToParentMatrix: child.elementToParentMatrix
       #   childToTargetMatrix: child.elementToTargetMatrix elementToTargetMatrix
-      child.draw target, child.elementToTargetMatrix elementToTargetMatrix
+      child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     @children # without this, coffeescript returns a new array
 
   # create, draw and return stagingBitmap
@@ -1264,8 +1263,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # GEOMETRY INFO
   ##########################
 
-  elementToElementMatrix: (o) -> if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
-  elementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix
+  elementToElementMatrix: (o) -> console.error("depricated: elementToElementMatrix");if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
+  elementToTargetMatrix: (parentToTargetMatrix) -> console.error("depricated: elementToTargetMatrix");@_elementToParentMatrix.mul parentToTargetMatrix
+
+  getElementToElementMatrix: (o) -> if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
+  getElementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix
 
   ###
   returns:

@@ -481,6 +481,11 @@ module.exports = class EpochedObject extends BaseObject
   constructor: (options = blankOptions)->
     super
 
+    @_initFields()
+
+    @_initProperties options
+
+  _initFields: ->
     @_pendingState = {}
     @__stateEpochCount = 0
     @__stateChangeQueued = false
@@ -488,8 +493,6 @@ module.exports = class EpochedObject extends BaseObject
     @__layoutPropertiesChanged = false
     @__drawAreaChanged = true
     @__drawPropertiesChanged = true
-
-    @_initProperties options
 
   ######################
   # PRIVATE: PROPS
@@ -624,6 +627,7 @@ module.exports = class EpochedObject extends BaseObject
   _applyStateChanges: ->
     @__stateChangeQueued = false
     @__stateEpochCount++
+
     mergeInto @, @_pendingState
 
   _applyAnimators: ->

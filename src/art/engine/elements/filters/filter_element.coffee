@@ -188,6 +188,6 @@ module.exports = createWithPostCreate class FilterElement extends CoreElementsBa
 
     filterSourceDrawAreaInElementSpace: (pending) ->
       @getFilterSourceElement pending
-      .elementToElementMatrix @
+      .getElementToElementMatrix @
       .transformBoundingRect @getFilterSourceDrawArea pending
 

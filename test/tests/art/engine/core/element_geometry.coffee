@@ -132,6 +132,15 @@ suite "Art.Engine.Core.Element.geometry", ->
       assert.eq a.transformToAncestorSpace(point()), null
       done()
 
+suite "Art.Engine.Core.Element.geometry.elementToParentMatrix", ->
+  test "init Element with elementToParentMatrix property", ->
+    root = new Element
+      size: 200
+      elementToParentMatrix: m = Matrix.scale(.5).rotate(Math.PI/2).translateXY(100,200)
+    stateEpoch.onNextReady()
+    .then ->
+      assert.eq root.elementToParentMatrix, m
+
 suite "Art.Engine.Core.Element.geometry.angle", ->
   test "Math.PI/2", ->
     root = new Element
