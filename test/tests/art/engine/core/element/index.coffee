@@ -3,8 +3,9 @@
 
 module.exports =
 Element           = require './namespace'
+Element.Basics    = require './basics'
 Element.CacheDraw = require './cache_draw'
 Element.Drawing   = require './drawing'
 Element.finishLoad(
-  ["CacheDraw","Drawing"]
+  ["Basics","CacheDraw","Drawing"]
 )

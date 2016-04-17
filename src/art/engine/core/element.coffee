@@ -95,7 +95,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     @_propertiesInitialized = true
 
-  initFields: ->
+  _initFields: ->
+    super
     @_initDrawCache()
     @_initTemporaryFields()
     @_initComputedFields()
@@ -946,6 +947,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   _generateDrawCache: ->
     # log "_generateDrawCache: #{@inspectedName} cacheDraw: #{@_cacheDraw}"
+    # console.error "_generateDrawCache"
 
     globalEpochCycle.logEvent "generateDrawCache", "same-id"
 
