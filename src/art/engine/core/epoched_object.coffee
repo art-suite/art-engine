@@ -59,7 +59,7 @@ module.exports = class EpochedObject extends BaseObject
 
   options:
     default:  # default value set when the Element is created
-    setter: (rawNewValue, oldValue, preprocessAndValidate) ->
+    setter: (preprocessedNewValue, oldValue, rawNewValue, preprocessAndValidate) ->
       THIS: the Element
       IN:
         rawNewValue: the exact, unprocessed, unvalidated value of 'foo' passed by the setYourProp(foo) or @yourProp = foo statement.
@@ -84,7 +84,7 @@ module.exports = class EpochedObject extends BaseObject
            as opposed to simply preprocessing the value.
            NOTE: animations use the preprocessor when initializing their to and from values.
 
-    postSetter: (newValue, oldValue) ->
+    postSetter: (newValue, oldValue, rawNewValue) ->
       THIS: the Element
       IN:
         newValue: the value after it has passed through the preprocessor and/or setter
@@ -142,7 +142,7 @@ module.exports = class EpochedObject extends BaseObject
       IN:   pending: true/false
       OUT:  if pending, return the pending value, else the current value
 
-    setter: (rawNewValue, preprocessAndValidate) ->
+    setter: (preprocessedNewValue, rawNewValue, preprocessAndValidate) ->
       OPTIONAL
         If not provided, this virtual property cannot be set.
         Attempting to set this virtual property will be IGNORED
@@ -208,25 +208,33 @@ module.exports = class EpochedObject extends BaseObject
     customValidator = options.validate
     customPreprocessor = options.preprocess
 
+    defaultValue = options.default
+
     preprocessor = if customPreprocessor && customValidator
       if customPreprocessor.length > 1 || customValidator.length > 1
         (v, oldValue) ->
+          v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
           customPreprocessor v, oldValue
       else
         (v) ->
+          v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v
           customPreprocessor v
     else if customValidator
       if customValidator.length > 1
         (v, oldValue) ->
+          v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
           v
       else
         (v) ->
+          v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v
           v
-    else customPreprocessor || (v) -> v
+    else customPreprocessor || (v) ->
+      v = defaultValue unless v?
+      v
 
     metaProperties =
       internalName: internalName
@@ -244,10 +252,10 @@ module.exports = class EpochedObject extends BaseObject
 
       getter        = _getter
       pendingGetter = -> _getter.call @, true
-      setter        = (rawValue) -> _setter.call @, rawValue, preprocessor
+      setter        = (rawValue) -> _setter.call @, preprocessor(rawValue), rawValue, preprocessor
 
     else
-      metaProperties.defaultValue = defaultValue = preprocessor options.default
+      metaProperties.defaultValue = defaultValue = preprocessor defaultValue
 
       getter        = (pending) -> if pending then @_pendingState[internalName] else @[internalName]
       pendingGetter = -> @_pendingState[internalName]
@@ -255,36 +263,47 @@ module.exports = class EpochedObject extends BaseObject
       {layoutProperty, drawProperty, drawAreaProperty, postSetter, setter} = options
       setter = if customSetter = setter
         if postSetter
-          (v) ->
+          (rawNewValue) ->
             oldValue = @_pendingState[internalName]
-            newValue = v
-            @_pendingState[internalName] = customSetter.call @, newValue, oldValue, preprocessor
+            newValue = @_pendingState[internalName] = customSetter.call(
+              @
+              preprocessor rawNewValue, oldValue
+              oldValue
+              rawNewValue
+              preprocessor
+            )
             @_elementChanged layoutProperty, drawProperty, drawAreaProperty
-            postSetter.call @, newValue, oldValue
+            postSetter.call @, newValue, oldValue, rawNewValue
             newValue
         else
-          (v) ->
+          (rawNewValue) ->
             oldValue = @_pendingState[internalName]
-            newValue = v
-            @_pendingState[internalName] = customSetter.call @, newValue, oldValue, preprocessor
+            newValue = preprocessor rawNewValue, oldValue
+            newValue = @_pendingState[internalName] = customSetter.call(
+              @
+              preprocessor rawNewValue, oldValue
+              oldValue
+              rawNewValue
+              preprocessor
+            )
             @_elementChanged layoutProperty, drawProperty, drawAreaProperty
             newValue
       else if postSetter
-        (v) ->
+        (rawNewValue) ->
           oldValue = @_pendingState[internalName]
-          newValue = @_pendingState[internalName] = preprocessor v, oldValue
+          newValue = @_pendingState[internalName] = preprocessor rawNewValue, oldValue
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           postSetter.call @, newValue, oldValue
           newValue
       else if preprocessor.length > 1
-        (v) ->
+        (rawNewValue) ->
           oldValue = @_pendingState[internalName]
-          newValue = @_pendingState[internalName] = preprocessor v, oldValue
+          newValue = @_pendingState[internalName] = preprocessor rawNewValue, oldValue
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           newValue
       else
-        (v) ->
-          newValue = @_pendingState[internalName] = preprocessor v
+        (rawNewValue) ->
+          newValue = @_pendingState[internalName] = preprocessor rawNewValue
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           newValue
 
