@@ -20,7 +20,7 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
   #   attrs:      - any other input attrs you want to specify such as:
   #     maxlength:  10
   constructor: (options = {}) ->
-    props = select options, "placeholder", "type", "autocapitalize", "autocomplete", "autocorrect"
+    props = select options, "placeholder", "type", "autocapitalize", "autocomplete", "autocorrect", "maxlength"
     tagType = if props.type == "textarea"
       delete props.type
       "textarea"

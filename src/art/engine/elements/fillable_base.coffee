@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Base = require './base'
-{log, isPlainObject, min, max, createWithPostCreate} = Foundation
+{log, isPlainObject, min, max, createWithPostCreate, isNumber} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
 
@@ -15,18 +15,15 @@ module.exports = createWithPostCreate class FillableBase extends Base
   @getter
     cacheable: -> @getHasChildren()
 
+  defaultTo = point "bottomLeft"
   @drawProperty
-    gradient: default: null, validate: (v) -> !v || v instanceof GradientFillStyle
     from:   default: "topLeft", preprocess: (v) -> point v
-    to:     default: "bottomLeft", preprocess: (v) -> point v
+    to:     default: null, preprocess: (v) -> v? && point v
+    colors: default: null
+    gradientRadius: default: null
     shadow:
       default: null
       validate: (v) -> !v || isPlainObject v
-
-  @virtualProperty
-    colors:
-      getter: (pending) -> @getState(pending).gradient?.colors
-      setter: (v) -> @setGradient v && new GradientFillStyle point0, point1, v
 
   _expandRectangleByShadow: _expandRectangleByShadow = (r, shadow) ->
     return r unless shadow
@@ -51,11 +48,26 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
-    drawOptions.fillStyle     = @_gradient
-    drawOptions.shadow        = @_shadow
+    {_shadow, _colors} = @
+    drawOptions.shadow = _shadow
 
-    if @_gradient
+    if _colors
+      {_from, _to, _gradientRadius, _currentSize} = @
+      drawOptions.colors = _colors
+      if _gradientRadius?
+        _to ||= _from
+        gradientScale = _currentSize.min() / 2
+        if isNumber _gradientRadius
+          drawOptions.gradientRadius = _gradientRadius * gradientScale
+        else
+          [r1, r2] = _gradientRadius
+          drawOptions.gradientRadius1 = r1 * gradientScale
+          drawOptions.gradientRadius2 = r2 * gradientScale
+
+      else
+        _to ||= defaultTo
+
       # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.
       # It creates two new objects, which is unfortunate. It also mutates an object which should be immutable.
-      @_gradient.from   = @_from.mul @_currentSize
-      @_gradient.to     = @_to.mul @_currentSize
+      drawOptions.from   = _from.mul _currentSize
+      drawOptions.to     = _to.mul _currentSize
