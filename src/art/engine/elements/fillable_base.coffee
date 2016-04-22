@@ -51,6 +51,12 @@ module.exports = createWithPostCreate class FillableBase extends Base
     {_shadow, _colors} = @
     drawOptions.shadow = _shadow
 
+    drawOptions.colors = null
+    drawOptions.gradientRadius1 = null
+    drawOptions.gradientRadius2 = null
+    drawOptions.from = null
+    drawOptions.to = null
+
     if _colors
       {_from, _to, _gradientRadius, _currentSize} = @
       drawOptions.colors = _colors
@@ -64,7 +70,6 @@ module.exports = createWithPostCreate class FillableBase extends Base
           drawOptions.gradientRadius1 = r1 * gradientScale
           drawOptions.gradientRadius2 = r2 * gradientScale
 
-      else
         _to ||= defaultTo
 
       # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.
