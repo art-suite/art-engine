@@ -70,7 +70,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
           drawOptions.gradientRadius1 = r1 * gradientScale
           drawOptions.gradientRadius2 = r2 * gradientScale
 
-        _to ||= defaultTo
+      _to ||= defaultTo
 
       # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.
       # It creates two new objects, which is unfortunate. It also mutates an object which should be immutable.
