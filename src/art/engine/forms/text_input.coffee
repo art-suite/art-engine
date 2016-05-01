@@ -56,8 +56,8 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
     @domElement.onchange = (event) => @checkIfValueChanged()
     @domElement.oninput  = (event) => @checkIfValueChanged()
     @domElement.onselect = (event) => @queueEvent "selectionChanged"
-    @domElement.onblur   = (event) => @blur()
-    @domElement.onfocus  = (event) => @focus()
+    @domElement.onblur   = (event) => @_blur()
+    @domElement.onfocus  = (event) => @_focus()
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,

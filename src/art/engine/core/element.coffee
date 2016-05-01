@@ -1651,14 +1651,23 @@ module.exports = createWithPostCreate class Element extends ElementBase
     if @parent then @parent.depth() + 1 else 1
 
   @getter
-    focused: -> (c = @getCanvasElement()) && c.isFocused @
+    focused: -> !!((c = @getCanvasElement()) && c.isFocused @)
 
-  focus: ->
-    @getCanvasElement()?.focusElement @
+  # update ArtEngine focus, but doesn't update DOM focus
+  _focus: -> @getCanvasElement()?.focusElement @
 
-  blur: ->
+  # update ArtEngine blur, but doesn't update DOM blur
+  _blur: ->
     return unless @focused
     @getCanvasElement()?.focusElement @parent
+
+  # focus this element and make sure the parent DOM Canvas is focused
+  focus: ->
+    @getCanvasElement()?.focusCanvas()
+    @_focus()
+
+  # blur this element; won't blur the DOM canvas unless called on the CanvasElement itself
+  blur: -> @_blur()
 
   capturePointerEvents: ->
     @getCanvasElement()?.capturePointerEvents @

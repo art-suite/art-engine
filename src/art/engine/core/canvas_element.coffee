@@ -48,6 +48,8 @@ define [
       # @_fullPageWidth = options.fullPageWidth
 
       @canvasElement = @
+      @_focusedElement = null
+      @_wasFocusedElement = null
       @_devicePixelsPerPoint = 1
       # children = options.children
       # options.children = null
@@ -116,10 +118,28 @@ define [
       @_domEventListeners = []
 
     isFocused: (el) ->
-      @pointerEventManager.isFocused el
+      document.hasFocus() && document.activeElement == @_canvas && @pointerEventManager.isFocused el
+
+    _blur: ->
+      @_focusedElement = null
+      super
+
+    focusCanvas: ->
+      console.error "CanvasElement#focusCanvas"
+      @_canvas.focus()
+
+    blur: ->
+      console.error "CanvasElement#blur"
+      @_canvas.blur()
+      super
 
     focusElement: (el) ->
+      return unless el && el != @_focusedElement
+      @_focusedElement = @_wasFocusedElement = el
       @pointerEventManager.focus null, el
+
+    _restoreFocus: ->
+      (@_wasFocusedElement || @)._focus()
 
     enableFileDrop: ->
       unless window.FileReader
@@ -262,6 +282,15 @@ define [
         # NOTE: must process immediately to avoid showing a stretched canvas
         globalEpochCycle.processEpoch()
 
+    _attachBlurFocusListeners: ->
+      @_domListener @_canvas, "blur", (domEvent) =>
+        log "canvas onblur"
+        @_blur()
+
+      @_domListener @_canvas, "focus", (domEvent) =>
+        log "canvas onfocus"
+        @_restoreFocus()
+
     # DOM limitation:
     #   HTMLCanvas mousemove only gets events if the mouse is over the canvas regardless of button status.
     #   "window's" mousemove gets all move events, regardless of button status, INCLUDING events outside
@@ -312,6 +341,10 @@ define [
     touchCancel: (id, timeStampInPerformanceSeconds) ->
       @pointerEventManager.pointerCancel id, timeStampInPerformanceSeconds
 
+    _focus: ->
+      @_canvas.focus()
+      @focusElement @_focusedElement = @_wasFocusedElement
+
     capturePointerEvents: (element) ->
       @pointerEventManager.capturePointerEvents element
 
@@ -327,6 +360,7 @@ define [
     #   Listen to mouseups on window, but ignore any if we didn't get a mousedown on the canvas
     _attachPointerButtonListeners: ->
       @_domListener @_canvas, "mousedown", (domEvent)=>
+        @_restoreFocus()
         if domEvent.button == 0
           domEvent.preventDefault()
           @mouseDown @_domEventLocation(domEvent),
@@ -341,6 +375,8 @@ define [
     _attachPointerTouchListeners: ->
       @_domListener @_canvas, "touchstart",  (e) =>
         e.preventDefault()
+        @_restoreFocus()
+
         for changedTouch in e.changedTouches
           @touchDown changedTouch.identifier,
             @_domEventLocation changedTouch
@@ -374,17 +410,44 @@ define [
 
     _attachKeypressListeners: ->
       @keysDown = {}
-      @_domListener window, "keypress", (domEvent) =>
-        @pointerEventManager.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", typed:String.fromCharCode(domEvent.charCode)
+      @_domListener @_canvas, "keypress", (domEvent) =>
+        domEvent.preventDefault()
 
-      @_domListener window, "keydown",  (domEvent) =>
-        @pointerEventManager.queueKeyEvents "keyDown",  -> new KeyEvent "keyDown",  keyCode:domEvent.keyCode
+      # lets use https://github.com/cvan/keyboardevent-key-polyfill/blob/master/index.js
+      # to polyfill and then just use "key" everywhere
+      keyProps = wordsArray """
+        key
+        altKey
+        ctrlKey
+        shiftKey
+        metaKey
+      """
+      # NOTE: keyCode and charCode are depricated. Use key where possible, but Safari doesn't support
+      @_domListener @_canvas, "keydown",  (domEvent) =>
+        props = {}
+        props[k] = domEvent[k] for k  in keyProps
 
-      @_domListener window, "keyup",    (domEvent) =>
-        @pointerEventManager.queueKeyEvents "keyUp",    -> new KeyEvent "keyUp",    keyCode:domEvent.keyCode
+        @pointerEventManager.queueKeyEvents "keyDown",  -> new KeyEvent "keyDown", props
+        @pointerEventManager.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", props
+        log keydown: props
+        domEvent.preventDefault()
+
+      @_domListener @_canvas, "keyup",    (domEvent) =>
+        props = {}
+        props[k] = domEvent[k] for k  in keyProps
+
+        @pointerEventManager.queueKeyEvents "keyUp",    -> new KeyEvent "keyUp", props
+        log keyup: props
+        domEvent.preventDefault()
+
+    _enableHtmlFocusOnCanvas: ->
+      @_canvas.tabIndex = "0"
+      @_canvas.contentEditable = true
 
     _attachDomEventListeners: ->
+      @_enableHtmlFocusOnCanvas()
       @_dettachDomEventListeners()
+      @_attachBlurFocusListeners()
       @_attachPointerMoveListeners()
       @_attachPointerTouchListeners()
       @_attachPointerButtonListeners()
