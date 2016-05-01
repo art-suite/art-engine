@@ -12,8 +12,9 @@ FillableBase = require '../fillable_base'
 # Otherwise, the @color property is used and @from and @to properties are ignored.
 module.exports = createWithPostCreate class FillElement extends FillableBase
 
-  getBaseDrawArea:        -> @getParent().getBaseDrawArea()
-  getPendingBaseDrawArea: -> @getPendingParent().getPendingBaseDrawArea()
+  @virtualProperty
+    baseDrawArea: (pending) ->
+      @getParent().getBaseDrawArea pending
 
   ###
   NOTE:

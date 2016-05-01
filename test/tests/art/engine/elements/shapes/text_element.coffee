@@ -113,7 +113,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         new RectangleElement color:"#ff7"
         new TextElement text:"test", layoutMode:"tight", fontSize:50
     test: (element) ->
-      assert.eq element.currentSize, point 68, 29
+      assert.eq element.currentSize, point 72, 33
 
   drawTest3 "compositeMode",
     stagingBitmapsCreateShouldBe: 0
@@ -251,10 +251,10 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
         for value, result of {
             top:
               area:      rect 0, 0, 82, 72
-              drawArea:  rect -8, -8, 97, 91
+              drawArea:  rect -8, -8, 98, 92
               element:
                 logicalArea:            rect 0, 0, 100, 100
-                elementSpaceDrawArea:   rect -8, -8, 97, 91
+                elementSpaceDrawArea:   rect -8, -8, 98, 92
               fragments:             top:      topAligned,     left:     leftAligned
             left:         fragments: top:      topAligned,     left:     leftAligned
             center:       fragments: top:      topAligned,     hCenter:  hCenterAligned
@@ -266,14 +266,14 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
             centerLeft:   fragments: vCenter:  vCenterAligned, left:     leftAligned
             centerCenter:
               area:      rect 0, 0, 82, 72
-              drawArea:  rect 1, 6, 97, 91
+              drawArea:  rect 1, 6, 98, 92
               fragments:             vCenter:  vCenterAligned, hCenter:  hCenterAligned
             centerRight:  fragments: vCenter:  vCenterAligned, right:    rightAligned
             bottomLeft:   fragments: bottom:   bottomAligned,  left:     leftAligned
             bottomCenter: fragments: bottom:   bottomAligned,  hCenter:  hCenterAligned
             bottomRight:
               area:      rect 0, 0, 82, 72
-              drawArea:  rect 10, 20, 97, 91
+              drawArea:  rect 10, 20, 98, 92
               fragments:             bottom:   bottomAligned,  right:    rightAligned
             }
           do (value, result) =>
@@ -290,11 +290,11 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
         for value, result of {
             top:
               area:      rect 0, 0, 135, 52
-              drawArea:  rect -8, -8, 150, 71
+              drawArea:  rect -8, -8, 150, 72
               element:
                 logicalArea:            rect -20, -10, 200, 72
                 paddedArea:             rect 0, 0, 160, 52
-                elementSpaceDrawArea:   rect -8, -8, 150, 71
+                elementSpaceDrawArea:   rect -8, -8, 150, 72
             }
           do (value, result) =>
             drawTest3 "align: '#{value}'",
@@ -441,7 +441,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
       hCenterAligned  = [50   ]
       vCenterAligned  = [50   ]
       for value, result of {
-          top:          top:      topAligned,     left:     leftAligned, w: [44], h: [29]
+          top:          top:      topAligned,     left:     leftAligned, w: [46], h: [31]
           left:         top:      topAligned,     left:     leftAligned
           center:       top:      topAligned,     hCenter:  hCenterAligned
           right:        top:      topAligned,     right:    rightAligned
