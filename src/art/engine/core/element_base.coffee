@@ -65,6 +65,46 @@ module.exports = class ElementBase extends EventedEpochedObject
       getter: (pending) -> @getState(pending)._key
       setter: (v) -> @setKey v
 
+  ############################
+  # keyboard stuff
+  ############################
+
+  @concreteProperty
+
+    ###
+    willConsumeKeyboardEvent:
+      "beforeDescendents":   (highest priority) no descendend will get keyboard events
+      "beforeAncestors":     (medium priority) no ancestor will get keyboard events UNLESS an ancestor is set to "beforeDescendents"
+      false:              (lowest priority)
+        will only receive keyboard events if, on the currentFocusPath
+          a) there are no elements that return "beforeAncestors" AND
+          b) this element comes before the first element, if any, that returns "beforeDescendents"
+          If all elements return false, all elements will get the event in ancestor > descendent order
+
+      (artEngineKeyboardEventType, keyboardEvent) -> "beforeDescendents"/"beforeAncestors"/false
+        IN: artEngineKeyboardEventType: "keyUp", "keyDown", or "keyPress"
+        IN: keyboardEvent: HTMLKeyboardEvent
+          NOTE: use keyboardEvent.key for checking the key-type. It has been polyfilled to the latest HTML standards (2016)
+        OUT:
+          "beforeDescendents":
+            keyboardEvent.preventDefault() is called
+            decendents will not get this keyboardEvent
+          "beforeAncestors":
+            keyboardEvent.preventDefault() is called
+            ancestors will not get this keyboardEvent UNLESS they return "beforeDescendents"
+          false: (default)
+            children, if focused, will get this keyboardEvent
+
+    ###
+    willConsumeKeyboardEvent:
+      default: (artEngineKeyboardEventType, keyboardEvent) -> false
+      validate: (v) -> v == "beforeDescendents" || v == "beforeAncestors" || isFunction v
+      preprocess: (v) ->
+        if !isFunction v
+          -> v
+        else
+          v
+
   ##########################
   # Element Registry
   ##########################

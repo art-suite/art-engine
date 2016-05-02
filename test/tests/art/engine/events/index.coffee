@@ -2,8 +2,9 @@
 # file: tests/art/engine/events/index.coffee
 
 module.exports =
-Events              = require './namespace'
-Events.PointerEvent = require './pointer_event'
+Events                     = require './namespace'
+Events.PointerEvent        = require './pointer_event'
+Events.PointerEventManager = require './pointer_event_manager'
 Events.finishLoad(
-  ["PointerEvent"]
+  ["PointerEvent","PointerEventManager"]
 )

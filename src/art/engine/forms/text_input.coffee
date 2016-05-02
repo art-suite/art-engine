@@ -53,17 +53,33 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
     super
 
     @lastValue = @value
+
+    @_addKeyboardEventListeners()
+
     @domElement.onchange = (event) => @checkIfValueChanged()
     @domElement.oninput  = (event) => @checkIfValueChanged()
     @domElement.onselect = (event) => @queueEvent "selectionChanged"
-    @domElement.onblur   = (event) => @_blur()
+    @domElement.onblur   = (event) =>
+      # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
+      @getCanvasElement()?.focusCanvas() if document.body == document.activeElement
+      @_blur()
+
     @domElement.onfocus  = (event) => @_focus()
+
+  _addKeyboardEventListeners: ->
+    @domElement.addEventListener "keydown", =>
+      @getCanvasElement()?.queueKeyEvents "keyDown", -> new KeyEvent "keyDown",  keyboardEvent
+      @getCanvasElement()?.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", keyboardEvent
+
+    @domElement.addEventListener "keyup", =>
+
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
       focus: => @domElement.focus()
       blur:  => @domElement.blur()
-      keyUp: ({props}) =>
+      keyPress: ({props}) =>
+        log key: props.key
         if props.key == "enter"
           @handleEvent "enter", value:@value
 
