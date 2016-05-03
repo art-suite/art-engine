@@ -411,10 +411,16 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   queueKeyEvents: (type, newEventFunction) ->
     @pointerEventManager.queueKeyEvents type, newEventFunction
 
+  keyDownEvent: (keyboardEvent) ->
+    @pointerEventManager.queueKeyEvents "keyDown",  -> new KeyEvent "keyDown",  keyboardEvent
+    @pointerEventManager.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", keyboardEvent
+
+  keyUpEvent: (keyboardEvent) ->
+    @pointerEventManager.queueKeyEvents "keyUp",    -> new KeyEvent "keyUp",  keyboardEvent
+
   _attachKeypressListeners: ->
     @_domListener @_canvas, "keydown", (keyboardEvent) =>
-      @queueKeyEvents "keyDown",  -> new KeyEvent "keyDown",  keyboardEvent
-      @queueKeyEvents "keyPress", -> new KeyEvent "keyPress", keyboardEvent
+      @keyDownEvent keyboardEvent
 
       # HACK
       # Our event handlers don't happen immeidately. They are queued.
@@ -425,7 +431,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         keyboardEvent.preventDefault()
 
     @_domListener @_canvas, "keyup", (keyboardEvent) =>
-      @queueKeyEvents "keyUp", -> new KeyEvent "keyUp", keyboardEvent
+      @keyUpEvent keyboardEvent
 
   _enableHtmlFocusOnCanvas: ->
     @_canvas.tabIndex = "0"
