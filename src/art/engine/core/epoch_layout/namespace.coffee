@@ -3,8 +3,5 @@
 
 Core = require '../namespace'
 module.exports = Core.EpochLayout ||
-class Core.EpochLayout extends Neptune.Base
-  @namespace: Core
-  @namespacePath: "Neptune.Art.Engine.Core.EpochLayout"
-
-Core.addNamespace Core.EpochLayout
+Core.addNamespace class EpochLayout extends Neptune.Base
+  ;

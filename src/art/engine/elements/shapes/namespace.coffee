@@ -3,8 +3,5 @@
 
 Elements = require '../namespace'
 module.exports = Elements.Shapes ||
-class Elements.Shapes extends Neptune.Base
-  @namespace: Elements
-  @namespacePath: "Neptune.Art.Engine.Elements.Shapes"
-
-Elements.addNamespace Elements.Shapes
+Elements.addNamespace class Shapes extends Neptune.Base
+  ;

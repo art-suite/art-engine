@@ -3,8 +3,5 @@
 
 Core = require '../namespace'
 module.exports = Core.Element ||
-class Core.Element extends Neptune.Base
-  @namespace: Core
-  @namespacePath: "Neptune.Tests.Art.Engine.Core.Element"
-
-Core.addNamespace Core.Element
+Core.addNamespace class Element extends Neptune.Base
+  ;

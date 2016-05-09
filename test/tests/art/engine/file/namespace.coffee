@@ -3,8 +3,5 @@
 
 Engine = require '../namespace'
 module.exports = Engine.File ||
-class Engine.File extends Neptune.Base
-  @namespace: Engine
-  @namespacePath: "Neptune.Tests.Art.Engine.File"
-
-Engine.addNamespace Engine.File
+Engine.addNamespace class File extends Neptune.Base
+  ;
