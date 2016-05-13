@@ -408,15 +408,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     # @_domListener @_canvas, "touchleave",  (e) =>
     # @_domListener @_canvas, "touchenter",  (e) =>
 
-  queueKeyEvents: (type, newEventFunction) ->
-    @pointerEventManager.queueKeyEvents type, newEventFunction
+  queueKeyEvents: (type, keyboardEvent) ->
+    @pointerEventManager.queueKeyEvents type, keyboardEvent
 
   keyDownEvent: (keyboardEvent) ->
-    @pointerEventManager.queueKeyEvents "keyDown",  -> new KeyEvent "keyDown",  keyboardEvent
-    @pointerEventManager.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", keyboardEvent
+    @queueKeyEvents "keyDown",  keyboardEvent
+    @queueKeyEvents "keyPress", keyboardEvent
 
   keyUpEvent: (keyboardEvent) ->
-    @pointerEventManager.queueKeyEvents "keyUp",    -> new KeyEvent "keyUp",  keyboardEvent
+    @queueKeyEvents "keyUp",    keyboardEvent
 
   _attachKeypressListeners: ->
     @_domListener @_canvas, "keydown", (keyboardEvent) =>

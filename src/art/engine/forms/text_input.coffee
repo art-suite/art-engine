@@ -67,20 +67,15 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
     @domElement.onfocus  = (event) => @_focus()
 
   _addKeyboardEventListeners: ->
-    @domElement.addEventListener "keydown", =>
-      @getCanvasElement()?.queueKeyEvents "keyDown", -> new KeyEvent "keyDown",  keyboardEvent
-      @getCanvasElement()?.queueKeyEvents "keyPress", -> new KeyEvent "keyPress", keyboardEvent
-
-    @domElement.addEventListener "keyup", =>
-
+    @domElement.addEventListener "keydown", (keyboardEvent) => @getCanvasElement()?.keyDownEvent keyboardEvent
+    @domElement.addEventListener "keyup",   (keyboardEvent) => @getCanvasElement()?.keyUpEvent keyboardEvent
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
       focus: => @domElement.focus()
       blur:  => @domElement.blur()
       keyPress: ({props}) =>
-        log key: props.key
-        if props.key == "enter"
+        if props.key == "Enter"
           @handleEvent "enter", value:@value
 
   checkIfValueChanged: ->
