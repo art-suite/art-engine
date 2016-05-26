@@ -1462,6 +1462,13 @@ module.exports = createWithPostCreate class Element extends ElementBase
       child.find pattern, arguments[1], matches for child in @_children
     matches
 
+  findElementsWithKey: (key) ->
+    @find (e) -> e.key == key
+
+  findElementWithKey: (key) ->
+    [first] = @findElementsWithKey key
+    first
+
   @getter
     elementPath: ->
       if @parent
