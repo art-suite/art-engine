@@ -107,7 +107,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       listener:listener
 
   # _attach is private and done when the HTMLCanvasElement is set - typically on construction
-  dettach: ->
+  detach: ->
     globalEpochCycle.dettachCanvasElement @
     @_unregister()
 
