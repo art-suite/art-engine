@@ -51,7 +51,6 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
         input:    (event) => @checkIfValueChanged()
         select:   (event) => @queueEvent "selectionChanged"
         focus:    (event) =>
-          log "text input focus"
           @_canvasElementToFocusOnBlur = @getCanvasElement()
           @_focus()
         blur:     (event) =>

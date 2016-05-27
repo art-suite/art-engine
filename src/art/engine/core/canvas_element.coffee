@@ -126,11 +126,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     super
 
   focusCanvas: ->
-    log "CanvasElement._canvas.focus()"
     @_canvas.focus()
 
   blur: ->
-    log "CanvasElement._canvas.blur()"
     @_canvas.blur()
     super
 
@@ -284,13 +282,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       globalEpochCycle.processEpoch()
 
   _attachBlurFocusListeners: ->
-    @_domListener @_canvas, "blur", (domEvent) =>
-      log "canvas onblur"
-      @_blur()
-
-    @_domListener @_canvas, "focus", (domEvent) =>
-      log "canvas onfocus"
-      @_restoreFocus()
+    @_domListener @_canvas, "blur", (domEvent) => @_blur()
+    @_domListener @_canvas, "focus", (domEvent) => @_restoreFocus()
 
   # DOM limitation:
   #   HTMLCanvas mousemove only gets events if the mouse is over the canvas regardless of button status.
