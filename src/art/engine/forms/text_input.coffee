@@ -6,6 +6,7 @@ SynchronizedDomOverlay = require "./synchronized_dom_overlay"
 
 {color} = Atomic
 {createElementFromHtml} = Foundation.Browser.Dom
+{TextArea, Input} = Foundation.Browser.DomElementFactories
 {log, merge, select, inspect, createWithPostCreate} = Foundation
 
 module.exports = createWithPostCreate class TextInput extends SynchronizedDomOverlay
@@ -21,54 +22,46 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
   #     maxlength:  10
   constructor: (options = {}) ->
     props = select options, "placeholder", "type", "autocapitalize", "autocomplete", "autocorrect", "maxlength"
-    tagType = if props.type == "textarea"
+    Factory = if props.type == "textarea"
       delete props.type
-      "textarea"
+      TextArea
     else
       props.type ||= 'text'
-      "input"
+      Input
 
-    propsString = (for k, v of props
-      "#{k}=#{inspect v}"
-    ).join " "
-    options.domElement = el = createElementFromHtml("<#{tagType} #{propsString}'></input>")
-    el.value = options.value || ""
-    style = merge options.style,
-      padding: "#{options.padding || 5}px"
-      border: '0px'
-      color: color(options.color || "black").toString()
-      padding: "0"
-      margin: "0"
-      "vertical-align": "bottom"
-      'text-align': options.align || "left"
-      'font-size': "#{options.fontSize || 16}px"
-      'background-color': 'transparent'
-      'font-family': options.fontFamily || "Arial"
-    for k, v of style
-      el.style[k] = v
+    options.domElement = Factory props,
+      options.attrs
+      options.style
+      value: options.value || ""
+      style:
+        backgroundColor:  'transparent'
+        border:           '0px'
+        color:            color(options.color || "black").toString()
+        fontFamily:       options.fontFamily || "Arial"
+        fontSize:         "#{options.fontSize || 16}px"
+        margin:           "0"
+        outline:          "0"
+        padding:          "0"
+        textAlign:        options.align || "left"
+        verticalAlign:    "bottom"
+      on:
+        keydown:  (keyboardEvent) => @getCanvasElement()?.keyDownEvent keyboardEvent
+        keyup:    (keyboardEvent) => @getCanvasElement()?.keyUpEvent keyboardEvent
+        change:   (event) => @checkIfValueChanged()
+        input:    (event) => @checkIfValueChanged()
+        select:   (event) => @queueEvent "selectionChanged"
+        focus:    (event) =>
+          log "text input focus"
+          @_canvasElementToFocusOnBlur = @getCanvasElement()
+          @_focus()
+        blur:     (event) =>
+          # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
+          @_canvasElementToFocusOnBlur?.focusCanvas() if document.body == document.activeElement
+          @_blur()
 
-    if options.attrs
-      for k,v of options.attrs
-        options.domElement.attr k, v
     super
 
     @lastValue = @value
-
-    @_addKeyboardEventListeners()
-
-    @domElement.onchange = (event) => @checkIfValueChanged()
-    @domElement.oninput  = (event) => @checkIfValueChanged()
-    @domElement.onselect = (event) => @queueEvent "selectionChanged"
-    @domElement.onblur   = (event) =>
-      # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
-      @getCanvasElement()?.focusCanvas() if document.body == document.activeElement
-      @_blur()
-
-    @domElement.onfocus  = (event) => @_focus()
-
-  _addKeyboardEventListeners: ->
-    @domElement.addEventListener "keydown", (keyboardEvent) => @getCanvasElement()?.keyDownEvent keyboardEvent
-    @domElement.addEventListener "keyup",   (keyboardEvent) => @getCanvasElement()?.keyUpEvent keyboardEvent
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
