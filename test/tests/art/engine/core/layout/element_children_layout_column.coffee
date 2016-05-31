@@ -71,7 +71,9 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
       test: ->
         assert.eq root.currentSize.rounded, point 78, 54
         assert.eq (c.currentSize.rounded     for c in root.children), [point(78, 32), point(59, 10), point(5,  12)]
-        assert.eq (c.currentLocation.rounded for c in root.children), [point( 0,  0), point(10, 32), point(36, 42)]
+        assert.within (c.currentLocation.rounded for c in root.children),
+          [point( 0,  0), point(10, 32), point(36, 42)]
+          [point( 0,  0), point(10, 32), point(37, 42)]
 
     testLogBitmap "word-wrap A2", ->
       root: root = new Element
@@ -117,8 +119,12 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
         c1 = new TextElement text: "Hi"      , axis: "topCenter", location: xw: .5
         c3 = new TextElement text: "world."  , axis: "topCenter", location: xw: .5
       test: ->
-        assert.eq (c.currentLocation for c in root.children), [point(20.6640625, 0), point(20.6640625, 12)]
-        assert.eq (c.currentSize     for c in root.children), [point(16, 12), point(41.328125, 12)]
+        assert.within (c.currentLocation for c in root.children),
+          [point(20.5, 0), point(20.5, 12)]
+          [point(20.7, 0), point(20.7, 12)]
+        assert.within (c.currentSize     for c in root.children),
+          [point(15, 12), point(41, 12)]
+          [point(16, 12), point(42, 12)]
 
     testLogBitmap "child location layout should be within parent padded area - horizontal padding", ->
       root: root = new Element

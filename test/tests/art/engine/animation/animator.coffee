@@ -20,7 +20,9 @@ suite "Art.Engine.Animation.Animator", ->
 
     el.onNextReady()
     .then ->
-      assert.eq el.currentLocation, point 5
+      assert.within el.currentLocation,
+        point 5
+        point 6
       ani.finish()
       el.onNextReady()
     .then ->

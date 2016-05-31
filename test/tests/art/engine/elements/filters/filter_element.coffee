@@ -30,9 +30,7 @@ class WaveFilter extends FilterElement
     data2[l2 + 3] = data1[l1 + 3]
 
   filterPixelData: (elementSpaceTarget, src, scale) ->
-    dstBuffer = src.buffer.slice()
-    dst = src
-    src = new src.constructor dstBuffer
+    dst = src.slice()
     # src = tmp
     {w, h} = elementSpaceTarget.size
 
@@ -66,7 +64,7 @@ suite "Art.Engine.Elements.Filters.FilterElement", ->
       new RectangleElement color:"yellow", location: {ps:.4}, size: ps:.4
       new InvertFilter location: 15
 
-  drawTest2 "basic wave", ->
+  drawTest2 "basic wave minimual test", ->
     ao = new RectangleElement color:"red", location:50,
       new FillElement
       new RectangleElement color:"orange", location: {ps:.2}, size: ps:.4

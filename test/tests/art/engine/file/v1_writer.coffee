@@ -94,14 +94,16 @@ suite "Art.Engine.File.V1Writer", ->
     e = Element BitmapElement bitmap: new Bitmap(point 64, 32).clear "orange"
     toArtFileTags e
     .then (artFileTag)->
-      assert.eq artFileTag.toXml('  '), """
+      xml = artFileTag.toXml('  ')
+      xml = xml.replace /\<\d+ binary bytes>/g, "<### binary bytes>"
+      assert.eq xml, """
         <Root>
           <art_file w_val='100' h_val='100' handle='(0,0)' art_engine_version='0.0.2' kimi_editor_version='0.6.0'>
             <children>
               <art_bitmap bitmap_id='0' w_val='100' h_val='100' handle='(0,0)'/>
             </children>
             <bitmaps>
-              <bitmap bitmap_id='0' pixel_data='<663 binary bytes>'/>
+              <bitmap bitmap_id='0' pixel_data='<### binary bytes>'/>
             </bitmaps>
           </art_file>
         </Root>

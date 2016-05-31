@@ -20,10 +20,10 @@ module.exports = createWithPostCreate class ShapeElement extends FillableBase
         {w, h} = size
         context.beginPath()
         context.moveTo 0, 0
-        conext.lineTo 0, h
-        conext.lineTo w, h
-        conext.lineTo w, 0
-        conext.lineTo 0, 0
+        context.lineTo 0, h
+        context.lineTo w, h
+        context.lineTo w, 0
+        context.lineTo 0, 0
         context.closePath()
 
       validate: (f) -> isFunction f

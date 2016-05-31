@@ -16,7 +16,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
       @_cache = {}
       @_referenceCounts = {}
 
-    # OUT: a Promise to deliver a Canvas.Bitmap
+    # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
       if url.match "ImagePicker"
         console.log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"

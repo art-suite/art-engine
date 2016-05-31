@@ -4,7 +4,7 @@ Engine = require 'art-engine'
 Helper = require '../helper'
 StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
-{inspect, log, min, isNumber} = Foundation
+{inspect, log, min, isNumber, isPlainObject} = Foundation
 {point, matrix, Matrix, Point, rect} = Atomic
 {Element, RectangleElement, FillElement, TextElement, Shapes} = Engine
 {drawTest, drawTest2, drawTest3} =  Helper
@@ -12,18 +12,29 @@ StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
 {stateEpochTest} = StateEpochTestHelper
 
+isWithinTest = (correctValue) ->
+  isPlainObject(correctValue) && correctValue.max && correctValue.min && Object.keys(correctValue).length == 2
+
 layoutFragmentTester = (element, result) ->
-  for areaPart, correctValues of result
-    values = for {alignedLayoutArea} in element._textLayout.fragments
+  for areaPart, correctValue of result
+    testValue = for {alignedLayoutArea} in element._textLayout.fragments
       Math.round alignedLayoutArea[areaPart]
-    assert.eq values, correctValues, "testing: element._textLayout.fragments.alignedLayoutArea.#{areaPart}"
+    note = "testing: element._textLayout.fragments.alignedLayoutArea.#{areaPart}"
+
+    if isWithinTest correctValue
+      assert.within testValue, correctValue.min, correctValue.max, note
+    else
+      assert.eq testValue, correctValue, note
 
 roundedEq = (testValue, correctValue, note) ->
   if (testValue instanceof Atomic.Rectangle) || (testValue instanceof Point)
     testValue = testValue.rounded
   else if isNumber testValue
     Math.round testValue
-  assert.eq testValue, correctValue, note
+  if isWithinTest correctValue
+    assert.within testValue, correctValue.min, correctValue.max, note
+  else
+    assert.eq testValue, correctValue, note
 
 layoutTester = (element, tests) ->
   {fragments} = tests
@@ -113,7 +124,9 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
         new RectangleElement color:"#ff7"
         new TextElement text:"test", layoutMode:"tight", fontSize:50
     test: (element) ->
-      assert.eq element.currentSize, point 72, 33
+      assert.within element.currentSize,
+        point 72, 32
+        point 72, 33
 
   drawTest3 "compositeMode",
     stagingBitmapsCreateShouldBe: 0
@@ -250,11 +263,17 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
         vCenterAligned  = [20,  40,   60,   80  ]
         for value, result of {
             top:
-              area:      rect 0, 0, 82, 72
-              drawArea:  rect -8, -8, 98, 92
+              area:
+                min: rect 0, 0, 82, 72
+                max: rect 0, 0, 83, 72
+              drawArea:
+                min: rect -8, -8, 98, 92
+                max: rect -8, -8, 99, 92
               element:
                 logicalArea:            rect 0, 0, 100, 100
-                elementSpaceDrawArea:   rect -8, -8, 98, 92
+                elementSpaceDrawArea:
+                  min: rect -8, -8, 98, 92
+                  max: rect -8, -8, 99, 92
               fragments:             top:      topAligned,     left:     leftAligned
             left:         fragments: top:      topAligned,     left:     leftAligned
             center:       fragments: top:      topAligned,     hCenter:  hCenterAligned
@@ -265,15 +284,23 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
             topRight:     fragments: top:      topAligned,     right:    rightAligned
             centerLeft:   fragments: vCenter:  vCenterAligned, left:     leftAligned
             centerCenter:
-              area:      rect 0, 0, 82, 72
-              drawArea:  rect 1, 6, 98, 92
+              area:
+                min: rect 0, 0, 82, 72
+                max: rect 0, 0, 83, 72
+              drawArea:
+                min: rect 1, 6, 98, 92
+                max: rect 1, 6, 99, 92
               fragments:             vCenter:  vCenterAligned, hCenter:  hCenterAligned
             centerRight:  fragments: vCenter:  vCenterAligned, right:    rightAligned
             bottomLeft:   fragments: bottom:   bottomAligned,  left:     leftAligned
             bottomCenter: fragments: bottom:   bottomAligned,  hCenter:  hCenterAligned
             bottomRight:
-              area:      rect 0, 0, 82, 72
-              drawArea:  rect 10, 20, 98, 92
+              area:
+                min: rect 0, 0, 82, 72
+                max: rect 0, 0, 83, 72
+              drawArea:
+                min: rect 9,  20, 98, 92
+                max: rect 10, 20, 99, 92
               fragments:             bottom:   bottomAligned,  right:    rightAligned
             }
           do (value, result) =>
@@ -290,11 +317,15 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
         for value, result of {
             top:
               area:      rect 0, 0, 135, 52
-              drawArea:  rect -8, -8, 150, 72
+              drawArea:
+                min: rect -8, -8, 150, 72
+                max: rect -8, -8, 151, 72
               element:
                 logicalArea:            rect -20, -10, 200, 72
                 paddedArea:             rect 0, 0, 160, 52
-                elementSpaceDrawArea:   rect -8, -8, 150, 72
+                elementSpaceDrawArea:
+                  min: rect -8, -8, 150, 72
+                  max: rect -8, -8, 151, 72
             }
           do (value, result) =>
             drawTest3 "align: '#{value}'",
@@ -313,7 +344,9 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
       suite "width change in second layout pass should update alignments", ->
         for align, result of {
             right:
-              fragments: width: [112], left:[0]
+              fragments:
+                width: min: [112], max: [118]
+                left: [0]
             }
           do (align, result) =>
             drawTest3 "align: '#{align}'",
@@ -441,7 +474,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
       hCenterAligned  = [50   ]
       vCenterAligned  = [50   ]
       for value, result of {
-          top:          top:      topAligned,     left:     leftAligned, w: [46], h: [31]
+          top:          top:      topAligned,     left:     leftAligned, h: {min:[29],max:[31]}, w: min:[44], max:[46]
           left:         top:      topAligned,     left:     leftAligned
           center:       top:      topAligned,     hCenter:  hCenterAligned
           right:        top:      topAligned,     right:    rightAligned

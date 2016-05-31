@@ -31,4 +31,6 @@ suite "Art.Engine.Core.layout.TextElement", ->
     root: root = new TextElement text: "Descending", layoutMode: "textualBaseline", size: cs: 1
     test: ->
       assert.within root.currentSize, point(75, 12), point(76, 12)
-      assert.eq root.elementSpaceDrawArea, rect -8, -8, 91, 32
+      assert.within root.elementSpaceDrawArea,
+        rect -8, -8, 91, 32
+        rect -8, -8, 92, 32
