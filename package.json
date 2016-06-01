@@ -1,6 +1,6 @@
 {
   "name": "art-engine",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "art-engine",
   "main": "index.coffee",
   "dependencies": {
@@ -8,12 +8,11 @@
     "art-canvas": "git://github.com/Imikimi-LLC/art-canvas.git",
     "art-events": "git://github.com/Imikimi-LLC/art-events.git",
     "art-xbd": "git://github.com/Imikimi-LLC/art-xbd.git",
-    "art-text":   "git://github.com/Imikimi-LLC/art-text.git",
+    "art-text": "git://github.com/Imikimi-LLC/art-text.git",
     "keyboardevent-key-polyfill": "^1.0.2",
     "javascript-detect-element-resize": "^0.5.3"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "webpack-dev-server -d --progress"
   },
