@@ -1,3 +1,5 @@
+# This page has a potentially BETTER solution to detecting resizes:
+# http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/
 require "javascript-detect-element-resize"
 
 # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/mousemove
