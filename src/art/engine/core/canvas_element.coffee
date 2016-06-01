@@ -258,18 +258,20 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _updateCanvasToDocumentMatricies: ->
     {left, top} = domElementOffset @_canvas
-    @_canvasDocumentOffset = point left, top
-    @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translateXY left, top
-    @_documentToElementMatrix = Matrix.translateXY(-left, -top).scale @_devicePixelsPerPoint
-    @_parentToElementMatrix = null
-    @setElementToParentMatrix @_elementToAbsMatrix = Matrix.scale @_devicePixelsPerPoint
+    documentOffset = point left, top
+    if !documentOffset.eq @_canvasDocumentOffset
+      @_canvasDocumentOffset = documentOffset
+      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translateXY left, top
+      @_documentToElementMatrix = Matrix.translateXY(-left, -top).scale @_devicePixelsPerPoint
+      @_parentToElementMatrix = null
+      @setElementToParentMatrix @_elementToAbsMatrix = Matrix.scale @_devicePixelsPerPoint
 
-    # log _updateCanvasToDocumentMatricies:
-    #   _elementToDocumentMatrix:@_elementToDocumentMatrix
-    #   _documentToElementMatrix:@_documentToElementMatrix
-    #   _absToElementMatrix:@_absToElementMatrix
-    #   _elementToAbsMatrix:@_elementToAbsMatrix
-    @queueEvent "documentMatriciesChanged"
+      # log _updateCanvasToDocumentMatricies:
+      #   _elementToDocumentMatrix:@_elementToDocumentMatrix
+      #   _documentToElementMatrix:@_documentToElementMatrix
+      #   _absToElementMatrix:@_absToElementMatrix
+      #   _elementToAbsMatrix:@_elementToAbsMatrix
+      @queueEvent "documentMatriciesChanged"
 
   ###############################################
   # EVENTS, LISTENERS and POINTERS
@@ -363,7 +365,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # Strategy:
   #   Listen to mouseups on window, but ignore any if we didn't get a mousedown on the canvas
   _attachPointerButtonListeners: ->
+    @_domListener @_canvas, "mouseover", (domEvent)=>
+      @_updateCanvasToDocumentMatricies()
+
     @_domListener @_canvas, "mousedown", (domEvent)=>
+      @_updateCanvasToDocumentMatricies()
       @_restoreFocus()
       if domEvent.button == 0
         domEvent.preventDefault()
@@ -378,6 +384,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _attachPointerTouchListeners: ->
     @_domListener @_canvas, "touchstart",  (e) =>
+      @_updateCanvasToDocumentMatricies()
       e.preventDefault()
       @_restoreFocus()
 
