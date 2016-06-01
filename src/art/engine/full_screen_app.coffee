@@ -86,19 +86,16 @@ module.exports = class FullScreenApp
         </head>
 
         <style>
+          html {
+            height: 100%;
+          }
           body {
             padding: 0px;
             margin: 0px;
             background-color: #eee;
             overflow: hidden;
             font-size: 0px;
-          }
-          canvas {
-            width: 100%;
             height: 100%;
-          }
-          input:focus {
-            outline: 0;
           }
         </style>
 
