@@ -287,7 +287,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     removeResizeListener @_canvas.parentElement, @_resizeListener
 
   _attachResizeListener: ->
-    # @_domListener window, "resize", (domEvent)=>
+    @_domListener window, "resize", (domEvent)=>
+      @_updateCanvasToDocumentMatricies()
+
     addResizeListener @_canvas.parentElement, @_resizeListener = =>
       @_updateCanvasGeometry()
 
