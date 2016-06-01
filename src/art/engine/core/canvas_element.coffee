@@ -1,3 +1,5 @@
+require "javascript-detect-element-resize"
+
 # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/mousemove
 # http://stackoverflow.com/questions/1685326/responding-to-the-onmousemove-event-outside-of-the-browser-window-in-ie
 
@@ -23,6 +25,8 @@ EngineStat= require './engine_stat'
   wordsArray
 } = Foundation
 
+HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
+
 {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 {getDevicePixelRatio, domElementOffset} = Browser.Dom
@@ -39,64 +43,64 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # CanvasElement registry only depends on if they are attached or dettached
   _updateRegistryFromPendingState: -> null
 
-  # Canvas
+  ###
+  IN:
+    options:
+      for 'real' mode, set one of the following
+      for 'test' mode, leave all blank and there will be no HTMLCanvasElement
+        canvas:             HTMLCanvasElement instance
+        canvasId:           canvas = document.getElementById canvasId
+        parentHtmlElement:  parentHtmlElement.appendChild HtmlCanvas(...)
+
+      parentHtmlElement is the preferred option:
+        A new HtmlCanvas is generated, and
+        it's styles are setup for the best results.
+  ###
   constructor: (options = {}) ->
-    # Chrome does not currectly update the canvas size even though the CSS width and height are 100%
-    # when you set the height or width property on the canvas - which sets the pixel-resolution of the canvas.
-    # So, instead, if your canvas is going to be full-width or full-height of the page anyway, sets
-    # these to true and the canvas-size is set from the window.innerHeight and window.innerWidth
-    # @_fullPageHeight = true # options.fullPageHeight
-    # @_fullPageWidth = options.fullPageWidth
+    super
 
     @canvasElement = @
     @_focusedElement = null
     @_wasFocusedElement = null
     @_devicePixelsPerPoint = 1
-    # children = options.children
-    # options.children = null
-    super
-
-    options.canvas = document.getElementById(options.canvasId) if !options.canvas and options.canvasId
 
     @_domEventListeners = []
-    @webgl = options.webgl
-    @retinaSupport = true unless options.disableRetina
-
     @_drawEpochPreprocessing = []
     @_drawEpochQueued = false
 
-    @noFPS = options.noFPS
-    @_attach options.canvas
+    {@webgl} = options
+
+    @retinaSupport = true unless options.disableRetina
+
+    @_attach @_getOrCreateCanvasElement options
+      # options.canvas || document.getElementById options.canvasId
+      #@_getOrCreateCanvasElement options
     @engineStat = new EngineStat
-    # @children = children if children
 
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
+
+  _getOrCreateCanvasElement: ({canvas, canvasId, parentHtmlElement}) ->
+    canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
+
+  _createCanvasElement: (parentHtmlElement) ->
+    parentHtmlElement?.appendChild HtmlCanvas
+      style:
+        position: "relative"
+        outline: "none"
+        top: "0"
+        left: "0"
+      id: "artCanvas"
 
   @virtualProperty
     parentSizeForChildren: (pending) -> @getParentSize pending
 
     parentSize: (pending) ->
       if @_canvas
-
-        ###
-        When using HTML5 <!DOCTYPE html>, parentElement.clientWidth* doesn't work right
-        It appears that the canvas's size effects the parent's size. A feedback loop.
-
-          # old:
-          point(
-            @_canvas.parentElement.clientWidth
-            @_canvas.parentElement.clientHeight
-          )
-
-        For FullScreenApps, we just want to use the whole viewport anyway, so that's what I'm
-        doing right now. If we want to have apps in canvas elements which are not full-screen,
-        then we need to update this.
-        ###
-        w = Math.max document.documentElement.clientWidth, window.innerWidth || 0
-        h = Math.max document.documentElement.clientHeight, window.innerHeight || 0
-
-        point w, h
+        point(
+          @_canvas.parentElement.clientWidth
+          @_canvas.parentElement.clientHeight
+        )
       else point 100
 
   _domListener: (target, type, listener)->
@@ -108,12 +112,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   # _attach is private and done when the HTMLCanvasElement is set - typically on construction
   detach: ->
-    globalEpochCycle.dettachCanvasElement @
+    globalEpochCycle.detachCanvasElement @
     @_unregister()
 
-    @_dettachDomEventListeners()
+    @_detachDomEventListeners()
 
-  _dettachDomEventListeners: ->
+  _detachDomEventListeners: ->
+    return unless @_eventListenersAttached
+    @_eventListenersAttached = false
+    @_detachResizeListener()
     for listener in @_domEventListeners
       listener.target.removeEventListener listener.type, listener.listener
     @_domEventListeners = []
@@ -274,8 +281,12 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     y = (domEvent.clientY + windowScrollOffset.y - @_canvasDocumentOffset.y) * @_devicePixelsPerPoint
     new Point x, y
 
+  _detachResizeListener: ->
+    removeResizeListener @_canvas.parentElement, @_resizeListener
+
   _attachResizeListener: ->
-    @_domListener window, "resize", (domEvent)=>
+    # @_domListener window, "resize", (domEvent)=>
+    addResizeListener @_canvas.parentElement, @_resizeListener = =>
       @_updateCanvasGeometry()
 
       # NOTE: must process immediately to avoid showing a stretched canvas
@@ -431,8 +442,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_canvas.contentEditable = true
 
   _attachDomEventListeners: ->
+    return if @_eventListenersAttached
+    @_eventListenersAttached = true
     @_enableHtmlFocusOnCanvas()
-    @_dettachDomEventListeners()
     @_attachBlurFocusListeners()
     @_attachPointerMoveListeners()
     @_attachPointerTouchListeners()

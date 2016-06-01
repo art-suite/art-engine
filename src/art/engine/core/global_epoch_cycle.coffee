@@ -109,7 +109,7 @@ module.exports = class GlobalEpochCycle extends Epoch
   logEvent: (name, id) ->
     @globalEpochStats?.logEvent name, id
 
-  dettachCanvasElement: (toRemoveCe) ->
+  detachCanvasElement: (toRemoveCe) ->
     @activeCanvasElements = arrayWithout @activeCanvasElements, toRemoveCe
 
   attachCanvasElement: (toAddCe) ->
