@@ -86,7 +86,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
 
   _createCanvasElement: (parentHtmlElement) ->
-    parentHtmlElement?.appendChild HtmlCanvas
+    parentHtmlElement?.appendChild @_createdHtmlCanvasElement = HtmlCanvas
       style:
         position: "relative"
         outline: "none"
@@ -115,6 +115,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # _attach is private and done when the HTMLCanvasElement is set - typically on construction
   detach: ->
     globalEpochCycle.detachCanvasElement @
+    if @_createdHtmlCanvasElement
+      log "CanvasElement#detach: removing createdHtmlCanvasElement..."
+      @_createdHtmlCanvasElement.parentElement.removeChild @_createdHtmlCanvasElement
+      @_createdHtmlCanvasElement = null
+      @_canvas = null
+      log "CanvasElement#detach: removed createdHtmlCanvasElement."
+
     @_unregister()
 
     @_detachDomEventListeners()
