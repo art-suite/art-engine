@@ -22,7 +22,7 @@ define [
       test "new PointLayout point(1,2)",  -> assert.equal new PointLayout(point 1, 2).toString(),   'PointLayout(point(1, 2))'
       test "new PointLayout x: -> 1",     ->
         f = -> 1
-        assert.equal new PointLayout(x: f).toString(),      'PointLayout(x: function())'
+        assert.match new PointLayout(x: f).toString(), /PointLayout\(x\: (f|function)\(\)\)/
 
     suite "layout", ->
       test "default", ->
