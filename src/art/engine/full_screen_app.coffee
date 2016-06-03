@@ -1,10 +1,10 @@
-{Promise} = Foundation = require 'art-foundation'
+{Promise, parseQuery} = Foundation = require 'art-foundation'
 
 module.exports = class FullScreenApp
 
   @_domReady: ->
     Engine = require 'art-engine'
-    query = Foundation.Browser.Parse.query()
+    query = parseQuery()
     console.log """
       Art.Engine.FullScreenApp options:
         ?dev=true
