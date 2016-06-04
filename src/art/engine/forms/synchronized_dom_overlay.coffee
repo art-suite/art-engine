@@ -61,10 +61,8 @@ module.exports = class SynchronizedDomOverlay extends Element
     r = rect(x, y, size.x, size.y).round()
 
     opacity = @getAbsOpacity()
-    zIndex = Foundation.Browser.Dom.zIndex(canvasElement._canvas) + 1
 
     # console.log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
-    @_domElement.style.zIndex = zIndex
     @_domElement.style.opacity = opacity
     @_domElement.style.left   = "#{r.x}px"
     @_domElement.style.top    = "#{r.y}px"
@@ -84,7 +82,7 @@ module.exports = class SynchronizedDomOverlay extends Element
     # if @_attachedToCanvasElement && @_documentMatriciesChangedListener
     #   @_attachedToCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
     #   @_documentMatriciesChangedListener = @_attachedToCanvasElement = null
-    @_domElement?.parentNode.removeChild @_domElement
+    @_domElement?.parentElement.removeChild @_domElement
     @_attachedToCanvasElement = null
 
   _attachDomElement: ->
@@ -95,5 +93,5 @@ module.exports = class SynchronizedDomOverlay extends Element
 
     if canvasElement
       @_attachedToCanvasElement = canvasElement
-      document.body.appendChild @_domElement
+      canvasElement.htmlCanvasElement.parentElement.appendChild @_domElement
       @_queueUpdate()

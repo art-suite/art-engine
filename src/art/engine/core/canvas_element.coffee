@@ -217,6 +217,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @_cssCursor = cursor
 
   @getter
+    htmlCanvasElement: -> @_canvas
     numActivePointers: -> @pointerEventManager.getNumActivePointers()
     cacheable: -> false
     canvasElement: -> @
