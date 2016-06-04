@@ -20,7 +20,7 @@ module.exports = class SynchronizedDomOverlay extends Element
     @_detachDomElement()
 
     @_domElement = domElement
-    @_domElement.style.position = "absolute"
+    @_domElement.style.position = "fixed"
     @_domElement.style.top = "0"
 
     @onNextReady => @_attachDomElement()
