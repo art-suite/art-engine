@@ -1,11 +1,11 @@
-{Promise, parseQuery} = Foundation = require 'art-foundation'
+{Promise, parseQuery, log} = Foundation = require 'art-foundation'
 
 module.exports = class FullScreenApp
 
   @_domReady: ->
     Engine = require 'art-engine'
     query = parseQuery()
-    console.log """
+    log """
       Art.Engine.FullScreenApp options:
         ?dev=true
           show DomConsole
@@ -28,7 +28,7 @@ module.exports = class FullScreenApp
       Engine.Core.CanvasElement.prototype.defaultSize = hh:1, w: (query.w | 0) || 375
       Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs == "true"
 
-    console.log "Art.Engine.FullScreenApp: app ready"
+    log "Art.Engine.FullScreenApp: app ready"
 
   @init: (config = {})->
     document.onreadystatechange = =>

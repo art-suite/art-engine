@@ -118,14 +118,14 @@ module.exports = class ElementBase extends EventedEpochedObject
   _register: ->
     # return if its already in; all its children are too
     return if _elementInstanceRegistry[instanceId = @getInstanceId()]
-    # console.log "ArtEngineElementBase: register #{instanceId}"
+    # log "ArtEngineElementBase: register #{instanceId}"
     _elementInstanceRegistry[instanceId] = @
     @eachChild (child) => child._register()
 
   _unregister: ->
     # return if its already removed; all its children are too
     return unless _elementInstanceRegistry[instanceId = @getInstanceId()]
-    # console.log "ArtEngineElementBase: unregister #{instanceId}"
+    # log "ArtEngineElementBase: unregister #{instanceId}"
 
     delete _elementInstanceRegistry[instanceId]
     @eachChild (child) => child._unregister()

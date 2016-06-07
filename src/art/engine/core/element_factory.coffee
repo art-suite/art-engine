@@ -17,7 +17,7 @@ module.exports = class ElementFactory extends BaseObject
         console.warn "ElementFactory: element with class-name #{name} already exists. ClassPaths: Existing: #{@_elementClassesByName[name].getClassPathName()}, Adding: #{klass.getClassPathName()}"
     else
       # timeout 100, -> # timeout so getClassPathName is updated
-      #   console.log "ElementFactory: registered #{name} => #{klass.getClassPathName()}"
+      #   log "ElementFactory: registered #{name} => #{klass.getClassPathName()}"
       @_elementClassesByName[name] = klass
 
   classForElement: (elementClassName) -> @_elementClassesByName[elementClassName]

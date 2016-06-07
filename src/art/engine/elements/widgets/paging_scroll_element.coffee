@@ -180,7 +180,7 @@ class ScrollAnimator extends BaseObject
     if absLt frameTime*60 - 1, .25
     else
       missCount++ if tookFrames > 1
-      # console.log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
+      # log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
     # </DEBUG>
 
     scrollPosition = @getScrollPosition()
@@ -231,7 +231,7 @@ class ScrollAnimator extends BaseObject
 
     # <DEBUG>
     unless @getAnimationContinues()
-      console.log "frameUpdate #{@_mode}: DONE (miss rate: #{missCount} / #{frameCount})"
+      log "frameUpdate #{@_mode}: DONE (miss rate: #{missCount} / #{frameCount})"
     # </DEBUG>
 
     @getAnimationContinues()
@@ -679,7 +679,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
       @_flicked = false
       timeout 60, =>
         if !@_flicked && @_gestureActive
-          # console.log "gestureBegin: was scrolling: no flick"
+          # log "gestureBegin: was scrolling: no flick"
 
           @_pointerReferenceFrame = @_referenceFrame
           scrollPosition = @getPendingScrollPosition()

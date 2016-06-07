@@ -62,7 +62,7 @@ module.exports = class SynchronizedDomOverlay extends Element
 
     opacity = @getAbsOpacity()
 
-    # console.log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
+    # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
     @_domElement.style.opacity = opacity
     @_domElement.style.left   = "#{r.x}px"
     @_domElement.style.top    = "#{r.y}px"

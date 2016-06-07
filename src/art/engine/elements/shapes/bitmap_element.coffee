@@ -19,8 +19,8 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
       if url.match "ImagePicker"
-        console.log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"
-        console.log "initializerPromise: #{!!initializerPromise}"
+        log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"
+        log "initializerPromise: #{!!initializerPromise}"
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
       @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
 
@@ -28,7 +28,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     # returns false if there are still other references
     release: (url) ->
       return unless url
-      console.log "SourceToBitmapCache#release: #{url}"
+      log "SourceToBitmapCache#release: #{url}"
       throw new Error "no references for #{url}" unless isNumber @_referenceCounts[url]
       if @_referenceCounts[url] == 0 || !isNumber @_referenceCounts[url]
         return console.error "invalid referenceCount: #{inspect @_referenceCounts[url]} for url: #{url}"
