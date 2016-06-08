@@ -67,8 +67,12 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
       focus: => @domElement.focus()
       blur:  => @domElement.blur()
       keyPress: ({props}) =>
-        if props.key == "Enter"
-          @handleEvent "enter", value:@value
+        @handleEvent "enter", value:@value if props.key == "Enter"
+        @handleEvent "escape", value:@value if props.key == "Escape"
+
+  _unregister: ->
+    @_canvasElementToFocusOnBlur?.focusCanvas()
+    super
 
   checkIfValueChanged: ->
     if @lastValue != @value
