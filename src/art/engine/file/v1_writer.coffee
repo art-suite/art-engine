@@ -125,6 +125,9 @@ module.exports = class V1Writer extends BaseObject
     encodedProps = {}
     for k, v of minimalProps
       switch k
+        when "compositeMode"
+          if v == "alphaMask"
+            encodedProps.stack_mode = "+stencil"
         when "key" then encodedProps.name = v.toString()
         when "elementToParentMatrix" then encodedProps.matrix = v.toString()
         when "bitmap"
