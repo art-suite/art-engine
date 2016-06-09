@@ -78,7 +78,6 @@ module.exports = createHotWithPostCreate module, class V1Writer extends BaseObje
   toEncodedArtFile: (element) =>
     @toArtFileTags element
     .then (tag) ->
-      log artFileTags: tag
       tag.toXbd()
 
   ########################
@@ -100,20 +99,26 @@ module.exports = createHotWithPostCreate module, class V1Writer extends BaseObje
     if !propsEq axis, point .5
       encodedProps.handle = "(#{axis.x},#{axis.y})"
 
-  _addTagForBitmap: (bitmap) ->
+  _addTagForBitmap: ({bitmap, userProps}) ->
     {uniqueId} = bitmap
     return Promise.resolve() if @bitmapTags[uniqueId]
+    {encodedBitmap} = userProps if userProps
 
-    bitmap.toJpg()
-    .then (jpg) =>
+    # log _addTagForBitmap:
+    #   bitmap: bitmap
+    #   encodedBitmap: encodedBitmap?.slice 0, 16
+
+    Promise.resolve()
+    .then => encodedBitmap || bitmap.toJpg()
+    .then (encodedBitmap) =>
       @bitmapTags[uniqueId] = BitmapTag
         bitmap_id: @bitmapTagCount++
-        pixel_data: jpg
+        pixel_data: encodedBitmap
 
   _populateBitmapSubTagsRecursive: (element) ->
     {bitmap, children} = element
     Promise.resolve()
-    .then => bitmap && @_addTagForBitmap bitmap
+    .then => bitmap && @_addTagForBitmap element
     .then =>
       Promise.all (@_populateBitmapSubTagsRecursive child for child in children)
 
