@@ -5,7 +5,7 @@ Xbd = require 'art-xbd'
 Core = require '../core'
 Elements = require '../elements'
 
-{BaseObject, log, createObjectTreeFactories} = Foundation
+{BaseObject, log, createObjectTreeFactories, createHotWithPostCreate, floatEq} = Foundation
 {point} = Atomic
 {XbdTag, createTagFactories} = Xbd
 {propsEq} = Core.EpochedObject
@@ -43,7 +43,7 @@ RectangleElement needs to have the following pattern:
 
 ###
 
-module.exports = class V1Writer extends BaseObject
+module.exports = createHotWithPostCreate module, class V1Writer extends BaseObject
   @singletonClass()
 
   @toArtFileTags: (element) => @singleton.toArtFileTags element
@@ -78,6 +78,7 @@ module.exports = class V1Writer extends BaseObject
   toEncodedArtFile: (element) =>
     @toArtFileTags element
     .then (tag) ->
+      log artFileTags: tag
       tag.toXbd()
 
   ########################
@@ -85,6 +86,10 @@ module.exports = class V1Writer extends BaseObject
   ########################
   _encodeLayout: (element, encodedProps) ->
     {currentSize, currentLocation, axis} = element
+    e2p = element.getElementToParentMatrix()
+    encodedProps.matrix = e2p.withLocation(0).toArray().join ','
+    unless floatEq 0, angle = e2p.getAngle()
+      encodedProps.angle = "#{angle}"
     encodedProps.w_val = currentSize.x.toString()
     encodedProps.h_val = currentSize.y.toString()
 
