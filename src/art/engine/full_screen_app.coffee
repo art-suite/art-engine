@@ -1,4 +1,7 @@
-{Promise, parseQuery, log} = Foundation = require 'art-foundation'
+Foundation = require 'art-foundation'
+
+{Promise, parseQuery, log} = Foundation
+{Meta} = Foundation.Browser.DomElementFactories
 
 module.exports = class FullScreenApp
 
@@ -69,19 +72,20 @@ module.exports = class FullScreenApp
 
     newLine = "\n    "
 
+    nameContentMetas =
+      "viewport": "user-scalable=no, width=device-width, initial-scale=1.0"
+      "apple-mobile-web-app-capable": "yes"
+      "apple-mobile-web-app-status-bar-style": "black-translucent"
+      "format-detection": "telephone=no"
+
+    document.head.appendChild Meta charset: "utf-8"
+    document.head.appendChild Meta "http-equiv": "X-UA-Compatible", content: "IE=edge,chrome=1"
+    for name, content of nameContentMetas
+      document.head.appendChild Meta name: name, content: content
+
     html = """
       <html>
         <head>
-          <meta charset="utf-8">
-          <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-          <meta name="description" content="">
-
-          <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-          <meta name="format-detection" content="telephone=no" />
-
-          <title>#{title}</title>
           #{styleSheetLinks.join newLine}
         </head>
 
@@ -101,7 +105,6 @@ module.exports = class FullScreenApp
 
         <body>
           #{fontFamilyInits.join newLine}
-          <canvas id="artCanvas" moz-opaque></canvas>
           #{scriptLinks.join newLine}
         </body>
       </html>
