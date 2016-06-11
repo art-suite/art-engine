@@ -25,6 +25,8 @@ EngineStat= require './engine_stat'
   first, Browser
   createWithPostCreate
   wordsArray
+  select
+  merge
 } = Foundation
 
 HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
@@ -88,7 +90,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   _createCanvasElement: (parentHtmlElement) ->
     parentHtmlElement?.appendChild @_createdHtmlCanvasElement = HtmlCanvas
       style:
-        position: "relative"
+        position: "absolute"
         outline: "none"
         top: "0"
         left: "0"
@@ -346,6 +348,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @pointerEventManager.mouseMove location, timeStampInPerformanceSeconds
     @pointerEventManager.mouseUp timeStampInPerformanceSeconds
 
+  mouseWheel: (location, timeStampInPerformanceSeconds, props) ->
+    @pointerEventManager.mouseWheel location, timeStampInPerformanceSeconds, props
+
   touchDown:   (id, location, timeStampInPerformanceSeconds) ->
     @pointerEventManager.pointerDown id, location, timeStampInPerformanceSeconds
 
@@ -393,6 +398,18 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         domEvent.preventDefault()
         @mouseUp @_domEventLocation(domEvent),
           timeStampToPerformanceSecond domEvent.timeStamp
+
+  _attachPointerWheelListeners: ->
+    @_domListener @_canvas, "wheel", (domEvent)=>
+      domEvent.preventDefault()
+      @mouseWheel @_domEventLocation(domEvent),
+        timeStampToPerformanceSecond domEvent.timeStamp
+        merge
+          deltaMode: switch domEvent.deltaMode
+            when 0 then "pixel"
+            when 1 then "line"
+            when 2 then "page"
+          select domEvent, "deltaX", "deltaY", "deltaZ"
 
   _attachPointerTouchListeners: ->
     @_domListener @_canvas, "touchstart",  (e) =>
@@ -468,6 +485,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_attachPointerMoveListeners()
     @_attachPointerTouchListeners()
     @_attachPointerButtonListeners()
+    @_attachPointerWheelListeners()
     @_attachResizeListener()
     @_attachKeypressListeners()
 

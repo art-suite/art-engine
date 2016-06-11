@@ -191,8 +191,14 @@ class ScrollAnimator extends BaseObject
     switch @_mode
       when "tracking"
         # DIRECT TRACKING (no animation)
+        {windowSize} = @scrollElement
         boundedTargetLocation = @boundLocation targetScrollPosition
-        targetScrollPosition = (targetScrollPosition + boundedTargetLocation) / 2
+        maxBeyond = windowSize / 2
+        minV = min boundedTargetLocation, targetScrollPosition
+        maxV = max boundedTargetLocation, targetScrollPosition
+        targetScrollPosition = bound minV,
+          boundedTargetLocation + Math.atan((targetScrollPosition - boundedTargetLocation) / maxBeyond ) * (2 / Math.PI) * maxBeyond
+          maxV
         @_velocity = 0
         @setScrollPosition targetScrollPosition
 
@@ -348,6 +354,30 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
 
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
+      mouseWheel: (event) =>
+        @_mostRecentMouseWheelEvent = event
+        {windowSize} = @
+
+        scrollValue = if horizontal = @scroll == "horizontal"
+          event.props.deltaX || 0
+        else
+          event.props.deltaY || 0
+        switch event.props.deltaMode
+          when "line" then scrollValue *= 16
+          when "page" then scrollValue *= windowSize * .75
+
+        unless @getActiveScrollAnimator()
+          @startScrollAnimatorTracking()
+
+        # log scrollValue
+
+        @getScrollAnimator().addToDesiredScrollPosition bound -windowSize, -scrollValue, windowSize
+
+        timeout 100
+        .then =>
+          return unless @_mostRecentMouseWheelEvent == event
+          @endScrollAnimatorTracking()
+
       animatorDone: ({props}) =>
         {animator} = props
         if animator == @_scrollAnimator
@@ -493,7 +523,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
   getScrollPositionInReferenceFrame: (targetReferenceFrame) ->
     @getScrollPosition() + @getReferenceFrameDelta targetReferenceFrame, @getReferenceFrame()
 
-  setScrollPositionInReferenceFrame: (scrollPosition, referenceFrame) ->
+  setScrollPositionInReferenceFrame: (scrollPosition, referenceFrame = @getPendingReferenceFrame()) ->
     @onNextReady => @_updateReferenceFrame()
 
     pendingReferenceFrame = @getPendingReferenceFrame()
@@ -687,7 +717,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
           @_pointerStartPosition = location - scrollPosition
           @getScrollAnimator().startTracking scrollPosition, referenceFrame
     else
-      @getScrollAnimator().startTracking @_scrollPosition, @_referenceFrame
+      @startScrollAnimatorTracking()
 
   gestureResume: (e) ->
     !!@getActiveScrollAnimator()
@@ -719,10 +749,17 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
       @_flicked = true
     else
       # log  "gestureEnd: no flick (#{@_flickSpeed} < #{minimumFlickVelocity})"
-      if scrollAnimator = @getActiveScrollAnimator()
-        scrollAnimator.setReferenceFrame @getReferenceFrame()
-        scrollAnimator.setDesiredScrollPosition @getScrollPosition()
-        scrollAnimator.setActiveTouch false
+      @endScrollAnimatorTracking()
+
+  startScrollAnimatorTracking: ->
+    @getScrollAnimator().startTracking @_scrollPosition, @_referenceFrame
+
+  endScrollAnimatorTracking: ->
+    return unless scrollAnimator = @getActiveScrollAnimator()
+    scrollAnimator.setReferenceFrame @getReferenceFrame()
+    scrollAnimator.setDesiredScrollPosition @getScrollPosition()
+    scrollAnimator.setActiveTouch false
+
 
   #####################
   # PRIVATE

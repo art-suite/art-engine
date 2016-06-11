@@ -15,8 +15,8 @@ define [
       matrix.transform p
 
   class PointerEvent extends Events.Event
-    constructor: (type, pointer, time) ->
-      super type, null, time
+    constructor: (type, pointer, time, props) ->
+      super type, props, time
       @pointer = pointer
 
     emptyObject = {}

@@ -165,10 +165,10 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     for element in elements
       element.queueEvent type, newEventFunction
 
-  queuePointerEventForElement: (element, type, pointer, timeStampInPerformanceSeconds) ->
+  queuePointerEventForElement: (element, type, pointer, timeStampInPerformanceSeconds, props) ->
     element.queueEvent type, =>
       if !@capturingElement || type == "pointerCancel" || element == @capturingElement
-        new PointerEvent type, pointer, timeStampInPerformanceSeconds
+        new PointerEvent type, pointer, timeStampInPerformanceSeconds, props
 
   ###
   SBD NOTE 2016: This method of sorting priority is global and breaks "parents encapsulate children".
@@ -284,10 +284,10 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     recurse 0, elementPriorities.length
     orderList
 
-  queuePointerEventForElements: (elements, type, pointer, timeStampInPerformanceSeconds) ->
+  queuePointerEventForElements: (elements, type, pointer, timeStampInPerformanceSeconds, props) ->
     elements = prioritySortElements elements.slice()
     for element in elements
-      @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
+      @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds, props
 
   queuePointerEvents: (type, pointer, timeStampInPerformanceSeconds) ->
     @forEachReceivingElement (e) =>
@@ -299,8 +299,8 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     else
       f e for e in prioritySortElements @currentFocusedPath
 
-  queueMouseEvents: (type, pointer, timeStampInPerformanceSeconds) ->
-    @queuePointerEventForElements @currentMousePath, type, pointer, timeStampInPerformanceSeconds
+  queueMouseEvents: (type, pointer, timeStampInPerformanceSeconds, props) ->
+    @queuePointerEventForElements @currentMousePath, type, pointer, timeStampInPerformanceSeconds, props
 
   ###
   queueKeyEvents
@@ -454,6 +454,10 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
       eventEpoch.flushEpochNow()
 
     @capturingElement = null if @capturingElement && @_numActivePointers == 0
+
+  mouseWheel: (location, timeStampInPerformanceSeconds, props) ->
+    @queueMouseEvents "mouseWheel", @mouse, timeStampInPerformanceSeconds, props
+
 
   # pointerCancel - the pointer became inactive, but not because of the user. Ex: system interrupted the action with a dialog such as "low power"
   # No subsequent action should be taken, but this event notifies Elements to clean up or abort any action related to this active pointer.
