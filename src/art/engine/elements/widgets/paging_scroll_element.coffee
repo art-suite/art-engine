@@ -193,7 +193,7 @@ class ScrollAnimator extends BaseObject
         # DIRECT TRACKING (no animation)
         {windowSize} = @scrollElement
         boundedTargetLocation = @boundLocation targetScrollPosition
-        maxBeyond = windowSize / 2
+        maxBeyond = windowSize / 3
         minV = min boundedTargetLocation, targetScrollPosition
         maxV = max boundedTargetLocation, targetScrollPosition
         targetScrollPosition = bound minV,
