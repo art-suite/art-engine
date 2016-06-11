@@ -28,7 +28,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     # returns false if there are still other references
     release: (url) ->
       return unless url
-      log "SourceToBitmapCache#release: #{url}"
+      # log "SourceToBitmapCache#release: #{url}"
       throw new Error "no references for #{url}" unless isNumber @_referenceCounts[url]
       if @_referenceCounts[url] == 0 || !isNumber @_referenceCounts[url]
         return console.error "invalid referenceCount: #{inspect @_referenceCounts[url]} for url: #{url}"
