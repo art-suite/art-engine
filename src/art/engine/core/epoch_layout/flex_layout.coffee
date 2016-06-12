@@ -90,7 +90,7 @@ module.exports = class FlexLayout extends BaseObject
     for child, i in children
       if child.getPendingSize()[relativeTestFunction]()
         currentSize = child._layoutSize elementSizeForChildren, point0
-        childFlexWeight = 1  # TODO - add element property to make this customizable
+        childFlexWeight = child.getPendingLayoutWeight()
         totalFlexWeight += childFlexWeight
       else
         CoreLayout.layoutElement child, elementSizeForChildren, true
@@ -123,7 +123,7 @@ module.exports = class FlexLayout extends BaseObject
     # Relative children layout
     ###########################################
     for child, i in children when child.getPendingSize()[relativeTestFunction]()
-      childFlexWeight = 1  # TODO - add element property to make this customizable
+      childFlexWeight = child.getPendingLayoutWeight()
       ratio = childFlexWeight / totalFlexWeight
 
       flexParentSize = toPoint mainSizeForChild = spaceForFlexChildren * ratio, elementCrossSizeForChildren

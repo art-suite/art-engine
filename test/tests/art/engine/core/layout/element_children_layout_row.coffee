@@ -89,6 +89,19 @@ suite "Art.Engine.Core.layout.childrenLayout.row", ->
         assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(50, 0)]
         log sizes: sizes, locations:locations
 
+
+    testLogBitmap "two children with different layoutWeight", ->
+      root: root = new Element
+        size: 99
+        childrenLayout: "row"
+        new RectangleElement color:"red",   layoutWeight: 2, size: ww:1, h:30
+        new RectangleElement color:"green",                  size: ww:1, h:50
+
+      test: ->
+        assert.eq sizes = (c.currentSize for c in root.children), [point(66, 30), point(33, 50)]
+        assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(66, 0)]
+        log sizes: sizes, locations:locations
+
     testLogBitmap "two different but variable width children", ->
       root: root = new Element
         size: 100

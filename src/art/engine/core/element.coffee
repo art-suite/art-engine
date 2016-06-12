@@ -266,6 +266,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       # preprocess: (v) -> v || "left"
     axis:                   default: point0,                preprocess: (v) -> point v
     inFlow:                 default: true,                  preprocess: (v) -> !!v
+    layoutWeight:           default: 1,                     validate:   (v) -> isNumber v
 
     padding:  default: 0, validate: (v) ->
       if v == false || v == undefined || v == null

@@ -240,6 +240,17 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
         assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 50)]
         log sizes: sizes, locations:locations
 
+    testLogBitmap "two children with different layoutWeight", ->
+      root: root = new Element
+        size: 99
+        childrenLayout: "column"
+        new RectangleElement color:"red",   layoutWeight: 2, size: hh:1, w:30
+        new RectangleElement color:"green",                  size: hh:1, w:50
+
+      test: ->
+        assert.eq sizes = (c.currentSize for c in root.children), [point(30, 66), point(50, 33)]
+        assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 66)]
+        log sizes: sizes, locations:locations
 
     testLogBitmap "no pixel rounding", ->
       root: root = new Element
