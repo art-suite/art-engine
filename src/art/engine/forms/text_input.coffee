@@ -34,6 +34,7 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
       options.style
       value: options.value || ""
       style:
+        resize:           "none"
         backgroundColor:  'transparent'
         border:           '0px'
         color:            color(options.color || "black").toString()
