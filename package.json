@@ -1,6 +1,6 @@
 {
   "name": "art-engine",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "art-engine",
   "main": "index.coffee",
   "dependencies": {
