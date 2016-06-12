@@ -86,7 +86,8 @@ module.exports = createHotWithPostCreate module, class V1Writer extends BaseObje
   _encodeLayout: (element, encodedProps) ->
     {currentSize, currentLocation, axis} = element
     e2p = element.getElementToParentMatrix()
-    encodedProps.matrix = e2p.withLocation(0).toArray().join ','
+    matrix = e2p.withLocation(0).toArray().join ','
+    encodedProps.matrix = matrix unless matrix == "1,1,0,0,0,0"
     unless floatEq 0, angle = e2p.getAngle()
       encodedProps.angle = "#{angle}"
     encodedProps.w_val = currentSize.x.toString()
