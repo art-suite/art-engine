@@ -18,10 +18,22 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
   #   align:      "left"
   #   style:      custom style
   #   padding:    5 (pixels)
-  #   attrs:      - any other input attrs you want to specify such as:
-  #     maxlength:  10
+  #   maxLength
+  #   autoCapitalize
+  #   autoComplete
+  #   autoCorrect
+  # TODO: these need to become ElementProperties that update the DOMElement when changed.
   constructor: (options = {}) ->
-    props = select options, "placeholder", "type", "autocapitalize", "autocomplete", "autocorrect", "maxlength"
+    props =
+      placeholder:    options.placeholder
+      type:           options.type
+      # NOTE: moving towards using 100% lowerCamelCase in Art.Engine - even if HTML5's name is full-lower-case
+      # SO, these full-lower-case options are depricated (e.g. don't use maxlength, use maxLength)
+      maxlength:      options.maxLength       || options.maxlength
+      autocapitalize: options.autoCapitalize  || options.autocapitalize
+      autocomplete:   options.autoComplete    || options.autocomplete
+      autocorrect:    options.autoCorrect     || options.autocorrect
+
     Factory = if props.type == "textarea"
       delete props.type
       TextArea
