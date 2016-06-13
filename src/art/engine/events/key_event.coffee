@@ -23,7 +23,6 @@ require('keyboardevent-key-polyfill').polyfill()
 module.exports = class KeyEvent extends Events.Event
 
   constructor: (type, @_keyboardEvent) ->
-    self._lastKeyboardEvnet = @_keyboardEvent
     super type,
       key       : @_keyboardEvent.key
       altKey    : @_keyboardEvent.altKey

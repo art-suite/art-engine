@@ -11,6 +11,7 @@ EventedEpochedObject = require './evented_epoched_object'
   isFunction
   inspectLean
   compact
+  isObject
 } = Foundation
 
 ###
@@ -98,7 +99,7 @@ module.exports = class ElementBase extends EventedEpochedObject
     ###
     willConsumeKeyboardEvent:
       default: (artEngineKeyboardEventType, keyboardEvent) -> false
-      validate: (v) -> v == "beforeDescendents" || v == "beforeAncestors" || isFunction v
+      validate: (v) -> isObject(v) || v == "beforeDescendents" || v == "beforeAncestors" || isFunction v
       preprocess: (v) ->
         if !isFunction v
           -> v

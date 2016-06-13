@@ -7,7 +7,7 @@ SynchronizedDomOverlay = require "./synchronized_dom_overlay"
 {color} = Atomic
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
-{log, merge, select, inspect, createWithPostCreate} = Foundation
+{log, merge, select, inspect, createWithPostCreate, wordsArray} = Foundation
 
 module.exports = createWithPostCreate class TextInput extends SynchronizedDomOverlay
   # options
@@ -60,6 +60,10 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
           @_blur()
 
     super
+
+    @willConsumeKeyboardEvent =
+      order: "beforeAncestors"
+      allowBrowserDefault: true
 
     @lastValue = @value
 

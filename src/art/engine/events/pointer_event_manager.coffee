@@ -323,9 +323,12 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     lastBeforeParent = null
 
     for element, i in elements
-      if willConsumeEvent = element.getWillConsumeKeyboardEvent() artEngineEventType, keyboardEvent
-        keyboardEvent.preventDefault()
-        switch willConsumeEvent
+      if order = willConsumeEvent = element.getWillConsumeKeyboardEvent() artEngineEventType, keyboardEvent
+        if isObject willConsumeEvent
+          {order, allowBrowserDefault} = willConsumeEvent
+
+        keyboardEvent.preventDefault() unless allowBrowserDefault
+        switch order
           when "beforeAncestors"
             lastBeforeParent = element
           when "beforeDescendents"
