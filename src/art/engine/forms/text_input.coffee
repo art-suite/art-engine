@@ -7,7 +7,7 @@ SynchronizedDomOverlay = require "./synchronized_dom_overlay"
 {color} = Atomic
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
-{log, merge, select, inspect, createWithPostCreate, wordsArray} = Foundation
+{log, merge, select, inspect, createWithPostCreate, wordsArray, timeout} = Foundation
 
 module.exports = createWithPostCreate class TextInput extends SynchronizedDomOverlay
   # options
@@ -56,7 +56,12 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
           @_focus()
         blur:     (event) =>
           # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
-          @_canvasElementToFocusOnBlur?.focusCanvas() if document.body == document.activeElement
+          if @_canvasElementToFocusOnBlur
+            # If we are switching focus to another TextInput, document.activeElement won't be updated
+            # until AFTER this event is processed. Wait and check in a bit to see if focus really reverted to 'body'.
+            timeout 0, =>
+              @_canvasElementToFocusOnBlur.focusCanvas() if document.body == document.activeElement
+
           @_blur()
 
     super
@@ -69,8 +74,8 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
-      focus: => @domElement.focus()
-      blur:  => @domElement.blur()
+      focus: => @domElement.focus() unless @domElement.focused
+      blur:  => @domElement.blur()  if     @domElement.focused
       keyPress: ({props}) =>
         @handleEvent "enter", value:@value if props.key == "Enter"
         @handleEvent "escape", value:@value if props.key == "Escape"

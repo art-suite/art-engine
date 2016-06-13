@@ -115,13 +115,13 @@ KeyEvent = require './key_event'
 {EventEpoch} = Events
 {eventEpoch} = EventEpoch
 {point, rect, matrix} = Atomic
-{inspect, clone, shallowClone, peek, first, min, max, arrayWithoutValue, stableSort, log} = Foundation
+{inspect, clone, shallowClone, peek, first, min, max, eq, arrayWithoutValue, stableSort, log, isObject} = Foundation
 
 module.exports = class PointerEventManager extends Foundation.BaseObject
 
   constructor: (options={})->
     super
-    @canvasElement = options.canvasElement
+    {@canvasElement} = options
 
     # the passive pointer is for the mouse when no buttons are down
     @mouse = new Pointer "mouse", point -1
@@ -130,12 +130,16 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
 
     @capturingElement = null
     @currentMousePath = []
-    @currentFocusedPath = []
+    @_currentFocusedPath = [@canvasElement]
 
   @getter
+    currentFocusedPath: -> @_currentFocusedPath
     numActivePointers: -> @_numActivePointers
     hasMouseCursor: -> true # should be false on touch-only device - can be used to speed things up
     currentMousePathClassNames: -> el.classPathName for el in @currentMousePath
+
+  @setter
+    currentFocusedPath: -> throw new Error "can't set currentFocusedPath directly"
 
   # element captures all new pointerEvents UNTIL all pointers are "up"
   capturePointerEvents: (element) ->
@@ -319,7 +323,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
 
   ###
   queueKeyEvents: (artEngineEventType, keyboardEvent) ->
-    elementsToSendEventTo = elements = @currentFocusedPath
+    elementsToSendEventTo = elements = @updateFocusedPath()
     lastBeforeParent = null
 
     for element, i in elements
@@ -345,11 +349,11 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
         element.queueEvent artEngineEventType, newEventFunction
 
   @elementToRootPath: elementToRootPath = (element) ->
-    path = []
-    while element
-      path.push element
-      element = element.parent
-    path
+     path = []
+     while element
+       path.push element
+       element = element.parent
+     path
 
   @rootToElementPath: rootToElementPath = (element) -> elementToRootPath(element).reverse()
 
@@ -357,7 +361,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     minLen = min oldPath.length, newPath.length
     maxLen = max oldPath.length, newPath.length
 
-    for i in [0..minLen-1] by 1
+    for i in [0...minLen] by 1
       if oldPath[i] != newPath[i]
         removedElementsAction oldPath.slice i
         addedElementsAction newPath.slice i
@@ -365,6 +369,8 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
         return newPath
 
     # paths are identical up to minLen
+    return oldPath if minLen == maxLen
+
     removedElementsAction oldPath.slice minLen if minLen < oldPath.length
     addedElementsAction newPath.slice minLen if minLen < newPath.length
     onAnyChange newPath if onAnyChange && minLen != maxLen
@@ -384,14 +390,34 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
 
   isFocused: (element) -> @currentFocusedPath.indexOf(element) >= 0
 
-  focus: (pointer, element) ->
-    @currentFocusedPath = updatePath @currentFocusedPath,
-      rootToElementPath element
+  @getter
+    validatedFocusPath: ->
+      lastElement = @canvasElement.parent
+      path = for element, i in @currentFocusedPath
+        break unless element.canvasElement == @canvasElement && element.parent == lastElement
+        lastElement = element
+
+      return [@canvasElement] unless path[0] == @canvasElement
+      path
+
+  updateFocusedPath: (pointer, element)->
+    pointer ||= @activePointers[0]
+
+    newPath = rootToElementPath element || peek @currentFocusedPath
+    newPath = @validatedFocusPath if newPath[0] != @canvasElement
+
+    @_currentFocusedPath = updatePath @currentFocusedPath, newPath,
       (oldElements) => @queueBlurEvents pointer, oldElements
       (newElements) => @queueFocusEvents pointer, newElements
 
-    # log currentFocusedPath: (e.inspectedName + " #{e._pointerEventPriority}" for e in @currentFocusedPath)
-    # @currentFocusedPath
+    unless @currentFocusedPath[0] == @canvasElement
+      log (el.inspectedName for el in @currentFocusedPath)
+      throw new Error "root element should be canvas (internal error - it should be impossible for this to happen)"
+
+    @currentFocusedPath
+
+  focus: (pointer, element) ->
+    @updateFocusedPath pointer, element
 
   updateMousePath: ->
     pointer = @mouse

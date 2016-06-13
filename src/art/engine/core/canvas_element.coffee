@@ -141,14 +141,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _blur: ->
     @_focusedElement = null
-    super
 
   focusCanvas: ->
     @_canvas.focus()
 
   blur: ->
     @_canvas.blur()
-    super
+    @_blur()
 
   focusElement: (el) ->
     return unless el && el != @_focusedElement
@@ -474,7 +473,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @keyUpEvent keyboardEvent
 
   _enableHtmlFocusOnCanvas: ->
-    @_canvas.tabIndex = "0"
+    @_canvas.tabIndex = "-1"
     @_canvas.contentEditable = true
 
   _attachDomEventListeners: ->
