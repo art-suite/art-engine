@@ -28,7 +28,6 @@ module.exports = class FullScreenApp
       DomConsole = require 'art-foundation/dev_tools/dom_console'
 
       DomConsole.enable()
-      Engine.Core.CanvasElement.prototype.defaultSize = hh:1, w: (query.w | 0) || 375
       Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs == "true"
 
     log "Art.Engine.FullScreenApp: app ready"

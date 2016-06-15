@@ -27,6 +27,8 @@ EngineStat= require './engine_stat'
   wordsArray
   select
   merge
+  objectDiff
+  isPlainObject
 } = Foundation
 
 HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
@@ -89,12 +91,24 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _createCanvasElement: (parentHtmlElement) ->
     parentHtmlElement?.appendChild @_createdHtmlCanvasElement = HtmlCanvas
-      style:
+      style: merge @pendingStyle,
         position: "absolute"
         outline: "none"
         top: "0"
         left: "0"
       id: "artCanvas"
+
+  @concreteProperty
+
+    style:
+      default: {}
+      validate: (v) -> isPlainObject v
+      postSetter: (newValue, oldValue, rawNewValue) ->
+        # objectDiff (newObj, oldObj, added, removed, changed, noChange, eq = defaultEq, oldObjKeyCount)]
+        update = (key, newValue) => @_canvas.style[key] = newValue
+        remove = (key) => @_canvas.style[key] = null
+        @_canvas && objectDiff newValue, oldValue, update, remove, update
+
 
   @virtualProperty
     parentSizeForChildren: (pending) -> @getParentSize pending
@@ -262,6 +276,20 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_bitmapFactory = @canvasBitmap = if @webgl then new Webgl.Bitmap @_canvas else new Canvas.Bitmap @_canvas
     @queueDrawEpoch()
 
+  _setLocationFromLayoutXY: (x, y) ->
+    return if @_locationLayoutDisabled
+
+    e2p = @_getElementToParentMatrixForXY true, x, y, 1
+
+    @_canvas?.style.left = "#{e2p.locationX}px"
+    @_canvas?.style.top = "#{e2p.locationY}px"
+
+    e2p = (@_getElementToParentMatrixForXY true, x, y).withLocation 0
+    if !@_pendingState._elementToParentMatrix.eq e2p
+      @_pendingState._elementToParentMatrix = e2p
+      @_elementChanged()
+
+
   _updateCanvasGeometry: ->
     @_updateCanvasToDocumentMatricies()
     @_layoutPropertyChanged()
@@ -275,13 +303,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translateXY left, top
       @_documentToElementMatrix = Matrix.translateXY(-left, -top).scale @_devicePixelsPerPoint
       @_parentToElementMatrix = null
-      @setElementToParentMatrix @_elementToAbsMatrix = Matrix.scale @_devicePixelsPerPoint
-
-      # log _updateCanvasToDocumentMatricies:
-      #   _elementToDocumentMatrix:@_elementToDocumentMatrix
-      #   _documentToElementMatrix:@_documentToElementMatrix
-      #   _absToElementMatrix:@_absToElementMatrix
-      #   _elementToAbsMatrix:@_elementToAbsMatrix
+      @scale = @_devicePixelsPerPoint
       @queueEvent "documentMatriciesChanged"
 
   ###############################################
