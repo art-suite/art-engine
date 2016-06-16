@@ -38,6 +38,10 @@ module.exports = class SynchronizedDomOverlay extends Element
   _rootElementChanged: (e) ->
     @onNextReady => @_attachDomElement()
 
+  _unregister: ->
+    super
+    @_detachDomElement()
+
   _queueUpdate: ->
     return if @_updateQueued || !@_attachedToCanvasElement
     @_updateQueued = true
@@ -86,6 +90,7 @@ module.exports = class SynchronizedDomOverlay extends Element
     @_attachedToCanvasElement = null
 
   _attachDomElement: ->
+    return unless @isRegistered
     canvasElement = @getCanvasElement()
     if @_attachedToCanvasElement
       return if canvasElement == @_attachedToCanvasElement
