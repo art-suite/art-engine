@@ -25,7 +25,7 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
   # TODO: these need to become ElementProperties that update the DOMElement when changed.
   constructor: (options = {}) ->
     props =
-      placeholder:    options.placeholder
+      placeholder:    options.placeholder || ""
       type:           options.type
       # NOTE: moving towards using 100% lowerCamelCase in Art.Engine - even if HTML5's name is full-lower-case
       # SO, these full-lower-case options are depricated (e.g. don't use maxlength, use maxLength)
