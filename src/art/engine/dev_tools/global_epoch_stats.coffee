@@ -129,7 +129,6 @@ define [
       {w, h} = size
       {sampleTimeRange, stats} = @
       sampleWidth = floor (w / sampleTimeRange) / 60
-
       for stat in stats
         stat.drawSample bitmap, drawMatrix, sampleWidth, sampleField, h
       null
@@ -142,7 +141,7 @@ define [
         sampleWidth = floor (w / sampleTimeRange) / 60
         xScale = (w - sampleWidth) / sampleTimeRange
         yScale = h / maxMs
-        Matrix.scale(1, -1).translate(-minSampleTime, 0).scale(xScale, yScale).translate(legendWidth, h)
+        Matrix.scaleXY(1, -1).translateXY(-minSampleTime, 0).scaleXY(xScale, yScale).translateXY(legendWidth, h)
 
     drawLabeledHLine: (bitmap, x1, x2, y, clr, label) ->
       bitmap.drawRectangle null, rect(x1, y, x2-x1, 1), color:color clr
