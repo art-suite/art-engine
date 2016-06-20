@@ -20,6 +20,8 @@ module.exports = createWithPostCreate class TextElement extends FillableBase
     super
     @_textLayout = null
 
+  @getter cacheable: -> true
+
   # create the normal ElementBase Property using the definePropertyFunctionName,
   # then also create a virtual function for getting and setting every field of the default object.
   @propertySet: (set) ->
