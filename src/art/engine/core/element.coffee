@@ -950,7 +950,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
     # log "_generateDrawCache: #{@inspectedName} cacheDraw: #{@_cacheDraw}"
     # console.error "_generateDrawCache"
 
-    globalEpochCycle.logEvent "generateDrawCache", "same-id"
 
     drawArea = @getElementSpaceDrawArea().roundOut()
     return if drawArea.getArea() <= 0
@@ -968,9 +967,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
       _drawCachingEnabled = Element._drawCachingEnabled
       Element._drawCachingEnabled = false
 
+    globalEpochCycle.logEvent "generateDrawCache", "same-id"
     # @log cacheElement:@inspectedName, area:cacheDrawArea, matrix: @_drawCacheToElementMatrix
     @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
     # log _generateDrawCache: @_drawCacheBitmap, element: @inspectedName
+    # log "_generateDrawCache: #{@_drawCacheBitmap.size} #{@inspectedName}"
     @_drawCacheBitmapInvalid = false
 
     unless cacheAggressively
