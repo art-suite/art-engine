@@ -136,6 +136,11 @@ module.exports = createHotWithPostCreate module, class V1Writer extends BaseObje
     encodedProps = {}
     for k, v of minimalProps
       switch k
+        when "userProps"
+          if v.dropInEnabled
+            encodedProps.drop_in_enabled = "true"
+            encodedProps.lock_mode = "2"
+
         when "compositeMode"
           if v == "alphaMask"
             encodedProps.stack_mode = "+stencil"
