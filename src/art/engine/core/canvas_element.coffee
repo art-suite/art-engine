@@ -7,7 +7,6 @@ require "javascript-detect-element-resize"
 
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-Webgl = require 'art-canvas/webgl'
 Canvas = require 'art-canvas'
 ArtEngineEvents = require '../events'
 Element = require './element'
@@ -73,8 +72,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_domEventListeners = []
     @_drawEpochPreprocessing = []
     @_drawEpochQueued = false
-
-    {@webgl} = options
 
     @retinaSupport = true unless options.disableRetina
 
@@ -273,7 +270,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_canvas.setAttribute "height",  @_pixelSize.y
 
     @_updateCanvasToDocumentMatricies()
-    @_bitmapFactory = @canvasBitmap = if @webgl then new Webgl.Bitmap @_canvas else new Canvas.Bitmap @_canvas
+    @_bitmapFactory = @canvasBitmap = new Canvas.Bitmap @_canvas
     @queueDrawEpoch()
 
   _setLocationFromLayoutXY: (x, y) ->
