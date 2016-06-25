@@ -114,7 +114,7 @@ class ScrollAnimator extends BaseObject
       tracking:     direct tracking, no physics
     ###
 
-  @getter
+  @getter "desiredScrollPosition",
     mode:               -> @_mode
     minScrollPosition:  -> @scrollElement.getMinScrollPositionInReferenceFrame @_referenceFrame
     maxScrollPosition:  -> @scrollElement.getMaxScrollPositionInReferenceFrame @_referenceFrame
@@ -129,7 +129,7 @@ class ScrollAnimator extends BaseObject
     # shouldSnapToPage: ->
     #   abs(@closestPageLocation - @scrollPosition) < @scrollElement.snapToPageDistance
 
-  @setter
+  @setter "desiredScrollPosition",
     mode: (v) -> @_mode = v
     referenceFrame: (v) ->
       # log "scrollAnimator referenceFrame: #{inspect v}"
@@ -140,7 +140,6 @@ class ScrollAnimator extends BaseObject
         @mode = "spring"
         @_desiredScrollPosition = @boundLocation @_desiredScrollPosition
         # @snapToPage() if @shouldSnapToPage
-    desiredScrollPosition: (l) -> @_desiredScrollPosition = l
 
   addToDesiredScrollPosition: (delta) ->
     @_desiredScrollPosition += delta
@@ -369,9 +368,14 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         unless @getActiveScrollAnimator()
           @startScrollAnimatorTracking()
 
-        # log scrollValue
+        scrollValue = bound -windowSize, -scrollValue, windowSize
 
-        @getScrollAnimator().addToDesiredScrollPosition bound -windowSize, -scrollValue, windowSize
+        position = @getScrollAnimator().desiredScrollPosition + scrollValue
+        @getScrollAnimator().desiredScrollPosition = bound(
+          @getScrollAnimator().minScrollPosition
+          position
+          @getScrollAnimator().maxScrollPosition
+        )
 
         timeout 100
         .then =>
@@ -549,8 +553,9 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
     # never move more than one screen-full in one frame
     @setScrollPosition scrollPosition
 
-  getMinScrollPosition: -> @getMinScrollPositionInReferenceFrame @getReferenceFrame()
-  getMaxScrollPosition: -> @getMaxScrollPositionInReferenceFrame @getReferenceFrame()
+  @getter
+    minScrollPosition: -> @getMinScrollPositionInReferenceFrame @getReferenceFrame()
+    maxScrollPosition: -> @getMaxScrollPositionInReferenceFrame @getReferenceFrame()
 
   getMinScrollPositionInReferenceFrame: (referenceFrame)->
     windowSize = @getWindowSize()
