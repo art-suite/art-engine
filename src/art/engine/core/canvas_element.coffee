@@ -30,7 +30,8 @@ EngineStat= require './engine_stat'
   isPlainObject
 } = Foundation
 
-HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
+{isMobileBrowser} = Browser
+HtmlCanvas = Browser.DomElementFactories.Canvas
 
 {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
@@ -492,7 +493,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @keyUpEvent keyboardEvent
 
   _enableHtmlFocusOnCanvas: ->
-    @_canvas.tabIndex = "-1"
+    @_canvas.tabIndex = "-1" unless isMobileBrowser()
     @_canvas.contentEditable = true
 
   _attachDomEventListeners: ->
