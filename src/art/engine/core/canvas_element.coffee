@@ -88,7 +88,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
 
   _createCanvasElement: (parentHtmlElement) ->
-    parentHtmlElement?.appendChild @_createdHtmlCanvasElement = HtmlCanvas
+    parentHtmlElement ||= document.getElementById("artDomConsoleArea") || document.body
+    parentHtmlElement.appendChild @_createdHtmlCanvasElement = HtmlCanvas
       style: merge @pendingStyle,
         position: "absolute"
         outline: "none"
