@@ -2,10 +2,10 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Base = require './base'
+{PointLayout, PointLayoutBase} = require '../layout'
 {log, isPlainObject, min, max, createWithPostCreate, isNumber} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
-
 # can be a gradient fill or a solid-color fill
 # if the @gradient property is set (including indirectly by setting the @colors property), then it is a gradient
 # Otherwise, the @color property is used and @from and @to properties are ignored.
@@ -15,10 +15,14 @@ module.exports = createWithPostCreate class FillableBase extends Base
   @getter
     cacheable: -> @getHasChildren()
 
-  defaultTo = point "bottomLeft"
+  defaultFrom = new PointLayout()
+  defaultTo = new PointLayout hh: 1
   @drawProperty
-    from:   default: "topLeft", preprocess: (v) -> point v
-    to:     default: null, preprocess: (v) -> v? && point v
+    # from:   default: "topLeft", preprocess: (v) -> point v
+    # to:     default: null, preprocess: (v) -> v? && point v
+    from: preprocess: (v, oldValue) -> !v || if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
+    to:   preprocess: (v, oldValue) -> !v || if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
+
     colors: default: null
     gradientRadius: default: null
     shadow:
@@ -59,6 +63,8 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
     if _colors
       {_from, _to, _gradientRadius, _currentSize} = @
+      _from ||= defaultFrom
+
       drawOptions.colors = _colors
       if _gradientRadius?
         _to ||= _from
@@ -74,5 +80,5 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
       # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.
       # It creates two new objects, which is unfortunate. It also mutates an object which should be immutable.
-      drawOptions.from   = _from.mul _currentSize
-      drawOptions.to     = _to.mul _currentSize
+      drawOptions.from   = _from.layout _currentSize
+      drawOptions.to     = _to.layout _currentSize
