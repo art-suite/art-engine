@@ -19,6 +19,7 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
           resolve()
         animator.stop()
         animator.toValue
+      e._register()
 
       e.onNextReady -> e.opacity = 0
 
@@ -31,6 +32,7 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
         animator.stop()
         animator.toValue
 
+      e._register()
       e.onNextReady -> e.opacity = 0
 
   test "animators: opacity: d: 1", ->
@@ -45,6 +47,7 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
       e = new Element animators: opacity: ({stop, element}) ->
         assert.ok element instanceof Element
         resolve();stop()
+      e._register()
 
       e.onNextReady -> e.opacity = 0
 
@@ -53,6 +56,7 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
       e = new Element animators: opacity: ({state, stop}) ->
         assert.eq state, {}
         resolve();stop()
+      e._register()
 
       e.onNextReady -> e.opacity = 0
 
@@ -64,6 +68,7 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
           animate: ({options, stop}) ->
             assert.eq options.foo, 123
             resolve();stop()
+      e._register()
 
       e.onNextReady -> e.opacity = 0
 
@@ -77,6 +82,7 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
           resolve()
           stop()
         toValue
+      e._register()
 
       e.onNextReady -> e.opacity = 0
 
@@ -88,6 +94,7 @@ suite "Art.Engine.Animation.PersistantAnimator.custom animators", ->
           assert.eq e.location.toString(), "PointLayout(10)"
           resolve()
         10
+      e._register()
 
       e.onNextReady -> e.location = 20
 
@@ -100,6 +107,7 @@ suite "Art.Engine.Animation.PersistantAnimator.works", ->
 
   test "basic animation test", ->
     e = new Element animators: "opacity"
+    e._register()
     e.onNextReady ->
       e.opacity = 0
       e.onNextReady()
@@ -117,6 +125,7 @@ suite "Art.Engine.Animation.PersistantAnimator.works", ->
           assert.eq e.opacity, 0
           doneOnce = true
           e.opacity = .5
+      e._register()
       e.onNextReady -> e.opacity = 0
 
   test "animation updates to new target value", ->
@@ -130,6 +139,7 @@ suite "Art.Engine.Animation.PersistantAnimator.works", ->
         done: ->
           assert.eq e.opacity, .5
           resolve()
+      e._register()
       e.onNextReady -> e.opacity = 0
 
 suite "Art.Engine.Animation.PersistantAnimator.events", ->
@@ -140,6 +150,7 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
         opacity: on: start: ->
           assert.eq e.animators._opacity.animationPos, 0
           resolve()
+      e._register()
       e.onNextReady -> e.opacity = 0
 
   test "animator does not trigger on init", ->
@@ -148,6 +159,7 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
         log "triggered on init!!!"
         assert.fail()
 
+    e._register()
     e.onNextEpoch().then -> e.onNextEpoch()
 
   test "done", ->
@@ -156,6 +168,7 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
         opacity: duration: .1, on: done: ->
           assert.eq e.animators._opacity.animationPos, 1
           resolve()
+      e._register()
       e.onNextReady -> e.opacity = 0
 
   test "update only gets called inbetween", ->
@@ -175,6 +188,7 @@ suite "Art.Engine.Animation.PersistantAnimator.events", ->
             assert.eq testedUpdate, true
             assert.eq testedStart, true
             resolve()
+      e._register()
       e.onNextReady -> e.opacity = 0
 
 suite "Art.Engine.Animation.PersistantAnimator.location", ->
@@ -196,12 +210,14 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
             assert.eq testedUpdate, true
             assert.eq e.location.toString(), "PointLayout(20)"
             resolve()
+      ._register()
+
       e.onNextReady -> e.location = 20
 
   test "from constant to dynamic", ->
     testedStart = testedUpdate = false
     new Promise (resolve) ->
-      parent = new Element
+      new Element
         size: 100
         e = new Element
           location: 10
@@ -211,13 +227,14 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
               assert.eq e.currentLocation, point 50
               resolve()
 
-      parent.onNextReady ->
+      ._register()
+      .onNextReady ->
         e.location = ps: .5
 
   test "from constant to dynamic and back", ->
     testedStart = testedUpdate = false
     new Promise (resolve) ->
-      parent = new Element
+      new Element
         size: 100
         e = new Element
           location: 10
@@ -231,13 +248,12 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
               else if e.currentLocation.eq point 10
                 resolve()
 
-      parent.onNextReady ->
-        e.location = ps: .5
+      ._register().onNextReady -> e.location = ps: .5
 
   test "from dynamic to constant", ->
     testedStart = testedUpdate = false
     new Promise (resolve) ->
-      parent = new Element
+      new Element
         size: 100
         e = new Element
           location: ps: .5
@@ -247,9 +263,7 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
               assert.eq e.currentLocation, point 10
               resolve()
 
-      parent.onNextReady ->
-        e.location = 10
-
+      ._register().onNextReady -> e.location = 10
 
 suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
   test "basic animation test", ->
@@ -265,3 +279,34 @@ suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
             assert.ok e.opacity < 1
 
         voidProps: opacity: 0
+      ._register()
+
+suite "Art.Engine.Animation.PersistantAnimator.continuous animation", ->
+  test "start immediately", ->
+    new Promise (resolve, reject) ->
+      new Element
+        animators:
+          opacity:
+            animate: ({animationSeconds}) -> animationSeconds % 1
+            continuous: true # animation starts immediately
+            on:
+              start: ({target:{element}}) ->
+                element._unregister()
+                resolve()
+              update: -> reject "update without start"
+      ._register()
+
+  test "unregister stops animation", ->
+    new Promise (resolve, reject) ->
+      new Element
+        animators:
+          opacity:
+            animate: ({animationSeconds}) -> animationSeconds % 1
+            continuous: true # animation starts immediately
+            on:
+              update: (event) ->
+                {element} = event.target
+                reject "not registered, but still animating!" unless element.isRegistered
+                element._unregister()
+              done: -> resolve()
+      ._register()
