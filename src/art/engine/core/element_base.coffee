@@ -119,14 +119,17 @@ module.exports = class ElementBase extends EventedEpochedObject
   _register: ->
     # return if its already in; all its children are too
     return if _elementInstanceRegistry[instanceId = @getInstanceId()]
+    @_activateContinuousPersistantAnimators()
+
     # log "ArtEngineElementBase: register #{instanceId}"
     _elementInstanceRegistry[instanceId] = @
     @eachChild (child) => child._register()
+    @
 
   _unregister: ->
     # return if its already removed; all its children are too
     return unless _elementInstanceRegistry[instanceId = @getInstanceId()]
-    # log "ArtEngineElementBase: unregister #{instanceId}"
+    @_deactivatePersistantAnimators()
 
     delete _elementInstanceRegistry[instanceId]
     @eachChild (child) => child._unregister()

@@ -18,6 +18,8 @@ EasingPersistantAnimator = require '../animation/easing_persistant_animator'
   isString
   inspect
   isPlainObject
+  isPlainArray
+  nextTick
 } = Foundation
 {propInternalName} = BaseObject
 blankOptions = {}
@@ -472,7 +474,7 @@ module.exports = class EpochedObject extends BaseObject
       default: null
       preprocess: (v) ->
         processedAnimators = null
-        addProp = (prop, options) ->
+        addProp = (prop, options) =>
           processedAnimators ||= {}
           processedAnimators["_" + prop] = if options instanceof PersistantAnimator
             options
@@ -483,10 +485,16 @@ module.exports = class EpochedObject extends BaseObject
           else
             new EasingPersistantAnimator prop, options
 
-        if isString v
-          addProp prop for prop in v.match /[a-z]+/gi
-        else
-          addProp prop, options for prop, options of v
+        addProps = (v) ->
+          return unless v
+          if isString v
+            addProp prop for prop in v.match /[a-z]+/gi
+          else if isPlainArray v
+            addProps el for el in v
+          else
+            addProp prop, options for prop, options of v
+
+        addProps v
 
         processedAnimators
 
@@ -649,14 +657,22 @@ module.exports = class EpochedObject extends BaseObject
 
     mergeInto @, @_pendingState
 
+  _deactivatePersistantAnimators: ->
+    for prop, animator of @animators
+      animator.deactivate()
+
+  _activateContinuousPersistantAnimators: ->
+    nextTick => @_elementChanged()
+
   _applyAnimators: ->
-    if @__stateEpochCount > 0 && pendingAnimators = @_pendingState._animators
+    if pendingAnimators = @_pendingState._animators
       {frameSecond} = stateEpoch
 
-      for prop, pendingValue of @_pendingState when animator = pendingAnimators[prop]
+      for prop, animator of pendingAnimators
+        pendingValue = @_pendingState[prop]
         currentValue = @[prop]
 
-        newValue = if animator.active || !propsEq currentValue, pendingValue
+        newValue = if animator.active || (@isRegistered && @__stateEpochCount > 0 && !propsEq currentValue, pendingValue)
           animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
         else pendingValue
 

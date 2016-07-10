@@ -264,6 +264,10 @@ Options:
     update: -> # fires every time the target object's animated values updated
     start: ->  # fires when the animation starts
     abort: ->  # fires when the animation aborts
+  continuous: [false]
+    if true
+      1. the animation starts as soon as the Element is registered
+      2. the animation stops when the Element is unregistered
 
 ###
 
@@ -276,12 +280,25 @@ module.exports = class PersistantAnimator extends BaseObject
     else
       startValue + (toValue - startValue) * pos
 
-  @getter "active options prop element startValue currentValue toValue"
+  @getter "options prop element startValue currentValue toValue continuous"
   @getter
+    active: ->
+      @_active || (@_continuous && (!@_element || @_element.isRegistered))
     # state is provided for custom "animate" functions use.
     # animate can store anything in state it chooses.
     state: -> @_state ||= {}
 
+  deactivate: ->
+    @queueEvent "done" if @_active
+    @_active = false
+
+  @getter
+    inspectedObjects: ->
+      [
+        "PersistantAnimator"
+        prop: @prop
+        element: @element.uniqueId
+      ]
   ###
   IN:
     options:
@@ -322,6 +339,7 @@ module.exports = class PersistantAnimator extends BaseObject
 
     @_animate = options.animate
     @_element = null
+    @_continuous = !!options.continuous
     @on options.on if options?.on
 
   @getter
