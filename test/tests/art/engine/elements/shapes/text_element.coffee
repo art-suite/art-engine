@@ -132,8 +132,8 @@ suite "Art.Engine.Elements.Shapes.TextElement.basic", ->
     stagingBitmapsCreateShouldBe: 0
     element: ->
       new Element {},
-        new RectangleElement size:point(40, 60), color:"red"
-        new RectangleElement size:point(40, 60), location:point(40,0), color:"blue"
+        new RectangleElement size: {w: 40, h: 60}, color:"red"
+        new RectangleElement size: {w: 40, h: 60}, location:point(40,0), color:"blue"
         new TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
 
   drawTest3 "opacity",
@@ -308,7 +308,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
               stagingBitmapsCreateShouldBe: 0
               element: ->
                 new TextElement
-                  size: ps: 1
+                  size: pts: 100
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
               test: (element) -> layoutTester element, result
@@ -396,7 +396,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
               stagingBitmapsCreateShouldBe: 0
               element: ->
                 new TextElement
-                  size: ww:.5, hh:1
+                  size: w:50, h:100
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
                   new RectangleElement color: "#0002"
@@ -418,7 +418,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
               stagingBitmapsCreateShouldBe: 0
               element: ->
                 new TextElement
-                  size: ww:1, hch:1
+                  size: w:100, hch:1
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
                   new RectangleElement color: "#0002"
@@ -495,7 +495,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
             element: ->
               new TextElement
                 layoutMode: "tight0"
-                size: ps: 1
+                size: pts: 100
                 align: value
                 color:"red", text:"(Q)", fontSize:32
                 new RectangleElement color: "#0002"

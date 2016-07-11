@@ -12,7 +12,7 @@ suite "Art.Engine.Elements.Filters.ShadowElement.basics", ->
   drawTest3 "basic",
     stagingBitmapsCreateShouldBe: 1
     element: ->
-      new RectangleElement color:"red", size:point(80, 60),
+      new RectangleElement color:"red", size: point(80, 60),
         new FillElement
         new ShadowElement radius: 10, location: 10
 
