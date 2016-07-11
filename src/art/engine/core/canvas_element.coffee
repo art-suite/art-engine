@@ -84,8 +84,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
 
-  _getOrCreateCanvasElement: ({canvas, canvasId, parentHtmlElement}) ->
-    canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
+  _getOrCreateCanvasElement: ({canvas, canvasId, parentHtmlElement, noHtmlCanvasElement}) ->
+    unless noHtmlCanvasElement
+      canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
 
   _createCanvasElement: (parentHtmlElement) ->
     parentHtmlElement ||= document.getElementById("artDomConsoleArea") || document.body
@@ -150,16 +151,16 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_domEventListeners = []
 
   isFocused: (el) ->
-    document.hasFocus() && document.activeElement == @_canvas && @pointerEventManager.isFocused el
+    (!@_canvas || (document.hasFocus() && document.activeElement == @_canvas)) && @pointerEventManager.isFocused el
 
   _blur: ->
     @_focusedElement = null
 
   focusCanvas: ->
-    @_canvas.focus()
+    @_canvas?.focus()
 
   blur: ->
-    @_canvas.blur()
+    @_canvas?.blur()
     @_blur()
 
   focusElement: (el) ->
