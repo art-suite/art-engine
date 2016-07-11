@@ -6,7 +6,7 @@ define [
 
   {point, Point} = Atomic
   {point0} = Point
-  {BaseObject, log, inspect, inspectLean, isFunction, isNumber, isPlainObject, min, max} = Foundation
+  {BaseObject, log, inspect, inspectLean, isFunction, isNumber, isString, isPlainObject, min, max} = Foundation
 
   # a singleton to help make initializing from component-options fast
   class Components
@@ -82,8 +82,10 @@ define [
       max: (value, pointLayout) ->
         # noop - this exists to validate it is a legal option, but it is handled elsewhere
 
-      # constant components
-      plus: (value, pointLayout) ->
+      # all layout is in length-units of "pts" (points).
+      # Points == Pixels for non-retina screens (pixelsPerPoint == 1)
+      # provide numbers or 2d Points (not to be confused with pts, the length unit) to add to your layout.
+      pts: pts = (value, pointLayout) ->
         value = preprocessValue value, pointLayout
         pointLayout._hasXLayout =
         pointLayout._hasYLayout = true
@@ -165,6 +167,7 @@ define [
         Components.ych += value
 
       # Aliases
+      plus:                     pts
       w:                        x
       h:                        y
 
@@ -278,16 +281,13 @@ define [
     ###
     constructor: (@initializer = point0, previousLayout)->
       super
-      switch typeof @initializer
-        when "function" then @_setupFromFunction @initializer
-        when "object"
-          if @initializer.constructor == Object
-            @_setupFromOptions @initializer, previousLayout
-          else
-            @_setupFromPoint @initializer
-        else
-          # numbers, strings or arrays all get passed to point() and used as @initializer constant layout
-          @_setupFromPoint @initializer
+      if isFunction @initializer
+        @_setupFromFunction @initializer
+      else if isPlainObject @initializer
+        @_setupFromOptions @initializer, previousLayout
+      else
+        # Points, numbers, strings or arrays all get passed to point() and used as @initializer constant layout
+        @_setupFromPoint @initializer
 
     toString: ->
       "PointLayout(#{@toStringLean()})"
@@ -319,12 +319,17 @@ define [
     # PRIVATE
     #############
 
-    _setupFromPoint: (p) ->
+    _setupFromPoint: (val) ->
       @_hasXLayout = @_hasYLayout = true
-      p = point p
-      @layoutX = -> p.x
-      @layoutY = -> p.y
-      @layout  = -> p
+      {x, y} = p = point val
+      if isString val
+        @layoutX = (ps) -> ps.x * x
+        @layoutY = (ps) -> ps.y * y
+        @layout  = (ps) -> ps.mul p
+      else
+        @layoutX = (ps) -> x
+        @layoutY = (ps) -> y
+        @layout  = (ps) -> p
       @initializer = p
 
     _setupFromFunction: (f) ->
