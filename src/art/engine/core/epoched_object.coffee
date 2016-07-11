@@ -2,11 +2,11 @@ Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
 GlobalEpochCycle = require './global_epoch_cycle'
-PersistantAnimator = require '../animation/persistant_animator'
-EasingPersistantAnimator = require '../animation/easing_persistant_animator'
+{PersistantAnimator, EasingPersistantAnimator, PeriodicPersistantAnimator} = require '../animation'
 
 {
   log
+  merge
   mergeInto
   BaseObject
   capitalize
@@ -480,6 +480,8 @@ module.exports = class EpochedObject extends BaseObject
             options
           else if isFunction options
             new PersistantAnimator prop, animate: options
+          else if isNumber options?.period
+            new PeriodicPersistantAnimator prop, merge options, continuous: true
           else if options?.animate
             new PersistantAnimator prop, options
           else

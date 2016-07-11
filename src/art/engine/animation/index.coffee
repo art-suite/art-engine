@@ -3,7 +3,8 @@
 
 (module.exports = require './namespace')
 .addModules
-  Animator:                 require './animator'
-  EasingFunctions:          require './easing_functions'
-  EasingPersistantAnimator: require './easing_persistant_animator'
-  PersistantAnimator:       require './persistant_animator'
+  Animator:                   require './animator'
+  EasingFunctions:            require './easing_functions'
+  EasingPersistantAnimator:   require './easing_persistant_animator'
+  PeriodicPersistantAnimator: require './periodic_persistant_animator'
+  PersistantAnimator:         require './persistant_animator'
