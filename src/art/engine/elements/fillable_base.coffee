@@ -20,8 +20,8 @@ module.exports = createWithPostCreate class FillableBase extends Base
   @drawProperty
     # from:   default: "topLeft", preprocess: (v) -> point v
     # to:     default: null, preprocess: (v) -> v? && point v
-    from: preprocess: (v, oldValue) -> !v || if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
-    to:   preprocess: (v, oldValue) -> !v || if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
+    from: preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
+    to:   preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
 
     colors: default: null
     gradientRadius: default: null
