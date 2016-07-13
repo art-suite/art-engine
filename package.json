@@ -14,7 +14,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "webpack-dev-server -d --progress"
+    "test": "neptune-namespaces --std; webpack-dev-server -d --progress"
   },
   "author": "Shane Brinkman-Davis Delamore",
   "license": "MIT"
