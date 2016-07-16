@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 FillableBase = require '../fillable_base'
-{merge, createWithPostCreate, log} = Foundation
+{merge, createWithPostCreate, log, isPlainArray} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 module.exports = createWithPostCreate class OutlineElement extends FillableBase
@@ -13,6 +13,7 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
     lineWidth:  default: 1,         validate: (v) -> typeof v is "number"
     lineCap:    default: "butt",    validate: (v) -> v in validLineCaps
     lineJoin:   default: "miter",   validate: (v) -> v in validLineJoins
+    lineDash:   default: null,      validate: (v) -> !v || isPlainArray v
     filled:     default: false
     miterLimit:
       default: 10,
@@ -37,10 +38,9 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
-    drawOptions.strokeStyle   = @_drawOptions.fillStyle
-    drawOptions.color         = @_color
     drawOptions.lineWidth     = @_lineWidth
     drawOptions.lineCap       = @_lineCap
     drawOptions.lineJoin      = @_lineJoin
+    drawOptions.lineDash      = @_lineDash
     drawOptions.miterLimit    = @_miterLimit
 
