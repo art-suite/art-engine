@@ -3,7 +3,7 @@ Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Base = require './base'
 {PointLayout, PointLayoutBase} = require '../layout'
-{log, isPlainObject, min, max, createWithPostCreate, isNumber} = Foundation
+{log, isPlainObject, min, max, createWithPostCreate, isNumber, merge} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
 # can be a gradient fill or a solid-color fill
@@ -28,6 +28,11 @@ module.exports = createWithPostCreate class FillableBase extends Base
     shadow:
       default: null
       validate: (v) -> !v || isPlainObject v
+      preprocess: (v) ->
+        if (offset = v?.offset) && !(offset instanceof PointLayoutBase)
+          merge v, offset: new PointLayout offset
+        else
+          v
 
   _expandRectangleByShadow: _expandRectangleByShadow = (r, shadow) ->
     return r unless shadow
@@ -52,17 +57,24 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
-    {_shadow, _colors} = @
+    {_shadow, _colors, _currentSize} = @
+    if offset = _shadow?.offset
+      {x, y} = offset.layout _currentSize
+      _shadow = merge _shadow,
+        offsetX: x - _currentSize.x / 2
+        offsetY: y - _currentSize.y / 2
+
     drawOptions.shadow = _shadow
 
     drawOptions.colors = null
+    drawOptions.gradientRadius = null
     drawOptions.gradientRadius1 = null
     drawOptions.gradientRadius2 = null
     drawOptions.from = null
     drawOptions.to = null
 
     if _colors
-      {_from, _to, _gradientRadius, _currentSize} = @
+      {_from, _to, _gradientRadius} = @
       _from ||= defaultFrom
 
       drawOptions.colors = _colors
