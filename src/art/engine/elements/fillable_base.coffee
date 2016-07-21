@@ -34,10 +34,26 @@ module.exports = createWithPostCreate class FillableBase extends Base
         else
           v
 
-  _expandRectangleByShadow: _expandRectangleByShadow = (r, shadow) ->
+  @getter
+    normalizedShadow: ->
+      shadow = @_shadow
+      return null unless shadow
+      {_currentSize} = @
+      if offset = shadow.offset
+        {x, y} = offset.layout _currentSize
+        merge shadow,
+          offsetX: x - _currentSize.x / 2
+          offsetY: y - _currentSize.y / 2
+      else
+        merge
+          offsetX: 0
+          offsetY: 0
+        , shadow
+
+  _expandRectangleByShadow: (r, shadow) ->
     return r unless shadow
     {x, y, w, h} = r
-    {blur, offsetX, offsetY} = shadow
+    {blur, offsetX, offsetY} = @normalizedShadow
     offsetX ||= 0
     offsetY ||= 0
     blur ||= 0
@@ -52,19 +68,14 @@ module.exports = createWithPostCreate class FillableBase extends Base
       h + expandTop + expandBottom
     )
 
-  getBaseDrawArea:        -> _expandRectangleByShadow super, @getShadow()
-  getPendingBaseDrawArea: -> _expandRectangleByShadow super, @getPendingShadow()
+  getBaseDrawArea:        -> @_expandRectangleByShadow super, @getShadow()
+  getPendingBaseDrawArea: -> @_expandRectangleByShadow super, @getPendingShadow()
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
-    {_shadow, _colors, _currentSize} = @
-    if offset = _shadow?.offset
-      {x, y} = offset.layout _currentSize
-      _shadow = merge _shadow,
-        offsetX: x - _currentSize.x / 2
-        offsetY: y - _currentSize.y / 2
+    {_colors, _currentSize} = @
 
-    drawOptions.shadow = _shadow
+    drawOptions.shadow = @normalizedShadow
 
     drawOptions.colors = null
     drawOptions.gradientRadius = null
