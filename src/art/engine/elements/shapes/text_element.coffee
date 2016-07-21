@@ -4,7 +4,7 @@ Text = require 'art-text'
 FillableBase = require '../fillable_base'
 GlobalEpochCycle = require '../../core/global_epoch_cycle'
 
-{log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate} = Foundation
+{log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 {normalizeFontOptions} = Text.Metrics
 
@@ -71,7 +71,14 @@ module.exports = createWithPostCreate class TextElement extends FillableBase
         (!overflow   || validOverflows[overflow])
 
   @drawLayoutProperty
-    text:           default: Text.Layout.defaultText, preprocess: (t) -> ""+t
+    text:
+      default: Text.Layout.defaultText
+      preprocess: (t) ->
+        if isPlainArray t
+          t.join "\n"
+        else
+          "#{t}"
+
     fontOptions:    validate: (v)-> !v
     layoutOptions:  validate: (v)-> !v
 
