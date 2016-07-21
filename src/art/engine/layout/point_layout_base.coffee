@@ -109,21 +109,25 @@ define [
         @_xRelativeToParentW   = isParentWRelative(@layoutX, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
         @_xRelativeToParentH   = isParentHRelative(@layoutX, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
         if layoutLength == 1 && !@_xRelativeToParentW && !@_xRelativeToParentH
-          console.warn "#{@}: horizontal/x/w layout function has 1 input, which suggests
-            it should be parent-relative, but it doesn't appear to be.
-            \n\nResolution: If the input
-            is unused, remove it. Otherwise, alter your function to respond differently
-            for parent-sizes of 0 and children-sizes of near-infinity."
+          console.warn """
+            #{@}: horizontal/x/w layout function has 1 input, which suggests it should be parent-relative, but it doesn't appear to be.
+
+            Resolution: If the input is unused, remove it. Otherwise, alter your function to respond differently for parent-sizes of 0 and children-sizes of near-infinity.
+
+            layoutX: #{@layoutX}
+            """
 
       if layoutLength > 1
         @_xRelativeToChildrenW = isChildrenWRelative(@layoutX, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
         @_xRelativeToChildrenH = isChildrenHRelative(@layoutX, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
         unless @_xRelativeToChildrenW || @_xRelativeToChildrenH
-          console.warn "#{@}: horizontal/x/w layout function has 2 inputs, which suggests
-            it should be child-relative, but it doesn't appear to be.
-            \n\nResolution: If the second input
-            is unused, remove it. Otherwise, alter your function to respond differently
-            for children-sizes of 0 vs near-infinity when parent-size is 0."
+          console.warn """
+            #{@}: horizontal/x/w layout function has 2 inputs, which suggests it should be child-relative, but it doesn't appear to be.
+
+            Resolution: If the second input is unused, remove it. Otherwise, alter your function to respond differently for children-sizes of 0 vs near-infinity when parent-size is 0.
+
+            layoutX: #{@layoutX}
+            """
 
     _detectYRelativity: ->
       @_yRelativeToParentW   =

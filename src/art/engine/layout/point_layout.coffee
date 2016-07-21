@@ -332,26 +332,26 @@ define [
         @layout  = (ps) -> p
       @initializer = p
 
-    _setupFromFunction: (f) ->
+    _setupFromFunction: (layoutFunction) ->
       @_hasXLayout = @_hasYLayout = true
-      if f.length == 1
-        if isNumber f point0
-          @layout = (ps) -> point f ps
-          @layoutX = f
-          @layoutY = f
+      if layoutFunction.length == 1
+        if isNumber layoutFunction point0
+          @layout = (ps) -> point layoutFunction ps
+          @layoutX = layoutFunction
+          @layoutY = layoutFunction
         else
-          @layout = f
-          @layoutX = (ps) -> f(ps).x
-          @layoutY = (ps) -> f(ps).y
+          @layout = layoutFunction
+          @layoutX = (ps) -> layoutFunction(ps).x
+          @layoutY = (ps) -> layoutFunction(ps).y
       else
-        if isNumber f point0, point0
-          @layout = (ps, cs) -> point f ps, cs
-          @layoutX = f
-          @layoutY = f
+        if isNumber layoutFunction point0, point0
+          @layout = (ps, cs) -> point layoutFunction ps, cs
+          @layoutX = layoutFunction
+          @layoutY = layoutFunction
         else
-          @layout = f
-          @layoutX = (ps, cs) -> f(ps, cs).x
-          @layoutY = (ps, cs) -> f(ps, cs).y
+          @layout = layoutFunction
+          @layoutX = (ps, cs) -> layoutFunction(ps, cs).x
+          @layoutY = (ps, cs) -> layoutFunction(ps, cs).y
       @_detectRelativity()
 
     _setupFromOptions: (options, previousLayout) ->
