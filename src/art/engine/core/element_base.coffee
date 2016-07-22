@@ -148,15 +148,15 @@ module.exports = class ElementBase extends EventedEpochedObject
 
   @getter
     instanceId: -> @remoteId || @getUniqueId()
-    shortClassPathName: ->
-      name = @getClassPathName()
+    shortNamespacePath: ->
+      name = @namespacePath
       peek name.split '.'
 
     inspectedName: ->
-      "#{@shortClassPathName}:#{@pendingKey || @instanceId}"
+      "#{@shortNamespacePath}:#{@pendingKey || @instanceId}"
 
     inspectedNameWithoutIds: ->
-      @shortClassPathName + if key = @pendingKey then ":#{key}" else ""
+      @shortNamespacePath + if key = @pendingKey then ":#{key}" else ""
 
     inspectedString: -> @inspectedName
 
@@ -177,7 +177,7 @@ module.exports = class ElementBase extends EventedEpochedObject
 
     debugStructure: ->
       result = [
-        @shortClassPathName
+        @shortNamespacePath
         @inspectedPropsMaps
       ]
       if @hasChildren
