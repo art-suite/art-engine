@@ -385,6 +385,14 @@ module.exports = class StateEpochLayout extends BaseObject
 
       childrenSize = if hasCustomLayoutChildrenFirstPass
         currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildren
+        .max layoutChildrenComputeArea(
+            currentPadding
+            firstPassSizeForChildren
+            firstPassChildren
+            secondPassChildren
+            secondPassLocationLayoutChildren
+          )
+
       else
         childrenGrid = element.getPendingChildrenGrid()
         switch childrenLayout

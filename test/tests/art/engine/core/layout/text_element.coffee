@@ -8,7 +8,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {point, matrix, Matrix, rect} = Atomic
 {stateEpochTest} = StateEpochTestHelper
 
-{Element, TextElement, RectangleElement} = Engine
+{Element, TextElement, RectangleElement, FillElement} = Engine
 
 testLogBitmap = (name, setup, tests...) ->
   test name, (done) ->
@@ -34,3 +34,22 @@ suite "Art.Engine.Core.layout.TextElement", ->
       assert.within root.elementSpaceDrawArea,
         rect -8, -8, 91, 32
         rect -8, -8, 92, 32
+
+  test "change in text size should effect other ElementChildren", ->
+    element = new TextElement
+      text: "D"
+      fontSize: 60
+      size: cs: 1
+      new RectangleElement color: "red"
+      child = new FillElement
+
+    element.toBitmap()
+    .then ({bitmap}) ->
+      log bitmap
+      assert.eq element.currentSize, child.currentSize, "test 1"
+      element.text = "!"
+      element.toBitmap()
+    .then ({bitmap}) ->
+      log bitmap, element.currentSize, child.currentSize
+      assert.eq element.currentSize, child.currentSize, "test 2"
+
