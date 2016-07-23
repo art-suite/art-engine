@@ -119,6 +119,12 @@ module.exports = class StateEpochLayout extends BaseObject
 
     for child in children when children
 
+      # log
+      #   child: child.inspectedName
+      #   childSize: child.getPendingSize().inspect(),
+      #   parentSizeLayout: child.getPendingParent().getPendingSize().inspect()
+      #   parentSize: parentSize
+
       if child.getPendingLayoutSizeParentCircular()
         ###
         If size is circular:
@@ -134,29 +140,25 @@ module.exports = class StateEpochLayout extends BaseObject
           - this element's location layout is done in the second pass. (is it?!?)
         ###
 
-        if skipLocationLayout = child.getPendingLayoutLocationParentCircular()
-
+        if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
           child._setLocationFromLayout point0
-          preDeinfinitizedChildSize = layoutElement child, parentSize, true
-          x = child.getPendingWidthInParentSpace()
-          y = child.getPendingHeightInParentSpace()
+          secondPassLocation.push child
 
-        else
-          preDeinfinitizedChildSize = layoutElement child, parentSize
-          x = child.getPendingMaxXInParentSpace()
-          y = child.getPendingMaxYInParentSpace()
+        layoutElement child, parentSize, layoutLocationInSecondPass
 
-        if isInfiniteResult(preDeinfinitizedChildSize.x) || isInfiniteResult(preDeinfinitizedChildSize.y)
+        x = child.getPendingMaxXInParentSpace()
+        y = child.getPendingMaxYInParentSpace()
+
+        xInfinite = isInfiniteResult x
+        yInfinite = isInfiniteResult y
+
+        if xInfinite || yInfinite
           secondPassChildren.push child
+        else if layoutLocationInSecondPass
+          secondPassLocation.push child
 
-          childrenWidth  = max childrenWidth,  x unless isInfiniteResult x
-          childrenHeight = max childrenHeight, y unless isInfiniteResult y
-
-        else
-          secondPassLocation.push child if skipLocationLayout
-
-          childrenWidth  = max childrenWidth,  x
-          childrenHeight = max childrenHeight, y
+        childrenWidth  = max childrenWidth,  x unless xInfinite
+        childrenHeight = max childrenHeight, y unless yInfinite
 
     sizeWithPadding childrenWidth, childrenHeight, currentPadding
 
