@@ -4,7 +4,7 @@ Engine = require 'art-engine'
 Helper = require '../helper'
 StateEpochTestHelper = require '../../core/state_epoch_test_helper'
 
-{inspect, log, min, isNumber, isPlainObject} = Foundation
+{inspect, log, min, isNumber, isPlainObject, merge} = Foundation
 {point, matrix, Matrix, Point, rect} = Atomic
 {Element, RectangleElement, FillElement, TextElement, Shapes} = Engine
 {drawTest, drawTest2, drawTest3} =  Helper
@@ -367,6 +367,32 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
                     new FillElement
 
               test: (element) -> layoutTester element.children[0], result
+
+        test "adding a max-size to layout shouldn't effect layout unless max size is hit", ->
+          sharedProps =
+            margin: 10
+            color: "red"
+            text: "MMMM! Rajas!"
+          el = new Element
+            size: w:150, h: 50
+            childrenLayout: "column"
+            new RectangleElement inFlow: false, color: "#eee"
+            c1 = new TextElement merge(sharedProps, size: cs: 1, max: ww: 1),
+              new RectangleElement color: "#0002"
+              new FillElement
+            c2 = new TextElement merge(sharedProps, size: cs: 1),
+              new RectangleElement color: "#0002"
+              new FillElement
+          el.toBitmap()
+          .then ({bitmap}) ->
+            log shouldBeSame: bitmap
+            assert.eq c1.currentSize, c2.currentSize
+            c1.text = c2.text = "This should word wrap, though!"
+            el.toBitmap()
+          .then ({bitmap}) ->
+            log shouldBeDifferent: bitmap
+            assert.neq c1.currentSize, c2.currentSize
+
 
       suite "layout ww:.5, hh:1", ->
         leftAligned     = [0,   0,    0,    0,    0]

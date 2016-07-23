@@ -7,6 +7,18 @@ CoreLayout = require './namespace'
 FlexLayout = require './flex_layout'
 Basics = require './basics'
 
+###
+TODO:
+
+  I'd like to move away from my isInfiniteResult tests.
+  I'd rather just use circular tests.
+  The problem is if we have a "max" test in layout, infinite results get masked and appear finite.
+  Circular tests are not 100% reliable though!
+    Perhaps we can let you specific relitivity in the PointLayout Props, if needed:
+      w: (ps, cs) -> blah
+      parentRelative: false # blah isn't actually parent relative
+###
+
 {layoutChildrenFlex} = FlexLayout
 {
   nearInfiniteSize, nearInfinity, nearInfinityResult
@@ -103,32 +115,48 @@ module.exports = class StateEpochLayout extends BaseObject
   layoutChildrenComputeArea = (currentPadding, parentSize, children, secondPassChildren, secondPassLocation) ->
     childrenHeight = 0
     childrenWidth  = 0
+    return point0 unless children
 
     for child in children when children
 
-      if skipLocationLayout = child.getPendingLayoutLocationParentCircular()
-
-        child._setLocationFromLayout point0
-        preDeinfinitizedChildSize = layoutElement child, parentSize, true
-        x = child.getPendingWidthInParentSpace()
-        y = child.getPendingHeightInParentSpace()
-
-      else
-        preDeinfinitizedChildSize = layoutElement child, parentSize
-        x = child.getPendingMaxXInParentSpace()
-        y = child.getPendingMaxYInParentSpace()
-
-      if isInfiniteResult(preDeinfinitizedChildSize.x) || isInfiniteResult(preDeinfinitizedChildSize.y)
+      if child.getPendingLayoutSizeParentCircular()
+        ###
+        If size is circular:
+          - this element is automatically not "inFlow"
+          - this element is not included in child-size calcs
+          - this element is only layed out after the parent-size is final.
+        ###
         secondPassChildren.push child
-
-        childrenWidth  = max childrenWidth,  x unless isInfiniteResult x
-        childrenHeight = max childrenHeight, y unless isInfiniteResult y
-
       else
-        secondPassLocation.push child if skipLocationLayout
+        ###
+        If location is circular (but size is not):
+          - this element's location is assumed to be point0 for child-size calc purposes
+          - this element's location layout is done in the second pass. (is it?!?)
+        ###
 
-        childrenWidth  = max childrenWidth,  x
-        childrenHeight = max childrenHeight, y
+        if skipLocationLayout = child.getPendingLayoutLocationParentCircular()
+
+          child._setLocationFromLayout point0
+          preDeinfinitizedChildSize = layoutElement child, parentSize, true
+          x = child.getPendingWidthInParentSpace()
+          y = child.getPendingHeightInParentSpace()
+
+        else
+          preDeinfinitizedChildSize = layoutElement child, parentSize
+          x = child.getPendingMaxXInParentSpace()
+          y = child.getPendingMaxYInParentSpace()
+
+        if isInfiniteResult(preDeinfinitizedChildSize.x) || isInfiniteResult(preDeinfinitizedChildSize.y)
+          secondPassChildren.push child
+
+          childrenWidth  = max childrenWidth,  x unless isInfiniteResult x
+          childrenHeight = max childrenHeight, y unless isInfiniteResult y
+
+        else
+          secondPassLocation.push child if skipLocationLayout
+
+          childrenWidth  = max childrenWidth,  x
+          childrenHeight = max childrenHeight, y
 
     sizeWithPadding childrenWidth, childrenHeight, currentPadding
 
@@ -384,14 +412,16 @@ module.exports = class StateEpochLayout extends BaseObject
     if firstPassChildren || hasCustomLayoutChildrenFirstPass
 
       childrenSize = if hasCustomLayoutChildrenFirstPass
-        currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildren
-        .max layoutChildrenComputeArea(
+        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildren
+        if pendingChildren?.length > 0
+          s = s.max size = layoutChildrenComputeArea(
             currentPadding
             firstPassSizeForChildren
             firstPassChildren
             secondPassChildren
             secondPassLocationLayoutChildren
           )
+        s
 
       else
         childrenGrid = element.getPendingChildrenGrid()
