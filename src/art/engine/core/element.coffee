@@ -1275,8 +1275,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # GEOMETRY INFO
   ##########################
 
-  elementToElementMatrix: (o) -> console.error("depricated: elementToElementMatrix");if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
-  elementToTargetMatrix: (parentToTargetMatrix) -> console.error("depricated: elementToTargetMatrix");@_elementToParentMatrix.mul parentToTargetMatrix
+  elementToElementMatrix: (o) -> console.error("depricated: elementToElementMatrix - use getElementToElementMatrix");if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
+  elementToTargetMatrix: (parentToTargetMatrix) -> console.error("depricated: elementToTargetMatrix - use getElementToTargetMatrix");@_elementToParentMatrix.mul parentToTargetMatrix
 
   getElementToElementMatrix: (o) -> if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
   getElementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix
