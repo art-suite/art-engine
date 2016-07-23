@@ -251,7 +251,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     scale:
       default: 1
-      preprocess: (s) -> point s
+      preprocess: (s) -> if isFunction s then s else point s
       postSetter: -> @_locationLayoutDisabled = false
 
     angle:
@@ -1197,8 +1197,17 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
 
   _getElementToParentMatrixForXY: (pending, x, y, withScale) ->
-    {_currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix} = @getState pending
-    _scale = point withScale if withScale?
+    {
+      _currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix
+    } = state = @getState pending
+    _scale = withScale if withScale?
+
+    if isFunction _scale
+      {_parent} = state
+      parentCurrentSize = _parent.getState(pending)._currentSize
+      _scale = _scale parentCurrentSize, _currentSize
+
+    _scale = point _scale
 
     {left, top} = _currentPadding
     size  = _currentSize
