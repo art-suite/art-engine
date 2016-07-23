@@ -144,6 +144,12 @@ suite "Art.Engine.Layout.PointLayout.Dependencies", ->
     assert.eq pl.yRelativeToParentW, false
     assert.eq pl.yRelativeToParentH, false
 
+  test "regression foo", ->
+    pl1 = new PointLayout w:220, hch:1
+    pl2 = new PointLayout wcw:1, hh:1
+    assert.eq pl1.childrenRelative, true
+    assert.eq pl2.parentRelative, true
+
   test "regressionA with min", ->
     pl = new PointLayout
       hch: 1
