@@ -58,7 +58,7 @@ define [
       totalParentParentDelta:    -> @pointer.totalDeltaIn @target.parent.parent
 
     toElementMatrix: (element) ->
-      @target.elementToElementMatrix(element)
+      @target.getElementToElementMatrix(element)
 
     # locations in element's space
     locationIn:      (element) -> @pointer.locationIn element
