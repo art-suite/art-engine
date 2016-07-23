@@ -25,7 +25,7 @@ stateEpochTest = (name, setup) ->
     advance()
 
 
-suite "Art.Engine.Core.Element.geometry.elementToElementMatrix", ->
+suite "Art.Engine.Core.Element.geometry.getElementToElementMatrix", ->
   test "element to parent", ->
     parent = new Element {},
       child = new Element location: 10
@@ -33,7 +33,7 @@ suite "Art.Engine.Core.Element.geometry.elementToElementMatrix", ->
     parent.onNextReady()
     .then ->
       assert.eq child.elementToParentMatrix.location, point 10
-      assert.eq child.elementToElementMatrix(parent), child.elementToParentMatrix
+      assert.eq child.getElementToElementMatrix(parent), child.elementToParentMatrix
 
   test "parent to element", ->
     parent = new Element {},
@@ -41,7 +41,7 @@ suite "Art.Engine.Core.Element.geometry.elementToElementMatrix", ->
 
     parent.onNextReady()
     .then ->
-      assert.eq parent.elementToElementMatrix(child), child.elementToParentMatrix.invert()
+      assert.eq parent.getElementToElementMatrix(child), child.elementToParentMatrix.invert()
 
   test "between siblings", ->
     parent = new Element {},
@@ -50,7 +50,7 @@ suite "Art.Engine.Core.Element.geometry.elementToElementMatrix", ->
 
     parent.onNextReady()
     .then ->
-      assert.eq child1.elementToElementMatrix(child2), matrix 1, 1, 0, 0, -5, -5
+      assert.eq child1.getElementToElementMatrix(child2), matrix 1, 1, 0, 0, -5, -5
 
 suite "Art.Engine.Core.Element.geometry", ->
   test "defaults", ->
