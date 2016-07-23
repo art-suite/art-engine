@@ -119,12 +119,6 @@ module.exports = class StateEpochLayout extends BaseObject
 
     for child in children when children
 
-      # log
-      #   child: child.inspectedName
-      #   childSize: child.getPendingSize().inspect(),
-      #   parentSizeLayout: child.getPendingParent().getPendingSize().inspect()
-      #   parentSize: parentSize
-
       if child.getPendingLayoutSizeParentCircular()
         ###
         If size is circular:

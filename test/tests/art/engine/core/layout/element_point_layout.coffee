@@ -245,7 +245,24 @@ suite "Art.Engine.Core.layout.pointLayout.children relative", ->
     ->
       assert.eq b.currentSize, point 100, 0
 
-  stateEpochTest "regression 2", ->
+  stateEpochTest "regression 2a - more than one nesting of an element which is both parent and child relative breaks", ->
+    ###
+    TODO
+    To truely resolve this we need SOME way to force
+    layouts that appear parent-circular to layout in the first pass
+    with the "best parentSize available."
+
+    For right now, using the "max" parameter seems like the best solution.
+    1) that's the only use-case I know
+    2) It already supports a near-fully functional solution:
+      You can actually get pretty complex by adding a layout function
+      both to the base layout and the max layout.
+    ###
+    testNestedSizeLayout =
+      hch: 1
+      # THIS SUCCEEDS because it is defined to be not parent-circular
+      wcw: 1, max: ww: 1
+
     a = new Element
       key: "a"
       size:
@@ -254,22 +271,68 @@ suite "Art.Engine.Core.layout.pointLayout.children relative", ->
 
       b = new Element
         key: "b"
-        size:
-          hch: 1
-          w: (ps, cs) -> min ps.w, cs.w
+        size: testNestedSizeLayout
 
         c = new Element
           key: "c"
-          size:
-            hch: 1
-            w: (ps, cs) -> min ps.w, cs.w
-          d = new Element size: 25, key: "d"
+          size: testNestedSizeLayout
+          new Element size: 25, key: "d"
+
+        d = new Element
+          key: "c"
+          size: testNestedSizeLayout
+          new Element size: 30, key: "d"
 
     ->
-      assert.eq d.currentSize, point 25
-      assert.eq c.currentSize, point 25
-      assert.eq b.currentSize, point 25
-      assert.eq a.currentSize, point 100, 25
+      assert.eq d.currentSize, point(30), "d.currentSize"
+      assert.eq c.currentSize, point(25), "c.currentSize"
+      assert.eq b.currentSize, point(30), "b.currentSize"
+      assert.eq a.currentSize, point 100, 30
+
+  stateEpochTest "regression 2b - more than one nesting of an element which is both parent and child relative breaks", ->
+    ###
+    TODO
+    To truely resolve this we need SOME way to force
+    layouts that appear parent-circular to layout in the first pass
+    with the "best parentSize available."
+
+    For right now, using the "max" parameter seems like the best solution.
+    1) that's the only use-case I know
+    2) It already supports a near-fully functional solution:
+      You can actually get pretty complex by adding a layout function
+      both to the base layout and the max layout.
+    ###
+    testNestedSizeLayout =
+      hch: 1
+      # because this detects as parent-circular when both parent and child have this layout
+      # any child with this layout will not contribute to it's parent's size computation
+      w: (ps, cs) -> min ps.w, cs.w
+
+    a = new Element
+      key: "a"
+      size:
+        hch:1
+        w: 100
+
+      b = new Element
+        key: "b"
+        size: testNestedSizeLayout
+
+        c = new Element
+          key: "c"
+          size: testNestedSizeLayout
+          new Element size: 25, key: "d"
+
+        d = new Element
+          key: "c"
+          size: testNestedSizeLayout
+          new Element size: 30, key: "d"
+
+    ->
+      assert.eq d.currentSize, point(0, 30), "d.currentSize"
+      assert.eq c.currentSize, point(0, 25), "c.currentSize"
+      assert.eq b.currentSize, point(0), "b.currentSize"
+      assert.eq a.currentSize, point 100, 0
 
   stateEpochTest "regression 3", ->
     gp = new Element
