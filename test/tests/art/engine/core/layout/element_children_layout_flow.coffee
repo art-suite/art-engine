@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {inspect, log, isArray, min, max} = Foundation
 {point, matrix, Matrix} = Atomic
-{stateEpochTest} = StateEpochTestHelper
+{stateEpochTest, drawAndTestElement} = StateEpochTestHelper
 
 {Element, TextElement, RectangleElement, Layout} = Engine
 {LinearLayout} = Layout
@@ -132,33 +132,33 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
   #   test: ->
   #     assert.eq (c.currentLocation for c in root.children), [point(10, 0), point(40, 0), point(30, 50)]
 
-  stateEpochTest "flow and childrenLayout (constrained)", ->
-    root = new Element
+  drawAndTestElement "flow and childrenLayout (constrained)", ->
+    element: root = new Element
       size:
         w: (ps, cs) -> min 100, cs.x
         hch: 1
       name: "flow and childrenLayout element"
       childrenLayout: "flow"
-      new Element size: 30
-      new Element size: 50
-      new Element size: 40
+      new RectangleElement size: 30, color: "red"
+      new RectangleElement size: 50, color: "green"
+      new RectangleElement size: 40, color: "blue"
 
-    ->
+    test: ->
       assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(30, 0), point(0, 50)]
       assert.eq root.currentSize, point 80, 90
 
-  stateEpochTest "flow and childrenLayout (unconstrained)", ->
-    root = new Element
+  drawAndTestElement "flow and childrenLayout (unconstrained)", ->
+    element: root = new Element
       size:
         wcw: 1
         h: (ps, cs) -> min 100, cs.y
       name: "flow and childrenLayout element"
       childrenLayout: "flow"
-      new Element size: 30
-      new Element size: 50
-      new Element size: 40
+      new RectangleElement size: 30, color: "red"
+      new RectangleElement size: 50, color: "green"
+      new RectangleElement size: 40, color: "blue"
 
-    ->
+    test: ->
       assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(30, 0), point(80, 0)]
       assert.eq root.currentSize, point 120, 50
 

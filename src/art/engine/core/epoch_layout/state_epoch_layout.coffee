@@ -238,13 +238,25 @@ module.exports = class StateEpochLayout extends BaseObject
       else
         layoutElement child, parentSize, true
 
-  layoutChildrenFlow = (element, currentPadding, parentSize, children, secondPassSizeLayoutChildren) ->
+  layoutChildrenFlow = (
+      element,
+      currentPadding,
+      firstPassSizeForChildrenUnconstrained,
+      firstPassSizeForChildrenConstrained,
+      children,
+      secondPassSizeLayoutChildren
+    ) ->
 
-    subLayoutChildrenAndGatherInformation parentSize, children, secondPassSizeLayoutChildren
+    subLayoutChildrenAndGatherInformation firstPassSizeForChildrenConstrained, children, secondPassSizeLayoutChildren
 
     # flow children
     halfPixel = .5 # TODO: should this should take into account pixelsPerPoint? Or is it just a layout thing and this should be halfPoint - and always .5?
-    rightEdge = parentSize.x + halfPixel
+    rightEdge = firstPassSizeForChildrenUnconstrained.x + halfPixel
+
+    # log layoutChildrenFlow:
+    #   firstPassSizeForChildrenUnconstrained: firstPassSizeForChildrenUnconstrained
+    #   firstPassSizeForChildrenConstrained: firstPassSizeForChildrenConstrained
+    #   rightEdge: rightEdge
 
     state =
       y: 0
@@ -363,11 +375,12 @@ module.exports = class StateEpochLayout extends BaseObject
     # Gather Information
     ##############################
     # Compute firstPassSize and finalLocation
-    finalLocation = element._layoutLocation(parentSize) unless skipLocation
-    firstPassSize = element._layoutSize(parentSize, nearInfiniteSize)
+    finalLocation = element._layoutLocation parentSize unless skipLocation
+    firstPassSize = element._layoutSize parentSize, nearInfiniteSize
     currentPadding = layoutPadding element, parentSize
     currentMargin  = layoutMargin element, parentSize
-    firstPassSizeForChildren = element._sizeForChildren firstPassSize
+    firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
+    firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
 
     hasCustomLayoutChildrenFirstPass = isFunction element.customLayoutChildrenFirstPass
     hasCustomLayoutChildrenSecondPass = isFunction element.customLayoutChildrenSecondPass
@@ -408,11 +421,11 @@ module.exports = class StateEpochLayout extends BaseObject
     if firstPassChildren || hasCustomLayoutChildrenFirstPass
 
       childrenSize = if hasCustomLayoutChildrenFirstPass
-        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildren
+        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildrenUnconstrained
         if pendingChildren?.length > 0
           s = s.max size = layoutChildrenComputeArea(
             currentPadding
-            firstPassSizeForChildren
+            firstPassSizeForChildrenConstrained
             firstPassChildren
             secondPassChildren
             secondPassLocationLayoutChildren
@@ -426,7 +439,8 @@ module.exports = class StateEpochLayout extends BaseObject
             childrenFlowState = layoutChildrenFlow(
               element
               currentPadding
-              firstPassSizeForChildren
+              firstPassSizeForChildrenUnconstrained
+              firstPassSizeForChildrenConstrained
               firstPassChildren
               secondPassSizeLayoutChildren
             )
@@ -438,7 +452,7 @@ module.exports = class StateEpochLayout extends BaseObject
                 element
                 childrenGrid
                 currentPadding
-                firstPassSizeForChildren
+                firstPassSizeForChildrenConstrained
                 firstPassChildren
                 secondPassSizeLayoutChildren
               )
@@ -447,7 +461,7 @@ module.exports = class StateEpochLayout extends BaseObject
                 false
                 element
                 currentPadding
-                firstPassSizeForChildren
+                firstPassSizeForChildrenConstrained
                 firstPassChildren
                 parentSize
               )
@@ -459,7 +473,7 @@ module.exports = class StateEpochLayout extends BaseObject
                 element
                 childrenGrid
                 currentPadding
-                firstPassSizeForChildren
+                firstPassSizeForChildrenConstrained
                 firstPassChildren
                 secondPassSizeLayoutChildren
               )
@@ -468,7 +482,7 @@ module.exports = class StateEpochLayout extends BaseObject
                 true
                 element
                 currentPadding
-                firstPassSizeForChildren
+                firstPassSizeForChildrenConstrained
                 firstPassChildren
                 parentSize
               )
@@ -476,7 +490,7 @@ module.exports = class StateEpochLayout extends BaseObject
           else
             layoutChildrenComputeArea(
               currentPadding
-              firstPassSizeForChildren
+              firstPassSizeForChildrenConstrained
               firstPassChildren
               secondPassChildren
               secondPassLocationLayoutChildren
@@ -497,7 +511,7 @@ module.exports = class StateEpochLayout extends BaseObject
           child._setElementToParentMatrixFromLayout child._layoutLocation(secondPassSizeForChildren), parentSize
     else
       secondPassSize = firstPassSize
-      secondPassSizeForChildren = firstPassSizeForChildren
+      secondPassSizeForChildren = firstPassSizeForChildrenConstrained
 
     #####################################
     # Children Second-Pass

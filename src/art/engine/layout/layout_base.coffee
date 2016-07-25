@@ -2,7 +2,7 @@ define [
   'art-foundation'
   'art-atomic'
 ], (Foundation, Atomic) ->
-  {BaseObject, isPlainObject, log, isFunction, nearInfinity, nearInfinityResult} = Foundation
+  {BaseObject, isPlainObject, log, isFunction, nearInfinity, nearInfinityResult, abs} = Foundation
   {point} = Atomic
 
 
@@ -21,6 +21,8 @@ define [
     @nearInfinityResult:  nearInfinityResult
     @nearInfinitePoint:   nearInfinitePoint = point nearInfinity
     @nearInfiniteSize:    nearInfinitePoint
+    @isInfiniteResult:    (x) -> abs(x) >= nearInfinityResult
+
     @InterpolatedLayout = null # set to InterpolatedLayout by InterpolatedLayout
     @LinearLayout = null # set to LinearLayout by LinearLayout
 

@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {inspect, log, isArray} = Foundation
 {point, matrix, rect} = Atomic
-{stateEpochTest} = StateEpochTestHelper
+{stateEpochTest, drawAndTestElement} = StateEpochTestHelper
 
 {Element, RectangleElement, TextElement} = Engine
 
@@ -187,8 +187,8 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       assert.eq r1.paddedArea, rect 0, 0, 100, 100
       assert.eq bitmap.size, point 100
 
-  test "padding and flow", ->
-    parent = new Element
+  drawAndTestElement "padding and flow", ->
+    element: parent = new Element
       size: 100
       padding: 10
       childrenLayout: "flow"
@@ -196,9 +196,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       r1 = new RectangleElement color: "blue", size:45
       r2 = new RectangleElement color: "red", size:45
 
-    parent.toBitmap area: "logicalArea"
-    .then (bitmap)->
-      log bitmap
+    test: ->
       assert.eq r1.currentLocation, point 0
       assert.eq r2.currentLocation, point 0, 45
 
@@ -240,18 +238,16 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       log bitmap
       assert.eq parent._textLayout.fragments.length, 3
 
-  test "padding, TextElement, and child-relative size", ->
-    parent = new TextElement
+  drawAndTestElement "padding, TextElement and child-relative size", ->
+    element: parent = new TextElement
       align: "center"
       axis: .5
       location: ps: .5
-      size: cs:1
+      size: cs: 1
       padding: 10
       text: "Hello world!"
 
-    parent.toBitmap area: "logicalArea"
-    .then (bitmap)->
-      log bitmap
+    test: ->
       assert.within parent.currentSize, point(101, 32), point(103, 32)
 
   test "sizeForChildren", ->

@@ -12,6 +12,7 @@ class TestableEpochedObject extends EpochedObject
   _layoutLocation: -> point 0
   _layoutPropertiesChanged: ->
   _layoutSize: -> point 100
+  _layoutSizeForChildren: -> point 100
   _setElementToParentMatrixFromLayout: ->
   _setMarginFromLayout: ->
   _setPaddingFromLayout: ->

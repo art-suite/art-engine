@@ -9,6 +9,8 @@ DrawEpoch = require "./draw_epoch"
 GlobalEpochCycle = require './global_epoch_cycle'
 DrawCacheManager = require './draw_cache_manager'
 
+{isInfiniteResult} = require './epoch_layout/basics'
+
 {point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint} = Atomic
 {floor} = Math
 {globalEpochCycle} = GlobalEpochCycle
@@ -1659,7 +1661,22 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # these should not modify anything
   # return the new size or location OR
   # return null/false/undefined if there is no layout
-  _layoutSize: (parentSize, childrenSize)-> @getPendingSize().layout parentSize, childrenSize
+  _layoutSize: (parentSize, childrenSize)->
+    @getPendingSize().layout parentSize, childrenSize
+
+  _layoutSizeForChildren: (parentSize, childrenSize)->
+    sizeLayout = @getPendingSize()
+    out = sizeLayout.layout parentSize, childrenSize
+    if sizeLayout.getChildrenRelative()
+      {x, y} = out
+      out.with(
+        if isInfiniteResult x then parentSize.x else x
+        if isInfiniteResult y then parentSize.y else y
+      )
+    else
+      out
+
+
   _layoutLocation:           (parentSize)-> @getPendingLocation().layout parentSize
 
   _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize

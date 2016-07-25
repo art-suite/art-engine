@@ -4,7 +4,7 @@ LayoutBase = require '../../layout/layout_base'
 
 {point, Point, perimeter} = Atomic
 {BaseObject, isFunction, abs} = Foundation
-{nearInfiniteSize, nearInfinity, nearInfinityResult} = LayoutBase
+{nearInfiniteSize, nearInfinity, nearInfinityResult, isInfiniteResult} = LayoutBase
 
 module.exports = class Basics extends BaseObject
   @nearInfiniteSize: nearInfiniteSize
@@ -25,7 +25,7 @@ module.exports = class Basics extends BaseObject
     else
       padding
 
-  @isInfiniteResult: isInfiniteResult = (x) -> abs(x) >= nearInfinityResult
+  @isInfiniteResult: isInfiniteResult
 
   @deinfinitize: (p) ->
     {x, y} = p
