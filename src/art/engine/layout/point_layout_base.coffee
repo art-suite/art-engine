@@ -5,7 +5,10 @@ define [
 
   {point, Point} = Atomic
   {point0} = Point
-  {BaseObject, log, inspect, isFunction, isNumber, isPlainObject, nearInfinity, nearInfinityResult} = Foundation
+  {
+    BaseObject, log, inspect, isFunction, isNumber, isPlainObject, nearInfinity, nearInfinityResult
+    inspectedObjectLiteral
+  } = Foundation
 
   class PointLayoutBase extends BaseObject
 
@@ -36,6 +39,9 @@ define [
     @getter inspectedString: -> @toString()
 
     inspect: -> @toString()
+
+    @getter
+      inspectedObjects: -> inspectedObjectLiteral @toString()
 
     @getter """
       xRelativeToParentW
