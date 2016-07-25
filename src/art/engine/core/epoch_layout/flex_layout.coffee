@@ -212,7 +212,7 @@ module.exports = class FlexLayout extends BaseObject
       if isRowLayout then locationX += mainPos; locationY += crossOffset
       else                locationY += mainPos; locationX += crossOffset
 
-      child._setLocationFromLayoutXY locationX, locationY
+      child._setElementToParentMatrixFromLayoutXY locationX, locationY
 
       mainPos += mainSize
 

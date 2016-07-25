@@ -1192,8 +1192,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_elementChanged()
     p
 
-  _setLocationFromLayout: (l) ->
-    @_setLocationFromLayoutXY l.x, l.y
+  _setElementToParentMatrixFromLayout: (l) ->
+    @_setElementToParentMatrixFromLayoutXY l.x, l.y
 
 
   _getElementToParentMatrixForXY: (pending, x, y, withScale) ->
@@ -1227,7 +1227,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       .rotate _angle, true
       .translateXY x, y, true
 
-  _setLocationFromLayoutXY: (x, y) ->
+  _setElementToParentMatrixFromLayoutXY: (x, y) ->
     return if @_locationLayoutDisabled
 
     e2p = @_getElementToParentMatrixForXY true, x, y

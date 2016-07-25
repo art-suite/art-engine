@@ -135,7 +135,7 @@ module.exports = class StateEpochLayout extends BaseObject
         ###
 
         if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
-          child._setLocationFromLayout point0
+          child._setElementToParentMatrixFromLayout point0
           secondPassLocation.push child
 
         layoutElement child, parentSize, layoutLocationInSecondPass
@@ -198,7 +198,7 @@ module.exports = class StateEpochLayout extends BaseObject
         lastChildOnLine--
         break
 
-    # _setLocationFromLayout on  all children from firstChildOnLine to lastChildOnLine
+    # _setElementToParentMatrixFromLayout on  all children from firstChildOnLine to lastChildOnLine
     y += max lastLineMarginBottom, maxLineMarginTop if lastLineMarginBottom?
     x = 0
     lastMarginRight = 0
@@ -216,7 +216,7 @@ module.exports = class StateEpochLayout extends BaseObject
 
       x += max currentMargin.left, lastMarginRight unless childI == firstChildOnLine
 
-      child._setLocationFromLayout point x, y
+      child._setElementToParentMatrixFromLayout point x, y
       x += childSize.x
       lastMarginRight = currentMargin.right
 
@@ -312,10 +312,10 @@ module.exports = class StateEpochLayout extends BaseObject
         locationY = child._layoutLocationY adjustedParentSize
 
         maxCrossSize = max maxCrossSize, if isRowLayout
-          child._setLocationFromLayoutXY offset + locationX, locationY
+          child._setElementToParentMatrixFromLayoutXY offset + locationX, locationY
           child.getPendingCurrentSize().y
         else
-          child._setLocationFromLayoutXY locationX, offset + locationY
+          child._setElementToParentMatrixFromLayoutXY locationX, offset + locationY
           child.getPendingCurrentSize().x
 
       offset += gridSize
@@ -344,7 +344,7 @@ module.exports = class StateEpochLayout extends BaseObject
         for j in [firstIndex..lastIndex] by 1
           child = flowChildren[j]
           l = child.getPendingCurrentLocation()
-          child._setLocationFromLayout point l.x + offsetX, l.y + offsetY
+          child._setElementToParentMatrixFromLayout point l.x + offsetX, l.y + offsetY
 
   CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
     # Don't layout more than we need to
@@ -494,7 +494,7 @@ module.exports = class StateEpochLayout extends BaseObject
       # finalize locations as needed
       if secondPassLocationLayoutChildren
         for child in secondPassLocationLayoutChildren
-          child._setLocationFromLayout child._layoutLocation secondPassSizeForChildren
+          child._setElementToParentMatrixFromLayout child._layoutLocation secondPassSizeForChildren
     else
       secondPassSize = firstPassSize
       secondPassSizeForChildren = firstPassSizeForChildren
@@ -514,7 +514,7 @@ module.exports = class StateEpochLayout extends BaseObject
     #####################################
     # store the final location and size, returning secondPassSize
     element._setSizeFromLayout     deinfinitize secondPassSize
-    element._setLocationFromLayout deinfinitize finalLocation unless skipLocation
+    element._setElementToParentMatrixFromLayout deinfinitize finalLocation unless skipLocation
 
     secondPassSize
 

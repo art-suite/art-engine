@@ -276,7 +276,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_bitmapFactory = @canvasBitmap = new Canvas.Bitmap @_canvas
     @queueDrawEpoch()
 
-  _setLocationFromLayoutXY: (x, y) ->
+  _setElementToParentMatrixFromLayoutXY: (x, y) ->
     return if @_locationLayoutDisabled
 
     e2p = @_getElementToParentMatrixForXY true, x, y, 1
