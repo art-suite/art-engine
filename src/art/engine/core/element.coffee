@@ -542,8 +542,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
     absoluteAxis:         (pending) -> state = @getState(pending); state._currentSize.mul state._axis
 
     sizeForChildren: (pending) ->
-      state = @getState pending
-      state._currentPadding.subtractedFromSize state._currentSize
+      {_currentPadding, _currentSize} = @getState pending
+      _currentPadding.subtractedFromSize _currentSize
 
     parentSize: -> throw new Error "parentSize depricated"
 
