@@ -1233,7 +1233,9 @@ module.exports = createWithPostCreate class Element extends ElementBase
   _setElementToParentMatrixFromLayoutXY: (x, y, parentSize) ->
     return if @_locationLayoutDisabled
 
-    # throw new Error unless isPoint parentSize
+    # This test should be true, but it is only an internal error if it isn't,
+    # so for performance, I'm omitting it unless we need it for debugging.
+    # throw new Error "need parentSize here!" unless isPoint parentSize
     e2p = @_getElementToParentMatrixForXY true, x, y, null, parentSize
 
     if !@_pendingState._elementToParentMatrix.eq e2p
