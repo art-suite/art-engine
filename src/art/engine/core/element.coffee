@@ -1192,11 +1192,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_elementChanged()
     p
 
-  _setElementToParentMatrixFromLayout: (l) ->
-    @_setElementToParentMatrixFromLayoutXY l.x, l.y
-
-
-  _getElementToParentMatrixForXY: (pending, x, y, withScale) ->
+  _getElementToParentMatrixForXY: (pending, x, y, withScale, withParentSize) ->
     {
       _currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix
     } = state = @getState pending
@@ -1204,8 +1200,12 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     if isFunction _scale
       {_parent} = state
-      parentCurrentSize = _parent.getState(pending)._currentSize
-      _scale = _scale parentCurrentSize, _currentSize
+      parentSize = withParentSize || _parent.getState(pending)._currentSize
+      # console.error "getElementToParentMatrixForXY - scale function"
+      # log _getElementToParentMatrixForXY:
+      #   parentSize: parentSize
+      #   currentSize: _currentSize
+      _scale = _scale parentSize, _currentSize
 
     _scale = point _scale
 
@@ -1227,10 +1227,14 @@ module.exports = createWithPostCreate class Element extends ElementBase
       .rotate _angle, true
       .translateXY x, y, true
 
-  _setElementToParentMatrixFromLayoutXY: (x, y) ->
+  _setElementToParentMatrixFromLayout: (l, parentSize) ->
+    @_setElementToParentMatrixFromLayoutXY l.x, l.y, parentSize
+
+  _setElementToParentMatrixFromLayoutXY: (x, y, parentSize) ->
     return if @_locationLayoutDisabled
 
-    e2p = @_getElementToParentMatrixForXY true, x, y
+    # throw new Error unless isPoint parentSize
+    e2p = @_getElementToParentMatrixForXY true, x, y, null, parentSize
 
     if !@_pendingState._elementToParentMatrix.eq e2p
       @_pendingState._elementToParentMatrix = e2p
