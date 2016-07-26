@@ -11,10 +11,12 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 suite "Art.Engine.Core.layout.children relative", ->
   drawAndTestElement "middlemen pass through parent's size", ->
     element: gp = Element
+      key: "gp"
       size: 120
-      p = Element size: cs: 1, Element size: cs: 1, Element
+      p = Element key: "p", size: cs: 1, Element size: cs: 1, Element
         size: cs: 1
         c = Element
+          key: "c"
           size: cs: 1, max: ww: 1
           childrenLayout: "flow"
           RectangleElement size: 50, color:"red"
@@ -39,7 +41,7 @@ suite "Art.Engine.Core.layout.children relative", ->
         assert.eq p.currentSize, point 60, 165
 
 
-  drawAndTestElement "regression", ->
+  drawAndTestElement "regression 1", ->
     textMargin = 10
     dialogText = fontFamily: "Arial", margin: textMargin, fontSize: 16
 
@@ -65,3 +67,33 @@ suite "Art.Engine.Core.layout.children relative", ->
 
     test: ->
       assert.eq e.currentSize, point 40, 30
+
+
+  ###
+  I was trying to find a scenario where a change would not propgate the parent's
+  constraining size down since we aren't EXPLICITLY parent-relative for most elements
+  here, even though element C does need access to the size of GP.
+
+  I couldn't get it to happen by chaning GPs size to exact matching numbers.
+  Nor could I get
+  ###
+  drawAndTestElement "middlemen layout propagation", ->
+    element: gp = Element
+      key: "gp"
+      size: 120
+      p = Element key: "p", size: cs: 1, Element size: cs: 1, Element
+        size: cs: 1
+        c = Element
+          key: "c"
+          size: cs: 1, max: ww: 1
+          childrenLayout: "flow"
+          rect1 = RectangleElement size: 45, color:"red"
+          rect2 = RectangleElement size: 45, color:"green"
+          rect3 = RectangleElement size: 60, color:"blue"
+
+    test: ->
+      assert.eq p.currentSize, point 90, 105
+
+      rect2.size = 40
+      gp.onNextReady ->
+        assert.eq p.currentSize, point 85, 105

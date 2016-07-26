@@ -362,6 +362,26 @@ module.exports = class StateEpochLayout extends BaseObject
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
 
+
+    ###
+    TODO - increase effieciency
+    Currently, we will always recurse all the way down any children
+    which are children-size-relative regardless on if they (or one of their
+    decendents) is actually parent-relative.
+
+    Sometimes this is right (see the children relative middlemen tests).
+    Often, though, the children really are 100% child-size-relative and 100% ignore
+    parent's size.
+
+    In that case, we shouldn't re-lay them out.
+
+    Is there any way to be smart about that?
+
+    Obviously we can let the app dev specify an element is 100% child-size relative in some way.
+      Element ignoreParentSize: true
+
+    But that's ugly!
+    ###
     return element.getPendingCurrentSize() unless (
       element.__layoutPropertiesChanged ||
       !shallowEq element._lastParentSize, parentSize
