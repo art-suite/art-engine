@@ -3,5 +3,4 @@
 
 module.exports = require './namespace'
 .addModules
-  LinearLayout: require './linear_layout'
-  PointLayout:  require './point_layout' 
+  PointLayout: require './point_layout'
