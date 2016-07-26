@@ -215,10 +215,12 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # Element Properties
   ##############################
 
+  defaultSizeLayout = new PointLayout ps: 1
+  defaultLocationLayout = new PointLayout 0
   @layoutProperty
     size:
       default: ps:1
-      preprocess: (v, oldValue) -> if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
+      preprocess: (v) -> if v instanceof PointLayoutBase then v else new PointLayout v, defaultSizeLayout
 
     ###
     TODO: Update StateEpochLayout to use: childrenSizePreprocessor
@@ -248,7 +250,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     location:
       default: 0
-      preprocess: (v, oldValue) -> if v instanceof PointLayoutBase then v else new PointLayout v, oldValue
+      preprocess: (v) -> if v instanceof PointLayoutBase then v else new PointLayout v, defaultLocationLayout
       postSetter: -> @_locationLayoutDisabled = false
 
     scale:
@@ -500,7 +502,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     opacity:                default: 1,                     validate:   (v) -> typeof v is "number"
     compositeMode:          default: "normal",              validate:   (v) -> typeof v is "string"
     pointerEventPriority:   default: 0,                     preprocess: (v) -> v | 0
-    userProps:         default: null,                  preprocess: (v, oldValue) -> merge oldValue, v
+    userProps:              default: null,                  validate:   (v) -> !v? || isPlainObject v
     childAddedAnimation:    default: null,                  validate:   (v) -> !v? || isPlainObject v
     childRemovedAnimation:  default: null,                  validate:   (v) -> !v? || isPlainObject v
     addedAnimation:         default: null,                  validate:   (v) -> !v? || isPlainObject v

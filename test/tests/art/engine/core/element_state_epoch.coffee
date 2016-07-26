@@ -188,11 +188,11 @@ define [
         assert.eq el.pendingSize._hasXLayout, true
         assert.eq el.pendingSize._hasYLayout, true
 
-      stateEpochTest "setting layout with incomplete LinearLayout gets merged", ->
+      stateEpochTest "changing size completely replaces old size", ->
         el = new Element size: 123
         el.size = y:456
         ->
-          assert.eq el.currentSize, point 123, 456
+          assert.eq el.currentSize, point 100, 456
 
       stateEpochTest "setting layout with null clears the layout", ->
         el = new Element size: 123
