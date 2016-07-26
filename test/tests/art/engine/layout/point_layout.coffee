@@ -136,13 +136,16 @@ suite "Art.Engine.Layout.PointLayout.Dependencies", ->
     assert.eq pl.childrenRelative, true
 
   test "new PointLayout x: (ps) -> ps.x - parent width relative", ->
+    log "!!!!!!!!!!!!"
     pl = new PointLayout x: (ps) -> ps.x
-    assert.eq pl.parentRelative, true
-    assert.eq pl.childrenRelative, false
-    assert.eq pl.xRelativeToParentW, true
-    assert.eq pl.xRelativeToParentH, false # this one
-    assert.eq pl.yRelativeToParentW, false
-    assert.eq pl.yRelativeToParentH, false
+    log pointLayout: pl, layoutX:pl.layoutX(point 100), layoutXLength: pl.layoutX.length, layoutX: pl.layoutX.toString()
+
+    assert.eq pl.parentRelative,      true,  "parentRelative"
+    assert.eq pl.childrenRelative,    false, "childrenRelative"
+    assert.eq pl.xRelativeToParentW,  true,  "xRelativeToParentW"
+    assert.eq pl.xRelativeToParentH,  false, "xRelativeToParentH" # this one
+    assert.eq pl.yRelativeToParentW,  false, "yRelativeToParentW"
+    assert.eq pl.yRelativeToParentH,  false, "yRelativeToParentH"
 
   test "regression foo", ->
     pl1 = new PointLayout w:220, hch:1
@@ -154,17 +157,17 @@ suite "Art.Engine.Layout.PointLayout.Dependencies", ->
     pl = new PointLayout
       hch: 1
       w: (ps, cs) -> min ps.w, cs.w
-    assert.eq pl.parentRelative, true
-    assert.eq pl.childrenRelative, true
-    assert.eq pl.xRelativeToParentW, true
-    assert.eq pl.xRelativeToParentH, false
-    assert.eq pl.yRelativeToParentW, false
-    assert.eq pl.yRelativeToParentH, false
+    assert.eq pl.parentRelative,        true,   "parentRelative"
+    assert.eq pl.childrenRelative,      true,   "childrenRelative"
+    assert.eq pl.xRelativeToParentW,    true,   "xRelativeToParentW"
+    assert.eq pl.xRelativeToParentH,    false,  "xRelativeToParentH"
+    assert.eq pl.yRelativeToParentW,    false,  "yRelativeToParentW"
+    assert.eq pl.yRelativeToParentH,    false,  "yRelativeToParentH"
 
-    assert.eq pl.xRelativeToChildrenW, true
-    assert.eq pl.xRelativeToChildrenH, false
-    assert.eq pl.yRelativeToChildrenW, false
-    assert.eq pl.yRelativeToChildrenH, true
+    assert.eq pl.xRelativeToChildrenW,  true,   "xRelativeToChildrenW"
+    assert.eq pl.xRelativeToChildrenH,  false,  "xRelativeToChildrenH"
+    assert.eq pl.yRelativeToChildrenW,  false,  "yRelativeToChildrenW"
+    assert.eq pl.yRelativeToChildrenH,  true,   "yRelativeToChildrenH"
 
   test "regressionB with max", ->
     pl = new PointLayout
@@ -241,3 +244,22 @@ suite "Art.Engine.Layout.PointLayout.failed-detection warnings", ->
 
   test "should warn y-funtion not detected to be children relative", ->
     new PointLayout y: (ps, cs) -> 0
+
+suite "Art.Engine.Layout.PointLayout.defaults", ->
+  test "relativity should pass through for defaults", ->
+    pl = new PointLayout {}, def = new PointLayout hh: 1, wcw: 1
+    for k in [
+        "xRelativeToParentW"
+        "xRelativeToParentH"
+        "xRelativeToChildrenW"
+        "xRelativeToChildrenH"
+        "yRelativeToParentW"
+        "yRelativeToParentH"
+        "yRelativeToChildrenW"
+        "yRelativeToChildrenH"
+      ]
+      assert.eq def[k], pl[k], k
+
+  test "regression", ->
+    l = new PointLayout (w:30, h: (ps) -> max 60, ps.y) #, new PointLayout ps: 1
+    log l.layout point(100)

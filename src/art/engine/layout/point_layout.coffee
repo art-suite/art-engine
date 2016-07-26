@@ -11,19 +11,38 @@ define [
   # a singleton to help make initializing from component-options fast
   class Components
 
-    @setupPointLayout: (linearLayout, options, previousLayout) ->
+    returnZero = -> 0
+
+    @setupPointLayout: (newPointLayout, options, previousLayout) ->
       maxLayout = if options.max then new PointLayout options.max
       @_reset()
       for k, v of options
         applyFunction = applyComponentsFunctions[k]
         throw new Error "invalid PointLayout component: #{inspect k} in #{inspect options}" unless applyFunction
-        applyFunction v, linearLayout
+        applyFunction v, newPointLayout
 
-      linearLayout.layoutX = if linearLayout._hasXLayout then @_buildXLayoutFromComponents(maxLayout) else if previousLayout?._hasXLayout then linearLayout._hasXLayout = true; previousLayout.layoutX else -> 0
-      linearLayout.layoutY = if linearLayout._hasYLayout then @_buildYLayoutFromComponents(maxLayout) else if previousLayout?._hasYLayout then linearLayout._hasYLayout = true; previousLayout.layoutY else -> 0
+      newPointLayout.layoutX = if newPointLayout._hasXLayout
+        layoutX = @_buildXLayoutFromComponents(maxLayout)
+        newPointLayout._detectXRelativity layoutX if @needToDetectXRelativity
+        layoutX
+      else if previousLayout?._hasXLayout
+        newPointLayout._hasXLayout = true
+        newPointLayout._copyXRelativity previousLayout
+        previousLayout.layoutX
+      else
+        returnZero
 
-      linearLayout._detectXRelativity() if @needToDetectXRelativity
-      linearLayout._detectYRelativity() if @needToDetectYRelativity
+      newPointLayout.layoutY = if newPointLayout._hasYLayout
+        layoutY = @_buildYLayoutFromComponents maxLayout
+        newPointLayout._detectYRelativity layoutY if @needToDetectYRelativity
+        layoutY
+      else if previousLayout?._hasYLayout
+        newPointLayout._hasYLayout = true
+        newPointLayout._copyYRelativity previousLayout
+        previousLayout.layoutY
+      else
+        returnZero
+
 
     ###################
     # private

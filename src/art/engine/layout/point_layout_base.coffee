@@ -40,6 +40,18 @@ define [
 
     inspect: -> @toString()
 
+    _copyXRelativity: (sourceLayout) ->
+      @_xRelativeToParentW   = sourceLayout._xRelativeToParentW
+      @_xRelativeToParentH   = sourceLayout._xRelativeToParentH
+      @_xRelativeToChildrenW = sourceLayout._xRelativeToChildrenW
+      @_xRelativeToChildrenH = sourceLayout._xRelativeToChildrenH
+
+    _copyYRelativity: (sourceLayout) ->
+      @_yRelativeToParentW   = sourceLayout._yRelativeToParentW
+      @_yRelativeToParentH   = sourceLayout._yRelativeToParentH
+      @_yRelativeToChildrenW = sourceLayout._yRelativeToChildrenW
+      @_yRelativeToChildrenH = sourceLayout._yRelativeToChildrenH
+
     @getter
       inspectedObjects: -> inspectedObjectLiteral @toString()
 
@@ -101,53 +113,56 @@ define [
     @isChildrenWRelative: isChildrenWRelative = (f, baseline, baselinePoint, testPoint) -> f(baselinePoint, testPoint) != baseline
     @isChildrenHRelative: isChildrenHRelative = (f, baseline, baselinePoint, testPoint) -> f(baselinePoint, testPoint) != baseline
 
-    _detectXRelativity: ->
+    _detectXRelativity: (layoutX = @layoutX)->
       @_xRelativeToParentW   =
       @_xRelativeToParentH   =
       @_xRelativeToChildrenW =
       @_xRelativeToChildrenH = false
 
-      layoutLength   = @layoutX.length
-      layoutBaseline = @layoutX point0, point0
-      nearInfinityBaseline = @layoutX nearInfinityPoint, nearInfinityPoint
+      layoutLength   = layoutX.length
+      layoutBaseline = layoutX point0, point0
+      console.error "_detectXRelativity PATH PLEASE"
+      nearInfinityBaseline = layoutX nearInfinityPoint, nearInfinityPoint
 
       if layoutLength > 0
-        @_xRelativeToParentW   = isParentWRelative(@layoutX, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
-        @_xRelativeToParentH   = isParentHRelative(@layoutX, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+        @_xRelativeToParentW   = isParentWRelative(layoutX, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
+        @_xRelativeToParentH   = isParentHRelative(layoutX, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+
         if layoutLength == 1 && !@_xRelativeToParentW && !@_xRelativeToParentH
           console.warn """
             #{@}: horizontal/x/w layout function has 1 input, which suggests it should be parent-relative, but it doesn't appear to be.
 
             Resolution: If the input is unused, remove it. Otherwise, alter your function to respond differently for parent-sizes of 0 and children-sizes of near-infinity.
 
-            layoutX: #{@layoutX}
+            layoutX: #{layoutX}
             """
 
       if layoutLength > 1
-        @_xRelativeToChildrenW = isChildrenWRelative(@layoutX, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
-        @_xRelativeToChildrenH = isChildrenHRelative(@layoutX, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(@layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+        @_xRelativeToChildrenW = isChildrenWRelative(layoutX, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
+        @_xRelativeToChildrenH = isChildrenHRelative(layoutX, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(layoutX, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+        log _detectXRelativity: @, _xRelativeToChildrenW:@_xRelativeToChildrenW, _xRelativeToChildrenH:@_xRelativeToChildrenH
         unless @_xRelativeToChildrenW || @_xRelativeToChildrenH
           console.warn """
             #{@}: horizontal/x/w layout function has 2 inputs, which suggests it should be child-relative, but it doesn't appear to be.
 
             Resolution: If the second input is unused, remove it. Otherwise, alter your function to respond differently for children-sizes of 0 vs near-infinity when parent-size is 0.
 
-            layoutX: #{@layoutX}
+            layoutX: #{layoutX}
             """
 
-    _detectYRelativity: ->
+    _detectYRelativity: (layoutY = @layoutY)->
       @_yRelativeToParentW   =
       @_yRelativeToParentH   =
       @_yRelativeToChildrenW =
       @_yRelativeToChildrenH = false
 
-      layoutLength   = @layoutY.length
-      layoutBaseline = @layoutY point0, point0
-      nearInfinityBaseline = @layoutY nearInfinityPoint, nearInfinityPoint
+      layoutLength   = layoutY.length
+      layoutBaseline = layoutY point0, point0
+      nearInfinityBaseline = layoutY nearInfinityPoint, nearInfinityPoint
 
       if layoutLength > 0
-        @_yRelativeToParentW   = isParentWRelative(@layoutY, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(@layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
-        @_yRelativeToParentH   = isParentHRelative(@layoutY, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(@layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+        @_yRelativeToParentW   = isParentWRelative(layoutY, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
+        @_yRelativeToParentH   = isParentHRelative(layoutY, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
         if layoutLength == 1 && !@_yRelativeToParentW && !@_yRelativeToParentH
           console.warn "#{@}: vertical/y/h layout function has 1 input, which suggests
             it should be parent-relative, but it doesn't appear to be.
@@ -156,8 +171,8 @@ define [
             for parent-sizes of 0 and children-sizes of near-infinity."
 
       if layoutLength > 1
-        @_yRelativeToChildrenW = isChildrenWRelative(@layoutY, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(@layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
-        @_yRelativeToChildrenH = isChildrenHRelative(@layoutY, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(@layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
+        @_yRelativeToChildrenW = isChildrenWRelative(layoutY, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
+        @_yRelativeToChildrenH = isChildrenHRelative(layoutY, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
         unless @_yRelativeToChildrenW || @_yRelativeToChildrenH
           console.warn "#{@}: vertical/y/h layout function has 2 inputs, which suggests
             it should be child-relative, but it doesn't appear to be.
