@@ -3,8 +3,6 @@
 
 module.exports = require './namespace'
 .addModules
-  InterpolatedLayout:      require './interpolated_layout'      
   InterpolatedPointLayout: require './interpolated_point_layout'
-  LayoutBase:              require './layout_base'              
   PointLayoutBase:         require './point_layout_base'        
   PointLayout:             require './point_layout'             

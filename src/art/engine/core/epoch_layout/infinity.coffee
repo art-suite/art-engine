@@ -13,9 +13,9 @@ Atomic = require 'art-atomic'
 # 2014-12-20 SBD
 # On further reflection, these numbers are going to be floating-point anyway, so lets make them big.
 
-module.exports = class LayoutBase extends BaseObject
-  @nearInfinity:        nearInfinity
-  @nearInfinityResult:  nearInfinityResult
-  @nearInfinitePoint:   nearInfinitePoint = point nearInfinity
-  @nearInfiniteSize:    nearInfinitePoint
-  @isInfiniteResult:    (x) -> abs(x) >= nearInfinityResult
+module.exports =
+  nearInfinity:        nearInfinity
+  nearInfinityResult:  nearInfinityResult
+  nearInfinitePoint:   nearInfinitePoint = point nearInfinity
+  nearInfiniteSize:    nearInfinitePoint
+  isInfiniteResult:    (x) -> abs(x) >= nearInfinityResult

@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-LayoutBase = require '../../layout/layout_base'
+Infinity = require './infinity'
 
 {point, Point, perimeter} = Atomic
 {BaseObject, isFunction, abs} = Foundation
-{nearInfiniteSize, nearInfinity, nearInfinityResult, isInfiniteResult} = LayoutBase
+{nearInfiniteSize, nearInfinity, nearInfinityResult, isInfiniteResult} = Infinity
 
 module.exports = class Basics extends BaseObject
   @nearInfiniteSize: nearInfiniteSize
