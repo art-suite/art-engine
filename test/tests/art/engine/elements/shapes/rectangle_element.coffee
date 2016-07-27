@@ -3,6 +3,8 @@ Atomic = require 'art-atomic'
 Engine = require 'art-engine'
 Helper = require '../helper'
 
+{drawAndTestElement} = require '../../test_helper'
+
 {insepct, log} = Foundation
 {point, Matrix, matrix} = Atomic
 {RectangleElement, FillElement} = Engine
@@ -123,3 +125,44 @@ suite "Art.Engine.Elements.Shapes.RectangleElement.gradient colors", ->
       to: 1/4
       gradientRadius: [.5, 2]
       size:point 80, 60
+
+suite "Art.Engine.Elements.Shapes.RectangleElement.drawArea", ->
+  drawAndTestElement "basic", ->
+    element: new RectangleElement
+      color: "#aaa"
+      # shadow: color: "black", blur: 10, offsetY: 10
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [0, 0, 100, 100]
+
+  drawAndTestElement "offset no blur", ->
+    element: new RectangleElement
+      color: "#aaa"
+      shadow:
+        color: "black"
+        blur: 0
+        offset: x: 5, y: 7
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [0, 0, 105, 107]
+
+  drawAndTestElement "blur", ->
+    element: new RectangleElement
+      color: "#aaa"
+      shadow:
+        color: "black"
+        blur: 10
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-10, -10, 120, 120]
+
+  drawAndTestElement "offset and blur", ->
+    element: new RectangleElement
+      color: "#aaa"
+      shadow:
+        color: "black"
+        blur: 10
+        offset: x: 5, y: 7
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-10 + 5, -10 + 7, 120, 120]

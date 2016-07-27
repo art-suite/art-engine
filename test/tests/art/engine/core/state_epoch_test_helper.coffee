@@ -6,6 +6,8 @@ Atomic = require 'art-atomic'
 {stateEpoch} = StateEpoch
 {Matrix} = Atomic
 
+TestHelper = require '../test_helper'
+
 module.exports = class StateEpochTestHelper
 
   # setup is a funciton which is executed immediately
@@ -38,17 +40,7 @@ module.exports = class StateEpochTestHelper
       throw new Error "stateEpochTest got array (depricated)" if isArray test
       runTest test
 
-  @drawAndTestElement: (name, setup) ->
-    test name, ->
-      options = setup()
-      options.element.toBitmap area:"logicalArea", elementToTargetMatrix: Matrix.scale(2)
-      .then ({bitmap}) ->
-        log bitmap, "test: #{name}"
-        options.test options.element
-
-  factories = createObjectTreeFactories "Element RectangleElement BitmapElement TextElement",
-    (nodeName, props, children) -> newElement nodeName, props, children
-  for k, v of factories
+  for k, v of TestHelper
     @[k] = v
 
 

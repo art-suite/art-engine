@@ -2,6 +2,8 @@
 # file: tests/art/engine/index.coffee
 
 module.exports = require './namespace'
+.addModules
+  TestHelper: require './test_helper'
 require './animation'
 require './core'
 require './elements'
