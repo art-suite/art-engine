@@ -42,8 +42,8 @@ module.exports = createWithPostCreate class FillableBase extends Base
       if offset = shadow.offset
         {x, y} = offset.layout _currentSize
         merge shadow,
-          offsetX: x - _currentSize.x / 2
-          offsetY: y - _currentSize.y / 2
+          offsetX: x
+          offsetY: y
       else
         merge
           offsetX: 0
