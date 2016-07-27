@@ -1127,7 +1127,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     options = merge areaOptions, options
     {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
 
-    log toBitmapSync: options
+    # log toBitmapSync: options
 
     pixelsPerPoint ||= 1
     mode ||= "fit"
