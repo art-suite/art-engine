@@ -7,7 +7,7 @@ Helper = require '../helper'
 
 {insepct, log} = Foundation
 {point, Matrix, matrix} = Atomic
-{RectangleElement, FillElement} = Engine
+{RectangleElement, FillElement, OutlineElement} = Engine
 
 {drawTest, drawTest2} = Helper
 
@@ -166,3 +166,68 @@ suite "Art.Engine.Elements.Shapes.RectangleElement.drawArea", ->
 
     test: (root) ->
       assert.eq root.drawArea.toArray(), [-10 + 5, -10 + 7, 120, 120]
+
+  drawAndTestElement "FillElement shadow offset and blur", ->
+    element: new RectangleElement
+      color: "#aaa"
+      new FillElement
+        shadow:
+          color: "black"
+          blur: 10
+          offset: x: 5, y: 7
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-10 + 5, -10 + 7, 120, 120]
+
+
+suite "Art.Engine.Elements.Shapes.RectangleElement.drawArea OutlineElement", ->
+  drawAndTestElement "OutlineElement basic", ->
+    element: new RectangleElement
+      color: "#aaa"
+      new OutlineElement
+        lineWidth: 10
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-50, -50, 200, 200]
+
+  drawAndTestElement "OutlineElement lineJoin: bevel", ->
+    element: new RectangleElement
+      color: "#aaa"
+      new OutlineElement
+        lineWidth: 10
+        lineJoin: "bevel"
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-5, -5, 110, 110]
+
+  drawAndTestElement "OutlineElement miterLimit: 3", ->
+    element: new RectangleElement
+      color: "#aaa"
+      new OutlineElement
+        lineWidth: 10
+        miterLimit: 3
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [-15, -15, 130, 130]
+
+
+  drawAndTestElement "OutlineElement shadow offset and blur", ->
+    element: new RectangleElement
+      color: "#aaa"
+      new OutlineElement
+        lineWidth: 10
+        color: "orange"
+        lineJoin: "bevel"
+        shadow:
+          color: "red"
+          blur: 10
+          offset: x: 5, y: 7
+
+    test: (root) ->
+      assert.eq root.drawArea.toArray(), [
+        # outline, blur, offset
+        -5         - 10  + 5
+        -5         - 10  + 7
+        110        + 20
+        110        + 20
+      ]

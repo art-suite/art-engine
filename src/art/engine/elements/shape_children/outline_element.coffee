@@ -25,8 +25,10 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
       {_lineWidth, _lineJoin, _miterLimit} = @getState pending
       _lineWidth * if _lineJoin == "miter" then _miterLimit / 2 else .5
 
-    baseDrawArea: (pending) ->
-      @getState(pending)._parent.getBaseDrawArea(pending).grow @getDrawAreaPadding pending
+  getPreFilteredBaseDrawArea: (pending) ->
+    s = super
+    log s:s, growAmount: @getDrawAreaPadding pending
+    s.grow @getDrawAreaPadding pending
 
   @getter
     cacheable: -> @getHasChildren()

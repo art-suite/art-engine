@@ -659,11 +659,14 @@ module.exports = createWithPostCreate class Element extends ElementBase
         stateEpoch.onNextReady =>
           new Animator @, options if options
 
-    baseDrawArea: (pending) ->
+    preFilteredBaseDrawArea: (pending) ->
       {_currentPadding, _currentSize} = @getState pending
       {x, y} = _currentSize
       {w, h} = _currentPadding
       rect 0, 0, x - w, y - h
+
+    baseDrawArea: (pending) ->
+      @getPreFilteredBaseDrawArea pending
 
   @getter
     allChildrenAreUpLayout: -> false
@@ -1123,6 +1126,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     options = merge areaOptions, options
     {drawArea, elementToDrawAreaMatrix, size, mode, bitmapFactory, pixelsPerPoint, backgroundColor} = options
+
+    log toBitmapSync: options
 
     pixelsPerPoint ||= 1
     mode ||= "fit"

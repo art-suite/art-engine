@@ -13,8 +13,8 @@ FillableBase = require '../fillable_base'
 module.exports = createWithPostCreate class FillElement extends FillableBase
 
   @virtualProperty
-    baseDrawArea: (pending) ->
-      @getParent().getBaseDrawArea pending
+    preFilteredBaseDrawArea: (pending) ->
+      @getParent().getPreFilteredBaseDrawArea pending
 
   ###
   NOTE:
