@@ -171,6 +171,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     documentToElementMatrix: -> @getCanvasElement()._documentToElementMatrix.mul @getAbsToElementMatrix()
     parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
     elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
+    drawArea: -> @elementSpaceDrawArea
 
     absOpacity: ->
       opacity = if @getVisible() then @getOpacity() else 0
@@ -1084,6 +1085,10 @@ module.exports = createWithPostCreate class Element extends ElementBase
       "targetDrawArea"    to be used with custom elementToDrawAreaMatrix - sets drawArea to include @elementSpaceDrawArea in the specificed target-space
     size: [drawArea.size]     # Bitmap size. Will be multiplied by pixelsPerPoint for the final size.
     mode: ["fit"], "zoom"     # determines how the requested drawArea is scaled to fit the bitmap size
+      "fit" - scaled so requested area is <= size
+        final size adjusted to have the same aspect ratio as the requested area
+      "zoom" - scaled so reqeusted area is >= size
+        size is not altered
     pixelsPerPoint: [1]       # Ex: set to "2" for "retina" images [default = 1]
     elementToDrawAreaMatrix:  # the draw matrix [see area's defaults]
     drawArea: [see area]      # the area to capture in drawArea-space (overrides area's drawArea)
@@ -1469,14 +1474,15 @@ module.exports = createWithPostCreate class Element extends ElementBase
     matchFound = if usedFunction = isFunction pattern
       !!(functionResult = pattern @)
     else
-      "#{@pathStringWithNames}:#{@objectId}".match pattern
+      matchAgainst = "#{@pathStringWithNames}#{if @key then ":" + @key else ""}:#{@objectId}"
+      matchAgainst.match pattern
 
     if matchFound
       if verbose
         @log if usedFunction
           found: @inspectedNameWithoutIds, functionResult: functionResult
         else
-          found: @inspectedNameWithoutIds, pattern: pattern, matched: @pathStringWithNames
+          found: @inspectedNameWithoutIds, pattern: pattern, matched: matchAgainst
       matches.push @
 
     if !matchFound || findAll
