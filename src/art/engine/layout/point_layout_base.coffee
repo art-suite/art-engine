@@ -119,7 +119,6 @@ module.exports = class PointLayoutBase extends BaseObject
 
     layoutLength   = layoutX.length
     layoutBaseline = layoutX point0, point0
-    console.error "_detectXRelativity PATH PLEASE"
     nearInfinityBaseline = layoutX nearInfinityPoint, nearInfinityPoint
 
     if layoutLength > 0
