@@ -495,8 +495,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @keyUpEvent keyboardEvent
 
   _enableHtmlFocusOnCanvas: ->
-    @_canvas.tabIndex = "-1" unless isMobileBrowser()
-    @_canvas.contentEditable = true
+    unless isMobileBrowser()
+      @_canvas.tabIndex = "-1"
+      @_canvas.contentEditable = true
 
   _attachDomEventListeners: ->
     return if @_eventListenersAttached
