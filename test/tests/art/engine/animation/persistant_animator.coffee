@@ -14,6 +14,7 @@ suite "Art.Engine.Animation.PersistantAnimator.legal values", ->
   test "animators: opacity: ->", ->
     new Promise (resolve) ->
       e = new Element animators: opacity: (animator) ->
+        log arguments: arguments
         e.onNextReady ->
           assert.eq e.opacity, 0
           resolve()
@@ -266,20 +267,65 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
       ._register().onNextReady -> e.location = 10
 
 suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
-  test "basic animation test", ->
+
+  test "fromVoid", ->
     new Promise (resolve) ->
       e = new Element
-        animators: opacity: on:
-          start: -> assert.eq e.opacity, 0, "0 at start"
-          done: ->
-            assert.eq e.opacity, 1, "1 at done"
-            resolve()
-          update: ->
-            assert.ok e.opacity > 0
-            assert.ok e.opacity < 1
+        animators: opacity:
+          fromVoid: 0
+          on:
+            start: ->
+              assert.eq e.opacity, 0, "0 at start"
+            done: ->
+              assert.eq e.opacity, 1, "1 at done"
+              resolve()
+            update: ->
+              assert.ok e.opacity > 0
+              assert.ok e.opacity < 1
 
-        voidProps: opacity: 0
       ._register()
+
+  test "fromVoid not triggered when added with parent", ->
+    new Promise (resolve) ->
+      p = new Element {},
+        e = new Element
+          animators: opacity:
+            fromVoid: 0
+            on:
+              start: ->
+                reject "should not trigger animation"
+
+      ._register()
+      .onNextReady resolve
+
+  test "toVoid", ->
+    animationDone = false
+    new Promise (resolve) ->
+      new Element
+        key: parentName = "myParent"
+        e = new Element
+          key: "child with toVoid"
+          on: parentChanged: ->
+            unless e.parent
+              assert.eq true, animationDone
+              resolve()
+          animators: opacity:
+            toVoid: 0
+            on:
+              start: ->
+                assert.eq e.opacity, 1, "1 at start"
+                assert.eq e.parent.key, parentName
+              done: ->
+                animationDone = true
+                assert.eq e.opacity, 0, "0 at done"
+              update: ->
+                assert.eq e.parent.key, parentName
+                assert.ok e.opacity > 0
+                assert.ok e.opacity < 1
+
+      ._register()
+      .onNextReady (p) =>
+        p.children = []
 
 suite "Art.Engine.Animation.PersistantAnimator.continuous animation", ->
   test "start immediately", ->

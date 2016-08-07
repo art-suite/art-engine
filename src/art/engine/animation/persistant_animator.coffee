@@ -249,6 +249,7 @@ EasingFunctions = require './easing_functions'
   log, BaseObject
   isFunction, isString
   capitalize
+  inspectedObjectLiteral
 } = Foundation
 {EventedObject} = Events
 
@@ -280,7 +281,7 @@ module.exports = class PersistantAnimator extends BaseObject
     else
       startValue + (toValue - startValue) * pos
 
-  @getter "options prop element startValue currentValue toValue continuous"
+  @getter "options prop element startValue currentValue toValue continuous voidValue"
   @getter
     active: ->
       @_active || (@_continuous && (!@_element || @_element.isRegistered))
@@ -295,14 +296,14 @@ module.exports = class PersistantAnimator extends BaseObject
   @getter
     inspectedObjects: ->
       [
-        "PersistantAnimator"
+        inspectedObjectLiteral "PersistantAnimator"
         prop: @prop
-        element: @element.uniqueId
+        element: @element?.uniqueId
       ]
   ###
   IN:
     options:
-      animate: (startValue, currentValue, toValue, secondsSinceStart, animator) -> nextValue
+      animate: (animator) -> nextValue
         IN:
           startValue: the value when the aniation started
           currentValue: the element's current value
@@ -324,8 +325,17 @@ module.exports = class PersistantAnimator extends BaseObject
         STATE:
           Use animator.state object to store any persistant state the animation function needs.
           animator.state is reserved for exclusive use by the animate function.
+      continuous: t/f
+      on: handlers
+
+      TODO:
+      # added and removed animation values
+      voidValue:  # both
+      fromVoid:   # added animation
+      toVoid:     # removed animation
   ###
   constructor: (prop, options)->
+    super
     @_prop = prop
     @_options = options
     @_active = false
@@ -337,10 +347,19 @@ module.exports = class PersistantAnimator extends BaseObject
     @_currentValue = null
     @_toValue = null
 
-    @_animate = options.animate
     @_element = null
-    @_continuous = !!options.continuous
+    @_animate = options.animate
+    @_continuous = options.continuous
+    @_voidValue = options.voidValue
+    @_toVoid = options.toVoid
+    @_fromVoid = options.fromVoid
     @on options.on if options?.on
+
+  @getter
+    fromVoid: -> if @_voidValue? then @_voidValue else @_fromVoid
+    toVoid:   -> if @_voidValue? then @_voidValue else @_toVoid
+    hasFromVoidAnimation: -> @fromVoid?
+    hasToVoidAnimation:   -> @toVoid?
 
   @getter
     animationSeconds: -> @_currentSecond - @_startSecond
@@ -354,19 +373,30 @@ module.exports = class PersistantAnimator extends BaseObject
     ###
     stop: -> @_stop ||= => @_active = false; @_toValue
 
+  # OUT: promise.then -> animation done
+  startToVoidAnimation: (@_element)->
+    return Promise.reject() unless @hasToVoidAnimation
+
+    new Promise (resolve, reject) =>
+      @_element[@_prop] = @toVoid
+      @on done: resolve
+
   animate: ->
     if @_animate
       @_animate @
     else
       @stop()
 
+  _activate: ->
+    return if @_active
+    @_lastSecond = @_startSecond = @_currentSecond
+    @_startValue = @_currentValue
+    @queueEvent "start"
+    @_active = true
+
   animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
 
-    if !@_active
-      @_lastSecond = @_startSecond = @_currentSecond
-      @_startValue = @_currentValue
-      @queueEvent "start"
-      @_active = true
+    @_activate()
 
     animationSeconds = @getAnimationSeconds()
 

@@ -500,10 +500,6 @@ module.exports = class EpochedObject extends BaseObject
 
         processedAnimators
 
-    voidProps:
-      default: null
-      validate: (v) -> !v || isPlainObject v
-
   ######################
   # CONSTRUCTOR
   ######################
@@ -573,16 +569,6 @@ module.exports = class EpochedObject extends BaseObject
     @_initPropertiesAuto options
 
     @setProperties options
-
-    if voidProps = options.voidProps
-      @setProperties voidProps
-      @onNextEpoch =>
-        props = {}
-        for k, _ of voidProps
-          v = options[k]
-          v = metaProperties[k].defaultValue if v == undefined
-          props[k] = v
-        @setProperties props
 
     @_elementChanged true, true, true
     null
@@ -666,15 +652,30 @@ module.exports = class EpochedObject extends BaseObject
   _activateContinuousPersistantAnimators: ->
     nextTick => @_elementChanged()
 
+  getPendingCreatedAndAddedToExistingParent: ->
+    @__stateEpochCount == 0 && !(@_pendingState._parent?.__stateEpochCount == 0)
+
   _applyAnimators: ->
     if pendingAnimators = @_pendingState._animators
+      animateFromVoid = @getPendingCreatedAndAddedToExistingParent()
+
       {frameSecond} = stateEpoch
 
       for prop, animator of pendingAnimators
         pendingValue = @_pendingState[prop]
-        currentValue = @[prop]
+        currentValue = if animateFromVoid && (fromVoid = animator.fromVoid)?
+          fromVoid
+        else
+          @[prop]
 
-        newValue = if animator.active || (@isRegistered && @__stateEpochCount > 0 && !propsEq currentValue, pendingValue)
+        newValue = if animator.active ||
+            (
+              !propsEq(currentValue, pendingValue) &&
+              (
+                (animateFromVoid && animator.hasFromVoidAnimation) ||
+                (@isRegistered && @__stateEpochCount > 0)
+              )
+            )
           animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
         else pendingValue
 

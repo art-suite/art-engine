@@ -42,6 +42,7 @@ truncateLayoutCoordinate = (v) ->
   present
   Promise
   modulo
+  inspectedObjectLiteral
 } = Foundation
 
 cacheAggressively = false
@@ -103,7 +104,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_initTemporaryFields()
     @_initComputedFields()
     @_activeAnimator = null
-    @_animatingOut = false
+    @_toVoidAnimationStatus = false
     @_locationLayoutDisabled = false
 
   _initTemporaryFields: ->
@@ -388,34 +389,30 @@ module.exports = createWithPostCreate class Element extends ElementBase
         newChildren = compactFlatten newChildren, keepIfRubyTrue
         firstTimeSettingChildren = oldChildren == initialChildren
 
-        # unless firstTimeSettingChildren
-
         # detect childrenHaveRemovedAnimations
-        unless childrenHaveRemovedAnimations = childRemovedAnimation = @getPendingChildRemovedAnimation()
-          for child in oldChildren when child.getPendingRemovedAnimation()
-            childrenHaveRemovedAnimations = true
-            break
+        for child in oldChildren when child.getPendingHasToVoidAnimators()
+          childrenHaveRemovedAnimations = true
+          break
 
         # if any to-be-removed child has a removedAnimation, keep it, but start its removedAnimation
         if childrenHaveRemovedAnimations
 
           keepOldChildren = []
           for child in oldChildren
-            if child._animatingOut == "done"
-              child._animatingOut = false
-            else if childRemovedAnimation || child.getPendingRemovedAnimation() || child in newChildren
+            if child._toVoidAnimationStatus == "done"
+              child._toVoidAnimationStatus = false
+            else if child.getPendingHasToVoidAnimators() || child in newChildren
               keepOldChildren.push child
+
 
           keepAllChildren = minimumOrderedOverlappingMerge keepOldChildren, newChildren
 
           for child in keepAllChildren when child not in newChildren
             do (child) ->
-              if !child._animatingOut && animation = childRemovedAnimation || child.getPendingRemovedAnimation()
-                child.setAnimate merge animation,
-                  on: done: =>
-                    child._animatingOut = "done"
-                    child.removeFromParent()
-                child._animatingOut = true
+              if !child._toVoidAnimationStatus && child.getPendingHasToVoidAnimators()
+                for prop, animator of child.getPendingAnimators()
+                  animator.startToVoidAnimation(child).then => child._toVoidAnimationDone()
+                child._toVoidAnimationStatus = "active"
 
           newChildren = keepAllChildren
 
@@ -426,11 +423,9 @@ module.exports = createWithPostCreate class Element extends ElementBase
         # update children which were added:
         #   remove from old parent
         #   update parent
-        #   start added-child-animations if not firstTimeSettingChildren
         for child in newChildren when (oldParent = child.getPendingParent()) != @
           oldParent?._setChildrenOnly oldParent.pendingChildrenWithout child
           child._setParentOnly @
-          @startChildAddedAnimation child unless firstTimeSettingChildren
 
         newChildren
 
@@ -470,6 +465,14 @@ module.exports = createWithPostCreate class Element extends ElementBase
     f child for child in @_children
     @
 
+  _toVoidAnimationDone: ->
+    # return if any toVoid animator still running
+    for prop, animator of @animators
+      return if animator.toVoid? && animator.active?
+
+    @_toVoidAnimationStatus = "done"
+    @removeFromParent()
+
   @getter
     # element-space rectangle covering the element's unpadded size
     area: ->
@@ -504,10 +507,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
     compositeMode:          default: "normal",              validate:   (v) -> typeof v is "string"
     pointerEventPriority:   default: 0,                     preprocess: (v) -> v | 0
     userProps:              default: null,                  validate:   (v) -> !v? || isPlainObject v
-    childAddedAnimation:    default: null,                  validate:   (v) -> !v? || isPlainObject v
-    childRemovedAnimation:  default: null,                  validate:   (v) -> !v? || isPlainObject v
-    addedAnimation:         default: null,                  validate:   (v) -> !v? || isPlainObject v
-    removedAnimation:       default: null,                  validate:   (v) -> !v? || isPlainObject v
 
     # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
     receivePointerEvents:   default: "inLogicalArea",       validate: (v) ->
@@ -535,6 +534,13 @@ module.exports = createWithPostCreate class Element extends ElementBase
     invisible:
       getter: (pending) -> @getState(pending)._visible
       setter: (v) -> @setVisible !v
+
+    hasToVoidAnimators:
+      getter: (pending) ->
+        if animators = @getState(pending)._animators
+          return true for prop, animator of animators when animator.hasToVoidAnimation
+
+        false
 
     isMask:
       getter: (pending) -> @getState(pending)._compositeMode == "alphaMask"
@@ -654,7 +660,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       default: null
       getter: (pending) -> @_activeAnimator
       setter: (options) ->
-        return if @_animatingOut
+        return if @_toVoidAnimationStatus
         @finishAnimations()
         stateEpoch.onNextReady =>
           new Animator @, options if options
@@ -1543,6 +1549,12 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     childrenInspectedNames: ->
       c.inspectedName for c in @_children
+
+    inspectedObjects: ->
+      [
+        inspectedObjectLiteral @inspectedName
+        @minimalProps
+      ].concat (child.inspectedObjects for child in @children)
 
   childrenWithout = (children, child) ->
     children = children.slice()
