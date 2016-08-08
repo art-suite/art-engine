@@ -329,7 +329,6 @@ module.exports = class PersistantAnimator extends BaseObject
       continuous: t/f
       on: handlers
 
-      TODO:
       # added and removed animation values
       voidValue:  # both
       fromVoid:   # added animation
