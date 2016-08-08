@@ -1,4 +1,4 @@
-{log, isPlainObject} = require 'art-foundation'
+{log, isPlainObject, currentSecond} = require 'art-foundation'
 {point} = require 'art-atomic'
 {Element, RectangleElement, PersistantAnimator} = require 'art-engine'
 
@@ -268,7 +268,7 @@ suite "Art.Engine.Animation.PersistantAnimator.location", ->
 
 suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
 
-  test "fromVoid", ->
+  test "fromVoid opacity", ->
     new Promise (resolve) ->
       e = new Element
         animators: opacity:
@@ -322,6 +322,69 @@ suite "Art.Engine.Animation.PersistantAnimator.voidProps", ->
                 assert.eq e.parent.key, parentName
                 assert.ok e.opacity > 0
                 assert.ok e.opacity < 1
+
+      ._register()
+      .onNextReady (p) =>
+        p.children = []
+
+suite "Art.Engine.Animation.PersistantAnimator.voidProps.size requires preprocessing", ->
+
+  test "fromVoid size", ->
+    updateCount = 0
+    startTime = null
+    new Promise (resolve) ->
+      top = new Element()
+      ._register()
+      top.onNextReady()
+      .then =>
+        e = new Element
+          size: 50
+          animators: size:
+            voidValue: 10
+            on:
+              start: ->
+                startTime = currentSecond()
+                assert.eq e.size.layout(), point(10), "at start"
+              done: ->
+                log
+                  updateCount: updateCount
+                  frameRate: updateCount / (currentSecond() - startTime)
+                assert.eq e.size.layout(), point(50), "at start"
+                resolve()
+              update: ->
+                updateCount++
+        top.children = [e]
+
+  test "toVoid size", ->
+    animationDone = false
+    updateCount = 0
+    startTime = null
+    new Promise (resolve) ->
+      new Element
+        key: parentName = "myParent"
+        e = new Element
+          size: 50
+          key: "child with toVoid"
+          on: parentChanged: ->
+            unless e.parent
+              assert.eq true, animationDone
+              resolve()
+          animators: size:
+            voidValue: 10
+            on:
+              start: ->
+                startTime = currentSecond()
+                assert.eq e.size.layout(), point(50), "at start"
+                assert.eq e.parent.key, parentName
+              done: ->
+                log
+                  updateCount: updateCount
+                  frameRate: updateCount / (currentSecond() - startTime)
+                animationDone = true
+                assert.eq e.size.layout(), point(10), "at start"
+              update: ->
+                updateCount++
+                assert.eq e.parent.key, parentName
 
       ._register()
       .onNextReady (p) =>

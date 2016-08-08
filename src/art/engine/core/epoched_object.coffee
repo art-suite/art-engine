@@ -659,11 +659,17 @@ module.exports = class EpochedObject extends BaseObject
     if pendingAnimators = @_pendingState._animators
       animateFromVoid = @getPendingCreatedAndAddedToExistingParent()
 
-      {frameSecond} = stateEpoch
+      {frameSecond, epochCount} = stateEpoch
+      # log frameSecond:frameSecond
 
       for prop, animator of pendingAnimators
         pendingValue = @_pendingState[prop]
-        currentValue = if animateFromVoid && (fromVoid = animator.fromVoid)?
+        currentValue = if animateFromVoid && animator.hasFromVoidAnimation
+          fromVoid = animator.getPreprocessedFromVoid @
+          # log "animateFromVoid SANJO!",
+          #   pendingValue: pendingValue
+          #   currentValue: fromVoid
+
           fromVoid
         else
           @[prop]
@@ -676,6 +682,8 @@ module.exports = class EpochedObject extends BaseObject
                 (@isRegistered && @__stateEpochCount > 0)
               )
             )
+          # log EpochedObject:
+          #   animateAbsoluteTime: epochCount: epochCount
           animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
         else pendingValue
 

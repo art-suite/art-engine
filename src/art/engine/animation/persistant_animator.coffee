@@ -298,7 +298,8 @@ module.exports = class PersistantAnimator extends BaseObject
       [
         inspectedObjectLiteral "PersistantAnimator"
         prop: @prop
-        element: @element?.uniqueId
+        element: @element?.inspectedName
+        options: @options
       ]
   ###
   IN:
@@ -381,10 +382,17 @@ module.exports = class PersistantAnimator extends BaseObject
       @_element[@_prop] = @toVoid
       @on done: resolve
 
+  getPreprocessedFromVoid: (element) ->
+    element.preprocessProperty @_prop, @fromVoid
+
+  getPreprocessedToVoid: (element) ->
+    element.preprocessProperty @_prop, @toVoid
+
   animate: ->
     if @_animate
       @_animate @
     else
+      log "no @_animate"
       @stop()
 
   _activate: ->
@@ -393,6 +401,11 @@ module.exports = class PersistantAnimator extends BaseObject
     @_startValue = @_currentValue
     @queueEvent "start"
     @_active = true
+    log activate:
+      self: @
+      startValue: @_currentValue
+      second: @_currentSecond
+      duration: @duration
 
   animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
 
@@ -402,9 +415,22 @@ module.exports = class PersistantAnimator extends BaseObject
 
     newValue = @animate()
 
+
+    # log animateAbsoluteTime:
+    #   currentValue: @_currentValue
+    #   toValue: @_toValue
+    #   currentSecond: @_currentSecond
+    #   newValue: newValue
+    #   active: @_active
+
     if @_active
       @queueEvent "update" if animationSeconds > 0
-      @_element.onNextEpoch => @_element[@_prop] = @_toValue
+      @_element.onNextEpoch =>
+        # log pushAnimation:
+        #   currentValue: @_element[@_prop]
+        #   toValue: @_toValue
+        #   epochCount: Neptune.Art.Engine.Core.StateEpoch.stateEpoch.epochCount
+        @_element[@_prop] = @_toValue
     else
       @queueEvent "done"
 
