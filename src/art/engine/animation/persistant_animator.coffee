@@ -378,7 +378,11 @@ module.exports = class PersistantAnimator extends BaseObject
     return Promise.reject() unless @hasToVoidAnimation
 
     new Promise (resolve, reject) =>
-      @_element[@_prop] = @toVoid
+      # reactivate if already active
+      @_activate() if @_active
+
+      @_element[@_prop] = @_toValue = @toVoid
+
       @on done: resolve
 
   getPreprocessedFromVoid: (@_element) ->
@@ -392,7 +396,6 @@ module.exports = class PersistantAnimator extends BaseObject
       @stop()
 
   _activate: ->
-    return if @_active
     @_lastSecond = @_startSecond = @_currentSecond
     @_startValue = @_currentValue
     @queueEvent "start"
@@ -404,7 +407,7 @@ module.exports = class PersistantAnimator extends BaseObject
 
   animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
 
-    @_activate()
+    @_activate() unless @_active
 
     animationSeconds = @getAnimationSeconds()
 
