@@ -1,3 +1,15 @@
+Foundation = require 'art-foundation'
+Events = require 'art-events'
+
+{
+  log, BaseObject
+  isFunction, isString
+  capitalize
+  inspectedObjectLiteral
+  plainObjectsDeepEq
+} = Foundation
+{EventedObject} = Events
+
 ###
 Useful ideas about optimizing animations and garbage collection: http://blog.artillery.com/2012/10/browser-garbage-collection-and-framerate.html
 
@@ -241,18 +253,6 @@ NOTE: Span elements will make this less onerous. Just wrap the root in a Span an
 
 ###
 
-Foundation = require 'art-foundation'
-Events = require 'art-events'
-EasingFunctions = require './easing_functions'
-
-{
-  log, BaseObject
-  isFunction, isString
-  capitalize
-  inspectedObjectLiteral
-} = Foundation
-{EventedObject} = Events
-
 ###
 Animator is created once, when the Element is created (or the animators prop is set).
 It persists as long as the animator property is set and points to it.
@@ -281,7 +281,7 @@ module.exports = class PersistantAnimator extends BaseObject
     else
       startValue + (toValue - startValue) * pos
 
-  @getter "options prop element startValue currentValue toValue continuous voidValue"
+  @getter "options prop element startValue currentValue toValue continuous voidValue currentSecond startSecond"
   @getter
     active: ->
       @_active || (@_continuous && (!@_element || @_element.isRegistered))
@@ -290,8 +290,8 @@ module.exports = class PersistantAnimator extends BaseObject
     state: -> @_state ||= {}
 
   deactivate: ->
-    @queueEvent "done" if @_active
-    @_active = false
+    if @_active
+      @_deactivate()
 
   @getter
     inspectedObjects: ->
@@ -398,6 +398,10 @@ module.exports = class PersistantAnimator extends BaseObject
     @queueEvent "start"
     @_active = true
 
+  _deactivate: ->
+    @queueEvent "done"
+    @_active = false
+
   animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
 
     @_activate()
@@ -406,24 +410,12 @@ module.exports = class PersistantAnimator extends BaseObject
 
     newValue = @animate()
 
-
-    # log animateAbsoluteTime:
-    #   currentValue: @_currentValue
-    #   toValue: @_toValue
-    #   currentSecond: @_currentSecond
-    #   newValue: newValue
-    #   active: @_active
-
     if @_active
       @queueEvent "update" if animationSeconds > 0
       @_element.onNextEpoch =>
-        # log pushAnimation:
-        #   currentValue: @_element[@_prop]
-        #   toValue: @_toValue
-        #   epochCount: Neptune.Art.Engine.Core.StateEpoch.stateEpoch.epochCount
         @_element[@_prop] = @_toValue
     else
-      @queueEvent "done"
+      @_deactivate()
 
     @_lastSecond = @_currentSecond
 

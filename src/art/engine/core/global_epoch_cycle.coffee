@@ -47,7 +47,10 @@ module.exports = class GlobalEpochCycle extends Epoch
     stateEpoch.queueNextEpoch =
     drawEpoch.queueNextEpoch  =
     eventEpoch.queueNextEpoch = boundQueueNextEpoch
-    eventEpoch.flushEpochNow  = => @flushEpochNow()
+
+    # If a pointerClick causes the full global epoch to be processed, frameTime is all wrong for animations.
+    # I think it's OK to just push the event-epoch out (which should allow the request-image-dialog to fire)
+    # eventEpoch.flushEpochNow  = => @flushEpochNow()
 
     eventEpoch.logEvent = (name, id) => @globalEpochStats?.logEvent name, id
 
