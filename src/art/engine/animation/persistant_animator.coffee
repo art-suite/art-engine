@@ -382,11 +382,8 @@ module.exports = class PersistantAnimator extends BaseObject
       @_element[@_prop] = @toVoid
       @on done: resolve
 
-  getPreprocessedFromVoid: (element) ->
-    element.preprocessProperty @_prop, @fromVoid
-
-  getPreprocessedToVoid: (element) ->
-    element.preprocessProperty @_prop, @toVoid
+  getPreprocessedFromVoid: (@_element) ->
+    @_element.preprocessProperty @_prop, @fromVoid
 
   animate: ->
     if @_animate
@@ -401,11 +398,6 @@ module.exports = class PersistantAnimator extends BaseObject
     @_startValue = @_currentValue
     @queueEvent "start"
     @_active = true
-    log activate:
-      self: @
-      startValue: @_currentValue
-      second: @_currentSecond
-      duration: @duration
 
   animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
 

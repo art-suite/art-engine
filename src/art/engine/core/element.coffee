@@ -401,20 +401,13 @@ module.exports = createWithPostCreate class Element extends ElementBase
           for child in oldChildren
             if child._toVoidAnimationStatus == "done"
               child._toVoidAnimationStatus = false
-            else if child.getPendingHasToVoidAnimators() || child in newChildren
+            else if child in newChildren
+              keepOldChildren.push child
+            else if child.getPendingHasToVoidAnimators()
+              child._activateToVoidAnimators()
               keepOldChildren.push child
 
-
-          keepAllChildren = minimumOrderedOverlappingMerge keepOldChildren, newChildren
-
-          for child in keepAllChildren when child not in newChildren
-            do (child) ->
-              if !child._toVoidAnimationStatus && child.getPendingHasToVoidAnimators()
-                for prop, animator of child.getPendingAnimators()
-                  animator.startToVoidAnimation(child).then => child._toVoidAnimationDone()
-                child._toVoidAnimationStatus = "active"
-
-          newChildren = keepAllChildren
+          newChildren = minimumOrderedOverlappingMerge keepOldChildren, newChildren
 
         # update children which were removed
         for child in oldChildren when child not in newChildren
@@ -472,6 +465,12 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     @_toVoidAnimationStatus = "done"
     @removeFromParent()
+
+  _activateToVoidAnimators: ->
+    return unless !@_toVoidAnimationStatus && @getPendingHasToVoidAnimators()
+    @_toVoidAnimationStatus = "active"
+    for prop, animator of @getPendingAnimators()
+      animator.startToVoidAnimation(@).then => @_toVoidAnimationDone()
 
   @getter
     # element-space rectangle covering the element's unpadded size
