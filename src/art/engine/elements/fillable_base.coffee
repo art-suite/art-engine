@@ -4,7 +4,7 @@ Canvas = require 'art-canvas'
 Base = require './base'
 {PointLayout, PointLayoutBase} = require '../layout'
 {log, isPlainObject, min, max, createWithPostCreate, isNumber, merge} = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
+{rgbColor, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
 # can be a gradient fill or a solid-color fill
 # if the @gradient property is set (including indirectly by setting the @colors property), then it is a gradient
@@ -17,6 +17,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   defaultFrom = new PointLayout()
   defaultTo = new PointLayout hh: 1
+  defaultOffset = new PointLayout y: 4
   @drawProperty
     # from:   default: "topLeft", preprocess: (v) -> point v
     # to:     default: null, preprocess: (v) -> v? && point v
@@ -29,26 +30,32 @@ module.exports = createWithPostCreate class FillableBase extends Base
       default: null
       validate: (v) -> !v || isPlainObject v
       preprocess: (v) ->
-        if (offset = v?.offset) && !(offset instanceof PointLayoutBase)
-          merge v, offset: new PointLayout offset
+        return null unless v
+        {color, offset, blur} = v
+        color = rgbColor color || "#0007"
+        offset = if offset?
+          if offset instanceof PointLayoutBase
+            offset
+          else
+            new PointLayout offset
         else
-          v
+          defaultOffset
+
+        blur = 5 unless blur?
+
+        blur: blur
+        offset: offset
+        color: color
 
   @getter
     normalizedShadow: ->
-      shadow = @_shadow
-      return null unless shadow
-      {_currentSize} = @
-      if offset = shadow.offset
-        {x, y} = offset.layout _currentSize
-        merge shadow,
-          offsetX: x
-          offsetY: y
-      else
-        merge
-          offsetX: 0
-          offsetY: 0
-        , shadow
+      return null unless @_shadow
+      {offset} = @_shadow
+      x = offset.layoutX @_currentSize
+      y = offset.layoutY @_currentSize
+      merge @_shadow,
+        offsetX: x
+        offsetY: y
 
   _expandRectangleByShadow: (r, shadow) ->
     return r unless shadow

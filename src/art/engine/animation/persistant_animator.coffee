@@ -7,6 +7,7 @@ Events = require 'art-events'
   capitalize
   inspectedObjectLiteral
   plainObjectsDeepEq
+  isPlainObject
 } = Foundation
 {EventedObject} = Events
 
@@ -275,9 +276,13 @@ Options:
 module.exports = class PersistantAnimator extends BaseObject
   @include EventedObject
 
-  @interpolate: (startValue, toValue, pos) ->
+  @interpolate: interpolate = (startValue, toValue, pos) ->
     if isFunction startValue.interpolate
       startValue.interpolate toValue, pos
+    else if isPlainObject startValue
+      out = {}
+      out[k] = interpolate v, toValue[k], pos for k, v of startValue
+      out
     else
       startValue + (toValue - startValue) * pos
 

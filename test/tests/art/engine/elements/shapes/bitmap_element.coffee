@@ -23,7 +23,12 @@ suite "Art.Engine.Elements.Shapes.BitmapElement", ->
     new BitmapElement bitmap:source
 
   drawTest2 "shadow", ->
-    new BitmapElement bitmap:source, shadow: offsetY:4, offsetX:4, blur:2, color: "#0005"
+    new BitmapElement
+      bitmap: source
+      shadow:
+        offset: y: 4, x: 4
+        blur: 2
+        color: "#0005"
 
   drawTest2 "zoom", ->
     new BitmapElement bitmap:source, mode:"zoom", size:100

@@ -247,7 +247,7 @@ suite "Art.Engine.Elements.Shapes.TextElement.as shape", ->
     element: ->
       new TextElement
         color: "red"
-        shadow: offsetY: 2, blur: 2, color: "#0005"
+        shadow: blur: 2, color: "#0005", offset: y: 2
         text: "Shadow"
         fontSize: 32
 

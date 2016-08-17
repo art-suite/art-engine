@@ -130,7 +130,6 @@ suite "Art.Engine.Elements.Shapes.RectangleElement.drawArea", ->
   drawAndTestElement "basic", ->
     element: new RectangleElement
       color: "#aaa"
-      # shadow: color: "black", blur: 10, offsetY: 10
 
     test: (root) ->
       assert.eq root.drawArea.toArray(), [0, 0, 100, 100]
