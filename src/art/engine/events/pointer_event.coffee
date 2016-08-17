@@ -26,6 +26,7 @@ define [
         options.pointer || @pointer
         options.time || @time
       )
+      e.timeStamp = @timeStamp
       e.target = options.target || @target
       e
 
