@@ -4,7 +4,9 @@ Text = require 'art-text'
 FillableBase = require '../fillable_base'
 GlobalEpochCycle = require '../../core/global_epoch_cycle'
 
-{log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray} = Foundation
+{log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
+  isString, isNumber
+} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 {normalizeFontOptions} = Text.Metrics
 
@@ -22,55 +24,18 @@ module.exports = createWithPostCreate class TextElement extends FillableBase
 
   @getter cacheable: -> true
 
-  # create the normal ElementBase Property using the definePropertyFunctionName,
-  # then also create a virtual function for getting and setting every field of the default object.
-  @propertySet: (set) ->
-    for setName, setOptions of set
-      do (setName, setOptions) =>
-        definePropertyFunctionName = setOptions.definePropertyFunctionName
-        propDefinition = {}
-        propDefault = setOptions.default || {}
-        propDefinition[setName] =
-          default: setOptions.default
-          preprocess: setOptions.preprocess
-          validate:   setOptions.validate
-        @[definePropertyFunctionName] propDefinition
-        internalName = propInternalName setName
-
-        setSetterName = propSetterName setName
-
-        virtualProperties = {}
-        for subPropName, defaultValue of setOptions.default
-          do (subPropName) =>
-            virtualProperties[subPropName] =
-              getter: (pending) -> @getState()[internalName]?[subPropName]
-              setter: (v) ->
-                if (oldOptions = @[internalName]) == (newOptions = @_pendingState[internalName])
-                  newOptions = shallowClone oldOptions
-                  newOptions[subPropName] = v
-                  @[setSetterName] newOptions
-                else
-                  newOptions[subPropName] = v
-
-        @virtualProperty virtualProperties
-
-  validLayoutModes = Text.Layout.validLayoutOptions.layoutMode
-  validOverflows = Text.Layout.validLayoutOptions.overflow
-  @propertySet
-    font:
-      definePropertyFunctionName: "drawLayoutProperty"
-      preprocess: (v) -> normalizeFontOptions v
-      default: Text.Metrics.defaultFontOptions
-
-    format:
-      definePropertyFunctionName: "drawLayoutProperty"
-      default: Text.Layout.defaultLayoutOptions
-      validate: (layoutOptions) ->
-        {layoutMode, overflow} = layoutOptions
-        (!layoutMode || validLayoutModes[layoutMode]) &&
-        (!overflow   || validOverflows[overflow])
-
   @drawLayoutProperty
+    fontSize:     default: 16,        validate: (v) -> isNumber v
+    fontFamily:   default: "Times",   validate: (v) -> isString v
+    fontStyle:    default: "normal",  validate: (v) -> isString v
+    fontVariant:  default: "normal",  validate: (v) -> isString v
+    fontWeight:   default: "normal",  validate: (v) -> isString v
+    align:        default: 0,         preprocess: (v) -> point v
+    layoutMode:   default: "textualBaseline",  validate: (v) -> isString v
+    leading:      default: 1.25,      validate: (v) -> isNumber v
+    maxLines:     default: null,      validate: (v) -> !v? || isNumber v
+    overflow:     default: "ellipsis",  validate: (v) -> isString v
+
     text:
       default: Text.Layout.defaultText
       preprocess: (t) ->
@@ -79,8 +44,23 @@ module.exports = createWithPostCreate class TextElement extends FillableBase
         else
           "#{t}"
 
-    fontOptions:    validate: (v)-> !v
-    layoutOptions:  validate: (v)-> !v
+  @virtualProperty
+    font:
+      getter: (pending) ->
+        {_fontFamily, _fontSize, _fontStyle, _fontVariant, _fontWeight} = @getState pending
+        fontFamily:   _fontFamily
+        fontSize:     _fontSize
+        fontStyle:    _fontStyle
+        fontVariant:  _fontVariant
+        fontWeight:   _fontWeight
+    format:
+      getter: (pending) ->
+        {_align, _layoutMode, _leading, _maxLines, _overflow} = @getState pending
+        align:        _align
+        layoutMode:   _layoutMode
+        leading:      _leading
+        maxLines:     _maxLines
+        overflow:     _overflow
 
   getBaseDrawArea: ->
     @_textLayout?.getDrawArea() || rect()

@@ -316,16 +316,12 @@ suite "Art.Engine.Elements.Shapes.TextElement.alignment", ->
       suite "drawAreas, FillElement and size: w:200, hch:1", ->
         for value, result of {
             top:
-              area:      rect 0, 0, 135, 52
-              drawArea:
-                min: rect -8, -8, 150, 72
-                max: rect -8, -8, 151, 72
+              area:       rect 0, 0, 135, 52
+              drawArea:   rect -8, -8, 150, 72
               element:
                 logicalArea:            rect -20, -10, 200, 72
                 paddedArea:             rect 0, 0, 160, 52
-                elementSpaceDrawArea:
-                  min: rect -8, -8, 150, 72
-                  max: rect -8, -8, 151, 72
+                elementSpaceDrawArea:   rect 0, 0, 160, 52
             }
           do (value, result) =>
             drawTest3 "align: '#{value}'",
