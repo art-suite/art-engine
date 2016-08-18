@@ -15,8 +15,8 @@ All Event Types:
   pointerClick
   pointerUpInside
   pointerUpOutside
-  pointerMoveIn
-  pointerMoveOut
+  pointerIn
+  pointerOut
 
 Keyboard events are routed through the PointerEventManager.
   Keyboard Event types:
@@ -48,7 +48,7 @@ Purpose:
           send pointerUpInside
         else
           send pointerUpOutside
-    pointerMoveIn / pointerMoveOut
+    pointerIn / pointerOut
       pointer's "pointInside" changed from false>>true for the target element
         send pointerMovedIn
       else
@@ -458,7 +458,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
       isInside = isInsideParent && element.pointInside locationInParentSpace
 
       if isInside != wasInside
-        type = if isInside then "pointerMoveIn" else "pointerMoveOut"
+        type = if isInside then "pointerIn" else "pointerOut"
         @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
 
       isInsideParent = isInside

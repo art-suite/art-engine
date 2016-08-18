@@ -17,7 +17,11 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   defaultFrom = new PointLayout()
   defaultTo = new PointLayout hh: 1
-  defaultOffset = new PointLayout y: 4
+  defaultOffset = new PointLayout y: 2
+  noShadow =
+    color: rgbColor 0,0,0,0
+    blur: 0
+    offset: new PointLayout 0
   @drawProperty
     # from:   default: "topLeft", preprocess: (v) -> point v
     # to:     default: null, preprocess: (v) -> v? && point v
@@ -30,7 +34,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
       default: null
       validate: (v) -> !v || isPlainObject v
       preprocess: (v) ->
-        return null unless v
+        return noShadow unless v
         {color, offset, blur} = v
         color = rgbColor color || "#0007"
         offset = if offset?
@@ -41,7 +45,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
         else
           defaultOffset
 
-        blur = 5 unless blur?
+        blur = 4 unless blur?
 
         blur: blur
         offset: offset
@@ -49,7 +53,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   @getter
     normalizedShadow: ->
-      return null unless @_shadow
+      return null if @_shadow == noShadow
       {offset} = @_shadow
       x = offset.layoutX @_currentSize
       y = offset.layoutY @_currentSize
@@ -58,7 +62,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
         offsetY: y
 
   _expandRectangleByShadow: (r, shadow) ->
-    return r unless shadow
+    return r if shadow == noShadow
     {x, y, w, h} = r
     {blur, offsetX, offsetY} = @normalizedShadow
     offsetX ||= 0
