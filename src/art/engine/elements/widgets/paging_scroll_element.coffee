@@ -477,7 +477,21 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         # throw new Error if maxCount-- < 0
         # console.error "setScrollPosition #{position}"
         @onNextReady => @_updateAtStartAndAtEnd()
-        @_scrollContents.setLocation @newPoint position
+        ###
+        NOTES on childrenAlignment:
+          This doesn't work yet.
+
+          This needs to update whenever the size of children or parent changes.
+
+          This code only updates when scrollPosition changes.
+        ###
+        if @_scrollContents.getCurrentSize().lte @getCurrentSize()
+          axis = @_scrollContents.setAxis @getPendingChildrenAlignment()
+          @_scrollContents.setLocation ww: axis.x, hh: axis.y
+          @newPoint position
+        else
+          @_scrollContents.setAxis 0
+          @_scrollContents.setLocation @newPoint position
   # maxCount = 5
 
   _updatePagesSplit: (pages = @getPendingPages(), referenceFrame = @getPendingReferenceFrame())->
