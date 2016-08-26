@@ -9,6 +9,7 @@ Events = require 'art-events'
   plainObjectsDeepEq
   isPlainObject
   eq
+  rubyOr
 } = Foundation
 {EventedObject} = Events
 
@@ -356,9 +357,9 @@ module.exports = class PersistantAnimator extends BaseObject
     @_element = null
     @_animate = options.animate
     @_continuous = options.continuous
-    @_voidValue = options.voidValue
-    @_toVoid = options.toVoid
-    @_fromVoid = options.fromVoid
+    @_voidValue = rubyOr options.voidValue, options.toFromVoid, options.fromToVoid, options.void
+    @_toVoid    = options.toVoid
+    @_fromVoid  = options.fromVoid
     @on options.on if options?.on
 
   @getter
