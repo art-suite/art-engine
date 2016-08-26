@@ -8,6 +8,7 @@ Events = require 'art-events'
   inspectedObjectLiteral
   plainObjectsDeepEq
   isPlainObject
+  eq
 } = Foundation
 {EventedObject} = Events
 
@@ -410,9 +411,11 @@ module.exports = class PersistantAnimator extends BaseObject
     @queueEvent "done"
     @_active = false
 
-  animateAbsoluteTime: (@_element, @_currentValue, @_toValue, @_currentSecond) ->
+  animateAbsoluteTime: (@_element, @_currentValue, toValue, @_currentSecond) ->
 
-    @_activate() unless @_active
+    @_activate() unless @_active && eq toValue, @_toValue
+
+    @_toValue = toValue
 
     animationSeconds = @getAnimationSeconds()
 
