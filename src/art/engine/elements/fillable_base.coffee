@@ -32,7 +32,7 @@ module.exports = createWithPostCreate class FillableBase extends Base
     gradientRadius: default: null
     shadow:
       default: null
-      validate: (v) -> !v || isPlainObject v
+      validate: (v) -> !v || v == true || isPlainObject v
       preprocess: (v) ->
         return noShadow unless v
         {color, offset, blur} = v
