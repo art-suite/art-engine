@@ -11,7 +11,7 @@ DrawCacheManager = require './draw_cache_manager'
 
 {isInfiniteResult} = require './epoch_layout/basics'
 
-{point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint} = Atomic
+{point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
 {floor} = Math
 {globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
@@ -274,19 +274,21 @@ module.exports = createWithPostCreate class Element extends ElementBase
     inFlow:                 default: true,                  preprocess: (v) -> !!v
     layoutWeight:           default: 1,                     validate:   (v) -> isNumber v
 
-    padding:  default: 0, validate: (v) ->
-      if v == false || v == undefined || v == null
-        true # ok
-      else if isPlainArray v
-        v.length == 2 || v.length == 4
-      else isNumber(v) || isFunction(v) || isPlainObject(v)
+    padding:
+      default: 0
+      preprocess: (v) ->
+        if isFunction v then v
+        else if v == false || v == undefined || v == null
+          null
+        else perimeter v
 
-    margin:  default: 0, validate: (v) ->
-      if v == false || v == undefined || v == null
-        true # ok
-      else if isPlainArray v
-        v.length == 2 || v.length == 4
-      else isNumber(v) || isFunction(v) || isPlainObject(v)
+    margin:
+      default: 0
+      preprocess: (v) ->
+        if isFunction v then v
+        else if v == false || v == undefined || v == null
+          null
+        else perimeter v
 
   @concreteProperty
     # TODO: I think currentSize should not be an epoched property. It should litterally be the currentSize - it gets updated during the stateEpoch
