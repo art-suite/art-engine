@@ -370,7 +370,7 @@ module.exports = class PersistantAnimator extends BaseObject
 
   @getter
     animationSeconds: -> @_currentSecond - @_startSecond
-    frameSeconds: -> @_currentSecond - @_lastSecond
+    frameSeconds: -> if @_active then @_currentSecond - @_lastSecond else 0
 
     ###
     returns a bound function to stop this animator
@@ -403,7 +403,7 @@ module.exports = class PersistantAnimator extends BaseObject
       @stop()
 
   _activate: ->
-    @_lastSecond = @_startSecond = @_currentSecond
+    @_lastSecond = @_startSecond = @_currentSecond - @frameSeconds
     @_startValue = @_currentValue
     @queueEvent "start"
     @_active = true
