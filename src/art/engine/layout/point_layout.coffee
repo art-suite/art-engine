@@ -96,6 +96,9 @@ define [
       throw new Error "Each PointLayout component must be a number. Not #{inspect value} from #{pointLayout}" unless isNumber value
       value
 
+    preprocess2dValue = (value, pointLayout) ->
+      point value
+
     @_applyComponentsFunctions: applyComponentsFunctions =
 
       max: (value, pointLayout) ->
@@ -105,11 +108,11 @@ define [
       # Points == Pixels for non-retina screens (pixelsPerPoint == 1)
       # provide numbers or 2d Points (not to be confused with pts, the length unit) to add to your layout.
       pts: pts = (value, pointLayout) ->
-        value = preprocessValue value, pointLayout
+        value = preprocess2dValue value, pointLayout
         pointLayout._hasXLayout =
         pointLayout._hasYLayout = true
-        Components.x += value
-        Components.y += value
+        Components.x += value.x
+        Components.y += value.y
 
       x: x = (value, pointLayout) ->
         pointLayout._hasXLayout = true
@@ -131,13 +134,13 @@ define [
 
       # parent-relative components
       ps: (value, pointLayout) ->
-        value = preprocessValue value, pointLayout
+        value = preprocess2dValue value, pointLayout
         pointLayout._hasXLayout =
         pointLayout._hasYLayout =
         pointLayout._xRelativeToParentW =
         pointLayout._yRelativeToParentH = true
-        Components.xpw += value
-        Components.yph += value
+        Components.xpw += value.x
+        Components.yph += value.y
 
       xpw: xpw = (value, pointLayout) ->
         value = preprocessValue value, pointLayout
@@ -165,13 +168,13 @@ define [
 
       # children-relative components
       cs: (value, pointLayout) ->
-        value = preprocessValue value, pointLayout
+        value = preprocess2dValue value, pointLayout
         pointLayout._hasXLayout =
         pointLayout._hasYLayout =
         pointLayout._xRelativeToChildrenW =
         pointLayout._yRelativeToChildrenH = true
-        Components.xcw += value
-        Components.ych += value
+        Components.xcw += value.x
+        Components.ych += value.y
 
       xcw: xcw = (value, pointLayout) ->
         value = preprocessValue value, pointLayout

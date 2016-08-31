@@ -14,8 +14,8 @@ cs = point 30, 40
 testLayout = (shouldBeX, shouldBeY, params) ->
   shouldBe = point shouldBeX, shouldBeY
   # preprocessedParams = deepMap params, (v) -> if isFunction v then v.toString() else v
-  pointLayout = new PointLayout params
   test "#{formattedInspect params}", ->
+    pointLayout = new PointLayout params
     assert.eq shouldBe, pointLayout.layout(ps, cs), """
       testLayout:
         layout:         #{formattedInspect pointLayout.initializer}
@@ -91,6 +91,14 @@ suite "Art.Engine.Layout.PointLayout.layout.options", ->
     2 * (ps.y + cs.y + 1)
     x:1, y:1, xpw:1, yph:1, xcw:1, ych:1, ps:1, cs:1, plus:1
   )
+
+  testLayout  ps.x * 1.0, ps.y * 0.5,  ps:  "centerRight"
+  testLayout  cs.x * 1.0, cs.y * 0.5,  cs:  "centerRight"
+  testLayout         1.0,        0.5,  pts: "centerRight"
+
+  testLayout  ps.x * 0.6, ps.y * 0.7,  ps:  point .6, .7
+  testLayout  cs.x * 0.6, cs.y * 0.7,  cs:  point .6, .7
+  testLayout         0.6,        0.7,  pts: point .6, .7
 
 suite "Art.Engine.Layout.PointLayout.max", ->
   testLayout  10, 100,    w: 10,  h:100,  max: w: 50
