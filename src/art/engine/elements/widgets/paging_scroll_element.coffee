@@ -40,6 +40,14 @@ minimumFlickVelocity = 300  # pixels per second
 animatorSpringConstant = 300
 animatorSpringFriction = 25
 flickSpeedMultiplier = 1
+###
+TODO: Pages should be able to have margins!
+  But we have a big problem. Pages are split across two parents and the two parents
+  can't inherit the children's margins.
+
+I'm more and more thinking I want a fully custom ArtEngine layout for PSE.
+It would make a lot of things simpler to understand...
+###
 
 ###
 PagingScrollElement
@@ -350,6 +358,8 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
     super
     self.pagingScrollElement = @
     @_updateHiddenChildren()
+    @onNextReady =>
+      @jumpToEnd() if @startAtEnd
 
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
@@ -413,11 +423,13 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
     atEndEdge: false
 
   @concreteProperty
+    startAtEnd: default: false
+
     referenceFrame:
       default: defaultReferenceFrame
 
       postSetter: (newReferenceFrame, previousReferenceFrame) ->
-        console.warn "referenceFrame_postSetter - frame didnt' change" unless newReferenceFrame != previousReferenceFrame
+        console.warn "referenceFrame_postSetter - frame didn't change" unless newReferenceFrame != previousReferenceFrame
 
         @_addToScrollPosition delta = @getReferenceFrameDelta newReferenceFrame, previousReferenceFrame
         # log setReferenceFrame:
@@ -478,6 +490,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
         # console.error "setScrollPosition #{position}"
         @onNextReady => @_updateAtStartAndAtEnd()
         ###
+        TODO
         NOTES on childrenAlignment:
           This doesn't work yet.
 
@@ -485,13 +498,13 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
 
           This code only updates when scrollPosition changes.
         ###
-        if @_scrollContents.getCurrentSize().lte @getCurrentSize()
-          axis = @_scrollContents.setAxis @getPendingChildrenAlignment()
-          @_scrollContents.setLocation ww: axis.x, hh: axis.y
-          @newPoint position
-        else
-          @_scrollContents.setAxis 0
-          @_scrollContents.setLocation @newPoint position
+        # if @_scrollContents.getCurrentSize().lte @getCurrentSize()
+        #   axis = @_scrollContents.setAxis @getPendingChildrenAlignment()
+        #   @_scrollContents.setLocation ww: axis.x, hh: axis.y
+        #   @newPoint position
+        # else
+        #   @_scrollContents.setAxis 0
+        @_scrollContents.setLocation @newPoint position
   # maxCount = 5
 
   _updatePagesSplit: (pages = @getPendingPages(), referenceFrame = @getPendingReferenceFrame())->
@@ -598,6 +611,7 @@ module.exports = createWithPostCreate class PagingScrollElement extends Element
       atEndEdge: false
 
   jumpToEnd: ->
+    log "jumpToEnd"
     if @getPagesFitInWindow()
       @jumpToStart()
     else
