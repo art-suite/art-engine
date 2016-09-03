@@ -46,7 +46,7 @@ module.exports = class FullScreenApp
 
   @writeDom: ({title, styleSheets, scripts, fontFamilies})->
 
-    title ||= "Art App"
+    document.title = title || "Art App"
     scripts ||= []
     styleSheets ||= []
     fontFamilies ||= []
