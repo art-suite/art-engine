@@ -187,13 +187,7 @@ module.exports = class EpochedObject extends BaseObject
   propertyInitializerList:
     list of tupples, one per property:
       [externalName, internalName, preprocessor, defaultValue]
-  ###
-  @extendableProperty
-    propertyInitializerList: []
-    metaProperties: {}
-  # @_getPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerList", []
 
-  ###
   metaProperties fields:
     externalName:
     internalName:
@@ -202,7 +196,9 @@ module.exports = class EpochedObject extends BaseObject
     setterName:
     getterName:
   ###
-  # @_getMetaProperties: -> @getPrototypePropertyExtendedByInheritance "metaProperties", {}
+  @extendableProperty
+    propertyInitializerList: []
+    metaProperties: {}
 
   ###
   Main method for defining properties. Used by concreteProp, virtualProp and others.
