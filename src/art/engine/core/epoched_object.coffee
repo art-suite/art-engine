@@ -188,7 +188,10 @@ module.exports = class EpochedObject extends BaseObject
     list of tupples, one per property:
       [externalName, internalName, preprocessor, defaultValue]
   ###
-  @_getPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerList", []
+  @extendableProperty
+    propertyInitializerList: []
+    metaProperties: {}
+  # @_getPropertyInitializerList: -> @getPrototypePropertyExtendedByInheritance "propertyInitializerList", []
 
   ###
   metaProperties fields:
@@ -199,7 +202,7 @@ module.exports = class EpochedObject extends BaseObject
     setterName:
     getterName:
   ###
-  @_getMetaProperties: -> @getPrototypePropertyExtendedByInheritance "metaProperties", {}
+  # @_getMetaProperties: -> @getPrototypePropertyExtendedByInheritance "metaProperties", {}
 
   ###
   Main method for defining properties. Used by concreteProp, virtualProp and others.
@@ -309,10 +312,10 @@ module.exports = class EpochedObject extends BaseObject
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           newValue
 
-      @_getPropertyInitializerList().push [internalName, defaultValue, externalName]
+      @extendPropertyInitializerList().push [internalName, defaultValue, externalName]
       # @_getPropertyInitializerDefaultValuesList().push defaultValue
 
-    @_getMetaProperties()[externalName] = metaProperties
+    @extendMetaProperties externalName, metaProperties
 
     capitalizedExternalName = capitalize externalName
     @_addGetter @::, externalName,                         getter
@@ -524,8 +527,8 @@ module.exports = class EpochedObject extends BaseObject
   ######################
 
   @_generateSetPropertyDefaults: ->
-    propertyInitializerList = @_getPropertyInitializerList()
-    metaProperties = @_getMetaProperties()
+    propertyInitializerList = @getPropertyInitializerList()
+    metaProperties = @getMetaProperties()
     functionString = compactFlatten([
       "(function(options) {"
       "var _pendingState = this._pendingState;"

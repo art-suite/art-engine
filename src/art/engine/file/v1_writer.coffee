@@ -5,7 +5,7 @@ Xbd = require 'art-xbd'
 Core = require '../core'
 Elements = require '../elements'
 
-{BaseObject, log, createObjectTreeFactories, createHotWithPostCreate, floatEq} = Foundation
+{BaseObject, log, createObjectTreeFactories, createWithPostCreate, floatEq} = Foundation
 {point} = Atomic
 {XbdTag, createTagFactories} = Xbd
 {propsEq} = Core.EpochedObject
@@ -43,7 +43,7 @@ RectangleElement needs to have the following pattern:
 
 ###
 
-module.exports = createHotWithPostCreate module, class V1Writer extends BaseObject
+module.exports = createWithPostCreate module, class V1Writer extends BaseObject
   @singletonClass()
 
   @toArtFileTags: (element) => @singleton.toArtFileTags element
