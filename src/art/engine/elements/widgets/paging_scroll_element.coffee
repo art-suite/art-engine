@@ -9,7 +9,6 @@ GestureRecognizer = require '../../events/gesture_recognizer'
   min, max, abs, merge,
   createWithPostCreate, BaseObject, timeout, ceil, round
   isPlainArray
-  BaseModule
   absLt
   absLte
   absGt
@@ -249,7 +248,7 @@ class ScrollAnimator extends BaseObject
 
     @getAnimationContinues()
 
-class AnimatorSupport extends BaseModule
+AnimatorSupport = (superClass) -> class AnimatorSupport extends superClass
 
   @getter
     animatorsActive: -> !!@_activeAnimators
@@ -339,8 +338,7 @@ class AnimatorSupport extends BaseModule
 
       queueNextFrameUpdate()
 
-module.exports = createWithPostCreate class PagingScrollElement extends Element
-  @include AnimatorSupport
+module.exports = createWithPostCreate class PagingScrollElement extends AnimatorSupport Element
 
   constructor: ->
     @initAnimatorSupport()

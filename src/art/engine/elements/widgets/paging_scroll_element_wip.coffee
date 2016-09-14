@@ -244,98 +244,98 @@ class ScrollAnimator extends BaseObject
 
     @getAnimationContinues()
 
-class AnimatorSupport extends BaseModule
+AnimatorSupport = (superClass) ->
+  class AnimatorSupport extends superClass
 
-  @getter
-    animatorsActive: -> !!@_activeAnimators
+    @getter
+      animatorsActive: -> !!@_activeAnimators
 
-  initAnimatorSupport: ->
-    @_lastTime = 0
-    @_activeAnimators = null
-    @_frameUpdateQueued = false
+    initAnimatorSupport: ->
+      @_lastTime = 0
+      @_activeAnimators = null
+      @_frameUpdateQueued = false
 
-  # OUT: animator
-  startAnimator: (animator) ->
-    if @getAnimatorsActive()
-      @_activeAnimators.push animator
-    else
-      @_activeAnimators = [animator]
-      @_lastTime = currentSecond()
-      @getAnimatorsActive()
-
-    @_startAnimatorLoop()
-    animator
-
-  ###
-  OUT: newAnimator
-  SIDE-EFFECT:
-    if oldAnimator is in @_activeAnimators
-    then: replaced it with newAnimator
-    else: @startAnimator newAnimator
-
-  POST ASSERTIONS
-    newAnimator is in @_activeAnimators
-    oldAnimator is NOT in @_activeAnimators
-
-  ###
-  replaceAnimator: (newAnimator, oldAnimator) ->
-    return @startAnimator newAnimator unless @_activeAnimators && oldAnimator
-    index = @_activeAnimators.indexOf oldAnimator
-    return @startAnimator newAnimator unless index >= 0
-    @_activeAnimators[index] = newAnimator
-
-  stopAllAnimators: ->
-    @_activeAnimators = null
-
-  _frameUpdate: (frameTime)->
-    return unless @_activeAnimators
-    # log "_frameUpdate"
-    now = frameTime #currentSecond()
-    frameTime = now - @_lastTime
-
-    nextAnimators = null
-    for animator, i in @_activeAnimators
-      if animator.frameUpdate frameTime
-        nextAnimators?.push animator
+    # OUT: animator
+    startAnimator: (animator) ->
+      if @getAnimatorsActive()
+        @_activeAnimators.push animator
       else
-        # log _frameUpdate: animatorDone: animator
-        @queueEvent "animatorDone", animator: animator
-        nextAnimators ||= @_activeAnimators.slice 0, i
+        @_activeAnimators = [animator]
+        @_lastTime = currentSecond()
+        @getAnimatorsActive()
 
-    if nextAnimators
-      if nextAnimators.length == 0
-        @_activeAnimators = null
-        @queueEvent "allAnimatorsDone"
-      else
-        @_activeAnimators = nextAnimators
+      @_startAnimatorLoop()
+      animator
 
-    @_lastTime = now
+    ###
+    OUT: newAnimator
+    SIDE-EFFECT:
+      if oldAnimator is in @_activeAnimators
+      then: replaced it with newAnimator
+      else: @startAnimator newAnimator
 
-  _startAnimatorLoop: ->
-    return if @_frameUpdateQueued
-    requestAnimationFrame (frameTimeMs) =>
-      @_lastTime = frameTimeMs / 1000
+    POST ASSERTIONS
+      newAnimator is in @_activeAnimators
+      oldAnimator is NOT in @_activeAnimators
 
-      queueNextFrameUpdate = =>
-        # log "_startAnimatorLoop: queueNextFrameUpdate", @_activeAnimators
-        return unless @getAnimatorsActive()
-        @_frameUpdateQueued = true
-        requestAnimationFrame (frameTimeMs) =>
+    ###
+    replaceAnimator: (newAnimator, oldAnimator) ->
+      return @startAnimator newAnimator unless @_activeAnimators && oldAnimator
+      index = @_activeAnimators.indexOf oldAnimator
+      return @startAnimator newAnimator unless index >= 0
+      @_activeAnimators[index] = newAnimator
 
-        # TODO: I want to rework this to use onNextReady
-        # eventEpoch.onNextReady will help us track time spent preparing the next frame
-        # BUT, I need to use the frameTimeMs requestAnimationFrame provides - it smooths out the animation.
-        # ALL animations need to start using it.
-        #
-        # eventEpoch.onNextReady =>
-          @_frameUpdateQueued = false
-          @_frameUpdate frameTimeMs / 1000
-          queueNextFrameUpdate()
+    stopAllAnimators: ->
+      @_activeAnimators = null
 
-      queueNextFrameUpdate()
+    _frameUpdate: (frameTime)->
+      return unless @_activeAnimators
+      # log "_frameUpdate"
+      now = frameTime #currentSecond()
+      frameTime = now - @_lastTime
 
-module.exports = createWithPostCreate class PagingScrollElementWip extends Element
-  @include AnimatorSupport
+      nextAnimators = null
+      for animator, i in @_activeAnimators
+        if animator.frameUpdate frameTime
+          nextAnimators?.push animator
+        else
+          # log _frameUpdate: animatorDone: animator
+          @queueEvent "animatorDone", animator: animator
+          nextAnimators ||= @_activeAnimators.slice 0, i
+
+      if nextAnimators
+        if nextAnimators.length == 0
+          @_activeAnimators = null
+          @queueEvent "allAnimatorsDone"
+        else
+          @_activeAnimators = nextAnimators
+
+      @_lastTime = now
+
+    _startAnimatorLoop: ->
+      return if @_frameUpdateQueued
+      requestAnimationFrame (frameTimeMs) =>
+        @_lastTime = frameTimeMs / 1000
+
+        queueNextFrameUpdate = =>
+          # log "_startAnimatorLoop: queueNextFrameUpdate", @_activeAnimators
+          return unless @getAnimatorsActive()
+          @_frameUpdateQueued = true
+          requestAnimationFrame (frameTimeMs) =>
+
+          # TODO: I want to rework this to use onNextReady
+          # eventEpoch.onNextReady will help us track time spent preparing the next frame
+          # BUT, I need to use the frameTimeMs requestAnimationFrame provides - it smooths out the animation.
+          # ALL animations need to start using it.
+          #
+          # eventEpoch.onNextReady =>
+            @_frameUpdateQueued = false
+            @_frameUpdate frameTimeMs / 1000
+            queueNextFrameUpdate()
+
+        queueNextFrameUpdate()
+
+module.exports = createWithPostCreate class PagingScrollElementWip extends AnimatorSupport Element
 
   constructor: ->
     @initAnimatorSupport()

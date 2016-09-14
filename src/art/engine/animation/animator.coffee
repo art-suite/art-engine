@@ -13,12 +13,11 @@ are set to the current values.
 
 {currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseObject} = require 'art-foundation'
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art-atomic'
-{Event, EventEpoch, EventedObject} = require 'art-events'
+{Event, EventEpoch, EventedMixin} = require 'art-events'
 EasingFunctions = require './easing_functions'
 {eventEpoch} = EventEpoch
 
-module.exports = class Animator extends BaseObject
-  @include EventedObject
+module.exports = class Animator extends EventedMixin BaseObject
   @animate: (objects, options) -> new Animator objects, options
 
   # see Transaction for objects and primary options

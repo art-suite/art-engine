@@ -11,7 +11,7 @@ Events = require 'art-events'
   eq
   rubyOr
 } = Foundation
-{EventedObject} = Events
+{EventedMixin} = Events
 
 ###
 Useful ideas about optimizing animations and garbage collection: http://blog.artillery.com/2012/10/browser-garbage-collection-and-framerate.html
@@ -275,8 +275,7 @@ Options:
 
 ###
 
-module.exports = class PersistantAnimator extends BaseObject
-  @include EventedObject
+module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
   @interpolate: interpolate = (startValue, toValue, pos) ->
     if isFunction startValue.interpolate

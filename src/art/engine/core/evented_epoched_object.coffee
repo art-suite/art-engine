@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./state_epoch"
 EpochedObject = require './epoched_object'
-{EventedObjectBase} = Events
+{EventedBaseMixin} = Events
 
 {
   log
@@ -10,8 +10,7 @@ EpochedObject = require './epoched_object'
 } = Foundation
 blankOptions = {}
 
-module.exports = class EventedEpochedObject extends EpochedObject
-  @include EventedObjectBase
+module.exports = class EventedEpochedObject extends EventedBaseMixin EpochedObject
 
   constructor: (options = blankOptions)->
     super
