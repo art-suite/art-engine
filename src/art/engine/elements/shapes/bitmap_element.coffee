@@ -84,7 +84,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     source:
       default:    null
       validate:   (v) -> !v || isString v
-      postSetter: (v) -> @_loadBitmapFromSource v
+      postSetter: (v) -> v && @_loadBitmapFromSource v
 
   _loadBitmapFromSource: (source) ->
     sourceToBitmapCache.get source
