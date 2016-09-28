@@ -106,7 +106,10 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
   @virtualProperty
     value:
       getter: (pending) -> @domElement.value
-      setter: (v) -> @domElement.value = v
+      setter: (v) ->
+        v = if v? then "#{v}" else ""
+        unless @domElement.value == v
+          @domElement.value = v
 
     color:
       getter: -> color @domElement.style.color
