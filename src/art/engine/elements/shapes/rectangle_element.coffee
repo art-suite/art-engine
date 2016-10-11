@@ -3,7 +3,7 @@ Atomic = require 'art-atomic'
 Text = require 'art-text'
 FillableBase = require '../fillable_base'
 {Paths} = require 'art-canvas'
-{pureMerge, floatEq, base, createWithPostCreate} = Foundation
+{pureMerge, floatEq, base, createWithPostCreate, isPlainObject, isNumber} = Foundation
 {color, Color, point, Point, rect, matrix, Matrix} = Atomic
 {curriedRoundedRectangle} = Paths
 
@@ -12,7 +12,7 @@ module.exports = createWithPostCreate class RectangleElement extends FillableBas
   @drawProperty
     radius:
       default:  0
-      validate: (v) -> !v || typeof v is "number"
+      validate: (v) -> !v || isNumber(v) || isPlainObject(v)
       preprocess: (v) -> v || 0
 
   # override so Outline child can be "filled"
