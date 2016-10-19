@@ -7,7 +7,7 @@ GlobalEpochCycle = require '../../core/global_epoch_cycle'
 {log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
   isString, isNumber
 } = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+{point, rect} = Atomic
 {normalizeFontOptions} = Text.Metrics
 
 {globalEpochCycle} = GlobalEpochCycle

@@ -4,7 +4,6 @@ Text = require 'art-text'
 FillableBase = require '../fillable_base'
 {Paths} = require 'art-canvas'
 {pureMerge, floatEq, base, createWithPostCreate, isPlainObject, isNumber} = Foundation
-{color, Color, point, Point, rect, matrix, Matrix} = Atomic
 {curriedRoundedRectangle} = Paths
 
 module.exports = createWithPostCreate class RectangleElement extends FillableBase

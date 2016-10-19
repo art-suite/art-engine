@@ -5,7 +5,7 @@ Engine = require 'art-engine'
 StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {inspect, log, isArray} = Foundation
-{point, matrix, rect} = Atomic
+{point, matrix, rect, perimeter} = Atomic
 {stateEpochTest, drawAndTestElement} = StateEpochTestHelper
 
 {Element, RectangleElement, TextElement} = Engine
@@ -139,7 +139,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       name: "parent"
       child = new Element name:"child"
     ->
-      assert.eq parent.padding, 10
+      assert.eq parent.padding, perimeter 10
       assert.eq child.currentSize, point 80
 
   stateEpochTest "padding:10 moves children by 10", ->
@@ -257,7 +257,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
 
     parent.onNextReady()
     .then ->
-      assert.eq parent.padding, 20
+      assert.eq parent.padding, perimeter 20
       assert.eq parent.currentSize, point 100
       assert.eq parent.sizeForChildren, point 60
 

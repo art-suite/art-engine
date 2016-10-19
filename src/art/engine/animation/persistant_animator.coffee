@@ -357,8 +357,8 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     @_animate = options.animate
     @_continuous = options.continuous
     @_voidValue = rubyOr options.voidValue, options.toFromVoid, options.fromToVoid, options.void, options.toFrom, options.fromTo
-    @_toVoid    = options.toVoid || options.to
-    @_fromVoid  = options.fromVoid || options.from
+    @_toVoid    = options.toVoid ? options.to
+    @_fromVoid  = options.fromVoid ? options.from
     @on options.on if options?.on
 
   @getter

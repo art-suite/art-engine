@@ -3,7 +3,7 @@ Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
 
-{color, point, matrix, Matrix, perimeter} = Atomic
+{rgbColor, point, matrix, Matrix, perimeter} = Atomic
 {inspect, eq, log, peek} = Foundation
 {ElementBase, Element, StateEpoch} = Engine.Core
 {PointLayout} = Engine.Layout
@@ -21,11 +21,11 @@ class ElementTest extends Element
     cursor:                 default: null,                  validate:   (v) -> !v || typeof v is "string"
 
     # property with preprocessor
-    color:                  default: "#ff0",                preprocess: (c) -> color c
+    color:                  default: "#ff0",                preprocess: (c) -> rgbColor c
 
     # property with setter
     # This would be a virtual property if we didn't want to also store the gray value as its own unit
-    gray:                                                   setter: (v) -> color v, v, v
+    gray:                                                   setter: (v) -> rgbColor v, v, v
 
 suite "Art.Engine.Core.Element.extending", ->
   test "_color in instance and _pendingState", ->
@@ -35,7 +35,7 @@ suite "Art.Engine.Core.Element.extending", ->
 
   test "init with default color property", ->
     ebd = new ElementTest
-    assert.eq ebd.color, c = color "#ff0"
+    assert.eq ebd.color, c = rgbColor "#ff0"
     assert.eq ebd.color, c
     assert.eq ebd.getColor(), c
     assert.eq ebd.pendingColor, c
@@ -50,7 +50,7 @@ suite "Art.Engine.Core.Element.extending", ->
   test "init with preprocessed property", ->
     ebd = new ElementTest color: "red"
     assert.eq ebd.colorChanged, true
-    assert.eq ebd.pendingColor, color "red"
+    assert.eq ebd.pendingColor, rgbColor "red"
 
   test "init with invalid property", ->
     errorCount = 0
@@ -83,7 +83,7 @@ suite "Art.Engine.Core.Element.extending", ->
 
     assert.eq ebd.color, before
     assert.eq ebd.colorChanged, true
-    assert.eq ebd.pendingColor, color "red"
+    assert.eq ebd.pendingColor, rgbColor "red"
 
   test "set with invalid property", ->
     ebd = new ElementTest
@@ -109,18 +109,18 @@ suite "Art.Engine.Core.Element.extending", ->
     ebd.gray = .5
 
     assert.eq ebd.color, before
-    assert.eq ebd.pendingGray, color .5
+    assert.eq ebd.pendingGray, rgbColor .5
     assert.eq ebd.grayChanged, true
 
   test "set, get, pendingGet color property", ->
     ebd = new ElementTest
     ebd.color = "white"
-    assert.eq ebd.color, color "#ff0"
-    assert.eq ebd.pendingColor, color "white"
+    assert.eq ebd.color, rgbColor "#ff0"
+    assert.eq ebd.pendingColor, rgbColor "white"
 
     ebd.setColor "brown"
-    assert.eq ebd.color, color "#ff0"
-    assert.eq ebd.pendingColor, color "brown"
+    assert.eq ebd.color, rgbColor "#ff0"
+    assert.eq ebd.pendingColor, rgbColor "brown"
 
   test "colorChanged", ->
     ebd = new ElementTest
@@ -138,15 +138,15 @@ suite "Art.Engine.Core.Element.extending", ->
     count = 0
     ebd._drawPropertiesChanged = -> count++
 
-    ebd.color = color "white"
-    assert.eq ebd.color, color "#ff0"
+    ebd.color = rgbColor "white"
+    assert.eq ebd.color, rgbColor "#ff0"
     assert.eq true, ebd.colorChanged
-    assert.eq ebd.pendingColor, color "white"
+    assert.eq ebd.pendingColor, rgbColor "white"
 
     ebd._applyStateChanges()
-    assert.eq ebd.color, color "white"
+    assert.eq ebd.color, rgbColor "white"
     assert.eq false, ebd.colorChanged
-    assert.eq ebd.pendingColor, color "white"
+    assert.eq ebd.pendingColor, rgbColor "white"
 
     assert.eq count, 1
 
@@ -154,20 +154,20 @@ suite "Art.Engine.Core.Element.extending", ->
     countBefore = stateEpoch.epochLength
     log countBefore:countBefore
     ebd = new ElementTest
-    # ebd.color = color "red"
+    # ebd.color = rgbColor "red"
     # assert.eq stateEpoch.epochLength, countBefore + 1
     assert.eq true, stateEpoch._isChangingElement ebd
 
-    ebd.color = color "gold"
+    ebd.color = rgbColor "gold"
     assert.eq stateEpoch.epochLength, countBefore + 1
 
   test "stateEpoch", ->
     stateEpoch.flushEpochNow()
     ebd = new ElementTest
-    ebd.color = color "red"
+    ebd.color = rgbColor "red"
     ebd.onNextReady ->
       assert.eq ebd.color, ebd.pendingColor
-      assert.eq ebd.color, color "red"
+      assert.eq ebd.color, rgbColor "red"
       assert.eq false, ebd.colorChanged
 
   test "metaProperties", ->
@@ -190,19 +190,19 @@ suite "Art.Engine.Core.Element.extending", ->
     assert.eq props,
       foo: "non-existent properties are left alone instead of erroring"
       radius: "something completely wrong but with no preprocessor"
-      color: color "#f00"
+      color: rgbColor "#f00"
 
   test "get[Pending]PropertyValues", ->
     ebd = new ElementTest color:"red"
-    assert.eq ebd.getPendingPropertyValues(["foo", "radius", "color"]), radius: 0, color: color "red"
-    assert.eq ebd.getPropertyValues(["foo", "radius", "color"]), radius: 0, color: color "#ff0"
+    assert.eq ebd.getPendingPropertyValues(["foo", "radius", "color"]), radius: 0, color: rgbColor "red"
+    assert.eq ebd.getPropertyValues(["foo", "radius", "color"]), radius: 0, color: rgbColor "#ff0"
 
   test "setProperties only alters specified props", ->
     ebd = new ElementTest color:"red", cursor: "pointer"
     ebd.setProperties color:"blue"
-    assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: "pointer", color: color "blue"
+    assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: "pointer", color: rgbColor "blue"
 
   test "replaceProperties sets all properties, using defaults as needed", ->
     ebd = new ElementTest color:"red", cursor: "pointer"
     ebd.replaceProperties color:"blue"
-    assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: null, color: color "blue"
+    assert.eq ebd.getPendingPropertyValues(["color", "cursor"]), cursor: null, color: rgbColor "blue"

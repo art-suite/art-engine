@@ -4,7 +4,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 SynchronizedDomOverlay = require "./synchronized_dom_overlay"
 
-{color} = Atomic
+{rgbColor} = Atomic
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
 {log, merge, select, inspect, createWithPostCreate, wordsArray, timeout} = Foundation
@@ -49,7 +49,7 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
         resize:           "none"
         backgroundColor:  'transparent'
         border:           '0px'
-        color:            color(options.color || "black").toString()
+        color:            rgbColor(options.color || "black").toString()
         fontFamily:       options.fontFamily || "Arial"
         fontSize:         "#{options.fontSize || 16}px"
         margin:           "0"
@@ -112,10 +112,10 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
           @domElement.value = v
 
     color:
-      getter: -> color @domElement.style.color
+      getter: -> rgbColor @domElement.style.color
       setter: (c)->
         self.domElement = @domElement
-        @domElement.style.color = color(c).toString()
+        @domElement.style.color = rgbColor(c).toString()
 
   selectAll: ->
     @domElement.select()

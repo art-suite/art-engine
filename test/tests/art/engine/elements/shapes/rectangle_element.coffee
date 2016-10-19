@@ -153,7 +153,7 @@ suite "Art.Engine.Elements.Shapes.RectangleElement.drawArea", ->
         blur: 10
 
     test: (root) ->
-      assert.eq root.drawArea.toArray(), [-10, -6, 120, 120]
+      assert.eq root.drawArea.toArray(), [-10, -8, 120, 120]
 
   drawAndTestElement "offset and blur", ->
     element: new RectangleElement

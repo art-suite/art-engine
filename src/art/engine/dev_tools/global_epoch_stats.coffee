@@ -5,13 +5,13 @@ define [
   '../core'
 ], (Foundation, Atomic, Canvas, EngineCore) ->
   {log, Map, miniInspect, currentSecond, max, min, timeout, peek} = Foundation
-  {point, rect, Matrix, color} = Atomic
+  {point, rect, Matrix, rgbColor} = Atomic
   {GlobalEpochCycle} = EngineCore
   {globalEpochCycle} = GlobalEpochCycle
   {floor} = Math
 
-  reactColor = color("gold")
-  aimColor = color "#9c3"
+  reactColor = rgbColor("gold")
+  aimColor = rgbColor "#9c3"
 
   class GlobalEpochStat extends Foundation.BaseObject
     constructor: (@sampleTime, @total, @sampleSet) ->
@@ -144,8 +144,8 @@ define [
         Matrix.scaleXY(1, -1).translateXY(-minSampleTime, 0).scaleXY(xScale, yScale).translateXY(legendWidth, h)
 
     drawLabeledHLine: (bitmap, x1, x2, y, clr, label) ->
-      bitmap.drawRectangle null, rect(x1, y, x2-x1, 1), color:color clr
-      bitmap.drawText point(x1, y-5), label, size:14, color:color clr
+      bitmap.drawRectangle null, rect(x1, y, x2-x1, 1), color:rgbColor clr
+      bitmap.drawText point(x1, y-5), label, size:14, color:rgbColor clr
 
     drawEvents: (bitmap, drawMatrix) ->
       {w, h} = bitmap.size
@@ -198,7 +198,7 @@ define [
         clr = GlobalEpochStat.statColors[field]
 
         bitmap.drawRectangle null, rect(0, y, 75, 23), color:clr
-        bitmap.drawText point(5, y + 18), field, size:16, color:color "white"
+        bitmap.drawText point(5, y + 18), field, size:16, color:rgbColor "white"
         y += 25
 
 

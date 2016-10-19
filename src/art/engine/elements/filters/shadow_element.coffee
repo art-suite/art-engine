@@ -2,7 +2,6 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 FilterElement = require './filter_element'
 {createWithPostCreate, log} = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 module.exports = createWithPostCreate class ShadowElement extends FilterElement
   defaultCompositeMode: "destOver"

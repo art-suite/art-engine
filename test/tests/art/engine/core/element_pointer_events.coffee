@@ -6,6 +6,8 @@ Engine = require 'art-engine'
 {point, matrix} = Atomic
 {Element, CanvasElement} = Engine.Core
 
+HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
+
 reducedRange = (data, factor = 32) ->
   parseInt (a + factor/2) / factor for a in data
 
@@ -23,6 +25,7 @@ eventKey = (e)->
 #   tests
 newEventRig = (options={})->
   canvasElement = new CanvasElement
+    canvas: HtmlCanvas()
     noHtmlCanvasElement: true
     name:"parent"
     size: 100
@@ -87,6 +90,7 @@ suite "Art.Engine.Core.Element", ->
   suite "PointerEvents", ->
     test "Basic pointerDown", (done)->
       top = new CanvasElement
+        canvas: HtmlCanvas()
         noHtmlCanvasElement: true
         on: pointerDown: => done()
       top.onNextReady ->

@@ -7,6 +7,8 @@ Engine = require 'art-engine'
 {StateEpoch, Element, CanvasElement} = Engine.Core
 {stateEpoch} = StateEpoch
 
+HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
+
 suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
 
   test 'setting remoteId sets instanceId', ->
@@ -42,14 +44,14 @@ suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
       done()
 
   test 'CanvasElement is automatically registered', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     ce.onNextReady ->
       assert.eq true, ce.isRegistered
       done()
 
 
   test 'new Element added to CanvasElement is registered', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     child = new Element
     ce.children = [child]
     assert.eq false, child.isRegistered
@@ -58,7 +60,7 @@ suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
       done()
 
   test 'ElementBase.getElementByInstanceId returns the registered element', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     child = new Element
     ce.children = [child]
     assert.eq false, child.isRegistered
@@ -67,7 +69,7 @@ suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
       done()
 
   test 'new Element with new child, added to CanvasElement, both are registered', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     parent = new Element {}, [child = new Element]
     ce.onNextReady ->
       ce.children = [parent]
@@ -79,7 +81,7 @@ suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
         done()
 
   test 'new Element with new child, added to CanvasElement, then removed, both are not registered', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     parent = new Element {}, [child = new Element]
     ce.onNextReady ->
       ce.children = [parent]
@@ -95,7 +97,7 @@ suite "Art.Engine.Core.ElementBase._elementInstanceRegistry", ->
           done()
 
   test 'new Element with new child, added to CanvasElement, then child removed, only child is not registered', (done)->
-    ce = new CanvasElement
+    ce = new CanvasElement canvas: HtmlCanvas()
     parent = new Element {}, [child = new Element]
     ce.onNextReady ->
       ce.children = [parent]

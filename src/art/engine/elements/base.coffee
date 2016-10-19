@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Element = require '../core/element'
 {inspect, createWithPostCreate} = Foundation
-{color} = Atomic
+{rgbColor} = Atomic
 
 module.exports = createWithPostCreate class Base extends Element
   @registerWithElementFactory: -> @ != Base
@@ -11,7 +11,7 @@ module.exports = createWithPostCreate class Base extends Element
     super
     @_drawOptions = {}
 
-  @drawProperty color: default: null, preprocess: (v) -> if v then color v else null
+  @drawProperty color: default: null, preprocess: (v) -> if v then rgbColor v else null
 
   #############
   # OVERRIDES

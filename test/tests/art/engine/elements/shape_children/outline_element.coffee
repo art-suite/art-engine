@@ -4,7 +4,7 @@ Engine = require 'art-engine'
 Helper = require '../helper'
 
 {inspect, log} = Foundation
-{point, rect, matrix, Matrix, color} = Atomic
+{point, rect, matrix, Matrix, rgbColor} = Atomic
 {OutlineElement, RectangleElement, TextElement, FillElement} = Engine
 
 {drawTest, drawTest2, drawTest3} =  Helper
@@ -64,7 +64,7 @@ suite "Art.Engine.Elements.ShapeChildren.OutlineElement", ->
       new RectangleElement size: point(50,50),
         new FillElement color:"#ff0"
         new OutlineElement
-          color: color 1, 0, 1, .25
+          color: rgbColor 1, 0, 1, .25
           lineWidth:20
           axis: point .5
           location: ps:.5
@@ -76,28 +76,28 @@ suite "Art.Engine.Elements.ShapeChildren.OutlineElement", ->
     element: ->
       new RectangleElement size: point(50,50),
         new FillElement color:"#ff0"
-        new OutlineElement color:color(1,0,1,.5), lineWidth:10
+        new OutlineElement color:rgbColor(1,0,1,.5), lineWidth:10
 
   drawTest3 "child of TextElement basic",
     stagingBitmapsCreateShouldBe: 0
     element: ->
       parent = new TextElement fontFamily:"impact", fontSize:80, text:"TextElement",
         new FillElement color: "red"
-        new OutlineElement color:color(0,1,0,.5), lineWidth:10
+        new OutlineElement color:rgbColor(0,1,0,.5), lineWidth:10
 
   drawTest3 "child of TextElement with offset",
     stagingBitmapsCreateShouldBe: 0
     element: ->
       parent = new TextElement fontFamily:"impact", fontSize:80, text:"TextElement",
         new FillElement color: "red"
-        new OutlineElement filled:true, color:color(0,0,0,.75), lineWidth:0, location:-28, opacity: .99
+        new OutlineElement filled:true, color: rgbColor(0,0,0,.75), lineWidth:0, location:-28, opacity: .99
 
   drawTest3 "child of TextElement filled",
     stagingBitmapsCreateShouldBe: 0
     element: ->
       parent = new TextElement fontFamily:"impact", fontSize:80, text:"TextElement",
         new FillElement color: "red"
-        new OutlineElement color:color(0,1,0,1), opacity:.25, lineWidth:10, filled:true
+        new OutlineElement color: rgbColor(0,1,0,1), opacity:.25, lineWidth:10, filled:true
 
   drawTest3 "gradient child",
     stagingBitmapsCreateShouldBe: 0

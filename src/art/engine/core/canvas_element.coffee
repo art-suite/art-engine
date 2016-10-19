@@ -77,8 +77,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @retinaSupport = true unless options.disableRetina
 
     @_attach @_getOrCreateCanvasElement options
-      # options.canvas || document.getElementById options.canvasId
-      #@_getOrCreateCanvasElement options
     @engineStat = new EngineStat
 
     @pointerEventManager = new PointerEventManager canvasElement:@
@@ -116,8 +114,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     parentSize: (pending) ->
       if @_canvas
         point(
-          @_canvas.parentElement.clientWidth
-          @_canvas.parentElement.clientHeight
+          @_canvas.parentElement?.clientWidth || 100
+          @_canvas.parentElement?.clientHeight || 100
         )
       else point 100
 
@@ -133,7 +131,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     globalEpochCycle.detachCanvasElement @
     if @_createdHtmlCanvasElement
       log "CanvasElement#detach: removing createdHtmlCanvasElement..."
-      @_createdHtmlCanvasElement.parentElement.removeChild @_createdHtmlCanvasElement
+      @_createdHtmlCanvasElement.parentElement?.removeChild @_createdHtmlCanvasElement
       @_createdHtmlCanvasElement = null
       @_canvas = null
       log "CanvasElement#detach: removed createdHtmlCanvasElement."
@@ -317,13 +315,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     new Point x, y
 
   _detachResizeListener: ->
-    removeResizeListener @_canvas.parentElement, @_resizeListener
+    @_canvas.parentElement && removeResizeListener @_canvas.parentElement, @_resizeListener
 
   _attachResizeListener: ->
     @_domListener window, "resize", (domEvent)=>
       @_updateCanvasToDocumentMatricies()
 
-    addResizeListener @_canvas.parentElement, @_resizeListener = =>
+    @_canvas.parentElement && addResizeListener @_canvas.parentElement, @_resizeListener = =>
       @_updateCanvasGeometry()
 
       # NOTE: must process immediately to avoid showing a stretched canvas

@@ -12,7 +12,7 @@ are set to the current values.
 ###
 
 {currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseObject} = require 'art-foundation'
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art-atomic'
+{rgbColor, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art-atomic'
 {Event, EventEpoch, EventedMixin} = require 'art-events'
 EasingFunctions = require './easing_functions'
 {eventEpoch} = EventEpoch

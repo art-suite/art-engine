@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 CoreElementsBase = require '../base'
 {log, isString, createWithPostCreate} = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+{Matrix} = Atomic
 
 ###
 A FilterElement is any Element with a draw method that takes uses "target's" pixels as input to its own draw computations.

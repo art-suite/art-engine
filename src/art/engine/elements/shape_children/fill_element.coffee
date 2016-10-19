@@ -4,7 +4,6 @@ Canvas = require 'art-canvas'
 FillableBase = require '../fillable_base'
 
 {log, createWithPostCreate} = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
 {GradientFillStyle} = Canvas
 
 # can be a gradient fill or a solid-color fill

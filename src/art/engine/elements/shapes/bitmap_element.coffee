@@ -5,7 +5,7 @@ FillableBase = require '../fillable_base'
 
 {ceil, round} = Math
 {inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject} = Foundation
-{color, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
+{point, rect, Matrix, point0, point1} = Atomic
 
 module.exports = createWithPostCreate class BitmapElement extends FillableBase
 
