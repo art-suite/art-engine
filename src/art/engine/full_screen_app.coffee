@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 
-{Promise, parseQuery, log} = Foundation
-{Meta} = Foundation.Browser.DomElementFactories
+{merge, Promise, parseQuery, log} = Foundation
+{Meta, Link} = Foundation.Browser.DomElementFactories
 
 module.exports = class FullScreenApp
 
@@ -44,15 +44,13 @@ module.exports = class FullScreenApp
 
     appReadyPromise
 
-  @writeDom: ({title, styleSheets, scripts, fontFamilies})->
+  @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
 
     document.title = title || "Art App"
     scripts ||= []
     styleSheets ||= []
     fontFamilies ||= []
 
-    styleSheetLinks = for sheetUrl in styleSheets
-      "<link rel='stylesheet' href='#{sheetUrl}' />"
 
     scriptLinks = for scriptUrl in scripts when scriptUrl
       "<script type='text/javascript' src='#{scriptUrl}'></script>"
@@ -71,22 +69,30 @@ module.exports = class FullScreenApp
 
     newLine = "\n    "
 
-    nameContentMetas =
+    nameContentMetas = merge
       "viewport": "user-scalable=no, width=device-width, initial-scale=1.0"
       "apple-mobile-web-app-capable": "yes"
       "apple-mobile-web-app-status-bar-style": "black-translucent"
       "format-detection": "telephone=no"
+      meta
 
     document.head.appendChild Meta charset: "utf-8"
     document.head.appendChild Meta "http-equiv": "X-UA-Compatible", content: "IE=edge,chrome=1"
     for name, content of nameContentMetas
       document.head.appendChild Meta name: name, content: content
 
+    for sheetUrl in styleSheets
+      document.head.appendChild Link
+        rel: 'stylesheet'
+        href: sheetUrl
+
+    for rel, info of link || {}
+      document.head.appendChild Link
+        rel: rel
+        info
+
     html = """
-      <html>
-        <head>
-          #{styleSheetLinks.join newLine}
-        </head>
+      <html #{if manifest then "manifest='#{manifest}'" else ""}>
 
         <style>
           html {
