@@ -25,12 +25,10 @@
   "license": "ISC",
   "name": "art-engine",
   "scripts": {
-    "build": "neptune-namespaces --std; webpack --progress",
-    "dev": "neptune-namespaces --std; webpack-dev-server -d --progress",
-    "hot": "neptune-namespaces --std; webpack-dev-server --hot --inline --progress",
-    "nn": "neptune-namespaces --std",
-    "nodeTest": "neptune-namespaces --std; mocha -u tdd --compilers coffee:coffee-script/register",
-    "test": "neptune-namespaces --std; webpack-dev-server -d --progress"
+    "build": "nn -s; webpack --progress",
+    "nodeTest": "nn -s; mocha -u tdd --compilers coffee:coffee-script/register",
+    "start": "nn -s; webpack-dev-server --hot --inline --progress",
+    "test": "nn -s; webpack-dev-server -d --progress"
   },
   "version": "1.16.1"
 }
