@@ -27,7 +27,7 @@ class ElementTest extends Element
     # This would be a virtual property if we didn't want to also store the gray value as its own unit
     gray:                                                   setter: (v) -> rgbColor v, v, v
 
-suite "Art.Engine.Core.Element.extending", ->
+module.exports = suite: ->
   test "_color in instance and _pendingState", ->
     ebd = new ElementTest
     assert.ok "_color" in Object.keys ebd

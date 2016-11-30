@@ -31,7 +31,7 @@ class TestableEpochedObject extends EpochedObject
   getPendingSize: -> new PointLayout 100
   getRedrawRequired: -> false
 
-suite "Art.Engine.Core.EpochedObject.concreteProperty.basics", ->
+module.exports = suite: ->
   class EpochedObjectPropertyTester extends TestableEpochedObject
     @concreteProperty
       foo: default: 123
