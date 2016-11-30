@@ -4,7 +4,7 @@ Canvas = require 'art-canvas'
 FillableBase = require '../fillable_base'
 
 {ceil, round} = Math
-{inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject} = Foundation
+{inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray} = Foundation
 {point, rect, Matrix, point0, point1} = Atomic
 
 module.exports = createWithPostCreate class BitmapElement extends FillableBase
@@ -15,6 +15,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
     constructor: ->
       @_cache = {}
       @_referenceCounts = {}
+      @_loaded = {}
 
     # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
@@ -22,7 +23,11 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
         log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"
         log "initializerPromise: #{!!initializerPromise}"
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
-      @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
+      out = @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
+      out.then (bitmap) => @_loaded[url] = bitmap
+      out
+
+    loaded: (url) -> @_loaded[url]
 
     # returns true if the bitmap was released
     # returns false if there are still other references
@@ -36,6 +41,7 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
       @_referenceCounts[url]--
       if @_referenceCounts[url] == 0
         delete @_cache[url]
+        delete @_loaded[url]
         true
       else
         false
@@ -86,6 +92,10 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
       validate:   (v) -> !v || isString v
       postSetter: (v) -> v && @_loadBitmapFromSource v
 
+    altSources:
+      default:    null
+      validate:   (v) -> !v || isPlainArray v
+
   _loadBitmapFromSource: (source) ->
     sourceToBitmapCache.get source
     .then (bitmap) =>
@@ -100,9 +110,10 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
 
   _drawPropertiesChanged: ->
     super
-    return unless @_bitmap
-    bitmapSize = @_bitmap.size
-    @_drawOptions.sourceArea = if @_sourceArea then @_sourceArea.mul(@_bitmap.pixelsPerPoint) else null
+    {currentBitmap} = @
+    return unless currentBitmap
+    bitmapSize = currentBitmap.size
+    @_drawOptions.sourceArea = if @_sourceArea then @_sourceArea.mul(currentBitmap.pixelsPerPoint) else null
     sourceSize = if @_drawOptions.sourceArea then @_drawOptions.sourceArea.size else bitmapSize
     sourceLoc = if @_drawOptions.sourceArea then @_drawOptions.sourceArea.location else point()
     {currentSize} = @
@@ -149,5 +160,13 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
       else
         throw new Error "unknown mode: #{@_mode}"
 
+  @getter
+    currentBitmap: ->
+      return @_bitmap if @_bitmap
+      if @_altSources
+        for url in @_altSources
+          return loaded if loaded = sourceToBitmapCache.loaded url
+
   fillShape: (target, elementToTargetMatrix, options) ->
-    @_bitmap && target.drawBitmap @_bitmapToElementMatrix.mul(elementToTargetMatrix), @_bitmap, options
+    if bitmap = @getCurrentBitmap()
+      target.drawBitmap @_bitmapToElementMatrix.mul(elementToTargetMatrix), bitmap, options
