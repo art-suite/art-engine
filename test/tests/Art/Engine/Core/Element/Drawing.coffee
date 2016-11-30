@@ -6,7 +6,21 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
-{FillElement, BlurElement, RectangleElement, Element} = Engine
+{FillElement, BlurElement, RectangleElement, Element, CanvasElement, TextElement} = Engine
+HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
+
+getDownsampledRedChannel = (bitmap, sliceAmount) ->
+  bitmap = bitmap.canvasBitmap || bitmap
+  out = (a >> 4 for a in bitmap.getImageDataArray "red")
+  if sliceAmount
+    out.slice 0, sliceAmount
+  else
+    out
+
+compareDownsampledRedChannel = (message, canvasElement, compare) ->
+  log "#{message}": canvasElement.canvasBitmap.clone()
+  assert.eq compare, getDownsampledRedChannel(canvasElement, compare.length), message
+
 
 {stateEpochTest} = StateEpochTestHelper
 
@@ -25,7 +39,8 @@ testArtStructure = ->
       name: "child"
       new RectangleElement color: "#700"
 
-suite "Art.Engine.Core.Element.drawing", ->
+module.exports = suite:
+  basics: ->
     stateEpochTest "drawing rectangles", (done)->
       o = new Element
         size: 4
@@ -156,6 +171,77 @@ suite "Art.Engine.Core.Element.drawing", ->
           8, 8, 6, 6, 8, 8
         ]
 
+  partialRedraw: ->
+    test "move Element doesn't redraw whole screen", ->
+      canvasElement = new CanvasElement
+        disableRetina: true
+        size: 4
+        canvas: HtmlCanvas
+          width: 4
+          height: 4
+        [
+          new RectangleElement color: "#480"
+          e = new RectangleElement
+            size: 1
+            location: 2
+            color: "#8ff"
+        ]
+      canvasElement.onNextReady()
+      .then -> canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_initialDraw", canvasElement, [
+          4, 4, 4, 4
+          4, 4, 4, 4
+          4, 4, 8, 4
+          4, 4, 4, 4
+        ]
+
+        canvasElement.canvasBitmap.clear("black")
+        e.location = 1
+        canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_partialDraw", canvasElement, [
+          0, 0, 0, 0
+          0, 8, 4, 0
+          0, 4, 4, 0
+          0, 0, 0, 0
+        ]
+
+    test "TextElement alignment redraws both before and after areas", ->
+      canvasElement = new CanvasElement
+        disableRetina: true
+        size: w: 6, h: 2
+        canvas: HtmlCanvas
+          width: 6
+          height: 2
+        [
+          new RectangleElement color: "#480"
+          e = new TextElement
+            padding: 1
+            size: ps: 1
+            fontSize: 1
+            text: "."
+            align: "left"
+            color: "#8ff"
+        ]
+      canvasElement.onNextReady()
+      .then -> canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_initialDraw", canvasElement, [4, 4, 4, 4, 4, 4]
+
+        canvasElement.canvasBitmap.clear("black")
+        e.align = "center"
+        canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", canvasElement, [4, 4, 4, 4, 0, 0]
+
+        canvasElement.canvasBitmap.clear("black")
+        e.align = "bottomCenter"
+        canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_redrawCenter", canvasElement, [0, 0, 4, 4, 0, 0]
+
+  toBitmap: ->
 
     test "toBitmap no options", ->
       o = testArtStructure()

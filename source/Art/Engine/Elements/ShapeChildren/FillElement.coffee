@@ -13,7 +13,7 @@ module.exports = createWithPostCreate class FillElement extends FillableBase
 
   @virtualProperty
     preFilteredBaseDrawArea: (pending) ->
-      @getParent().getPreFilteredBaseDrawArea pending
+      @getParent(pending).getPreFilteredBaseDrawArea pending
 
   ###
   NOTE:

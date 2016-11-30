@@ -13,6 +13,8 @@ StateEpochLayout = require './EpochLayout/StateEpochLayout'
   defineModule
 } = Foundation
 
+isMobileBrowser = Foundation.Browser.isMobileBrowser()
+
 childrenDrawUnchanged = (before, after) ->
   window.lcs = longestCommonSubsequence before, after
 
@@ -217,8 +219,7 @@ defineModule module, class StateEpoch extends Epoch
     @resetParentToElementMatricies elementToAbsMatrixChangedElementsDepthAscending
 
     # do first pass of drawDirtyArea computation
-    for el in changingElements when el.getElementToParentMatrixChanged()
-      @informAncestorsElementNeedsRedrawing el
+    @informAncestorsElementNeedsRedrawing el for el in drawChangedElements
 
     @updateElementParentChangingElements changingElements
 
@@ -239,10 +240,7 @@ defineModule module, class StateEpoch extends Epoch
     el._drawAreaChanged() for el in changingElements when el.__drawAreaChanged
 
     # recompute cursor and pointer paths
-    # TODO: this should be uncommented out, but we only need this on Desktop; I don't want to do the computation on mobile.
-    # How to detect if we are on moble?
-    # @recomputeMousePathAndCursor changingElements
+    @recomputeMousePathAndCursor changingElements unless isMobileBrowser
 
     # do second pass of drawDirtyArea computation
-    # log epoch: epochCount, drawChangedElements:(e.inspectedName for e in drawChangedElements)
     @informAncestorsElementNeedsRedrawing el for el in drawChangedElements

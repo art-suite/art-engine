@@ -28,6 +28,7 @@ EngineStat= require './EngineStat'
   merge
   objectDiff
   isPlainObject
+  clone
 } = Foundation
 
 {isMobileBrowser} = Browser
@@ -78,6 +79,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     @_attach @_getOrCreateCanvasElement options
     @engineStat = new EngineStat
+    @_dirtyDrawArea = null
 
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
@@ -198,6 +200,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   #   As such, if we are invalidating rectangular areas, we need to do it immediately with each call.
   #   Queuing a list of dirty descendants will only give us the final positions, not the before-positions.
   _needsRedrawing: (descendant) ->
+    dirtyArea = if descendant
+      descendant.drawAreaIn descendant.elementToAbsMatrix
+    else
+      @drawArea
+
+    # descendant && log _needsRedrawing: {descendant: descendant.class, dirtyArea}
+
+    @_dirtyDrawArea = dirtyArea.unionInto @_dirtyDrawArea
+
     super
     @queueDrawEpoch()
 
@@ -230,6 +241,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @_cssCursor = cursor
 
   @getter
+    inspectedObjects: ->
+      CanvasElement: {
+        @currentSize
+        @canvasBitmap
+      }
     htmlCanvasElement: -> @_canvas
     numActivePointers: -> @pointerEventManager.getNumActivePointers()
     cacheable: -> false
@@ -514,6 +530,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   ###############################################
 
   draw: ->
+    # log draw: clone {@_dirtyDrawArea}
+
     Element.resetStats()
     frameStartTime = currentSecond()
     @firstFrameTime ||= frameStartTime
@@ -524,11 +542,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @lastFrameTime = frameStartTime
 
     # draw
-    super @canvasBitmap, @elementToParentMatrix if @canvasBitmap
+    @canvasBitmap?.clippedTo @_dirtyDrawArea || @drawArea, =>
+      super @canvasBitmap, @elementToParentMatrix
+
+    # @_dirtyDrawArea && @canvasBitmap?.drawBorder null, @_dirtyDrawArea, color: "red"
 
     frameEndTime = currentSecond()
     @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
 
+    @_dirtyDrawArea = null
     # @_showDrawStats()
 
   _showDrawStats: ->

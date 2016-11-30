@@ -150,6 +150,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
   @drawLayoutProperty: (map)->
     for prop, options of map
       options.layoutProperty = true
+      options.drawAreaProperty = true
       options.drawProperty = true
       @_defineElementProperty prop, options
 
