@@ -10,7 +10,7 @@ StateEpochTestHelper = require '../Core/StateEpochTestHelper'
 {Animator} = Engine.Animation
 {stateEpochTest} = StateEpochTestHelper
 
-suite "Art.Engine.Animation.Animator", ->
+module.exports = suite: ->
 
   test "Element Animator - Explicit", ->
     el = new Element

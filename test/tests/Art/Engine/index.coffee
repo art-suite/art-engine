@@ -4,9 +4,9 @@
 module.exports = require './namespace'
 .addModules
   TestHelper: require './TestHelper'
-require './Animation'
 require './Core'
 require './Elements'
 require './Events'
 require './File'
 require './Layout'
+require './ZAnimation'
