@@ -1422,6 +1422,15 @@ module.exports = createWithPostCreate class Element extends ElementBase
   #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
   drawAreaIn: (elementToTargetMatrix) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
 
+  @getter
+    absoluteDrawArea: -> @drawAreaIn @elementToAbsMatrix
+    absoluteClippedDrawArea: ->
+      parent = @
+      drawArea = @absoluteDrawArea
+      while parent = parent.getParent()
+        parent.absoluteDrawArea.intersectInto drawArea if parent.clip
+      drawArea
+
   # overridden by some children (Ex: Filter)
 
   # currently drawAreas are only superSets of the pixels changed
@@ -1462,7 +1471,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       Probably also the case that children could be relative to parent's draw area.
 
       USE-CASE: Imikimi's Font effects - fills need to, say, cover all of an outline
-        which requires them to cover the outline's drawarea
+        which requires them to cover the outline's drawArea
       ###
       @getPendingBaseDrawArea()
 

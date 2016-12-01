@@ -207,6 +207,32 @@ module.exports = suite:
           0, 0, 0, 0
         ]
 
+    test "clipping limits dirty redraw", ->
+      canvasElement = new CanvasElement
+        disableRetina: true
+        size: 4
+        canvas: HtmlCanvas
+          width: 4
+          height: 4
+        [
+          new RectangleElement color: "#480"
+          new Element
+            location: x: 1
+            size: 1
+            clip: true
+            e = new RectangleElement size: 2, color: "#8ff"
+        ]
+      canvasElement.onNextReady()
+      .then -> canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [4, 8, 4, 4]
+
+        canvasElement.canvasBitmap.clear("black")
+        e.location = x: -1
+        canvasElement.onNextReady()
+      .then ->
+        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [0, 8, 0, 0]
+
     test "TextElement alignment redraws both before and after areas", ->
       canvasElement = new CanvasElement
         disableRetina: true
