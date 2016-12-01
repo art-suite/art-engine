@@ -80,8 +80,9 @@ module.exports = createWithPostCreate class FillableBase extends Base
     )
 
   @virtualProperty
+    drawAreaPadding: (pending) -> 0
     baseDrawArea: (pending) ->
-      @_expandRectangleByShadow @getPreFilteredBaseDrawArea(pending), @getState(pending)._shadow
+      @_expandRectangleByShadow @getPreFilteredBaseDrawArea(pending), max @getState(pending)._shadow, @getDrawAreaPadding pending
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super

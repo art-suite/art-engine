@@ -9,16 +9,18 @@ module.exports = createWithPostCreate class OutlineElement extends FillableBase
   validLineCaps = ["butt", "round", "square"]
   validLineJoins = ["round", "bevel", "miter"]
 
-  @drawProperty
+  @drawAreaProperty
     lineWidth:  default: 1,         validate: (v) -> typeof v is "number"
-    lineCap:    default: "butt",    validate: (v) -> v in validLineCaps
     lineJoin:   default: "miter",   validate: (v) -> v in validLineJoins
-    lineDash:   default: null,      validate: (v) -> !v || isPlainArray v
-    filled:     default: false
     miterLimit:
       default: 10,
       validate: (v) -> !v || typeof v is "number"
       preprocess: (v) -> if v? then v else 10
+
+  @drawProperty
+    lineCap:    default: "butt",    validate: (v) -> v in validLineCaps
+    lineDash:   default: null,      validate: (v) -> !v || isPlainArray v
+    filled:     default: false
 
   @virtualProperty
     drawAreaPadding: (pending) ->
