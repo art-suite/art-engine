@@ -1424,11 +1424,14 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   @getter
     absoluteDrawArea: -> @drawAreaIn @elementToAbsMatrix
-    absoluteClippedDrawArea: ->
+    absoluteClippedDrawArea: (requiredParent)->
       parent = @
+      requiredParentFound = false
       drawArea = @absoluteDrawArea
       while parent = parent.getParent()
+        requiredParentFound ||= parent == requiredParent
         parent.absoluteDrawArea.intersectInto drawArea if parent.clip
+      return rect() if requiredParent && !requiredParentFound
       drawArea
 
   # overridden by some children (Ex: Filter)

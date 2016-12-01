@@ -201,7 +201,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   #   Queuing a list of dirty descendants will only give us the final positions, not the before-positions.
   _needsRedrawing: (descendant) ->
     dirtyArea = if descendant
-      descendant.absoluteClippedDrawArea
+      descendant.getAbsoluteClippedDrawArea @
     else
       @drawArea
 
