@@ -79,7 +79,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     @_attach @_getOrCreateCanvasElement options
     @engineStat = new EngineStat
-    @_dirtyDrawArea = null
+    @_dirtyDrawAreas = null
 
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
@@ -194,7 +194,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     false
 
-  # eventually this will only mark an area as needing drawing rather than the whole screen.
   # NOTE: For geometry changes, this gets called twice for the same element:
   #   once before and once after it "moves"
   #   As such, if we are invalidating rectangular areas, we need to do it immediately with each call.
@@ -205,9 +204,17 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     else
       @drawArea
 
-    # descendant && log _needsRedrawing: {descendant: descendant.class, dirtyArea}
-
-    @_dirtyDrawArea = dirtyArea.unionInto @_dirtyDrawArea
+    if @_dirtyDrawAreas
+      foundOverlap = false
+      while foundOverlap
+        foundOverlap = false
+        for area, i in @_dirtyDrawAreas when area.overlaps dirtyArea
+          foundOverlap = true
+          area.unionInto dirtyArea
+          @_dirtyDrawAreas = arrayWithout @_dirtyDrawAreas, i
+      @_dirtyDrawAreas.push dirtyArea
+    else
+      @_dirtyDrawAreas = [dirtyArea]
 
     super
     @queueDrawEpoch()
@@ -530,7 +537,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   ###############################################
 
   draw: ->
-    # log draw: clone {@_dirtyDrawArea}
 
     Element.resetStats()
     frameStartTime = currentSecond()
@@ -541,16 +547,18 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @engineStat.add "frameTimeMS", (frameStartTime - @lastFrameTime) * 1000
     @lastFrameTime = frameStartTime
 
-    # draw
-    @canvasBitmap?.clippedTo @_dirtyDrawArea || @drawArea, =>
-      super @canvasBitmap, @elementToParentMatrix
+    for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
+      # draw
+      @canvasBitmap?.clippedTo dirtyDrawArea, =>
+        super @canvasBitmap, @elementToParentMatrix
 
-    # @_dirtyDrawArea && @canvasBitmap?.drawBorder null, @_dirtyDrawArea, color: "red"
+    # for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
+    #   @canvasBitmap?.drawBorder null, dirtyDrawArea, color: "red"
 
     frameEndTime = currentSecond()
     @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
 
-    @_dirtyDrawArea = null
+    @_dirtyDrawAreas = null
     # @_showDrawStats()
 
   _showDrawStats: ->
