@@ -9,17 +9,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {FillElement, BlurElement, RectangleElement, Element, CanvasElement, TextElement} = Engine
 HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
 
-getDownsampledRedChannel = (bitmap, sliceAmount) ->
-  bitmap = bitmap.canvasBitmap || bitmap
-  out = (a >> 4 for a in bitmap.getImageDataArray "red")
-  if sliceAmount
-    out.slice 0, sliceAmount
-  else
-    out
-
-compareDownsampledRedChannel = (message, canvasElement, compare) ->
-  log "#{message}": canvasElement.canvasBitmap.clone()
-  assert.eq compare, getDownsampledRedChannel(canvasElement, compare.length), message
+{compareDownsampledRedChannel} = require "../CoreHelper"
 
 
 {stateEpochTest} = StateEpochTestHelper

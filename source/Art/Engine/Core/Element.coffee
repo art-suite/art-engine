@@ -830,15 +830,17 @@ defineModule module, class Element extends ElementBase
     @_elementToDrawCacheMatrix = null
 
   _drawPropertiesChanged: ->
+    log _drawPropertiesChanged: @inspectedName
     @_clearDrawCache()
 
   _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
   _needsRedrawing: (descendant = @) ->
-    # if @_drawCacheBitmap
-    #   @_addDescendantsDirtyDrawArea descendant
+    # log _needsRedrawing: @inspectedName, descendant: descendant.inspectedName, _drawCacheBitmap: @_drawCacheBitmap
+    if @_drawCacheBitmap
+      @_addDescendantsDirtyDrawArea descendant
 
-    @_clearDrawCache()
+    # @_clearDrawCache()
     if @getPendingVisible() && @getPendingOpacity() > 1/512
       @getPendingParent()?._needsRedrawing descendant
 
@@ -863,6 +865,7 @@ defineModule module, class Element extends ElementBase
   # Whenever the drawCacheManager evicts a cache entry, it calls this
   # on the appropriate element:
   __clearDrawCacheCallbackFromDrawCacheManager: ->
+    log.error "RELEASING SHIT! #{@inspectedName}"
     @_resetDrawCache()
 
   _clearDrawCache: ->
@@ -895,7 +898,7 @@ defineModule module, class Element extends ElementBase
 
   _drawWithCaching: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
 
-    @getCacheIsValid() || @_generateDrawCache()
+    @_generateDrawCache targetSpaceDrawArea, elementToTargetMatrix
 
     drawCacheManager.useDrawCache @
     target.drawBitmap(
@@ -905,9 +908,9 @@ defineModule module, class Element extends ElementBase
     )
 
   # TODO - use new filterSource stuff and accountForOverdraw
-  _generateDrawCache: ->
+  _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
 
-    @_clearDrawCache()
+    # @_clearDrawCache()
 
     drawArea = @getElementSpaceDrawArea().roundOut()
     return if drawArea.getArea() <= 0
@@ -917,26 +920,43 @@ defineModule module, class Element extends ElementBase
     # don't cache if too big
     return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
 
-    @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
+    # re-use existing bitmap, if possible
+    d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
+    if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheDrawArea.size.eq @_drawCacheBitmap?.size
+      log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
+    else
+      log "new _drawCacheBitmap":
+        {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
+      @_clearDrawCache()
+      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+
+    @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
+
+    # stats
+    stats.stagingBitmapsCreated++
+    globalEpochCycle.logEvent "generateDrawCache", @uniqueId
+
+
+    @_currentDrawTarget = @_drawCacheBitmap
+    @_currentToTargetMatrix = @_elementToDrawCacheMatrix
+
+    draw = =>
+      if @getHasCustomClipping()
+        @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
+      else
+        @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
 
     try
       # disable draw-caching for children
       Element._cachingDraws++
 
-      # stats
-      stats.stagingBitmapsCreated++
-      globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-
-      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-
-      @_currentDrawTarget = @_drawCacheBitmap
-      @_currentToTargetMatrix = @_elementToDrawCacheMatrix
-
-      if @getHasCustomClipping()
-        @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
+      if @_dirtyDrawAreas
+        for dirtyDrawArea in @_dirtyDrawAreas
+          @_drawCacheBitmap.clippedTo dirtyDrawArea, draw
+        @_dirtyDrawAreas = null
       else
-        @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
+        draw()
 
     finally
       Element._cachingDraws--
@@ -1546,6 +1566,8 @@ defineModule module, class Element extends ElementBase
     if @getElementToParentMatrixChanged()
       oldElementToParentMatrix = @_elementToParentMatrix
 
+    {parentChanged} = @
+
     super
 
     @_drawAreaChanged()       if @__drawAreaChanged
@@ -1557,7 +1579,7 @@ defineModule module, class Element extends ElementBase
     @__drawPropertiesChanged = false
     @__layoutPropertiesChanged = false
 
-    unless @_parent
+    if parentChanged && !@_parent
       releaseCount = @_releaseAllCacheBitmaps()
 
   _layoutPropertiesChanged: ->

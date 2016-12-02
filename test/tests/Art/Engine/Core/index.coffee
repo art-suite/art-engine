@@ -3,6 +3,7 @@
 
 module.exports = require './namespace'
 .addModules
+  CoreHelper:              require './CoreHelper'             
   ElementChildren:         require './ElementChildren'        
   ElementDrawArea:         require './ElementDrawArea'        
   ElementExtending:        require './ElementExtending'       

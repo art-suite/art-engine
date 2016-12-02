@@ -3,11 +3,12 @@ Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
 StateEpochTestHelper = require '../state_epoch_test_helper'
+{compareDownsampledRedChannel} = require "../CoreHelper"
 
-{point, matrix, Matrix} = Atomic
+{point, matrix, Matrix, rect} = Atomic
 {inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
-{RectangleElement, BitmapElement} = Engine
+{RectangleElement, BitmapElement, TextElement} = Engine
 
 imageDataEqual = (a, b) ->
   a = a.data
@@ -129,6 +130,117 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         el.toBitmap {}
       .then (rendered) ->
         assert.eq false, !!result = el._drawCacheBitmap
+
+  partialInitialDraw: ->
+    test "move Element doesn't redraw whole screen", ->
+      el = new Element
+        size: 4
+        clip: true
+        cachedEl = new Element
+          location: x: 2
+          cacheDraw: true
+          new RectangleElement color: "orange"
+
+      el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_initialDraw", cachedEl._drawCacheBitmap, [
+          4, 4, 4, 4
+          4, 4, 4, 4
+          4, 4, 8, 4
+          4, 4, 4, 4
+        ]
+        assert.eq cachedEl._dirtyDrawAreas, [rect 2, 0, 2, 4]
+
+        cachedEl._drawCacheBitmap.clear("black")
+        e.location = 1
+      #   el.toBitmap {}
+      # .then ->
+      #   compareDownsampledRedChannel "partialRedraw_partialDraw", el._drawCacheBitmap, [
+      #     0, 0, 0, 0
+      #     0, 8, 0, 0
+      #     0, 0, 4, 0
+      #     0, 0, 0, 0
+      #   ]
+
+  partial: ->
+    test "move Element doesn't redraw whole screen", ->
+      el = new Element
+        size: 4
+        cacheDraw: true
+        new RectangleElement color: "#480"
+        e = new RectangleElement
+          size: 1
+          location: 2
+          color: "#8ff"
+
+      el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_initialDraw", el._drawCacheBitmap, [
+          4, 4, 4, 4
+          4, 4, 4, 4
+          4, 4, 8, 4
+          4, 4, 4, 4
+        ]
+
+        el._drawCacheBitmap.clear("black")
+        e.location = 1
+        el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_partialDraw", el._drawCacheBitmap, [
+          0, 0, 0, 0
+          0, 8, 0, 0
+          0, 0, 4, 0
+          0, 0, 0, 0
+        ]
+
+    test "clipping limits dirty redraw", ->
+      el = new Element
+        size: 4
+        cacheDraw: true
+        new RectangleElement color: "#480"
+        new Element
+          location: x: 1
+          size: 1
+          clip: true
+          e = new RectangleElement size: 2, color: "#8ff"
+      el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw clipping", el, [4, 8, 4, 4]
+
+        el._drawCacheBitmap.clear("black")
+        e.location = x: -1
+        el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw clipping", el, [0, 8, 0, 0]
+
+    test "TextElement alignment redraws both before and after areas", ->
+      el = new Element
+        cacheDraw: true
+        clip: true
+        size: w: 6, h: 2
+        new RectangleElement color: "#480"
+        e = new TextElement
+          padding: 1
+          size: ps: 1
+          fontSize: 1
+          text: "."
+          align: "left"
+          color: "#8ff"
+      el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_initialDraw", el, [4, 4, 4, 4, 4, 4]
+
+        el._drawCacheBitmap.clear("black")
+        e.align = "center"
+        el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", el, [4, 4, 4, 4, 0, 0]
+
+        el._drawCacheBitmap.clear("black")
+        e.align = "bottomCenter"
+        el.toBitmap {}
+      .then ->
+        compareDownsampledRedChannel "partialRedraw_redrawCenter", el, [0, 0, 4, 4, 0, 0]
 
   propChanges: ->
     propChangeTest false, "opacity",                .5
