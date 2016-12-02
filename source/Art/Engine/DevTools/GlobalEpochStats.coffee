@@ -11,207 +11,208 @@ EngineCore = require '../Core'
 reactColor = rgbColor "gold"
 aimColor = rgbColor "#9c3"
 
-defineModule module, class GlobalEpochStat extends Foundation.BaseObject
-  constructor: (@sampleTime, @total, @sampleSet) ->
+defineModule module, ->
+  class GlobalEpochStat extends Foundation.BaseObject
+    constructor: (@sampleTime, @total, @sampleSet) ->
 
-  @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactLC", "reactRender", "event", "flux"]
-  @statColors: statColors =
-    total:  "gray"
-    draw:   "#39c"
-    aim:          aimColor
-    aimLayout:    aimColor.withLightness aimColor.lightness * .9
-    aimTL:        aimColor.withLightness aimColor.lightness * .8
-    aimRR:        aimColor.withLightness aimColor.lightness * .7
-    react:        reactColor
-    reactAim:     reactColor.withLightness reactColor.lightness *.9
-    reactLC:      reactColor.withLightness reactColor.lightness *.8
-    reactRender:  reactColor.withLightness reactColor.lightness *.7
-    event:  "#ff6347"
-    flux:   "#d936a3"
+    @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactLC", "reactRender", "event", "flux"]
+    @statColors: statColors =
+      total:  "gray"
+      draw:   "#39c"
+      aim:          aimColor
+      aimLayout:    aimColor.withLightness aimColor.lightness * .9
+      aimTL:        aimColor.withLightness aimColor.lightness * .8
+      aimRR:        aimColor.withLightness aimColor.lightness * .7
+      react:        reactColor
+      reactAim:     reactColor.withLightness reactColor.lightness *.9
+      reactLC:      reactColor.withLightness reactColor.lightness *.8
+      reactRender:  reactColor.withLightness reactColor.lightness *.7
+      event:  "#ff6347"
+      flux:   "#d936a3"
 
-  getStacked: (sampleName) ->
-    return @total if sampleName == "total"
-    sum = 0
-    for sn in statFields by -1
-      sum += @sampleSet[sn] || 0
-      break if sn == sampleName
-    sum
+    getStacked: (sampleName) ->
+      return @total if sampleName == "total"
+      sum = 0
+      for sn in statFields by -1
+        sum += @sampleSet[sn] || 0
+        break if sn == sampleName
+      sum
 
-  drawSample: (bitmap, drawMatrix, sampleWidth, sampleField, h) ->
-    {sampleTime} = @
-    sample = @getStacked sampleField
-    x = floor drawMatrix.transformX sampleTime, sample
-    y = floor drawMatrix.transformY sampleTime, sample
-    bitmap.drawRectangle null, rect(x, y, sampleWidth, h - y), color: statColors[sampleField]
+    drawSample: (bitmap, drawMatrix, sampleWidth, sampleField, h) ->
+      {sampleTime} = @
+      sample = @getStacked sampleField
+      x = floor drawMatrix.transformX sampleTime, sample
+      y = floor drawMatrix.transformY sampleTime, sample
+      bitmap.drawRectangle null, rect(x, y, sampleWidth, h - y), color: statColors[sampleField]
 
-class GlobalEpochStats extends Foundation.BaseObject
-  @classGetter
-    enabled: -> !!globalEpochCycle.globalEpochStats
+  class GlobalEpochStats extends Foundation.BaseObject
+    @classGetter
+      enabled: -> !!globalEpochCycle.globalEpochStats
 
-  @enable: ->
-    log "Enabled globalEpochStats"
-    globalEpochCycle.globalEpochStats = new @
-    true
+    @enable: ->
+      log "Enabled globalEpochStats"
+      globalEpochCycle.globalEpochStats = new @
+      true
 
-  @toggle: ->
-    if @enabled
-      @disable()
-    else
-      @enable()
+    @toggle: ->
+      if @enabled
+        @disable()
+      else
+        @enable()
 
-  @disable: ->
-    log "Disabled globalEpochStats"
-    globalEpochCycle.globalEpochStats = null
-    false
+    @disable: ->
+      log "Disabled globalEpochStats"
+      globalEpochCycle.globalEpochStats = null
+      false
 
-  constructor: ->
-    @reset()
+    constructor: ->
+      @reset()
 
-  reset: ->
-    @maxMs = 2/60
-    @stats = []
-    @nextEventIdIndex = 0
-    @eventsById = {}
-    @eventLegend = {}
-    @_minSampleTime = null
-    @_maxSampleTime = null
+    reset: ->
+      @maxMs = 2/60
+      @stats = []
+      @nextEventIdIndex = 0
+      @eventsById = {}
+      @eventLegend = {}
+      @_minSampleTime = null
+      @_maxSampleTime = null
 
-  add: (sampleTime, total, sampleSet) ->
-    @stats.push ges = new GlobalEpochStat sampleTime, total, sampleSet
+    add: (sampleTime, total, sampleSet) ->
+      @stats.push ges = new GlobalEpochStat sampleTime, total, sampleSet
 
-    @maxMs = max @maxMs, total * 1.5
-    @logAndResetWhenIdle()
-    @addSampleTime sampleTime
+      @maxMs = max @maxMs, total * 1.5
+      @logAndResetWhenIdle()
+      @addSampleTime sampleTime
 
-  addSampleTime: (time) ->
-    @_minSampleTime = min time, @_minSampleTime || time
-    @_maxSampleTime = max time, @_maxSampleTime || time
+    addSampleTime: (time) ->
+      @_minSampleTime = min time, @_minSampleTime || time
+      @_maxSampleTime = max time, @_maxSampleTime || time
 
-  logEvent: (name, id) ->
-    now = currentSecond()
-    @addSampleTime now
-    colors =
-      generateDrawCache: "green"
-      animation: "#77f"
-      animationAborted: "#f77"
-      animationDone: "#77f"
-      default: "gray"
+    logEvent: (name, id) ->
+      now = currentSecond()
+      @addSampleTime now
+      colors =
+        generateDrawCache: "green"
+        animation: "#77f"
+        animationAborted: "#f77"
+        animationDone: "#77f"
+        default: "gray"
 
-    clr = colors[name] || colors.default
+      clr = colors[name] || colors.default
 
-    ebi = @eventsById[id] ||=
-      startTime: now
-      endTime: now
-      index: @nextEventIdIndex++
-      events: []
-      name:name
-      clr: clr
+      ebi = @eventsById[id] ||=
+        startTime: now
+        endTime: now
+        index: @nextEventIdIndex++
+        events: []
+        name:name
+        clr: clr
 
-    ebi.startTime = min now, ebi.startTime
-    ebi.endTime = max now, ebi.endTime
+      ebi.startTime = min now, ebi.startTime
+      ebi.endTime = max now, ebi.endTime
 
-    @eventLegend[name] = clr
+      @eventLegend[name] = clr
 
-    ebi.events.push
-      time: now
-      name: name
-      clr: clr
+      ebi.events.push
+        time: now
+        name: name
+        clr: clr
 
-  @getter
-    minSampleTime: -> @_minSampleTime
-    maxSampleTime: -> @_maxSampleTime
-    sampleTimeRange: -> @maxSampleTime - @minSampleTime
+    @getter
+      minSampleTime: -> @_minSampleTime
+      maxSampleTime: -> @_maxSampleTime
+      sampleTimeRange: -> @maxSampleTime - @minSampleTime
 
-  drawAllSamplesForOneField: (bitmap, drawMatrix, sampleField) ->
-    {size} = bitmap
-    {w, h} = size
-    {sampleTimeRange, stats} = @
-    sampleWidth = floor (w / sampleTimeRange) / 60
-    for stat in stats
-      stat.drawSample bitmap, drawMatrix, sampleWidth, sampleField, h
-    null
-
-  getDrawMatrix: (size)->
+    drawAllSamplesForOneField: (bitmap, drawMatrix, sampleField) ->
+      {size} = bitmap
       {w, h} = size
-      legendWidth = 80
-      w -= legendWidth
-      {sampleTimeRange, minSampleTime, maxMs} = @
+      {sampleTimeRange, stats} = @
       sampleWidth = floor (w / sampleTimeRange) / 60
-      xScale = (w - sampleWidth) / sampleTimeRange
-      yScale = h / maxMs
-      Matrix.scaleXY(1, -1).translateXY(-minSampleTime, 0).scaleXY(xScale, yScale).translateXY(legendWidth, h)
+      for stat in stats
+        stat.drawSample bitmap, drawMatrix, sampleWidth, sampleField, h
+      null
 
-  drawLabeledHLine: (bitmap, x1, x2, y, clr, label) ->
-    bitmap.drawRectangle null, rect(x1, y, x2-x1, 1), color:rgbColor clr
-    bitmap.drawText point(x1, y-5), label, size:14, color:rgbColor clr
+    getDrawMatrix: (size)->
+        {w, h} = size
+        legendWidth = 80
+        w -= legendWidth
+        {sampleTimeRange, minSampleTime, maxMs} = @
+        sampleWidth = floor (w / sampleTimeRange) / 60
+        xScale = (w - sampleWidth) / sampleTimeRange
+        yScale = h / maxMs
+        Matrix.scaleXY(1, -1).translateXY(-minSampleTime, 0).scaleXY(xScale, yScale).translateXY(legendWidth, h)
 
-  drawEvents: (bitmap, drawMatrix) ->
-    {w, h} = bitmap.size
+    drawLabeledHLine: (bitmap, x1, x2, y, clr, label) ->
+      bitmap.drawRectangle null, rect(x1, y, x2-x1, 1), color:rgbColor clr
+      bitmap.drawText point(x1, y-5), label, size:14, color:rgbColor clr
 
-    eventTimeLineHeight = floor h / 20
-    for id, {index, startTime, endTime, clr, events, name} of @eventsById
-      x1 = floor drawMatrix.transformX startTime, 0
-      x2 = floor drawMatrix.transformX endTime, 0
-      y = (index + 1) * eventTimeLineHeight
-      @drawLabeledHLine bitmap, x1, x2, y, clr, name
-      for {time, name, clr} in events
-        x = floor drawMatrix.transformX time, 0
-        bitmap.drawRectangle null, rect(x, y, 1, eventTimeLineHeight * (1/3)), color:clr
+    drawEvents: (bitmap, drawMatrix) ->
+      {w, h} = bitmap.size
 
-  log: ->
-    return unless @stats.length > 0
+      eventTimeLineHeight = floor h / 20
+      for id, {index, startTime, endTime, clr, events, name} of @eventsById
+        x1 = floor drawMatrix.transformX startTime, 0
+        x2 = floor drawMatrix.transformX endTime, 0
+        y = (index + 1) * eventTimeLineHeight
+        @drawLabeledHLine bitmap, x1, x2, y, clr, name
+        for {time, name, clr} in events
+          x = floor drawMatrix.transformX time, 0
+          bitmap.drawRectangle null, rect(x, y, 1, eventTimeLineHeight * (1/3)), color:clr
 
-    !Neptune.Art.DevTools.DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
+    log: ->
+      return unless @stats.length > 0
 
-    bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
-    {w, h} = size
-    bitmap.clear "#fff"
-    drawMatrix = @getDrawMatrix size
+      !Neptune.Art.DevTools.DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
 
-    y = floor drawMatrix.transformY 0, 1/60
-    tenMsY = floor drawMatrix.transformY 0, 1/100
-    fiveMsY = floor drawMatrix.transformY 0, 1/200
-    bitmap.drawRectangle null, rect(0, y, w, 1), color:"#0007"
+      bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
+      {w, h} = size
+      bitmap.clear "#fff"
+      drawMatrix = @getDrawMatrix size
 
-    for sampleField in GlobalEpochStat.statFields
-      @drawAllSamplesForOneField bitmap, drawMatrix, sampleField
+      y = floor drawMatrix.transformY 0, 1/60
+      tenMsY = floor drawMatrix.transformY 0, 1/100
+      fiveMsY = floor drawMatrix.transformY 0, 1/200
+      bitmap.drawRectangle null, rect(0, y, w, 1), color:"#0007"
 
-    legend = {}
+      for sampleField in GlobalEpochStat.statFields
+        @drawAllSamplesForOneField bitmap, drawMatrix, sampleField
 
-    @drawLabeledHLine bitmap, 40, w, tenMsY, "#0007", "10ms"
-    @drawLabeledHLine bitmap, 40, w, fiveMsY, "#0007", "5ms"
-    @drawEvents bitmap, drawMatrix
+      legend = {}
 
-    totalFrames = @stats.length
-    averageFrameTimeMs = @sampleTimeRange / totalFrames
-    perfectFrameCount = @sampleTimeRange * 60 + .5 | 0
-    missedFrames = perfectFrameCount - totalFrames
-    averageFrameTimeMsY = floor drawMatrix.transformY 0, averageFrameTimeMs
-    if (averageFps = 1 / averageFrameTimeMs + .5 | 0) < 55
-      @drawLabeledHLine bitmap, 40, w, y, "#0007", "60fps - 16.7ms"
-    @drawLabeledHLine bitmap, 40, w, averageFrameTimeMsY, "#0007", "average: #{averageFps}fps (miss-rate: #{(100 * missedFrames / perfectFrameCount).toPrecision(2)}% #{missedFrames}/#{perfectFrameCount})"
+      @drawLabeledHLine bitmap, 40, w, tenMsY, "#0007", "10ms"
+      @drawLabeledHLine bitmap, 40, w, fiveMsY, "#0007", "5ms"
+      @drawEvents bitmap, drawMatrix
 
-    y = 0
-    for field in GlobalEpochStat.statFields
-      clr = GlobalEpochStat.statColors[field]
+      totalFrames = @stats.length
+      averageFrameTimeMs = @sampleTimeRange / totalFrames
+      perfectFrameCount = @sampleTimeRange * 60 + .5 | 0
+      missedFrames = perfectFrameCount - totalFrames
+      averageFrameTimeMsY = floor drawMatrix.transformY 0, averageFrameTimeMs
+      if (averageFps = 1 / averageFrameTimeMs + .5 | 0) < 55
+        @drawLabeledHLine bitmap, 40, w, y, "#0007", "60fps - 16.7ms"
+      @drawLabeledHLine bitmap, 40, w, averageFrameTimeMsY, "#0007", "average: #{averageFps}fps (miss-rate: #{(100 * missedFrames / perfectFrameCount).toPrecision(2)}% #{missedFrames}/#{perfectFrameCount})"
 
-      bitmap.drawRectangle null, rect(0, y, 75, 23), color:clr
-      bitmap.drawText point(5, y + 18), field, size:16, color:rgbColor "white"
-      y += 25
+      y = 0
+      for field in GlobalEpochStat.statFields
+        clr = GlobalEpochStat.statColors[field]
+
+        bitmap.drawRectangle null, rect(0, y, 75, 23), color:clr
+        bitmap.drawText point(5, y + 18), field, size:16, color:rgbColor "white"
+        y += 25
 
 
-    bitmap.drawBorder null, bitmap.size, "#eee"
+      bitmap.drawBorder null, bitmap.size, "#eee"
 
-    if ce
-      log "showing GlobalEpochStats"
-      ce.canvasBitmap.drawBitmap null, bitmap, opacity: .9
-    else
-      log bitmap
+      if ce
+        log "showing GlobalEpochStats"
+        ce.canvasBitmap.drawBitmap null, bitmap, opacity: .9
+      else
+        log bitmap
 
-  logAndResetWhenIdle: ->
-    samples = @stats.length
-    if samples > 0
-      timeout 1000, =>
-        if samples == @stats.length && GlobalEpochStats.enabled
-          @log()
-          @reset()
+    logAndResetWhenIdle: ->
+      samples = @stats.length
+      if samples > 0
+        timeout 1000, =>
+          if samples == @stats.length && GlobalEpochStats.enabled
+            @log()
+            @reset()
