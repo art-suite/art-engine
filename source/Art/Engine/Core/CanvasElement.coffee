@@ -199,10 +199,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   #   As such, if we are invalidating rectangular areas, we need to do it immediately with each call.
   #   Queuing a list of dirty descendants will only give us the final positions, not the before-positions.
   _needsRedrawing: (descendant) ->
-    @_addDirtyDrawArea if descendant
-      descendant.getClippedDrawArea @
-    else
-      @drawArea
+    @_addDescendantsDirtyDrawArea descendant
 
     super
     @queueDrawEpoch()

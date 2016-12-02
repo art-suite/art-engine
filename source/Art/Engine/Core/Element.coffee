@@ -835,14 +835,17 @@ defineModule module, class Element extends ElementBase
   _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
   _needsRedrawing: (descendant = @) ->
+    # if @_drawCacheBitmap
+    #   @_addDescendantsDirtyDrawArea descendant
+
     @_clearDrawCache()
     if @getPendingVisible() && @getPendingOpacity() > 1/512
       @getPendingParent()?._needsRedrawing descendant
 
   _addDescendantsDirtyDrawArea: (descendant) ->
-    @_addDirtyDrawArea descendant.getClippedDrawArea @
+    @_addDirtyDrawArea descendant?.getClippedDrawArea @
 
-  _addDirtyDrawArea: (dirtyArea) ->
+  _addDirtyDrawArea: (dirtyArea = @drawArea) ->
 
     if @_dirtyDrawAreas
       foundOverlap = false
