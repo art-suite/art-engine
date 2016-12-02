@@ -848,50 +848,15 @@ defineModule module, class Element extends ElementBase
       @_currentToTargetMatrix = elementToTargetMatrix
 
       targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
-      @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix if targetSpaceDrawArea.area > 0
+      return unless targetSpaceDrawArea.area > 0
+
+      @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix
     finally
       @_currentDrawTarget = @_currentToTargetMatrix = null
 
   #################
   # Draw Caching
   #################
-
-  _resetDrawCache: ->
-    @_drawCacheBitmap = null
-    @_drawCacheToElementMatrix = null
-
-  _drawPropertiesChanged: ->
-    @_clearDrawCache()
-
-  _elementToParentMatrixChanged: (oldElementToParentMatrix)->
-
-  _needsRedrawing: (descendant = @) ->
-    @_clearDrawCache()
-    if @getPendingVisible() && @getPendingOpacity() > 1/512
-      @getPendingParent()?._needsRedrawing descendant
-
-  ###
-
-  When clearing drawCaching for this branch of the AIM, we stop recursing
-  down a sub-branch when we hit an existing drawCache. When a drawCache is
-  created, all its children's drawCaches are removed. Therefor when a
-  drawCache exists, all children are drawCache free.
-
-  ###
-  __clearDrawCacheCallbackFromDrawCacheManager: ->
-    @_resetDrawCache()
-
-  _clearDrawCache: ->
-    return unless @_drawCacheBitmap
-    drawCacheManager.doneWithCacheBitmap @
-    true
-
-  _releaseAllCacheBitmaps: ->
-    count = 0
-    count++ if @_clearDrawCache()
-    count += child._releaseAllCacheBitmaps() for child in @_children
-    count
-
   ###
   "pixel-exact-caching"
 
@@ -907,17 +872,47 @@ defineModule module, class Element extends ElementBase
       use pixel-exact cache
 
   Additional options:
-    We may add another option which lets of add a "cache-at" scale factor to force lower or
-    higher resolution caching.
+    cacheAt prop
+      We may add another option which lets of add a "cache-at" scale factor to force lower or
+      higher resolution caching.
 
-  Old ArtEngine
-    In the old C++ Art.Engine we had a global "fast" mode where caches were not invalidated under
-    any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
-    where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
-    followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
-    for the current purpose-built kimi-editor, it isn't needed.
+    global "fast-mode"
+      In the old C++ Art.Engine we had a global "fast" mode where caches were not invalidated under
+      any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
+      where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
+      followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
+      for the current purpose-built kimi-editor, it isn't needed.
 
   ###
+
+  _resetDrawCache: ->
+    @_drawCacheBitmap = null
+    @_drawCacheToElementMatrix = null
+
+  _drawPropertiesChanged: ->
+    @_clearDrawCache()
+
+  _elementToParentMatrixChanged: (oldElementToParentMatrix)->
+
+  _needsRedrawing: (descendant = @) ->
+    @_clearDrawCache()
+    if @getPendingVisible() && @getPendingOpacity() > 1/512
+      @getPendingParent()?._needsRedrawing descendant
+
+  # Whenever the drawCacheManager evicts a cache entry, it calls this
+  # on the appropriate element:
+  __clearDrawCacheCallbackFromDrawCacheManager: ->
+    @_resetDrawCache()
+
+  _clearDrawCache: ->
+    return unless @_drawCacheBitmap
+    drawCacheManager.doneWithCacheBitmap @
+    true
+
+  _releaseAllCacheBitmaps: ->
+    count = if @_clearDrawCache() then 1 else 0
+    count += child._releaseAllCacheBitmaps() for child in @_children
+    count
 
   @_cachingDraws: 0
 
@@ -927,7 +922,7 @@ defineModule module, class Element extends ElementBase
     needsStagingBitmap: ->
       (@getHasChildren() || @getIsMask()) && (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
 
-      # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
+    # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
     cacheable: -> true
 
   _generateDrawCacheIfNeeded: ->
