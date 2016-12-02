@@ -199,22 +199,10 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   #   As such, if we are invalidating rectangular areas, we need to do it immediately with each call.
   #   Queuing a list of dirty descendants will only give us the final positions, not the before-positions.
   _needsRedrawing: (descendant) ->
-    dirtyArea = if descendant
+    @_addDirtyDrawArea if descendant
       descendant.getClippedDrawArea @
     else
       @drawArea
-
-    if @_dirtyDrawAreas
-      foundOverlap = false
-      while foundOverlap
-        foundOverlap = false
-        for area, i in @_dirtyDrawAreas when area.overlaps dirtyArea
-          foundOverlap = true
-          area.unionInto dirtyArea
-          @_dirtyDrawAreas = arrayWithout @_dirtyDrawAreas, i
-      @_dirtyDrawAreas.push dirtyArea
-    else
-      @_dirtyDrawAreas = [dirtyArea]
 
     super
     @queueDrawEpoch()

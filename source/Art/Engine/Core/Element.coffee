@@ -826,6 +826,7 @@ defineModule module, class Element extends ElementBase
   _resetDrawCache: ->
     @_drawCacheBitmap =
     @_drawCacheToElementMatrix =
+    @_dirtyDrawAreas =
     @_elementToDrawCacheMatrix = null
 
   _drawPropertiesChanged: ->
@@ -837,6 +838,24 @@ defineModule module, class Element extends ElementBase
     @_clearDrawCache()
     if @getPendingVisible() && @getPendingOpacity() > 1/512
       @getPendingParent()?._needsRedrawing descendant
+
+  _addDescendantsDirtyDrawArea: (descendant) ->
+    @_addDirtyDrawArea descendant.getClippedDrawArea @
+
+  _addDirtyDrawArea: (dirtyArea) ->
+
+    if @_dirtyDrawAreas
+      foundOverlap = false
+      while foundOverlap
+        foundOverlap = false
+        for area, i in @_dirtyDrawAreas when area.overlaps dirtyArea
+          foundOverlap = true
+          area.unionInto dirtyArea
+          @_dirtyDrawAreas = arrayWithout @_dirtyDrawAreas, i
+      @_dirtyDrawAreas.push dirtyArea
+    else
+      @_dirtyDrawAreas = [dirtyArea]
+
 
   # Whenever the drawCacheManager evicts a cache entry, it calls this
   # on the appropriate element:
