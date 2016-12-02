@@ -100,7 +100,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   _initFields: ->
     super
-    @_initDrawCache()
+    @_resetDrawCache()
     @_initTemporaryFields()
     @_initComputedFields()
     @_activeAnimator = null
@@ -904,7 +904,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # Draw Caching
   #################
 
-  _initDrawCache: ->
+  _resetDrawCache: ->
     @_drawCacheBitmap = null
     @_drawCacheBitmapInvalid = false
     @_elementDrawChangedThisFrame = true
@@ -915,13 +915,13 @@ module.exports = createWithPostCreate class Element extends ElementBase
     @_cachableDrawCount = 0
 
   _drawPropertiesChanged: ->
-    @_clearDrawCache() if @_drawCacheBitmap
+    @_clearDrawCache()
     @_elementDrawChangedThisFrame = true
 
   _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
   _needsRedrawing: (descendant = @) ->
-    @_clearDrawCache() if @_drawCacheBitmap
+    @_clearDrawCache()
     @_elementDrawChangedThisFrame = true
     if @getPendingVisible() && @getPendingOpacity() > 1/512
       @getPendingParent()?._needsRedrawing descendant
@@ -935,13 +935,13 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   ###
   __clearDrawCacheCallbackFromDrawCacheManager: ->
-    @_drawCacheBitmap = null
+    @_resetDrawCache()
 
-  _clearDrawCache: (force)->
+  _clearDrawCache: ->
+    return unless @_drawCacheBitmap
     if @_cacheDraw == "locked"
       @_drawCacheBitmapInvalid = true
       return
-
 
     drawCacheManager.doneWithCacheBitmap @ if @_drawCacheBitmap
 
@@ -1037,7 +1037,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       @_generateDrawCache()
       true
     else if !_cacheDraw
-      @_clearDrawCache() if @_drawCacheBitmap
+      @_clearDrawCache()
       false
     else if _cacheDraw == 'locked' && @_drawCacheBitmap
       false
