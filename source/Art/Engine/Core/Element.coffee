@@ -910,7 +910,7 @@ defineModule module, class Element extends ElementBase
       stats.stagingBitmapsCreated++
       globalEpochCycle.logEvent "generateDrawCache", @uniqueId
 
-      @_drawCacheBitmap = stagingBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
 
       @_currentDrawTarget = @_drawCacheBitmap
       @_currentToTargetMatrix = @_elementToDrawCacheMatrix
