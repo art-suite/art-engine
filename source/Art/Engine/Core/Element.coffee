@@ -520,8 +520,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
   @concreteProperty
     cacheDraw:
       default: false
-      validate: (v) -> v == false || v == true || v == "locked" || v == "always" || v == "auto"
-      preprocess: (v) -> if v == true then "auto" else v
+      validate: (v) -> v == false || v == true # || v == "locked" || v == "always" || v == "auto"
+      # preprocess: (v) -> if v == true then "auto" else v
 
       description:
         "
@@ -983,7 +983,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       _drawCachingEnabled = Element._drawCachingEnabled
       Element._drawCachingEnabled = false
 
-    globalEpochCycle.logEvent "generateDrawCache", "same-id"
+    globalEpochCycle.logEvent "generateDrawCache", @uniqueId
     # @log cacheElement:@inspectedName, area:cacheDrawArea, matrix: @_drawCacheToElementMatrix
     @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
     # log _generateDrawCache: @_drawCacheBitmap, element: @inspectedName
@@ -1031,28 +1031,29 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   ###
   _generateDrawCacheIfNeeded: ->
-    {_cacheDraw} = @
-    if _cacheDraw && @_useStagingBitmap() && @_elementDrawChangedThisFrame
-      @_elementDrawChangedThisFrame = false
-      @_generateDrawCache()
+    {cacheDraw, cacheable} = @
+    needStagingBitmap = @_useStagingBitmap()
+
+    if needStagingBitmap || (Element._drawCachingEnabled && cacheable && cacheDraw)
+      @_generateDrawCache() if !@_drawCacheBitmap || @_drawCacheBitmapInvalid
       true
-    else if !_cacheDraw
+    else
       @_clearDrawCache()
       false
-    else if _cacheDraw == 'locked' && @_drawCacheBitmap
-      false
-    else if @_elementDrawChangedThisFrame && _cacheDraw == "auto"
-      @_uncachableDrawCount++
-      @_elementDrawChangedThisFrame = false
-      false
-    else
-      @_cachableDrawCount++
-      if (!@_drawCacheBitmap || @_drawCacheBitmapInvalid) &&
-          Element._drawCachingEnabled &&
-          @getCacheable() &&
-          (_cacheDraw != "auto" || @_cachableDrawCount >= @_uncachableDrawCount)
-        @_generateDrawCache()
-        true
+    # else if _cacheDraw == 'locked' && @_drawCacheBitmap
+    #   false
+    # else if @_elementDrawChangedThisFrame && _cacheDraw == "auto"
+    #   @_uncachableDrawCount++
+    #   @_elementDrawChangedThisFrame = false
+    #   false
+    # else
+    #   @_cachableDrawCount++
+    #   if (!@_drawCacheBitmap || @_drawCacheBitmapInvalid) &&
+    #       Element._drawCachingEnabled &&
+    #       @getCacheable() &&
+    #       (_cacheDraw != "auto" || @_cachableDrawCount >= @_uncachableDrawCount)
+    #     @_generateDrawCache()
+    #     true
 
   _cachedFullDraw: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
 
