@@ -840,10 +840,6 @@ defineModule module, class Element extends ElementBase
   #   drawDepth = 0
 
   draw: (target, elementToTargetMatrix)->
-    # if drawPerformanceDebug
-    #   drawDepth++
-    #   startTime = currentSecond()
-
     stats.elementsDrawn++
 
     try
@@ -855,41 +851,6 @@ defineModule module, class Element extends ElementBase
       @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix if targetSpaceDrawArea.area > 0
     finally
       @_currentDrawTarget = @_currentToTargetMatrix = null
-
-      # if drawPerformanceDebug
-      #   drawDepth--
-      #   endTime = currentSecond()
-      #   deltaTime = endTime - startTime
-      #   if deltaTime > .02
-      #     log "#{repeat '-', drawDepth} #{@classPathName} draw: #{deltaTime * 1000 | 0}ms"
-
-
-  # a) directly calls @_generateDrawCache on every element where cacheDraw is rubyTrue and @_drawCacheBitmap is not current
-  # b) does not recurse on elements where cacheDraw is rubyTrue (does not cache within a cache)
-  # returns the number of cache-bitmaps generated
-  preCache: ->
-    sum = 0
-    if @getCacheDraw()
-      if @_drawCacheBitmap
-        # log "preCache: #{@inspectedName} already cached"
-      else
-        # log "preCache: #{@inspectedName}._generateDrawCache()"
-        @_generateDrawCache()
-        sum++
-    else
-      sum += child.preCache() for child in @getChildren()
-
-    sum
-
-  # Ensures that all drawCaches in this AIM sub-branch are generated
-  # NOTE: except for drawCaches within drawCaches
-  # calls preCache in next drawEpoch
-  # calls callback when done
-  whenCached: (callback)->
-    @getCanvasElement().queueDrawEpochPreprocessor =>
-      # log "preCaching subbranch of #{@inspectedName}; cacheDraw: #{@getCacheDraw()}"
-      @preCache()
-      drawEpoch.onNextReady callback
 
   #################
   # Draw Caching
@@ -922,81 +883,43 @@ defineModule module, class Element extends ElementBase
 
   _clearDrawCache: ->
     return unless @_drawCacheBitmap
-
-    drawCacheManager.doneWithCacheBitmap @ if @_drawCacheBitmap
-    null
+    drawCacheManager.doneWithCacheBitmap @
+    true
 
   _releaseAllCacheBitmaps: ->
     count = 0
-    if @_drawCacheBitmap
-      drawCacheManager.doneWithCacheBitmap @
-      count++
-
-    for child in @_children
-      count+= child._releaseAllCacheBitmaps()
+    count++ if @_clearDrawCache()
+    count += child._releaseAllCacheBitmaps() for child in @_children
     count
 
+  ###
+  "pixel-exact-caching"
+
+  Right now (Dec 2016), my strategy is:
+
+    if cacheDraw
+      cache in element space scaled by pixelsPerPoint
+      changes to these specific props do not invalidate the cache:
+        elementToParentMatrix (and all derriviatives)
+        opacity
+        compositeMode
+    else if needsStagingBitmap
+      use pixel-exact cache
+
+  Additional options:
+    We may add another option which lets of add a "cache-at" scale factor to force lower or
+    higher resolution caching.
+
+  Old ArtEngine
+    In the old C++ Art.Engine we had a global "fast" mode where caches were not invalidated under
+    any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
+    where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
+    followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
+    for the current purpose-built kimi-editor, it isn't needed.
+
+  ###
+
   @_cachingDraws: 0
-
-  _generateDrawCache: ->
-
-    @_clearDrawCache()
-
-    drawArea = @getElementSpaceDrawArea().roundOut()
-    return if drawArea.getArea() <= 0
-    pixelsPerPoint = @getDevicePixelsPerPoint()
-    cacheDrawArea = drawArea.mul(pixelsPerPoint)
-
-    # don't cache if too big
-    return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
-
-    @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
-
-    try
-      # disable draw-caching for children
-      Element._cachingDraws++
-
-      globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-      @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-    finally
-      Element._cachingDraws--
-
-  ###
-  TODO:
-
-    Support for "pixel-exact-caching":
-
-      If @needsStagingBitmap is true, we should cache even if _cacheDraw is false.
-
-      NOTE: cached bitmaps are automatically released and recycled as needed, so over-caching
-        is only a question of overhead. In the case where we are going to generate
-        a staging bitmap ANYWAY, there IS no overhead - just keep the results around in case
-        we need it next time.
-
-      HOWEVER, this is currently a problem because _generateDrawCache always generates
-      a cache bitmap at a fixed scale - the devicePixelsPerPoint.
-
-      This can be very wrong. Example: With the Flashy Text-renderer in the Kimi-editor the rendered
-      resolution becomes rediculously low - 1/10th the desired resolution or so.
-
-      So, we need the option to always cache in such a way that is pixel-exact with would would
-      have been output without caching. If the the draw-matrix changes in anyway other than whole
-      pixel translations then the cache should be invalidated and redrawn.
-
-      We still want the current mode, which renders the draw-cache at the element's logical size
-      multipled by the devicePixelsPerPoint. This is faster, and often not a quality concern.
-
-      Additional options:
-        We may add another option which lets of add a "cache-at" scale factor to force lower or
-        higher resolution caching.
-
-        In the old C++ Art.Engine we had a global "fast" mode where caches were not invalidated under
-        any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
-        where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
-        followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
-        for the current purpose-built kimi-editor, it isn't needed.
-
-  ###
 
   @getter
     cacheDrawRequired: -> @getNeedsStagingBitmap() || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
@@ -1025,6 +948,29 @@ defineModule module, class Element extends ElementBase
         compositeMode:  @compositeMode
     else
       @_fullDraw targetSpaceDrawArea, target, elementToTargetMatrix
+
+  _generateDrawCache: ->
+
+    @_clearDrawCache()
+
+    drawArea = @getElementSpaceDrawArea().roundOut()
+    return if drawArea.getArea() <= 0
+    pixelsPerPoint = @getDevicePixelsPerPoint()
+    cacheDrawArea = drawArea.mul(pixelsPerPoint)
+
+    # don't cache if too big
+    return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
+
+    @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
+
+    try
+      # disable draw-caching for children
+      Element._cachingDraws++
+
+      globalEpochCycle.logEvent "generateDrawCache", @uniqueId
+      @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+    finally
+      Element._cachingDraws--
 
   #################
   # ToBitmap

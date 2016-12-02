@@ -132,6 +132,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
   propChanges: ->
     propChangeTest false, "opacity",                .5
+    # propChangeTest false, "visible",                false
     propChangeTest false, "compositeMode",          "add"
     propChangeTest false, "location",               10
     propChangeTest false, "scale",                  .5
