@@ -8,6 +8,7 @@ StateEpoch = require "./StateEpoch"
 DrawEpoch = require "./DrawEpoch"
 GlobalEpochCycle = require './GlobalEpochCycle'
 DrawCacheManager = require './DrawCacheManager'
+{config} = require '../Config'
 
 {isInfiniteResult} = require './EpochLayout/Basics'
 
@@ -43,9 +44,8 @@ truncateLayoutCoordinate = (v) ->
   Promise
   modulo
   inspectedObjectLiteral
+  defineModule
 } = Foundation
-
-cacheAggressively = false
 
 stats = clone zeroedStats =
   stagingBitmapsCreated: 0
@@ -58,8 +58,8 @@ defaultSize = point 100
 
 nonStatePropertyKeyTest = ElementBase.nonStatePropertyKeyTest
 
-module.exports = createWithPostCreate class Element extends ElementBase
-  @drawCachingEnabled: drawCachingEnabled = true
+defineModule module, class Element extends ElementBase
+
   @registerWithElementFactory: -> true
   @stats: stats
   @resetStats: -> mergeInto stats, zeroedStats
@@ -936,34 +936,30 @@ module.exports = createWithPostCreate class Element extends ElementBase
       count+= child._releaseAllCacheBitmaps()
     count
 
-  @_drawCachingEnabled: drawCachingEnabled
+  @_cachingDraws: 0
 
   _generateDrawCache: ->
-    # log "_generateDrawCache: #{@inspectedName} cacheDraw: #{@_cacheDraw}"
-    # console.error "_generateDrawCache"
 
+    @_clearDrawCache()
 
     drawArea = @getElementSpaceDrawArea().roundOut()
     return if drawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
     cacheDrawArea = drawArea.mul(pixelsPerPoint)
-    if cacheDrawArea.size.area > 2048 * 768 * 2
-      # log "not caching: #{@getInspectedName()} (#{cacheDrawArea.size} too big)"
-      return
-    @_clearDrawCache()
+
+    # don't cache if too big
+    return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
 
     @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
 
-    # disable draw-caching for children
-    unless cacheAggressively
-      _drawCachingEnabled = Element._drawCachingEnabled
-      Element._drawCachingEnabled = false
+    try
+      # disable draw-caching for children
+      Element._cachingDraws++
 
-    globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-    @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-
-    unless cacheAggressively
-      Element._drawCachingEnabled = _drawCachingEnabled
+      globalEpochCycle.logEvent "generateDrawCache", @uniqueId
+      @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+    finally
+      Element._cachingDraws--
 
   ###
   TODO:
@@ -1003,7 +999,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
   ###
 
   @getter
-    cacheDrawRequired: -> @getNeedsStagingBitmap() || (Element._drawCachingEnabled && @getCacheable() && @getCacheDraw())
+    cacheDrawRequired: -> @getNeedsStagingBitmap() || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
     cacheIsValid: -> !!@_drawCacheBitmap
     needsStagingBitmap: ->
       (@getHasChildren() || @getIsMask()) && (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
