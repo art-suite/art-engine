@@ -762,12 +762,6 @@ defineModule module, class Element extends ElementBase
       child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     @children # without this, coffeescript returns a new array
 
-  # TODO - use new filterSource stuff
-  _accountForOverdraw: (proposedTargetSpaceDrawArea, elementToTargetMatrix) ->
-    for child in @children when child.overDraw
-      proposedTargetSpaceDrawArea = child.overDraw proposedTargetSpaceDrawArea, elementToTargetMatrix
-    proposedTargetSpaceDrawArea
-
   # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
     throw new Error "bad matrix" unless elementToTargetMatrix.getIsTranslateAndScaleOnly()
@@ -882,11 +876,13 @@ defineModule module, class Element extends ElementBase
     @getCacheIsValid() || @_generateDrawCache()
 
     drawCacheManager.useDrawCache @
-    drawCacheToTargetMatrix = @_drawCacheToElementMatrix.mul elementToTargetMatrix
-    target.drawBitmap drawCacheToTargetMatrix, @_drawCacheBitmap,
-      opacity:        @opacity
-      compositeMode:  @compositeMode
+    target.drawBitmap(
+      @_drawCacheToElementMatrix.mul elementToTargetMatrix
+      @_drawCacheBitmap
+      {@opacity, @compositeMode}
+    )
 
+  # TODO - use new filterSource stuff and accountForOverdraw
   _generateDrawCache: ->
 
     @_clearDrawCache()
