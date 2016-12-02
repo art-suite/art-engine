@@ -818,14 +818,6 @@ defineModule module, class Element extends ElementBase
     stagingBitmap = @_renderStagingBitmap rect(0, 0, @_currentSize.x * s.x, @_currentSize.y * s.y), m = Matrix.scale s
     target.drawBitmap m.inv.mul(elementToTargetMatrix), stagingBitmap, compositeMode:@_compositeMode, opacity: @opacity
 
-  _fullDraw: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
-    # @log _fullDraw:element:@inspectedName, targetSpaceDrawArea:targetSpaceDrawArea, elementToTargetMatrix:elementToTargetMatrix,
-    #   clip:@_clip
-    #   _useStagingBitmap: @_useStagingBitmap()
-    if @_clip                     then @_clipDraw targetSpaceDrawArea, target, elementToTargetMatrix
-    else if @needsStagingBitmap   then @_drawWithStagingBitmap targetSpaceDrawArea, target, elementToTargetMatrix
-    else                               @_drawChildren target, elementToTargetMatrix
-
   _clipDraw: (clipArea, target, elementToTargetMatrix)->
     if !elementToTargetMatrix.getIsTranslateAndScaleOnly() || @needsStagingBitmap
       @_clippedDrawWithStagingBitmapInElementSpace target, elementToTargetMatrix
@@ -850,7 +842,13 @@ defineModule module, class Element extends ElementBase
       targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
       return unless targetSpaceDrawArea.area > 0
 
-      @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix
+      if @getCacheDrawRequired()
+        @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix
+      else
+        @_clearDrawCache()
+        if @_clip then  @_clipDraw targetSpaceDrawArea, target, elementToTargetMatrix
+        else            @_drawChildren target, elementToTargetMatrix
+
     finally
       @_currentDrawTarget = @_currentToTargetMatrix = null
 
@@ -925,24 +923,15 @@ defineModule module, class Element extends ElementBase
     # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
     cacheable: -> true
 
-  _generateDrawCacheIfNeeded: ->
-    if @getCacheDrawRequired()
-      @_generateDrawCache() unless @getCacheIsValid()
-    else
-      @_clearDrawCache()
-
   _cachedFullDraw: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
 
-    @_generateDrawCacheIfNeeded()
+    @getCacheIsValid() || @_generateDrawCache()
 
-    if @getCacheIsValid()
-      drawCacheManager.useDrawCache @
-      drawCacheToTargetMatrix = @_drawCacheToElementMatrix.mul elementToTargetMatrix
-      target.drawBitmap drawCacheToTargetMatrix, @_drawCacheBitmap,
-        opacity:        @opacity
-        compositeMode:  @compositeMode
-    else
-      @_fullDraw targetSpaceDrawArea, target, elementToTargetMatrix
+    drawCacheManager.useDrawCache @
+    drawCacheToTargetMatrix = @_drawCacheToElementMatrix.mul elementToTargetMatrix
+    target.drawBitmap drawCacheToTargetMatrix, @_drawCacheBitmap,
+      opacity:        @opacity
+      compositeMode:  @compositeMode
 
   _generateDrawCache: ->
 
