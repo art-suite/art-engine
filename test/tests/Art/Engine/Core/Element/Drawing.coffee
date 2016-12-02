@@ -202,8 +202,8 @@ module.exports = suite:
       .then ->
         compareDownsampledRedChannel "partialRedraw_partialDraw", canvasElement, [
           0, 0, 0, 0
-          0, 8, 4, 0
-          0, 4, 4, 0
+          0, 8, 0, 0
+          0, 0, 4, 0
           0, 0, 0, 0
         ]
 
