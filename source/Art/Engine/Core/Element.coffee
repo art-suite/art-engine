@@ -774,13 +774,6 @@ defineModule module, class Element extends ElementBase
     stats.stagingBitmapsCreated++
 
     stagingBitmap ||= @bitmapFactory.newBitmap targetSpaceDrawArea.size
-    # throw new Error "stagingBitmap too small" unless stagingBitmap.size.gte targetSpaceDrawArea.size
-
-    # @log _renderStagingBitmap:
-    #   element:@inspectedName
-    #   stagingBitmap_size:stagingBitmap.size
-    #   elementToTargetMatrix:elementToTargetMatrix
-    #   targetSpaceDrawArea:targetSpaceDrawArea
 
     @_currentDrawTarget = stagingBitmap
     @_currentToTargetMatrix = elementToTargetMatrix
@@ -790,12 +783,6 @@ defineModule module, class Element extends ElementBase
     else
       @_drawChildren stagingBitmap, elementToTargetMatrix, true
 
-    # log _renderStagingBitmap:
-    #   element: @inspectedName
-    #   targetSpaceDrawArea:targetSpaceDrawArea
-    #   elementToTargetMatrix: elementToTargetMatrix
-    #   stagingBitmap: stagingBitmap
-
     stagingBitmap
 
   # TODO - use new filterSource stuff
@@ -804,32 +791,14 @@ defineModule module, class Element extends ElementBase
       proposedTargetSpaceDrawArea = child.overDraw proposedTargetSpaceDrawArea, elementToTargetMatrix
     proposedTargetSpaceDrawArea
 
-  # create, draw and composite stagingBitmap with target
-  _drawWithStagingBitmap: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
-    # @log _drawWithStagingBitmap:element:@inspectedName, targetSpaceDrawArea:targetSpaceDrawArea, elementToTargetMatrix:elementToTargetMatrix
-    targetSpaceDrawArea = @_accountForOverdraw targetSpaceDrawArea, elementToTargetMatrix
-
-    stagingBitmap = @_renderStagingBitmap targetSpaceDrawArea, elementToTargetMatrix
-
-    target.drawBitmap targetSpaceDrawArea.locationMatrix, stagingBitmap, compositeMode:@_compositeMode, opacity: @opacity
-
-  _clippedDrawWithStagingBitmapInElementSpace: (target, elementToTargetMatrix) ->
-    s = elementToTargetMatrix.getExactScale()
-    stagingBitmap = @_renderStagingBitmap rect(0, 0, @_currentSize.x * s.x, @_currentSize.y * s.y), m = Matrix.scale s
-    target.drawBitmap m.inv.mul(elementToTargetMatrix), stagingBitmap, compositeMode:@_compositeMode, opacity: @opacity
-
+  # OVERRIDE _clipDraw AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _clipDraw: (clipArea, target, elementToTargetMatrix)->
-    if !elementToTargetMatrix.getIsTranslateAndScaleOnly() || @needsStagingBitmap
-      @_clippedDrawWithStagingBitmapInElementSpace target, elementToTargetMatrix
-    else
-      target.clippedTo clipArea, =>
-        @_drawChildren target, elementToTargetMatrix
+    throw new Error "bad matrix" unless elementToTargetMatrix.getIsTranslateAndScaleOnly()
+    target.clippedTo clipArea, =>
+      @_drawChildren target, elementToTargetMatrix
 
   @getter
     hasCustomClipping: -> false
-
-  # if drawPerformanceDebug = false
-  #   drawDepth = 0
 
   draw: (target, elementToTargetMatrix)->
     stats.elementsDrawn++
@@ -842,7 +811,7 @@ defineModule module, class Element extends ElementBase
       targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
       return unless targetSpaceDrawArea.area > 0
 
-      if @getCacheDrawRequired()
+      if @getCacheDrawRequired elementToTargetMatrix
         @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix
       else
         @_clearDrawCache()
@@ -914,11 +883,18 @@ defineModule module, class Element extends ElementBase
 
   @_cachingDraws: 0
 
+  getCacheDrawRequired: (elementToTargetMatrix) -> @getNeedsStagingBitmap(elementToTargetMatrix) || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
+  getNeedsStagingBitmap: (elementToTargetMatrix) ->
+    (
+      (
+        (@getHasChildren() || @getIsMask()) &&
+        (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
+      ) ||
+      (elementToTargetMatrix && @_clip && !elementToTargetMatrix.getIsTranslateAndScaleOnly())
+    )
+
   @getter
-    cacheDrawRequired: -> @getNeedsStagingBitmap() || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
     cacheIsValid: -> !!@_drawCacheBitmap
-    needsStagingBitmap: ->
-      (@getHasChildren() || @getIsMask()) && (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
 
     # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
     cacheable: -> true
