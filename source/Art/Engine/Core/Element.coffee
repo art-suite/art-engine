@@ -762,24 +762,6 @@ defineModule module, class Element extends ElementBase
       child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     @children # without this, coffeescript returns a new array
 
-  # create, draw and return stagingBitmap
-  _renderStagingBitmap: (targetSpaceDrawArea, elementToTargetMatrix, stagingBitmap)->
-    targetSpaceDrawArea = targetSpaceDrawArea.roundOut()
-    elementToTargetMatrix = elementToTargetMatrix.translateXY -targetSpaceDrawArea.x, -targetSpaceDrawArea.y unless targetSpaceDrawArea.getLocationIsZero()
-    stats.stagingBitmapsCreated++
-
-    stagingBitmap ||= @bitmapFactory.newBitmap targetSpaceDrawArea.size
-
-    @_currentDrawTarget = stagingBitmap
-    @_currentToTargetMatrix = elementToTargetMatrix
-
-    if @getHasCustomClipping()
-      @_drawWithClipping null, stagingBitmap, elementToTargetMatrix
-    else
-      @_drawChildren stagingBitmap, elementToTargetMatrix, true
-
-    stagingBitmap
-
   # TODO - use new filterSource stuff
   _accountForOverdraw: (proposedTargetSpaceDrawArea, elementToTargetMatrix) ->
     for child in @children when child.overDraw
@@ -848,8 +830,9 @@ defineModule module, class Element extends ElementBase
   ###
 
   _resetDrawCache: ->
-    @_drawCacheBitmap = null
-    @_drawCacheToElementMatrix = null
+    @_drawCacheBitmap =
+    @_drawCacheToElementMatrix =
+    @_elementToDrawCacheMatrix = null
 
   _drawPropertiesChanged: ->
     @_clearDrawCache()
@@ -917,13 +900,26 @@ defineModule module, class Element extends ElementBase
     return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
 
     @_drawCacheToElementMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
+    @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
     try
       # disable draw-caching for children
       Element._cachingDraws++
 
+      # stats
+      stats.stagingBitmapsCreated++
       globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-      @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+
+      @_drawCacheBitmap = stagingBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+
+      @_currentDrawTarget = @_drawCacheBitmap
+      @_currentToTargetMatrix = @_elementToDrawCacheMatrix
+
+      if @getHasCustomClipping()
+        @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
+      else
+        @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
+
     finally
       Element._cachingDraws--
 
