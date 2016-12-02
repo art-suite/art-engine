@@ -1266,8 +1266,7 @@ defineModule module, class Element extends ElementBase
   drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
 
   @getter
-    absoluteDrawArea: -> @drawAreaIn @elementToAbsMatrix
-    absoluteClippedDrawArea: (stopAtParent)->
+    clippedDrawArea: (stopAtParent)->
       parent = @
       requiredParentFound = false
       drawArea = @drawAreaInElement stopAtParent
