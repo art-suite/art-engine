@@ -3,6 +3,6 @@
 
 module.exports = require './namespace'
 .addModules
-  BitmapElement:    require './BitmapElement'    
-  RectangleElement: require './rectangle_element'
-  TextElement:      require './TextElement'      
+  BitmapElement:    require './BitmapElement'   
+  RectangleElement: require './RectangleElement'
+  TextElement:      require './TextElement'     
