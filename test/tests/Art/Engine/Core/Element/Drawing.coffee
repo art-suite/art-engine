@@ -123,11 +123,11 @@ module.exports = suite:
         data = bitmap.getImageDataArray "red"
 
         chromeReference = [
-          8, 8, 7, 7, 8, 8,
-          8, 7, 0, 0, 7, 8,
-          7, 0, 0, 0, 0, 7,
-          7, 0, 2, 2, 0, 7,
-          8, 7, 4, 4, 7, 8,
+          8, 8, 5, 5, 8, 8,
+          8, 5, 0, 0, 5, 8,
+          5, 0, 0, 0, 0, 5,
+          5, 0, 2, 2, 0, 5,
+          8, 6, 4, 4, 6, 8,
           8, 8, 6, 6, 8, 8
         ]
 
@@ -155,21 +155,21 @@ module.exports = suite:
         else if eq(reducedData, firefoxReference)
           assert.eq reducedData, firefoxReference
         else
-        assert.within reducedData, [
-          8, 8, 7, 7, 8, 8,
-          8, 7, 0, 0, 7, 8,
-          7, 0, 0, 0, 0, 7,
-          7, 0, 1, 2, 0, 7,
-          8, 7, 4, 4, 7, 8,
-          8, 8, 6, 6, 8, 8
-        ], [
-          8, 8, 7, 7, 8, 8,
-          8, 7, 1, 1, 7, 8,
-          7, 1, 0, 0, 1, 7,
-          7, 1, 2, 2, 1, 7,
-          8, 6, 4, 4, 6, 8,
-          8, 8, 6, 6, 8, 8
-        ]
+          assert.within reducedData, [
+            8, 8, 7, 7, 8, 8,
+            8, 7, 0, 0, 7, 8,
+            7, 0, 0, 0, 0, 7,
+            7, 0, 1, 2, 0, 7,
+            8, 7, 4, 4, 7, 8,
+            8, 8, 6, 6, 8, 8
+          ], [
+            8, 8, 7, 7, 8, 8,
+            8, 7, 1, 1, 7, 8,
+            7, 1, 0, 0, 1, 7,
+            7, 1, 2, 2, 1, 7,
+            8, 6, 4, 4, 6, 8,
+            8, 8, 6, 6, 8, 8
+          ]
 
   partialRedraw: ->
     test "move Element doesn't redraw whole screen", ->
