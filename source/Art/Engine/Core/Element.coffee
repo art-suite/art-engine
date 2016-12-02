@@ -1153,10 +1153,11 @@ defineModule module, class Element extends ElementBase
   # GEOMETRY INFO
   ##########################
 
-  elementToElementMatrix: (o) -> console.error("depricated: elementToElementMatrix - use getElementToElementMatrix");if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
-  elementToTargetMatrix: (parentToTargetMatrix) -> console.error("depricated: elementToTargetMatrix - use getElementToTargetMatrix");@_elementToParentMatrix.mul parentToTargetMatrix
+  getElementToElementMatrix: (o = @getRootElement()) ->
+    if o == @                       then matrix()
+    else if o == @getRootElement()  then @getElementToAbsMatrix()
+    else                                 @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
 
-  getElementToElementMatrix: (o) -> if o == @ then matrix() else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
   getElementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix
 
   ###
@@ -1262,17 +1263,21 @@ defineModule module, class Element extends ElementBase
   # This avoids creating a rectangle object by adding a method to Matrix:
   #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
   drawAreaIn: (elementToTargetMatrix) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
+  drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
 
   @getter
     absoluteDrawArea: -> @drawAreaIn @elementToAbsMatrix
-    absoluteClippedDrawArea: (requiredParent)->
+    absoluteClippedDrawArea: (stopAtParent)->
       parent = @
       requiredParentFound = false
-      drawArea = @absoluteDrawArea
+      drawArea = @drawAreaInElement stopAtParent
+
       while parent = parent.getParent()
-        requiredParentFound ||= parent == requiredParent
-        parent.absoluteDrawArea.intersectInto drawArea if parent.clip
-      return rect() if requiredParent && !requiredParentFound
+        parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
+        if parent == stopAtParent
+          requiredParentFound = true
+          break
+      return rect() if stopAtParent && !requiredParentFound
       drawArea
 
   # overridden by some children (Ex: Filter)
