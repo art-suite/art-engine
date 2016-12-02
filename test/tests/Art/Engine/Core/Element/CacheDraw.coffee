@@ -61,7 +61,7 @@ propChangeTest = (resetsCache, propName, propValue, cacheMode = true)->
 
 {stateEpochTest} = StateEpochTestHelper
 module.exports = Element.drawCachingEnabled && suite:
-  cacheDraw: ->
+  true: ->
     test "cacheDraw: true caches on next draw-cycle", ->
       el = new Element
         cacheDraw: true

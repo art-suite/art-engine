@@ -524,13 +524,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       # preprocess: (v) -> if v == true then "auto" else v
 
       description:
-        "
-        'auto', true: this element will be cached if it is rendered multiple times and isn't changing
-        'always': this element will always be cached
-        'locked': it will be cached once and no matter what changes, the old drawCache will be used for drawing.
-            NOTE: If the element's internal draw properties change, _drawCacheBitmapInvalid is set to true, but the old drawCache is still used.
-            NOTE: If it was 'locked' and then cacheDraw is changed to not 'locked' and not false, and _drawCacheBitmapInvalid is true, the cache will be regenerated.
-        "
+        "true - always caches; false - only caches if _useStagingBitmap() is true"
 
   @virtualProperty
     invisible:
@@ -763,9 +757,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
   # DRAW
   ##########################
 
-  _useStagingBitmap: ->
-    (@getHasChildren() || @getIsMask()) && (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
-
   _drawChildren: (target, elementToTargetMatrix, usingStagingBitmap) ->
     for child in @children when child.visible
       # @log drawChildren:
@@ -832,11 +823,11 @@ module.exports = createWithPostCreate class Element extends ElementBase
     #   clip:@_clip
     #   _useStagingBitmap: @_useStagingBitmap()
     if @_clip                     then @_clipDraw targetSpaceDrawArea, target, elementToTargetMatrix
-    else if @_useStagingBitmap()  then @_drawWithStagingBitmap targetSpaceDrawArea, target, elementToTargetMatrix
+    else if @needsStagingBitmap   then @_drawWithStagingBitmap targetSpaceDrawArea, target, elementToTargetMatrix
     else                               @_drawChildren target, elementToTargetMatrix
 
   _clipDraw: (clipArea, target, elementToTargetMatrix)->
-    if !elementToTargetMatrix.getIsTranslateAndScaleOnly() || @_useStagingBitmap()
+    if !elementToTargetMatrix.getIsTranslateAndScaleOnly() || @needsStagingBitmap
       @_clippedDrawWithStagingBitmapInElementSpace target, elementToTargetMatrix
     else
       target.clippedTo clipArea, =>
@@ -906,23 +897,15 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   _resetDrawCache: ->
     @_drawCacheBitmap = null
-    @_drawCacheBitmapInvalid = false
-    @_elementDrawChangedThisFrame = true
     @_drawCacheToElementMatrix = null
-
-    # these variables are used to avoid objects that trigger _generateDrawCache too often
-    @_uncachableDrawCount = 0
-    @_cachableDrawCount = 0
 
   _drawPropertiesChanged: ->
     @_clearDrawCache()
-    @_elementDrawChangedThisFrame = true
 
   _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
   _needsRedrawing: (descendant = @) ->
     @_clearDrawCache()
-    @_elementDrawChangedThisFrame = true
     if @getPendingVisible() && @getPendingOpacity() > 1/512
       @getPendingParent()?._needsRedrawing descendant
 
@@ -939,15 +922,8 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
   _clearDrawCache: ->
     return unless @_drawCacheBitmap
-    if @_cacheDraw == "locked"
-      @_drawCacheBitmapInvalid = true
-      return
 
     drawCacheManager.doneWithCacheBitmap @ if @_drawCacheBitmap
-
-    # else unless cacheAggressively
-    #   for child in @_children
-    #     child._clearDrawCache()
     null
 
   _releaseAllCacheBitmaps: ->
@@ -984,11 +960,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
       Element._drawCachingEnabled = false
 
     globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-    # @log cacheElement:@inspectedName, area:cacheDrawArea, matrix: @_drawCacheToElementMatrix
     @_drawCacheBitmap = @_renderStagingBitmap cacheDrawArea, Matrix.scale(pixelsPerPoint), drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-    # log _generateDrawCache: @_drawCacheBitmap, element: @inspectedName
-    # log "_generateDrawCache: #{@_drawCacheBitmap.size} #{@inspectedName}"
-    @_drawCacheBitmapInvalid = false
 
     unless cacheAggressively
       Element._drawCachingEnabled = _drawCachingEnabled
@@ -998,7 +970,7 @@ module.exports = createWithPostCreate class Element extends ElementBase
 
     Support for "pixel-exact-caching":
 
-      If @_useStagingBitmap() is true, we should cache even if _cacheDraw is false.
+      If @needsStagingBitmap is true, we should cache even if _cacheDraw is false.
 
       NOTE: cached bitmaps are automatically released and recycled as needed, so over-caching
         is only a question of overhead. In the case where we are going to generate
@@ -1026,47 +998,30 @@ module.exports = createWithPostCreate class Element extends ElementBase
         any draw-matrix changes until fast-mode was turned off, then a final redraw pass was made
         where pixel-inexact caches were invalidated and redrawn. This allowed good user interactivity
         followed by maximum quality renders. This was handy for the more general-purpose Kimi-editor,
-        for for the current purpose-built kimi-editor, it isn't needed.
-
+        for the current purpose-built kimi-editor, it isn't needed.
 
   ###
-  _generateDrawCacheIfNeeded: ->
-    {cacheDraw, cacheable} = @
-    needStagingBitmap = @_useStagingBitmap()
 
-    if needStagingBitmap || (Element._drawCachingEnabled && cacheable && cacheDraw)
-      @_generateDrawCache() if !@_drawCacheBitmap || @_drawCacheBitmapInvalid
-      true
+  @getter
+    cacheDrawRequired: -> @getNeedsStagingBitmap() || (Element._drawCachingEnabled && @getCacheable() && @getCacheDraw())
+    cacheIsValid: -> !!@_drawCacheBitmap
+    needsStagingBitmap: ->
+      (@getHasChildren() || @getIsMask()) && (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
+
+      # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
+    cacheable: -> true
+
+  _generateDrawCacheIfNeeded: ->
+    if @getCacheDrawRequired()
+      @_generateDrawCache() unless @getCacheIsValid()
     else
       @_clearDrawCache()
-      false
-    # else if _cacheDraw == 'locked' && @_drawCacheBitmap
-    #   false
-    # else if @_elementDrawChangedThisFrame && _cacheDraw == "auto"
-    #   @_uncachableDrawCount++
-    #   @_elementDrawChangedThisFrame = false
-    #   false
-    # else
-    #   @_cachableDrawCount++
-    #   if (!@_drawCacheBitmap || @_drawCacheBitmapInvalid) &&
-    #       Element._drawCachingEnabled &&
-    #       @getCacheable() &&
-    #       (_cacheDraw != "auto" || @_cachableDrawCount >= @_uncachableDrawCount)
-    #     @_generateDrawCache()
-    #     true
 
   _cachedFullDraw: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
 
-    # log _cachedFullDraw:
-    #   element:@getInspectedName(),
-    #   _elementDrawChangedThisFrame: @_elementDrawChangedThisFrame,
-    #   _drawCacheBitmap: !!@_drawCacheBitmap
-    #   Element_drawCachingEnabled: Element._drawCachingEnabled
-    #   getCacheable: @getCacheable()
-
     @_generateDrawCacheIfNeeded()
 
-    if @_drawCacheBitmap
+    if @getCacheIsValid()
       drawCacheManager.useDrawCache @
       drawCacheToTargetMatrix = @_drawCacheToElementMatrix.mul elementToTargetMatrix
       target.drawBitmap drawCacheToTargetMatrix, @_drawCacheBitmap,
@@ -1074,10 +1029,6 @@ module.exports = createWithPostCreate class Element extends ElementBase
         compositeMode:  @compositeMode
     else
       @_fullDraw targetSpaceDrawArea, target, elementToTargetMatrix
-
-  # CACHING OVERRIDE
-  @getter
-    cacheable: -> true
 
   #################
   # ToBitmap
