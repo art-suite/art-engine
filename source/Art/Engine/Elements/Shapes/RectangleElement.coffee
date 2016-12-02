@@ -30,7 +30,7 @@ module.exports = createWithPostCreate class RectangleElement extends FillableBas
   # Custom Clipping
   # override to support rounded-rectangle clipping
   #####################
-  _clipDraw: (clipArea, target, elementToTargetMatrix)->
+  _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
     if floatEq @_radius, 0
       super
     else

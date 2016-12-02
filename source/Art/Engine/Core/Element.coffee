@@ -759,11 +759,6 @@ defineModule module, class Element extends ElementBase
 
   _drawChildren: (target, elementToTargetMatrix, usingStagingBitmap) ->
     for child in @children when child.visible
-      # @log drawChildren:
-      #   child:child,
-      #   elementToTargetMatrix:elementToTargetMatrix,
-      #   childToParentMatrix: child.elementToParentMatrix
-      #   childToTargetMatrix: child.elementToTargetMatrix elementToTargetMatrix
       child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     @children # without this, coffeescript returns a new array
 
@@ -779,7 +774,7 @@ defineModule module, class Element extends ElementBase
     @_currentToTargetMatrix = elementToTargetMatrix
 
     if @getHasCustomClipping()
-      @_clipDraw null, stagingBitmap, elementToTargetMatrix
+      @_drawWithClipping null, stagingBitmap, elementToTargetMatrix
     else
       @_drawChildren stagingBitmap, elementToTargetMatrix, true
 
@@ -791,8 +786,8 @@ defineModule module, class Element extends ElementBase
       proposedTargetSpaceDrawArea = child.overDraw proposedTargetSpaceDrawArea, elementToTargetMatrix
     proposedTargetSpaceDrawArea
 
-  # OVERRIDE _clipDraw AND hasCustomClipping for custom clipping (RectangleElement, for example)
-  _clipDraw: (clipArea, target, elementToTargetMatrix)->
+  # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
+  _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
     throw new Error "bad matrix" unless elementToTargetMatrix.getIsTranslateAndScaleOnly()
     target.clippedTo clipArea, =>
       @_drawChildren target, elementToTargetMatrix
@@ -812,10 +807,10 @@ defineModule module, class Element extends ElementBase
       return unless targetSpaceDrawArea.area > 0
 
       if @getCacheDrawRequired elementToTargetMatrix
-        @_cachedFullDraw targetSpaceDrawArea, target, elementToTargetMatrix
+        @_drawWithCaching targetSpaceDrawArea, target, elementToTargetMatrix
       else
         @_clearDrawCache()
-        if @_clip then  @_clipDraw targetSpaceDrawArea, target, elementToTargetMatrix
+        if @_clip then  @_drawWithClipping targetSpaceDrawArea, target, elementToTargetMatrix
         else            @_drawChildren target, elementToTargetMatrix
 
     finally
@@ -899,7 +894,7 @@ defineModule module, class Element extends ElementBase
     # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
     cacheable: -> true
 
-  _cachedFullDraw: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
+  _drawWithCaching: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
 
     @getCacheIsValid() || @_generateDrawCache()
 
