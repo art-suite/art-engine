@@ -329,8 +329,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @_elementToDocumentMatrix = elementToDocumentMatrix
       @_documentToElementMatrix = @_elementToDocumentMatrix.inv
 
-      @_absToDocumentMatrix = @_elementToDocumentMatrix.scale @_devicePixelsPerPoint
-      @_documentToAbsMatrix = @_absToDocumentMatrix.inv
+      @_documentToAbsMatrix = @_documentToElementMatrix.scale @_devicePixelsPerPoint
+      @_absToDocumentMatrix = @_documentToAbsMatrix.inv
 
       @_parentToElementMatrix = @_absToElementMatrix = @_absToDocumentMatrix.mul @_documentToElementMatrix
       @_elementToParentMatrix = @_elementToAbsMatrix = @_absToElementMatrix.inv
@@ -344,9 +344,10 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _domEventLocation: (domEvent) ->
     windowScrollOffset = @getWindowScrollOffset()
-    x = @_documentToAbsMatrix.transformXY domEvent.clientX + windowScrollOffset.x
-    y = @_documentToAbsMatrix.translateY domEvent.clientY + windowScrollOffset.y
-    new Point x, y
+    @_documentToAbsMatrix.transformXY(
+      domEvent.clientX + windowScrollOffset.x
+      domEvent.clientY + windowScrollOffset.y
+    )
 
   _detachResizeListener: ->
     @_canvas.parentElement && removeResizeListener @_canvas.parentElement, @_resizeListener

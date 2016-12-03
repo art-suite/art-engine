@@ -22,6 +22,7 @@ truncateLayoutCoordinate = (v) ->
   floor v + 1/256
 
 {
+  arrayWithout
   neq
   inspect, inspectLean
   clone, time, Map, plainObjectsDeepEq, shallowEq, Unique,
@@ -850,7 +851,8 @@ defineModule module, class Element extends ElementBase
   _addDirtyDrawArea: (dirtyArea = @drawArea) ->
 
     if @_dirtyDrawAreas
-      foundOverlap = false
+      foundOverlap = true
+      dirtyArea = clone dirtyArea
       while foundOverlap
         foundOverlap = false
         for area, i in @_dirtyDrawAreas when area.overlaps dirtyArea
@@ -860,8 +862,6 @@ defineModule module, class Element extends ElementBase
       @_dirtyDrawAreas.push dirtyArea
     else
       @_dirtyDrawAreas = [dirtyArea]
-    # log _addDirtyDrawArea: dirtyArea, {@_dirtyDrawAreas}
-
 
   # Whenever the drawCacheManager evicts a cache entry, it calls this
   # on the appropriate element:
