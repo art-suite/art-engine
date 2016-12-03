@@ -22,6 +22,7 @@ truncateLayoutCoordinate = (v) ->
   floor v + 1/256
 
 {
+  neq
   inspect, inspectLean
   clone, time, Map, plainObjectsDeepEq, shallowEq, Unique,
   compact
@@ -830,13 +831,12 @@ defineModule module, class Element extends ElementBase
     @_elementToDrawCacheMatrix = null
 
   _drawPropertiesChanged: ->
-    log _drawPropertiesChanged: @inspectedName
+    # log _drawPropertiesChanged: @inspectedName
     @_clearDrawCache()
 
   _elementToParentMatrixChanged: (oldElementToParentMatrix)->
 
   _needsRedrawing: (descendant = @) ->
-    # log _needsRedrawing: @inspectedName, descendant: descendant.inspectedName, _drawCacheBitmap: @_drawCacheBitmap
     if @_drawCacheBitmap
       @_addDescendantsDirtyDrawArea descendant
 
@@ -860,12 +860,13 @@ defineModule module, class Element extends ElementBase
       @_dirtyDrawAreas.push dirtyArea
     else
       @_dirtyDrawAreas = [dirtyArea]
+    # log _addDirtyDrawArea: dirtyArea, {@_dirtyDrawAreas}
 
 
   # Whenever the drawCacheManager evicts a cache entry, it calls this
   # on the appropriate element:
   __clearDrawCacheCallbackFromDrawCacheManager: ->
-    log.error "RELEASING SHIT! #{@inspectedName}"
+    # log.error "RELEASING SHIT! #{@inspectedName}"
     @_resetDrawCache()
 
   _clearDrawCache: ->
@@ -907,8 +908,22 @@ defineModule module, class Element extends ElementBase
       {@opacity, @compositeMode}
     )
 
+  _partitionAreasByInteresection: (partitioningArea, areas) ->
+    insideAreas = []
+    outsideAreas = []
+    for area in areas
+      if area.overlaps partitioningArea
+        insideAreas.push area.intersection partitioningArea
+        for cutArea in area.cutout partitioningArea
+          outsideAreas.push cutArea
+      else
+        outsideAreas.push area
+
+    {insideAreas, outsideAreas}
+
   # TODO - use new filterSource stuff and accountForOverdraw
   _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
+    # log generateDrawCache: {@_dirtyDrawAreas}
 
     # @_clearDrawCache()
 
@@ -923,15 +938,28 @@ defineModule module, class Element extends ElementBase
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheDrawArea.size.eq @_drawCacheBitmap?.size
-      log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
+      # log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
     else
-      log "new _drawCacheBitmap":
-        {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
+      # log "new _drawCacheBitmap":
+      #   {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
       @_clearDrawCache()
       @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
 
+
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
+
+    drawCacheSpaceDrawArea = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix).transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
+    # log {drawCacheSpaceDrawArea, targetSpaceDrawArea, cacheDrawArea}
+
+    remainingDirtyAreas = null
+    dirtyAreasToDraw = @_dirtyDrawAreas
+    if drawCacheSpaceDrawArea && neq cacheDrawArea, drawCacheSpaceDrawArea
+      # log "partial draw"
+      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreas = @_dirtyDrawAreas || [cacheDrawArea]
+      # log {insideAreas, outsideAreas, drawCacheSpaceDrawArea, dirtyAreas}
+      dirtyAreasToDraw = insideAreas
+      remainingDirtyAreas = outsideAreas
 
     # stats
     stats.stagingBitmapsCreated++
@@ -951,14 +979,14 @@ defineModule module, class Element extends ElementBase
       # disable draw-caching for children
       Element._cachingDraws++
 
-      if @_dirtyDrawAreas
-        for dirtyDrawArea in @_dirtyDrawAreas
+      if dirtyAreasToDraw
+        for dirtyDrawArea in dirtyAreasToDraw
           @_drawCacheBitmap.clippedTo dirtyDrawArea, draw
-        @_dirtyDrawAreas = null
       else
         draw()
 
     finally
+      @_dirtyDrawAreas = remainingDirtyAreas
       Element._cachingDraws--
 
   #################

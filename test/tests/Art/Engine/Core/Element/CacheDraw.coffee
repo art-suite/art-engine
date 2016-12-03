@@ -137,32 +137,21 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         size: 4
         clip: true
         cachedEl = new Element
-          location: x: 2
+          location: 2
           cacheDraw: true
-          new RectangleElement color: "orange"
+          new RectangleElement color: "#800"
 
       el.toBitmap {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_initialDraw", cachedEl._drawCacheBitmap, [
-          4, 4, 4, 4
-          4, 4, 4, 4
-          4, 4, 8, 4
-          4, 4, 4, 4
+          8, 8, 0, 0
+          8, 8, 0, 0
+          0, 0, 0, 0
+          0, 0, 0, 0
         ]
-        assert.eq cachedEl._dirtyDrawAreas, [rect 2, 0, 2, 4]
+        assert.eq cachedEl._dirtyDrawAreas, [rect(2, 0, 2, 4), rect 0, 2, 2, 2]
 
-        cachedEl._drawCacheBitmap.clear("black")
-        e.location = 1
-      #   el.toBitmap {}
-      # .then ->
-      #   compareDownsampledRedChannel "partialRedraw_partialDraw", el._drawCacheBitmap, [
-      #     0, 0, 0, 0
-      #     0, 8, 0, 0
-      #     0, 0, 4, 0
-      #     0, 0, 0, 0
-      #   ]
-
-  partial: ->
+  partialUpdate: ->
     test "move Element doesn't redraw whole screen", ->
       el = new Element
         size: 4
