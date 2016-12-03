@@ -77,12 +77,24 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     @retinaSupport = true unless options.disableRetina
 
+    @_documentToElementMatrix =
+    @_elementToDocumentMatrix =
+    @_absToDocumentMatrix =
+    @_documentToAbsMatrix = null
+
     @_attach @_getOrCreateCanvasElement options
     @engineStat = new EngineStat
     @_dirtyDrawAreas = null
 
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
+
+  @getter "
+    documentToElementMatrix
+    elementToDocumentMatrix
+    absToDocumentMatrix
+    documentToAbsMatrix
+    "
 
   _getOrCreateCanvasElement: ({canvas, canvasId, parentHtmlElement, noHtmlCanvasElement}) ->
     unless noHtmlCanvasElement
@@ -244,6 +256,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     canvasElement: -> @
     cssCursor: -> @_cssCursor
     windowScrollOffset: -> point window.scrollX, window.scrollY
+    geometry: -> {
+        @size, @scale,
+        @absToElementMatrix,      @elementToAbsMatrix,
+        @documentToElementMatrix, @elementToDocumentMatrix
+        @documentToAbsMatrix,     @absToDocumentMatrix
+        @parentToElementMatrix,   @elementToParentMatrix
+      }
     canvasInnerSize: ->
       point(
         if @_fullPageWidth then window.innerWidth else @_canvas.clientWidth
@@ -306,9 +325,16 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     documentOffset = point left, top
     if !documentOffset.eq @_canvasDocumentOffset
       @_canvasDocumentOffset = documentOffset
-      @_elementToDocumentMatrix = Matrix.scale(1/@_devicePixelsPerPoint).translateXY left, top
-      @_documentToElementMatrix = Matrix.translateXY(-left, -top).scale @_devicePixelsPerPoint
-      @_parentToElementMatrix = null
+
+      @_elementToDocumentMatrix = Matrix.translateXY left, top
+      @_documentToElementMatrix = @_elementToDocumentMatrix.inv
+
+      @_absToDocumentMatrix = @_elementToDocumentMatrix.scale @_devicePixelsPerPoint
+      @_documentToAbsMatrix = @_absToDocumentMatrix.inv
+
+      @_parentToElementMatrix = @_absToElementMatrix = @_absToDocumentMatrix.mul @_documentToElementMatrix
+      @_elementToParentMatrix = @_elementToAbsMatrix = @_absToElementMatrix.inv
+
       @scale = @_devicePixelsPerPoint
       @queueEvent "documentMatriciesChanged"
 
@@ -318,8 +344,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _domEventLocation: (domEvent) ->
     windowScrollOffset = @getWindowScrollOffset()
-    x = (domEvent.clientX + windowScrollOffset.x - @_canvasDocumentOffset.x) * @_devicePixelsPerPoint
-    y = (domEvent.clientY + windowScrollOffset.y - @_canvasDocumentOffset.y) * @_devicePixelsPerPoint
+    x = @_documentToAbsMatrix.transformXY domEvent.clientX + windowScrollOffset.x
+    y = @_documentToAbsMatrix.translateY domEvent.clientY + windowScrollOffset.y
     new Point x, y
 
   _detachResizeListener: ->

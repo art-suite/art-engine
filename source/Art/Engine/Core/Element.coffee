@@ -170,8 +170,8 @@ defineModule module, class Element extends ElementBase
   @getter
     absToElementMatrix: -> @_absToElementMatrix ||= if @_parent then @_parent.getAbsToElementMatrix().mul @getParentToElementMatrix() else @getParentToElementMatrix()
     parentToElementMatrix: -> @_parentToElementMatrix ||= @_elementToParentMatrix.inv
-    elementToDocumentMatrix: -> @getElementToAbsMatrix().mul @getCanvasElement()._elementToDocumentMatrix
-    documentToElementMatrix: -> @getCanvasElement()._documentToElementMatrix.mul @getAbsToElementMatrix()
+    elementToDocumentMatrix: -> @getElementToAbsMatrix().mul @getCanvasElement()._absToDocumentMatrix
+    documentToElementMatrix: -> @getCanvasElement()._documentToAbsMatrix.mul @getAbsToElementMatrix()
     parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
     elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
     drawArea: -> @elementSpaceDrawArea
@@ -1226,7 +1226,7 @@ defineModule module, class Element extends ElementBase
   getElementToElementMatrix: (o = @getRootElement()) ->
     if o == @                       then matrix()
     else if o == @getRootElement()  then @getElementToAbsMatrix()
-    else                                 @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
+    else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
 
   getElementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix
 
