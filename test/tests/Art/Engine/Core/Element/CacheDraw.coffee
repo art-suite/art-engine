@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {compareDownsampledRedChannel} = require "../CoreHelper"
 
 {point, matrix, Matrix, rect} = Atomic
-{inspect, nextTick, eq, log, isFunction} = Foundation
+{m, clone,inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
 {RectangleElement, BitmapElement, TextElement, ShadowElement} = Engine
 
@@ -266,3 +266,45 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
       # test "clipping with rotation", ->
       #   new Element
+
+    drawing: ->
+      test "staging bitmap should persist across two immediate draws", ->
+        standardTextProps = textProps =
+          fontSize: 16
+          fontFamily: "sans-serif"
+          color: "#fffc"
+          align: .5
+          size: ps: 1
+          padding: 10
+
+        standardShadowProps =
+          color:    "#0007"
+          blur:     20
+          offset:   y: 5
+
+        e = new Element
+          size: 100
+          clip: true
+          parent = new Element
+            axis: .5
+            # size: 50
+            location: ps: .5
+            new RectangleElement color: "green", shadow: standardShadowProps
+            needsStagingElement = new Element
+              clip: true
+              new TextElement m standardTextProps, text: "hi!"
+
+        initialStagingBitmapsCreated = Element.stats.stagingBitmapsCreated
+        e.toBitmap()
+        .then ({bitmap}) ->
+          log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
+          parent.angle = (Math.PI/180) * -5
+          e.toBitmap()
+        .then ({bitmap}) ->
+          log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
+          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1
+          parent.angle = (Math.PI/180) * -10
+          e.toBitmap()
+        .then ({bitmap}) ->
+          log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
+          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1

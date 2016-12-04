@@ -939,25 +939,27 @@ defineModule module, class Element extends ElementBase
     d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheDrawArea.size.eq @_drawCacheBitmap?.size
       # log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
+      return unless @_dirtyDrawAreas
     else
       # log "new _drawCacheBitmap":
       #   {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
       @_clearDrawCache()
       @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+      @_dirtyDrawAreas = [cacheDrawArea]
+
 
 
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-    drawCacheSpaceDrawArea = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix).transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
-    # log {drawCacheSpaceDrawArea, targetSpaceDrawArea, cacheDrawArea}
+    t2dMatrix = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix)
+    drawCacheSpaceDrawArea = t2dMatrix.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
     if drawCacheSpaceDrawArea && neq cacheDrawArea, drawCacheSpaceDrawArea
       # log "partial draw"
-      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreas = @_dirtyDrawAreas || [cacheDrawArea]
-      # log {insideAreas, outsideAreas, drawCacheSpaceDrawArea, dirtyAreas}
+      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreasToDraw
       dirtyAreasToDraw = insideAreas
       remainingDirtyAreas = outsideAreas
 
@@ -970,6 +972,7 @@ defineModule module, class Element extends ElementBase
     @_currentToTargetMatrix = @_elementToDrawCacheMatrix
 
     draw = =>
+      @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
       if @getHasCustomClipping()
         @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
       else
