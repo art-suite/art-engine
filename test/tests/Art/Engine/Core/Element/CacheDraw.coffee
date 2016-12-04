@@ -151,6 +151,28 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         ]
         assert.eq cachedEl._dirtyDrawAreas, [rect(2, 0, 2, 4), rect 0, 2, 2, 2]
 
+  incrementalCaching: ->
+    test "clipping limits dirty redraw", ->
+      parent = new Element
+        size: 4
+        clip: true
+        new RectangleElement color: "#480"
+        el = new Element
+          cacheDraw: true
+          location: x: 2
+          new RectangleElement color: "#8ff"
+      parent.toBitmap {}
+      .then ({bitmap})->
+        log {bitmap}
+        compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
+
+        el._drawCacheBitmap.clear("black")
+        el.location = x: 1
+        parent.toBitmap {}
+      .then ({bitmap})->
+        log {bitmap}
+        compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
+
   partialUpdate: ->
     test "move Element doesn't redraw whole screen", ->
       el = new Element

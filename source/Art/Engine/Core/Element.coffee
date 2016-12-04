@@ -328,7 +328,7 @@ defineModule module, class Element extends ElementBase
       a = state._axis
       p = state._currentPadding
       elementToParentMatrix ||= state._elementToParentMatrix
-      elementToParentMatrix.transform s.x * a.x - p.left, s.y * a.y - p.top
+      elementToParentMatrix.transformXY s.x * a.x - p.left, s.y * a.y - p.top
 
     currentAngle: (pending) ->
       state = @getState pending
@@ -952,8 +952,7 @@ defineModule module, class Element extends ElementBase
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-    t2dMatrix = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix)
-    drawCacheSpaceDrawArea = t2dMatrix.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
+    drawCacheSpaceDrawArea = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix).transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
