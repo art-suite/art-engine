@@ -883,15 +883,15 @@ defineModule module, class Element extends ElementBase
 
   getCacheDrawRequired: (elementToTargetMatrix) -> @getNeedsStagingBitmap(elementToTargetMatrix) || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
   getNeedsStagingBitmap: (elementToTargetMatrix) ->
-    (
-      (
-        (@getHasChildren() || @getIsMask()) &&
-        (@_compositeMode != "normal" || @_opacity < 1 || @getChildRequiresParentStagingBitmap())
-      ) ||
-      (elementToTargetMatrix && @_clip && !elementToTargetMatrix.getIsTranslateAndScaleOnly())
+    !!(
+      @getIsMask() ||
+      (@getHasChildren() && !@getCompositingIsBasic()) ||
+      (@_clip && elementToTargetMatrix?.getHasSkew()) ||
+      @getChildRequiresParentStagingBitmap()
     )
 
   @getter
+    compositingIsBasic: -> @_compositeMode == "normal" && floatEq @_opacity, 1
     cacheIsValid: -> !!@_drawCacheBitmap
 
     # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)

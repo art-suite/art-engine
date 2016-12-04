@@ -8,7 +8,7 @@ StateEpochTestHelper = require '../state_epoch_test_helper'
 {point, matrix, Matrix, rect} = Atomic
 {inspect, nextTick, eq, log, isFunction} = Foundation
 {Element} = Engine.Core
-{RectangleElement, BitmapElement, TextElement} = Engine
+{RectangleElement, BitmapElement, TextElement, ShadowElement} = Engine
 
 imageDataEqual = (a, b) ->
   a = a.data
@@ -242,3 +242,27 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
     propChangeTest true,  "size",                   ps: .5
     propChangeTest true,  "child's color",          (el) -> el.find("testChild")[0].color = "#f0f"
     propChangeTest false, "elementToParentMatrix",  (el) -> el.elementToParentMatrix = Matrix.translate(el.currentSize.ccNeg).rotate(Math.PI/6).translate(el.currentSize.cc)
+
+  stagingBitmaps:
+    getNeedsStagingBitmap: ->
+      testNsb = (needsIt, name, tester) ->
+        test "#{if needsIt then 'NEEDED' else 'NOT NEEDED'} when #{name}", ->
+          tester()
+          .onNextReady (e) -> assert.eq e.getNeedsStagingBitmap(e.elementToParentMatrix), needsIt, "getNeedsStagingBitmap() should be #{needsIt}"
+
+      testNsb false, "default", -> new Element()
+      testNsb false, "ONLY clip", -> new Element clip: true
+      testNsb false, "ONLY rotation", -> new Element angle: .1
+
+      testNsb false, "ONLY has Children", -> new Element {}, new Element()
+      testNsb false, "ONLY opacity < 1", -> new Element opacity: .9
+      testNsb false, "ONLY compositeMode: 'add'", -> new Element compositeMode: 'add'
+
+      testNsb true, "isMask", -> new Element isMask: true
+      testNsb true, "clip AND rotation", -> new Element clip: true, angle: .1
+      testNsb true, "has Children AND opacity < 1", -> new Element opacity: .9, new Element()
+      testNsb true, "has Children AND compositeMode: 'add'", -> new Element compositeMode: 'add', new Element()
+      testNsb true, "childRequiresParentStagingBitmap", -> new Element {}, new ShadowElement
+
+      # test "clipping with rotation", ->
+      #   new Element
