@@ -84,7 +84,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     @_attach @_getOrCreateCanvasElement options
     @engineStat = new EngineStat
-    @_dirtyDrawAreas = null
 
     @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
@@ -559,9 +558,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @engineStat.add "frameTimeMS", (frameStartTime - @lastFrameTime) * 1000
     @lastFrameTime = frameStartTime
 
-    for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
-      # draw
-      @canvasBitmap?.clippedTo dirtyDrawArea, =>
+    if @canvasBitmap
+      if @_dirtyDrawAreas
+        for dirtyDrawArea in @_dirtyDrawAreas
+          # draw
+          @canvasBitmap.clippedTo dirtyDrawArea, =>
+            super @canvasBitmap, @elementToParentMatrix
+      else
         super @canvasBitmap, @elementToParentMatrix
 
     # for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
@@ -570,6 +573,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     frameEndTime = currentSecond()
     @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
 
+    @_redrawAll = false
     @_dirtyDrawAreas = null
     # @_showDrawStats()
 

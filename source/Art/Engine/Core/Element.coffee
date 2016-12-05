@@ -826,6 +826,7 @@ defineModule module, class Element extends ElementBase
   ###
 
   _resetDrawCache: ->
+    @_redrawAll = false
     @_drawCacheBitmap =
     @_drawCacheToElementMatrix =
     @_dirtyDrawAreas =
@@ -846,9 +847,14 @@ defineModule module, class Element extends ElementBase
       @getPendingParent()?._needsRedrawing descendant
 
   _addDescendantsDirtyDrawArea: (descendant) ->
-    @_addDirtyDrawArea descendant?.getClippedDrawArea @
+    if descendant && !@_redrawAll
+      @_addDirtyDrawArea descendant.getClippedDrawArea @
+    else
+      @_dirtyDrawAreas = null
+      @_redrawAll = true
 
   _addDirtyDrawArea: (dirtyArea = @drawArea) ->
+    return unless dirtyArea.area > 0
 
     if @_dirtyDrawAreas
       foundOverlap = true
@@ -939,15 +945,14 @@ defineModule module, class Element extends ElementBase
     d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheDrawArea.size.eq @_drawCacheBitmap?.size
       # log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
-      return unless @_dirtyDrawAreas
+      return unless @_dirtyDrawAreas || @_redrawAll
     else
       # log "new _drawCacheBitmap":
       #   {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
       @_clearDrawCache()
       @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
-      @_dirtyDrawAreas = [cacheDrawArea]
-
-
+      @_dirtyDrawAreas = null
+      @_redrawAll = true
 
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
@@ -956,9 +961,10 @@ defineModule module, class Element extends ElementBase
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
+
     if drawCacheSpaceDrawArea && neq cacheDrawArea, drawCacheSpaceDrawArea
       # log "partial draw"
-      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreasToDraw
+      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreasToDraw || [cacheDrawArea]
       dirtyAreasToDraw = insideAreas
       remainingDirtyAreas = outsideAreas
 
@@ -983,11 +989,14 @@ defineModule module, class Element extends ElementBase
 
       if dirtyAreasToDraw
         for dirtyDrawArea in dirtyAreasToDraw
-          @_drawCacheBitmap.clippedTo dirtyDrawArea, draw
+          drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea
+          @_drawCacheBitmap.clippedTo drawCacheSpaceDrawArea, draw
+          # @_drawCacheBitmap.drawBorder null, drawCacheSpaceDrawArea, color: "red"
       else
         draw()
 
     finally
+      @_redrawAll = false
       @_dirtyDrawAreas = remainingDirtyAreas
       Element._cachingDraws--
 
