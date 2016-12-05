@@ -92,19 +92,25 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
     test "overdraw", ->
       el = new Element
         cacheDraw: true
-        size: point 100, 50
+        size: point 4, 2
         new RectangleElement
-          color: "#f70"
-          size: ps: 1, plus: 10
-          location: -5
-        new RectangleElement color:"red"
+          color: "#800"
+          size: ps: 1, plus: 2
+          location: -1
+        new RectangleElement color:"#444"
 
       el.toBitmap {}
-      .then (rendered) ->
+      .then ({bitmap}) ->
+        log {bitmap, _drawCacheBitmap:el._drawCacheBitmap?.clone()}
         result = el._drawCacheBitmap
         assert.eq true, !!result
-        assert.eq result.size, point 110, 60
-        assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, -5, -5
+        assert.eq result.size, point 6, 4
+        assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, -1, -1
+
+        compareDownsampledRedChannel "overdraw", result, [
+          8, 8, 8, 8, 8, 8
+          8, 4, 4, 4, 4, 8
+        ]
 
   nonCachables: ->
     test "rectangle does not cache", ->

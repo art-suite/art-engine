@@ -1,4 +1,4 @@
-{log} = Neptune.Art.Foundation
+{log, eq} = Neptune.Art.Foundation
 module.exports = class CoreHelper
   @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, sliceAmount) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
@@ -11,6 +11,13 @@ module.exports = class CoreHelper
   @compareDownsampledRedChannel: (message, bitmap, compare) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     log "#{message}": bitmap.clone()
-    assert.eq compare, getDownsampledRedChannel(bitmap, compare.length), message
+    downsampled = getDownsampledRedChannel(bitmap, compare.length)
+    unless eq downsampled, compare
+      log compareDownsampledRedChannel:
+        this: downsampled
+        shouldEqual: compare
+        message: message
+
+    assert.eq compare, downsampled, message
 
 

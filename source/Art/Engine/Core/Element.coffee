@@ -936,42 +936,41 @@ defineModule module, class Element extends ElementBase
     drawArea = @getElementSpaceDrawArea().roundOut()
     return if drawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
-    cacheDrawArea = drawArea.mul(pixelsPerPoint)
+    elementSpaceCacheArea = drawArea.mul(pixelsPerPoint)
 
     # don't cache if too big
-    return unless @getNeedsStagingBitmap() || cacheDrawArea.size.area <= 2048 * 1536
+    return unless @getNeedsStagingBitmap() || elementSpaceCacheArea.size.area <= 2048 * 1536
 
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
-    if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheDrawArea.size.eq @_drawCacheBitmap?.size
+    if d2eMatrix.eq(@_drawCacheToElementMatrix) && elementSpaceCacheArea.size.eq @_drawCacheBitmap?.size
       # log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
       return unless @_dirtyDrawAreas || @_redrawAll
     else
       # log "new _drawCacheBitmap":
-      #   {d2eMatrix, @_drawCacheToElementMatrix, cacheDrawArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
+      #   {d2eMatrix, @_drawCacheToElementMatrix, elementSpaceCacheArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
       @_clearDrawCache()
-      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheDrawArea.size
+      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, elementSpaceCacheArea.size
       @_dirtyDrawAreas = null
       @_redrawAll = true
 
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-    drawCacheSpaceDrawArea = elementToTargetMatrix?.inv.mul(@_elementToDrawCacheMatrix).transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(cacheDrawArea)
+    elementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(elementSpaceCacheArea)
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
 
-    if drawCacheSpaceDrawArea && neq cacheDrawArea, drawCacheSpaceDrawArea
-      # log "partial draw"
-      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection drawCacheSpaceDrawArea, dirtyAreasToDraw || [cacheDrawArea]
+    if elementSpaceDrawArea && neq elementSpaceCacheArea, elementSpaceDrawArea
+      log "partial draw"
+      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection elementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceCacheArea]
       dirtyAreasToDraw = insideAreas
       remainingDirtyAreas = outsideAreas
 
     # stats
     stats.stagingBitmapsCreated++
     globalEpochCycle.logEvent "generateDrawCache", @uniqueId
-
 
     @_currentDrawTarget = @_drawCacheBitmap
     @_currentToTargetMatrix = @_elementToDrawCacheMatrix
