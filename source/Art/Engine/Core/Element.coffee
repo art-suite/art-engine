@@ -13,7 +13,7 @@ DrawCacheManager = require './DrawCacheManager'
 {isInfiniteResult} = require './EpochLayout/Basics'
 
 {point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
-{floor} = Math
+{floor, ceil} = Math
 {globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
 {PointLayout, PointLayoutBase} = Layout
@@ -963,7 +963,6 @@ defineModule module, class Element extends ElementBase
     dirtyAreasToDraw = @_dirtyDrawAreas
 
     if elementSpaceDrawArea && neq elementSpaceCacheArea, elementSpaceDrawArea
-      log "partial draw"
       {insideAreas, outsideAreas}  = @_partitionAreasByInteresection elementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceCacheArea]
       dirtyAreasToDraw = insideAreas
       remainingDirtyAreas = outsideAreas
@@ -988,10 +987,17 @@ defineModule module, class Element extends ElementBase
 
       if dirtyAreasToDraw
         for dirtyDrawArea in dirtyAreasToDraw
-          drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea
+          drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
+          # drawCacheSpaceDrawAreaFloat = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea
+          # if !drawCacheSpaceDrawAreaFloat.eq drawCacheSpaceDrawArea
+          #   log {drawCacheSpaceDrawArea, drawCacheSpaceDrawAreaFloat}
+
+          # if (drawCacheSpaceDrawArea.area / @_drawCacheBitmap.size.area) > .1
+          #   log "updating #{ceil(1000 * drawCacheSpaceDrawArea.area / @_drawCacheBitmap.size.area)/10}% of drawCacheBitmap (#{@_drawCacheBitmap.size})"
           @_drawCacheBitmap.clippedTo drawCacheSpaceDrawArea, draw
           # @_drawCacheBitmap.drawBorder null, drawCacheSpaceDrawArea, color: "red"
       else
+        # log "initializing 100% of drawCacheBitmap (#{@_drawCacheBitmap.size})"
         draw()
 
     finally

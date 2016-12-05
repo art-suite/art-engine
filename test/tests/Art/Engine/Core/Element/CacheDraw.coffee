@@ -257,7 +257,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         e.align = "bottomCenter"
         el.toBitmap {}
       .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawCenter", el, [0, 0, 4, 4, 0, 0]
+        compareDownsampledRedChannel "partialRedraw_redrawCenter", el, [0, 4, 4, 4, 0, 0]
 
   propChanges: ->
     propChangeTest false, "opacity",                .5

@@ -30,6 +30,7 @@ class TestableEpochedObject extends EpochedObject
   getPendingParentSizeForChildren: -> point 100
   getPendingSize: -> new PointLayout 100
   getRedrawRequired: -> false
+  getRootElement: -> {}
 
 module.exports = suite: ->
   class EpochedObjectPropertyTester extends TestableEpochedObject
