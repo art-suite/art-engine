@@ -262,7 +262,7 @@ It persists as long as the animator property is set and points to it.
 If can be "active" or not. If active, that element will get an epoch update each
 frame, and the animator will get a chance to animate the property each frame.
 
-Options:
+Options: (events)
   on:
     done: ->   # fires when the animation completes
     update: -> # fires every time the target object's animated values updated
