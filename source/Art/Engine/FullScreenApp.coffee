@@ -33,16 +33,13 @@ module.exports = class FullScreenApp
     log "Art.Engine.FullScreenApp: app ready"
 
   @init: (config = {})->
-    document.onreadystatechange = =>
-      if document.readyState == "interactive"
-        @_domReady();
-        appReadyPromise.resolve()
+    new Promise (resolve) =>
+      document.onreadystatechange = =>
+        if document.readyState == "interactive"
+          @_domReady()
+          resolve()
 
-    module.exports = appReadyPromise = new Promise
-
-    @writeDom config
-
-    appReadyPromise
+      @writeDom config
 
   @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
 
