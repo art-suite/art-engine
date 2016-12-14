@@ -939,7 +939,8 @@ defineModule module, class Element extends ElementBase
     elementSpaceCacheArea = drawArea.mul(pixelsPerPoint)
 
     # don't cache if too big
-    return unless @getNeedsStagingBitmap() || elementSpaceCacheArea.size.area <= 2048 * 1536
+    # TODO: this doesn't work; it causes errors to abort caching at this point
+    # return if elementSpaceCacheArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
 
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
