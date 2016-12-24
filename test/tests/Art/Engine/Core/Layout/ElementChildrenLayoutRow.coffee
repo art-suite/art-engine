@@ -231,6 +231,22 @@ suite "Art.Engine.Core.layout.childrenLayout.row.margins", ->
       assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point( 41, 0), point( 101, 0)]
 
 suite "Art.Engine.Core.layout.childrenLayout.row.alignment", ->
+  drawAndTestElement "alignment and margins", ->
+    element: root = new Element
+      size: w: 100, h: 20
+      childrenLayout: "row"
+      childrenAlignment: "center"
+      new RectangleElement inFlow: false, color: "#aaa"
+      a = new RectangleElement size: 20, color: "#f00", margin: 10
+      b = new RectangleElement size: 20, color: "#ff0", margin: 10
+      c = new RectangleElement size: 20, color: "#0f0", margin: 10
+
+    test: ->
+      assert.eq a.currentLocation.x, 10
+      assert.eq b.currentLocation.x, 40
+      assert.eq c.currentLocation.x, 70
+
+
   for alignment, locations of {
       left:         [point( 0,  0), point( 30,  0), point( 80,  0)]
       topCenter:    [point(40,  0), point( 70,  0), point(120,  0)]
