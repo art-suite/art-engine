@@ -110,7 +110,7 @@ module.exports = class FlexLayout extends BaseObject
 
       margin = layoutMargin child, elementSizeForChildren
       if i > 0
-        effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
+        totalMainSize += effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
         spaceForFlexChildren -= effectivePrevMargin
 
       lastChildsNextMargin = margin[nextMargin]
