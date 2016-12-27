@@ -4,10 +4,10 @@ Canvas = require 'art-canvas'
 FillableBase = require '../FillableBase'
 
 {ceil, round} = Math
-{inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray} = Foundation
+{defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray} = Foundation
 {point, rect, Matrix, point0, point1} = Atomic
 
-module.exports = createWithPostCreate class BitmapElement extends FillableBase
+defineModule module, class BitmapElement extends FillableBase
 
   class BitmapElement.SourceToBitmapCache extends BaseObject
     @singletonClass()
@@ -108,16 +108,14 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
   @drawLayoutProperty
     bitmap:     default: null,      validate:   (v) -> !v || v instanceof Canvas.BitmapBase
 
-  _drawPropertiesChanged: ->
-    super
-    {currentBitmap} = @
-    return unless currentBitmap
-    bitmapSize = currentBitmap.size
-    @_drawOptions.sourceArea = if @_sourceArea then @_sourceArea.mul(currentBitmap.pixelsPerPoint) else null
-    sourceSize = if @_drawOptions.sourceArea then @_drawOptions.sourceArea.size else bitmapSize
-    sourceLoc = if @_drawOptions.sourceArea then @_drawOptions.sourceArea.location else point()
+  _getBitmapToElementMatrix: (bitmap, bitmapSize, sourceArea = null) ->
+    bitmapSize ||= bitmap.size
+    sourceArea = @_drawOptions.sourceArea = if sourceArea then sourceArea.mul(bitmap.pixelsPerPoint) else null
+    sourceSize = if sourceArea then sourceArea.size else bitmapSize
+    sourceLoc  = if sourceArea then sourceArea.location else point()
     {currentSize} = @
-    @_bitmapToElementMatrix = switch @_mode
+
+    matrix = switch @_mode
       when "stretch"
         Matrix.scale currentSize.div sourceSize
 
@@ -160,6 +158,17 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
       else
         throw new Error "unknown mode: #{@_mode}"
 
+    if bitmapSize.neq bitmap.size
+      Matrix.scale(bitmapSize.div bitmapSize.size).mul matrix
+    else
+      matrix
+
+  _drawPropertiesChanged: ->
+    super
+    {currentBitmap} = @
+    return unless currentBitmap
+    @_bitmapToElementMatrix = @_getBitmapToElementMatrix currentBitmap, null, @_sourceArea
+
   @getter
     currentBitmap: ->
       return @_bitmap if @_bitmap
@@ -167,6 +176,15 @@ module.exports = createWithPostCreate class BitmapElement extends FillableBase
         for url in @_altSources
           return loaded if loaded = sourceToBitmapCache.loaded url
 
+  drawBitmap: (target, elementToTargetMatrix, options, bitmap) ->
+    bitmapToElementMatrix = if bitmap
+      @_getBitmapToElementMatrix bitmap
+    else
+      bitmap = @getCurrentBitmap()
+      @_bitmapToElementMatrix
+
+    if bitmap
+      target.drawBitmap bitmapToElementMatrix.mul(elementToTargetMatrix), bitmap, options
+
   fillShape: (target, elementToTargetMatrix, options) ->
-    if bitmap = @getCurrentBitmap()
-      target.drawBitmap @_bitmapToElementMatrix.mul(elementToTargetMatrix), bitmap, options
+    @drawBitmap target, elementToTargetMatrix, options
