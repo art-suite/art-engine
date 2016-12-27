@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 
-{merge, Promise, parseQuery, log} = Foundation
+{merge, Promise, parseQuery, log, ConfigRegistry} = Foundation
 {Meta, Link} = Foundation.Browser.DomElementFactories
 
 module.exports = class FullScreenApp
@@ -32,14 +32,17 @@ module.exports = class FullScreenApp
 
     log "Art.Engine.FullScreenApp: app ready"
 
-  @init: (config = {})->
+  @getDomReadyPromise: ->
     new Promise (resolve) =>
       document.onreadystatechange = =>
         if document.readyState == "interactive"
           @_domReady()
           resolve()
 
-      @writeDom config
+  @init: (config = {})=>
+    ConfigRegistry.configure config
+    @writeDom config
+    @getDomReadyPromise()
 
   @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
 
