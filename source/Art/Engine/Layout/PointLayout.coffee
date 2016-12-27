@@ -211,15 +211,13 @@ class Components
 
     width:                    x
     height:                   y
-    width_parentWidth:        xpw
-    height_parentHeight:      yph
-    width_childrenWidth:      xcw
-    height_childrenHeight:    ych
+    widthParentWidth:         xpw
+    heightParentHeight:       yph
+    widthChildrenWidth:       xcw
+    heightChildrenHeight:     ych
 
-    x_parentWidth:            xpw
-    y_parentHeight:           yph
-    x_childrenWidth:          xcw
-    y_childrenHeight:         ych
+    xParentWidth:             xpw
+    yParentHeight:            yph
 
 defineModule module, class PointLayout extends PointLayoutBase
   ###
