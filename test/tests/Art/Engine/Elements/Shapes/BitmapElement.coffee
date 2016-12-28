@@ -45,12 +45,6 @@ suite "Art.Engine.Elements.Shapes.BitmapElement", ->
   drawTest2 "stretch", ->
     new BitmapElement bitmap:source, mode:"stretch", size:100
 
-  drawTest2 "min large", ->
-    new BitmapElement bitmap:source, mode:"min", size:100
-
-  drawTest2 "min small", ->
-    new BitmapElement bitmap:source, mode:"min", size:50
-
   drawTest2 "sourceArea basic", ->
     new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40)
 
@@ -62,9 +56,3 @@ suite "Art.Engine.Elements.Shapes.BitmapElement", ->
 
   drawTest2 "sourceArea stretch", ->
     new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"stretch", size:100
-
-  drawTest2 "sourceArea min large", ->
-    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"min", size:100
-
-  drawTest2 "sourceArea min small", ->
-    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"min", size:30

@@ -66,32 +66,43 @@ defineModule module, class BitmapElement extends FillableBase
   customLayoutChildrenSecondPass: (size) ->
 
   @drawProperty
-    focus:      default: null,      preprocess: (v) -> if v? then point(v).bound(point0, point1) else null
-    mode:       default: "stretch", preprocess: (v) -> v?.toString() || null
-    sourceArea: default: null,      preprocess: (v) -> if v? then rect v else null
+    focus:        default: null,      preprocess: (v) -> if v? then point(v).bound(point0, point1) else null
+    layout:       default: "stretch", preprocess: (v) -> v?.toString() || null
+    sourceArea:   default: null,      preprocess: (v) -> if v? then rect v else null
+    aspectRatio:  default: null,      validate:   (v) -> !v? || isNumber v
+
+  @drawLayoutProperty
+    bitmap:       default: null,      validate:   (v) -> !v || v instanceof Canvas.BitmapBase
+
+  @virtualProperty
+    mode: setter: (mode) ->
+      log.error "DEPRICATED BitmapElement property 'mode' is now 'layout'"
+      @setLayout mode
 
   @concreteProperty
     ###
-    This works pretty-much like the HTMLImageElement's "src" field.
-    It will fetch a bitmap from the specified URL.
-    It will fire off the following events: onLoad and onError
-    It will set the @bitmap property on success.
-    If it changes, it will attempt to load the new URL and fire another onLoad or onError.
-
-    NOTE on naming vs HTMLImageElement:
-      The naming choices here are for consistency and full-words.
-      The DOM is inconsistent uses shortend words like "src."
-
-      DOM     Art.Engine
-      src     source
-      onload  load
-      onerror error
+    source-property:
+      will fetch a bitmap from the specified URL
+      will trigger the following events: 'load' and 'error'
+      will set the @bitmap property on success
+      if 'source' changes
+        will load the new URL
+        will trigger another 'load' or 'error'
+      if altSources are specified
+        the first altSource which is ALREADY LOADED
+        will be displayed until 'source' can be loaded.
     ###
     source:
       default:    null
       validate:   (v) -> !v || isString v
       postSetter: (v) -> v && @_loadBitmapFromSource v
 
+    ###
+    altSources is an array of URLs/cache-names
+
+    When drawing, if 'bitmap' is not set, the first altSource which is
+    already loaded in the cache will be display.
+    ###
     altSources:
       default:    null
       validate:   (v) -> !v || isPlainArray v
@@ -102,72 +113,8 @@ defineModule module, class BitmapElement extends FillableBase
       @onNextReady => @queueEvent "load", => bitmap:bitmap
       @setBitmap bitmap
     , (error) =>
-      console.error error.stack
+      console.error BitmapElement: _loadBitmapFromSource: {error}
       @onNextReady => @queueEvent "error", => error:e
-
-  @drawLayoutProperty
-    bitmap:     default: null,      validate:   (v) -> !v || v instanceof Canvas.BitmapBase
-
-  _getBitmapToElementMatrix: (bitmap, bitmapSize, sourceArea = null) ->
-    bitmapSize ||= bitmap.size
-    sourceArea = @_drawOptions.sourceArea = if sourceArea then sourceArea.mul(bitmap.pixelsPerPoint) else null
-    sourceSize = if sourceArea then sourceArea.size else bitmapSize
-    sourceLoc  = if sourceArea then sourceArea.location else point()
-    {currentSize} = @
-
-    matrix = switch @_mode
-      when "stretch"
-        Matrix.scale currentSize.div sourceSize
-
-      # Preserving Aspect Ratio; Centered: scale the bitmap so it fills all of currentSize
-      when "zoom"
-        scale = max currentSize.x / sourceSize.x, currentSize.y / sourceSize.y
-        effectiveSourceSizeX = min bitmapSize.x, ceil currentSize.x / scale
-        effectiveSourceSizeY = min bitmapSize.y, ceil currentSize.y / scale
-
-        if @_focus
-          desiredSourceX = sourceSize.x * @_focus.x - effectiveSourceSizeX * .5
-          desiredSourceY = sourceSize.y * @_focus.y - effectiveSourceSizeY * .5
-        else
-          desiredSourceX = sourceLoc.x + sourceSize.x * .5 - round effectiveSourceSizeX * .5
-          desiredSourceY = sourceLoc.y + sourceSize.y * .5 - round effectiveSourceSizeY * .5
-
-        sourceX = bound 0, desiredSourceX, bitmapSize.x - effectiveSourceSizeX
-        sourceY = bound 0, desiredSourceY, bitmapSize.y - effectiveSourceSizeY
-
-        @_drawOptions.sourceArea = rect sourceX, sourceY, effectiveSourceSizeX, effectiveSourceSizeY
-
-        Matrix.scale scale
-
-      when "center"
-        effectiveSourceSize = currentSize.roundOut()
-        effectiveSourceLoc = sourceLoc.add sourceSize.cc.sub effectiveSourceSize.cc.round()
-        @_drawOptions.sourceArea = rect effectiveSourceLoc, effectiveSourceSize
-        new Matrix #.scale(scale) #.mul elementToTargetMatrix
-
-      # Preserving Aspect Ratio; Centered: scale the bitmap so it just fits within currentSize
-      when "fit"
-        scale = currentSize.div(sourceSize).min()
-        Matrix.translate(sourceSize.cc.neg).scale(scale).translate(currentSize.cc)
-
-      # Preserving Aspect Ratio; Centered: like "fit" except only scale if its too big
-      when "min"
-        scale = min 1/@devicePixelsPerPoint, currentSize.div(sourceSize).min()
-        Matrix.translate(sourceSize.cc.neg).scale(scale).translate(currentSize.cc)
-
-      else
-        throw new Error "unknown mode: #{@_mode}"
-
-    if bitmapSize.neq bitmap.size
-      Matrix.scale(bitmapSize.div bitmapSize.size).mul matrix
-    else
-      matrix
-
-  _drawPropertiesChanged: ->
-    super
-    {currentBitmap} = @
-    return unless currentBitmap
-    @_bitmapToElementMatrix = @_getBitmapToElementMatrix currentBitmap, null, @_sourceArea
 
   @getter
     currentBitmap: ->
@@ -176,15 +123,11 @@ defineModule module, class BitmapElement extends FillableBase
         for url in @_altSources
           return loaded if loaded = sourceToBitmapCache.loaded url
 
-  drawBitmap: (target, elementToTargetMatrix, options, bitmap) ->
-    bitmapToElementMatrix = if bitmap
-      @_getBitmapToElementMatrix bitmap
-    else
-      bitmap = @getCurrentBitmap()
-      @_bitmapToElementMatrix
-
-    if bitmap
-      target.drawBitmap bitmapToElementMatrix.mul(elementToTargetMatrix), bitmap, options
+  _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
+    super
+    drawOptions.layout      = @getLayout()
+    drawOptions.targetSize  = @getCurrentSize()
+    drawOptions.aspectRatio = @getAspectRatio()
 
   fillShape: (target, elementToTargetMatrix, options) ->
-    @drawBitmap target, elementToTargetMatrix, options
+    target.drawBitmapWithLayout elementToTargetMatrix, @getCurrentBitmap(), options
