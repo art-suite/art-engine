@@ -908,6 +908,10 @@ defineModule module, class Element extends ElementBase
     @_generateDrawCache targetSpaceDrawArea, elementToTargetMatrix
 
     drawCacheManager.useDrawCache @
+    if !!@_drawCacheBitmap != !!@_drawCacheToElementMatrix
+      throw new Error "expected both or neither: @_drawCacheToElementMatrix, @_drawCacheBitmap"
+
+    return unless @_drawCacheBitmap
     target.drawBitmap(
       @_drawCacheToElementMatrix.mul elementToTargetMatrix
       @_drawCacheBitmap
