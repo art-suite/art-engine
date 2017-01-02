@@ -84,7 +84,7 @@ module.exports = class ElementBase extends EventedEpochedObject
 
       (artEngineKeyboardEventType, keyboardEvent) -> "beforeDescendents"/"beforeAncestors"/false
         IN: artEngineKeyboardEventType: "keyUp", "keyDown", or "keyPress"
-        IN: keyboardEvent: HTMLKeyboardEvent
+        IN: keyboardEvent: DOM/HTMLKeyboardEvent
           NOTE: use keyboardEvent.key for checking the key-type. It has been polyfilled to the latest HTML standards (2016)
         OUT:
           "beforeDescendents":
