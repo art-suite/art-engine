@@ -52,6 +52,12 @@ module.exports = class SynchronizedDomOverlay extends Element
     , false) # don't force an epoch - wait until the next one
 
   _updateDomLayout: ->
+
+    if @_shouldAttachDomElement
+      @_shouldAttachDomElement = false
+      canvasElement.htmlCanvasElement.parentElement.appendChild @_domElement
+      @queueEvent "domElementAttached"
+
     if @_attachedToCanvasElement != newCanvasElement = @getCanvasElement()
       @_attachDomElement newCanvasElement
 
@@ -86,7 +92,8 @@ module.exports = class SynchronizedDomOverlay extends Element
     # if @_attachedToCanvasElement && @_documentMatriciesChangedListener
     #   @_attachedToCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
     #   @_documentMatriciesChangedListener = @_attachedToCanvasElement = null
-    @_domElement?.parentElement.removeChild @_domElement
+    @_shouldAttachDomElement = false
+    @_domElement?.parentElement?.removeChild @_domElement
     @_attachedToCanvasElement = null
 
   _attachDomElement: ->
@@ -98,5 +105,5 @@ module.exports = class SynchronizedDomOverlay extends Element
 
     if canvasElement
       @_attachedToCanvasElement = canvasElement
-      canvasElement.htmlCanvasElement.parentElement.appendChild @_domElement
+      @_shouldAttachDomElement = true
       @_queueUpdate()
