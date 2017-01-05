@@ -106,4 +106,5 @@ module.exports = class SynchronizedDomOverlay extends Element
     if canvasElement
       @_attachedToCanvasElement = canvasElement
       @_shouldAttachDomElement = true
+      @_updateDomLayout()
       @_queueUpdate()
