@@ -1,7 +1,8 @@
 Foundation = require 'art-foundation'
 
-{merge, Promise, parseQuery, log, ConfigRegistry} = Foundation
+{merge, Promise, parseQuery, log, ConfigRegistry, isPlainObject} = Foundation
 {Meta, Link} = Foundation.Browser.DomElementFactories
+{FontLoader} = require 'art-canvas'
 
 module.exports = class FullScreenApp
 
@@ -41,8 +42,16 @@ module.exports = class FullScreenApp
 
   @init: (config = {})=>
     ConfigRegistry.configure config
-    @writeDom config
+    {fontFamilies} = config
+    if isPlainObject fontFamilies
+      waitUntilFontsLoaded = fontFamilies
+      fontFamilies = Object.keys fontFamilies
+
+    @writeDom merge config, {fontFamilies}
     @getDomReadyPromise()
+    .then ->
+      FontLoader.allFontsLoaded waitUntilFontsLoaded if waitUntilFontsLoaded
+
 
   @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
 
