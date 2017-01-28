@@ -65,8 +65,9 @@ defineModule module, class BitmapElement extends FillableBase
 
   customLayoutChildrenSecondPass: (size) ->
 
+  halfPoint = point(.5)
   @drawProperty
-    focus:        default: null,      preprocess: (v) -> if v? then point(v).bound(point0, point1) else null
+    focus:        default: halfPoint, preprocess: (v) -> if v? then point(v).bound(point0, point1) else halfPoint
     layout:       default: "stretch", preprocess: (v) -> v?.toString() || null
     sourceArea:   default: null,      preprocess: (v) -> if v? then rect v else null
     aspectRatio:  default: null,      validate:   (v) -> !v? || isNumber v
@@ -125,6 +126,7 @@ defineModule module, class BitmapElement extends FillableBase
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
+    drawOptions.focus       = @_focus
     drawOptions.layout      = @getLayout()
     drawOptions.targetSize  = @getCurrentSize()
     drawOptions.aspectRatio = @getAspectRatio()
