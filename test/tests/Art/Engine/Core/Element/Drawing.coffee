@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require '../state_epoch_test_helper'
+StateEpochTestHelper = require '../StateEpochTestHelper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
@@ -32,6 +32,7 @@ testArtStructure = ->
 module.exports = suite:
   basics: ->
     stateEpochTest "drawing rectangles", (done)->
+      log "BOO"
       o = new Element
         size: 4
         new RectangleElement color: "#000", size: 4

@@ -6,29 +6,30 @@
     "art-foundation": "git://github.com/imikimi/art-foundation.git",
     "art-text": "git://github.com/imikimi/art-text.git",
     "art-xbd": "git://github.com/imikimi/art-xbd.git",
+    "bluebird": "^3.4.7",
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "chai": "^3.5.0",
     "coffee-loader": "^0.7.2",
-    "coffee-script": "^1.11.1",
-    "css-loader": "^0.23.1",
+    "coffee-script": "^1.12.3",
+    "css-loader": "^0.26.1",
     "javascript-detect-element-resize": "^0.5.3",
     "json-loader": "^0.5.4",
     "keyboardevent-key-polyfill": "^1.0.2",
-    "mocha": "^2.5.3",
+    "mocha": "^3.2.0",
     "neptune-namespaces": "^1.7.4",
     "script-loader": "^0.7.0",
-    "sourcemapped-stacktrace": "^1.1.3",
+    "sourcemapped-stacktrace": "^1.1.5",
     "style-loader": "^0.13.1",
-    "webpack": "^1.13.2",
-    "webpack-dev-server": "^1.16.2"
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.3.0"
   },
   "license": "ISC",
   "name": "art-engine",
   "scripts": {
-    "build": "nn -s; webpack --progress",
+    "build": "webpack --progress",
     "nodeTest": "nn -s; mocha -u tdd --compilers coffee:coffee-script/register",
-    "start": "nn -s; webpack-dev-server --hot --inline --progress",
-    "test": "nn -s; webpack-dev-server -d --progress"
+    "start": "webpack-dev-server --hot --inline --progress",
+    "test": "webpack-dev-server -d --progress"
   },
   "version": "1.26.0"
 }

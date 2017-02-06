@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Engine = require 'art-engine'
 
-{inspect, log, bound, flatten, first, second, last} = Foundation
+{defineModule, inspect, log, bound, flatten, first, second, last} = Foundation
 {point, point0, rect, Matrix, matrix} = Atomic
 {Element, RectangleElement, PagingScrollElement} = Engine
 
@@ -17,10 +17,11 @@ newPseWithPages = (heights = 10, numPages = 3)->
         newPage i, heights
   pse
 
-suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
 
-  suite "structure", ->
-    test "basic structure", (done) ->
+defineModule module, suite:
+
+  structure: ->
+    test "basic structure", ->
       (pse = newPseWithPages())
       .onNextReady =>
         assert.eq 1, pse.children.length
@@ -29,9 +30,8 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
         [before, after] = scrollElement.children
         assert.eq 0, before.children.length
         assert.eq 3, after.children.length
-        done()
 
-    test "basic locations and sizes", (done) ->
+    test "basic locations and sizes", ->
       (pse = newPseWithPages())
       .onNextReady =>
         scrollElement = pse.children[0]
@@ -43,10 +43,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
         assert.eq point(100, 30), scrollElement.currentSize
         assert.eq point(100, 0) , before.currentSize
         assert.eq point(100, 30), after.currentSize
-        done()
 
-  suite "referenceFrames", ->
-    test "setReferenceFrame", (done) ->
+  referenceFrames: ->
+    test "setReferenceFrame", ->
       (pse = newPseWithPages())
       .onNextReady =>
         [_, secondChild] = pse.pages
@@ -55,16 +54,14 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
           assert.eq pse.referenceFrame, page: secondChild
           assert.eq pse.children[0].currentLocation, point 0, 10
           assert.eq pse.scrollPosition, 10
-          done()
 
-    test "getScrollPositionInReferenceFrame", (done) ->
+    test "getScrollPositionInReferenceFrame", ->
       (pse = newPseWithPages())
       .onNextReady =>
         [page0, page1, page2] = pse.pages
         assert.eq [0, 10, 20], (pse.getScrollPositionInReferenceFrame page: page for page in pse.pages)
-        done()
 
-    test "in one epoch, setReferenceFrame then setScrollPositionInReferenceFrame, order shouldn't matter", (done) ->
+    test "in one epoch, setReferenceFrame then setScrollPositionInReferenceFrame, order shouldn't matter", ->
       (pse = newPseWithPages())
       .onNextReady =>
         [page0, page1] = pse.pages
@@ -75,9 +72,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
           assert.eq pse.referenceFrame, page: page1
           assert.eq 5, pse.getScrollPositionInReferenceFrame(page: page0), "page0 referenceFrame"
           assert.eq 15, pse.getScrollPositionInReferenceFrame(page: page1), "page1 referenceFrame"
-          done()
 
-    test "in one epoch, setScrollPositionInReferenceFrame then setReferenceFrame, order shouldn't matter", (done) ->
+
+    test "in one epoch, setScrollPositionInReferenceFrame then setReferenceFrame, order shouldn't matter", ->
       (pse = newPseWithPages())
       .onNextReady =>
         [page0, page1] = pse.pages
@@ -88,26 +85,26 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
           assert.eq pse.referenceFrame, page: page1
           assert.eq 5, pse.getScrollPositionInReferenceFrame(page: page0), "page0 referenceFrame"
           assert.eq 15, pse.getScrollPositionInReferenceFrame(page: page1), "page1 referenceFrame"
-          done()
 
-  suite "_updateReferenceFrame", ->
-    test "new PSE - referenceFrame.page == first page", (done) ->
+
+  _updateReferenceFrame: ->
+    test "new PSE - referenceFrame.page == first page", ->
       (pse = newPseWithPages(40))
       .onNextReady =>
         [page0, page1, page2] = pse.pages
         assert.eq page0, pse.getReferenceFrame().page
-        done()
 
-    test "one page, not quite atStart, should reference atEndEdge", (done) ->
+
+    test "one page, not quite atStart, should reference atEndEdge", ->
       pse = newPseWithPages 40, 1
       pse.onNextReady =>
         [page0] = pse.pages
         pse.setScrollPosition -1
         pse.onNextReady =>
           assert.eq [pse.scrollPosition, pse.referenceFrame], [-1, atEndEdge: false, page: page0]
-          done()
 
-    test "_atStart ensures first page is selected", (done) ->
+
+    test "_atStart ensures first page is selected", ->
       (pse = newPseWithPages(40))
       .onNextReady =>
         assert.eq pse._atStart, true
@@ -117,9 +114,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
           assert.eq pse.referenceFrame, atEndEdge: false, page: page0
           assert.eq 0, pse.getScrollPositionInReferenceFrame page: page0
           assert.eq 0, pse.getScrollPosition()
-          done()
 
-    test "_atEnd ensures last page is selected", (done) ->
+
+    test "_atEnd ensures last page is selected", ->
       pse = newPseWithPages 40
       pse.onNextReady =>
         [page0, page1, page2] = pse.pages
@@ -130,9 +127,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
           pse.onNextReady =>
             assert.eq pse.referenceFrame, atEndEdge: true, page: page2
             assert.eq 100, pse.getScrollPosition()
-            done()
 
-    test "in the middle selects middle page", (done) ->
+
+    test "in the middle selects middle page", ->
       pse = newPseWithPages 40
       pse.onNextReady =>
         [page0, page1, page2] = pse.pages
@@ -144,9 +141,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
             assert.eq pse.referenceFrame, atEndEdge: false, page: page1
             assert.eq -5, pse.getScrollPositionInReferenceFrame page: page0
             assert.eq 35, pse.getScrollPosition()
-            done()
 
-    test "in a different middle selects middle page, atEndEdge: true", (done) ->
+
+    test "in a different middle selects middle page, atEndEdge: true", ->
       pse = newPseWithPages 40
       pse.onNextReady =>
         [page0, page1, page2] = pse.pages
@@ -158,12 +155,12 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
             assert.eq pse.referenceFrame, atEndEdge: true, page: page1
             assert.eq -15, pse.getScrollPositionInReferenceFrame page: page0
             assert.eq 65, pse.getScrollPosition()
-            done()
 
-  suite "addingElements", ->
-    suite "atStart", ->
 
-      test "adding page should not change referenceFrame or scrollPosition", (done) ->
+  addingElements:
+    atStart: ->
+
+      test "adding page should not change referenceFrame or scrollPosition", ->
         (pse = newPseWithPages(40, 1))
         .onNextReady =>
           assert.eq true, pse.atStart
@@ -178,9 +175,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
             assert.eq "page0, page1", (page.key for page in pse.pages).join ', '
             assert.eq pse.scrollPosition, scrollPosition
             assert.eq pse.referenceFrame, referenceFrame
-            done()
 
-      test "adding page before should change referenceFrame to the new page", (done) ->
+
+      test "adding page before should change referenceFrame to the new page", ->
         pse = newPseWithPages 40
         pse.onNextReady =>
           assert.eq true, pse.atStart
@@ -191,11 +188,11 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
             assert.eq "page-1, page0, page1, page2", (page.key for page in pse.pages).join ', '
             assert.eq pse.referenceFrame, atEndEdge: false, page: first pse.pages
             assert.eq 0, pse.scrollPosition
-            done()
 
-    suite "inMiddle", ->
+
+    inMiddle: ->
       suite "not atEndEdge", ->
-        test "adding page before referenceFrame.page should not change referenceFrame or scrollPosition", (done) ->
+        test "adding page before referenceFrame.page should not change referenceFrame or scrollPosition", ->
           pse = newPseWithPages 40
           pse.setScrollPosition -5
           pse.onNextReady =>
@@ -216,9 +213,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
                 assert.eq "page0, pageA, page1, page2", (page.key for page in pse.pages).join ', '
                 assert.eq pse.referenceFrame, referenceFrame
                 assert.eq pse.scrollPosition, scrollPosition
-                done()
 
-        test "adding page after referenceFrame.page should not change referenceFrame or scrollPosition", (done) ->
+
+        test "adding page after referenceFrame.page should not change referenceFrame or scrollPosition", ->
           pse = newPseWithPages 40
           pse.setScrollPosition -5
           pse.onNextReady =>
@@ -239,10 +236,10 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
                 assert.eq "page0, page1, pageA, page2", (page.key for page in pse.pages).join ', '
                 assert.eq pse.referenceFrame, referenceFrame
                 assert.eq pse.scrollPosition, scrollPosition
-                done()
+
 
       suite "and atEndEdge", ->
-        test "adding page before referenceFrame.page should not change referenceFrame or scrollPosition", (done) ->
+        test "adding page before referenceFrame.page should not change referenceFrame or scrollPosition", ->
           pse = newPseWithPages 40
           pse.setScrollPosition -15
           pse.onNextReady =>
@@ -263,9 +260,9 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
                 assert.eq "page0, pageA, page1, page2", (page.key for page in pse.pages).join ', '
                 assert.eq pse.referenceFrame, referenceFrame
                 assert.eq pse.scrollPosition, scrollPosition
-                done()
 
-        test "adding page after referenceFrame.page should not change referenceFrame or scrollPosition", (done) ->
+
+        test "adding page after referenceFrame.page should not change referenceFrame or scrollPosition", ->
           pse = newPseWithPages 40
           pse.setScrollPosition -15
           pse.onNextReady =>
@@ -286,10 +283,10 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
                 assert.eq "page0, page1, pageA, page2", (page.key for page in pse.pages).join ', '
                 assert.eq pse.referenceFrame, referenceFrame
                 assert.eq pse.scrollPosition, scrollPosition
-                done()
 
-    suite "atEnd", ->
-      test "adding page after last should change referenceFrame to the new page", (done) ->
+
+    atEnd: ->
+      test "adding page after last should change referenceFrame to the new page", ->
         pse = newPseWithPages 40
         pse.onNextReady =>
           pse.jumpToEnd()
@@ -302,4 +299,4 @@ suite "Art.Engine.Elements.Widgets.PagingScrollElement", ->
               assert.eq "page0, page1, page2, pageA", (page.key for page in pse.pages).join ', '
               assert.eq true, pse.atEnd
               assert.eq pse.referenceFrame, atEndEdge: true, page: last pse.pages
-              done()
+

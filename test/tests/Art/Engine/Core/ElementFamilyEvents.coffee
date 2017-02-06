@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require './state_epoch_test_helper'
+StateEpochTestHelper = require './StateEpochTestHelper'
 
 {point, matrix, Matrix} = Atomic
 {inspect, nextTick, eq, log, merge} = Foundation
@@ -18,50 +18,55 @@ reducedRange = (data, factor = 32) ->
 module.exports = suite:
   preprocessEventHandlers: ->
 
-    test "no preprocessEventHandlers", (done) ->
-      e = new Element on: myEvent: -> done()
-      e.onNextReady -> e.queueEvent "myEvent"
+    test "no preprocessEventHandlers", ->
+      new Promise (resolve) ->
+        e = new Element on: myEvent: resolve
+        e.onNextReady -> e.queueEvent "myEvent"
 
-    test "preprocessEventHandlers with no on-property", (done) ->
-      class MyElement extends Element
+    test "preprocessEventHandlers with no on-property", ->
+      new Promise (resolve) ->
+        class MyElement extends Element
 
-        preprocessEventHandlers: (handlerMap) ->
-          merge handlerMap,
-            myEvent: -> done()
+          preprocessEventHandlers: (handlerMap) ->
+            merge handlerMap,
+              myEvent: resolve
 
-      e = new MyElement
-      e.onNextReady -> e.queueEvent "myEvent"
+        e = new MyElement
+        e.onNextReady -> e.queueEvent "myEvent"
 
-    test "preprocessEventHandlers with on-property", (done) ->
-      class MyElement extends Element
+    test "preprocessEventHandlers with on-property", ->
+      new Promise (resolve) ->
+        class MyElement extends Element
 
-        preprocessEventHandlers: (handlerMap) ->
-          merge handlerMap,
-            myEvent: -> done()
+          preprocessEventHandlers: (handlerMap) ->
+            merge handlerMap,
+              myEvent: resolve
 
-      e = new MyElement on: myOtherEvent: -> e.queueEvent "myEvent"
-      e.onNextReady -> e.queueEvent "myOtherEvent"
+        e = new MyElement on: myOtherEvent: -> e.queueEvent "myEvent"
+        e.onNextReady -> e.queueEvent "myOtherEvent"
 
   family: ->
     # return false
-    test "parentChanged - addChild", (done)->
-      p = new Element
-        name: "parent"
-      window.c =
-      c = new Element
-        name: "child"
-        on: parentChanged: ({target, props:{parent, oldParent}})=>
-          assert.eq c.parent, p
-          assert.eq target, c
-          assert.eq parent, p
-          assert.eq oldParent, null
-          done()
-      # p.onNextReady =>
-      p.addChild c
+    test "parentChanged - addChild", ->
+      new Promise (resolve) ->
+        p = new Element
+          name: "parent"
+        window.c =
+        c = new Element
+          name: "child"
+          on: parentChanged: ({target, props:{parent, oldParent}})=>
+            assert.eq c.parent, p
+            assert.eq target, c
+            assert.eq parent, p
+            assert.eq oldParent, null
+            resolve()
+        # p.onNextReady =>
+        p.addChild c
 
-    test "parentChanged - children=", (done)->
-      new Element null,
-        new Element on: parentChanged: => done()
+    test "parentChanged - children=", ->
+      new Promise (resolve) ->
+        new Element null,
+          new Element on: parentChanged: resolve
 
     stateEpochTest "parentChanged - orphaned (a)", ->
       p = new Element null,

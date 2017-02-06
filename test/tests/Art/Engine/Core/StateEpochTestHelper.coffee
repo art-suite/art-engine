@@ -39,6 +39,7 @@ module.exports = class StateEpochTestHelper
       test = setup()
       throw new Error "stateEpochTest got array (depricated)" if isArray test
       runTest test
+      null
 
   for k, v of TestHelper
     @[k] = v

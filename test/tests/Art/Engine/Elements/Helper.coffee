@@ -35,6 +35,7 @@ define [
         else
           done
         @drawTest f(), text, done:d2
+        null
 
     @drawTest3: (text, options={})=>
       test text, (done)=>
@@ -53,3 +54,4 @@ define [
             options.test? element
 
             done()
+        null

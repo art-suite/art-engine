@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 {Core:EngineCore, Layout} = require 'art-engine'
-StateEpochTestHelper = require './state_epoch_test_helper'
+StateEpochTestHelper = require './StateEpochTestHelper'
 
 HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
 {log, peek, shallowEq} = Foundation
@@ -24,14 +24,13 @@ module.exports = suite: ->
     assert.ok el.locationChanged
     assert.ok el.sizeChanged
 
-  test "init size", (done) ->
+  test "init size", ->
     p = new Element
       size: 70
     p.onNextReady ->
       assert.eq p.currentSize, point 70
-      done()
 
-  test "init currentSize with children", (done) ->
+  test "init currentSize with children", ->
     p = new Element
       size: 70
       new Element size: 30
@@ -40,27 +39,24 @@ module.exports = suite: ->
     p.onNextReady ->
       assert.eq [30, 40, 50], (c.currentSize.x for c in p.children)
       assert.eq p.currentSize, point 70
-      done()
 
-  test "init scale", (done) ->
+  test "init scale", ->
     el = new Element location:123, size:456, scale:2
     el.onNextReady ->
       assert.eq el.currentLocation, point 123
       assert.eq el.currentSize, point 456
       assert.eq el.scale, point 2
-      done()
 
   test "init isMask", ->
     el = new Element isMask:true
     assert.eq el.pendingCompositeMode, "alphaMask"
 
-  test "init angle", (done)->
+  test "init angle", ->
     el = new Element location:123, axis:.5, size:456, angle: Math.PI/2
     el.onNextReady ->
       assert.eq el.currentLocation, point 123
       assert.eq el.currentSize, point 456
       assert.eq el.angle, Math.PI/2
-      done()
 
   stateEpochTest "setting Scale", ->
     el = new Element location:100

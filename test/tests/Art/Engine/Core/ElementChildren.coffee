@@ -2,7 +2,7 @@ define [
   'art-foundation'
   'art-atomic'
   'art-engine'
-  './state_epoch_test_helper'
+  './StateEpochTestHelper'
 ], (Foundation, Atomic, {Core:{Element}}, StateEpochTestHelper) ->
 
   {inspect, log, isArray, compact, flatten} = Foundation

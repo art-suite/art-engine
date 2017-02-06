@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require '../state_epoch_test_helper'
+StateEpochTestHelper = require '../StateEpochTestHelper'
 
 {inspect, log, isArray} = Foundation
 {point, matrix, rect, perimeter} = Atomic

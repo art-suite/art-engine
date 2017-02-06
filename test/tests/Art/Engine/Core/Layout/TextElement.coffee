@@ -2,9 +2,9 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require '../state_epoch_test_helper'
+StateEpochTestHelper = require '../StateEpochTestHelper'
 
-{inspect, log, isArray, min, max, isFunction} = Foundation
+{defineModule, inspect, log, isArray, min, max, isFunction} = Foundation
 {point, matrix, Matrix, rect} = Atomic
 {stateEpochTest} = StateEpochTestHelper
 
@@ -25,8 +25,9 @@ testLogBitmap = (name, setup, tests...) ->
         else
           done()
     testR root, test
+    null
 
-suite "Art.Engine.Core.layout.TextElement", ->
+defineModule module, suite: ->
   testLogBitmap "elementSpaceDrawArea should include descender", ->
     root: root = new TextElement text: "Descending", layoutMode: "textualBaseline", size: cs: 1
     test: ->
