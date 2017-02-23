@@ -40,41 +40,42 @@ module.exports = class FullScreenApp
           @_domReady()
           resolve()
 
+  ###
+  IN:
+    config:
+      fonts: # SEE ArtCanvas.FontLoader for the most up-to-date-doc
+
+    title: document.title
+    styleSheets: array of style-sheet URLS to load
+    scripts: array of script URLs to load
+
+    meta: key-value map for meta-tags in the form:
+      name: content
+
+    link: add link tags to add in the form:
+      rel: tag-body-text
+
+    manifest: manifest file URL
+
+  ###
   @init: (config = {})=>
     ConfigRegistry.configure config
-    {fontFamilies} = config
-    if isPlainObject fontFamilies
-      fontsToLoad = fontFamilies
-      fontFamilies = Object.keys fontFamilies
+    {fonts} = config
 
-    @writeDom merge config, {fontFamilies}
+    @writeDom config
+    FontLoader.loadFonts fonts
     @getDomReadyPromise()
     .then ->
-      FontLoader.allFontsLoaded fontsToLoad if fontsToLoad
+      FontLoader.allFontsLoaded fonts
 
-
-  @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
+  @writeDom: ({title, styleSheets, scripts, meta, link, manifest})->
 
     document.title = title || "Art App"
     scripts ||= []
     styleSheets ||= []
-    fontFamilies ||= []
-
 
     scriptLinks = for scriptUrl in scripts when scriptUrl
       "<script type='text/javascript' src='#{scriptUrl}'></script>"
-
-    ###
-    To include an external font:
-
-      Make sure you load your font with @font-face first in one of the included styleSheets.
-      Make sure you add the font-family string specified in your font-face definition to the fontFamilies list.
-
-    This is needed to ensure the font loads.
-    TODO: should we us an actual font-loader?
-    ###
-    fontFamilyInits = for fontFamily in fontFamilies
-      "<div style='font-family:#{fontFamily};position:absolute;font-size:0;'>T</div>"
 
     newLine = "\n    "
 
@@ -100,7 +101,7 @@ module.exports = class FullScreenApp
         rel: rel
         info
 
-    html = """
+    document.write """
       <html #{if manifest then "manifest='#{manifest}'" else ""}>
 
         <style>
@@ -118,9 +119,7 @@ module.exports = class FullScreenApp
         </style>
 
         <body>
-          #{fontFamilyInits.join newLine}
           #{scriptLinks.join newLine}
         </body>
       </html>
     """
-    document.write html
