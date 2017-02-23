@@ -44,13 +44,13 @@ module.exports = class FullScreenApp
     ConfigRegistry.configure config
     {fontFamilies} = config
     if isPlainObject fontFamilies
-      waitUntilFontsLoaded = fontFamilies
+      fontsToLoad = fontFamilies
       fontFamilies = Object.keys fontFamilies
 
     @writeDom merge config, {fontFamilies}
     @getDomReadyPromise()
     .then ->
-      FontLoader.allFontsLoaded waitUntilFontsLoaded if waitUntilFontsLoaded
+      FontLoader.allFontsLoaded fontsToLoad if fontsToLoad
 
 
   @writeDom: ({title, styleSheets, scripts, fontFamilies, meta, link, manifest})->
