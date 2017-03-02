@@ -100,7 +100,8 @@ module.exports = createWithPostCreate module, class V1Writer extends BaseObject
     if !propsEq axis, point .5
       encodedProps.handle = "(#{axis.x},#{axis.y})"
 
-  _addTagForBitmap: ({bitmap, userProps}) ->
+  _addTagForBitmap: (element) ->
+    {bitmap, userProps} = element
     {uniqueId} = bitmap
     return Promise.resolve() if @bitmapTags[uniqueId]
     {encodedBitmap} = userProps if userProps
@@ -110,7 +111,13 @@ module.exports = createWithPostCreate module, class V1Writer extends BaseObject
     #   encodedBitmap: encodedBitmap?.slice 0, 16
 
     Promise.resolve()
-    .then => encodedBitmap || bitmap.toJpg()
+    .then =>
+      if encodedBitmap
+        encodedBitmap
+      else if bitmap.hasAlpha
+        bitmap.toPng()
+      else
+        bitmap.toJpg()
     .then (encodedBitmap) =>
       @bitmapTags[uniqueId] = BitmapTag
         bitmap_id: @bitmapTagCount++
