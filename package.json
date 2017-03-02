@@ -27,9 +27,8 @@
   "name": "art-engine",
   "scripts": {
     "build": "webpack --progress",
-    "nodeTest": "nn -s; mocha -u tdd --compilers coffee:coffee-script/register",
     "start": "webpack-dev-server --hot --inline --progress",
-    "test": "webpack-dev-server -d --progress"
+    "test": "webpack-dev-server --progress"
   },
   "version": "1.27.0"
 }
