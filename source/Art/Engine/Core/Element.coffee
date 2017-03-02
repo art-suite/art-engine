@@ -1016,37 +1016,51 @@ defineModule module, class Element extends ElementBase
 
   ###
   Creates and returns an bitmap with the current element drawn on it
-  options: [defaults]
-    backgroundColor: [transparent]  #
-    area: DEFAULT: "drawArea"
-      "logicalArea"         means => drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
-      "paddedArea"          means => drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
-      "drawArea"            means => drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
-      "parentLogicalArea"   means => drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
-      "parentPaddedArea"    means => drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
-      "parentDrawArea"      means => drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
-      "targetDrawArea"    to be used with custom elementToDrawAreaMatrix - sets drawArea to include @elementSpaceDrawArea in the specificed target-space
-    size: [drawArea.size]     # Bitmap size. Will be multiplied by pixelsPerPoint for the final size.
-    mode: ["fit"], "zoom"     # determines how the requested drawArea is scaled to fit the bitmap size
-      "fit" - scaled so requested area is <= size
-        final size adjusted to have the same aspect ratio as the requested area
-      "zoom" - scaled so reqeusted area is >= size
-        size is not altered
-    pixelsPerPoint: [1]       # Ex: set to "2" for "retina" images [default = 1]
-    elementToDrawAreaMatrix:  # the draw matrix [see area's defaults]
-    drawArea: [see area]      # the area to capture in drawArea-space (overrides area's drawArea)
-    bitmapFactory: [null]     # overrides default bitmapFactory
+  IN:
+    options: plain object
+      backgroundColor: [transparent]  #
+      area: DEFAULT: "drawArea"
+        "logicalArea"         means => drawArea: @logicalArea,                  elementToDrawAreaMatrix: identityMatrix
+        "paddedArea"          means => drawArea: @paddedArea,                   elementToDrawAreaMatrix: identityMatrix
+        "drawArea"            means => drawArea: @elementSpaceDrawArea,         elementToDrawAreaMatrix: identityMatrix
+        "parentLogicalArea"   means => drawArea: @parent.logicalArea,           elementToDrawAreaMatrix: @elementToParentMatrix
+        "parentPaddedArea"    means => drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
+        "parentDrawArea"      means => drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
+        "targetDrawArea"    to be used with custom elementToDrawAreaMatrix - sets drawArea to include @elementSpaceDrawArea in the specificed target-space
+      size: [drawArea.size]     # Bitmap size. Will be multiplied by pixelsPerPoint for the final size.
+      mode: ["fit"], "zoom"     # determines how the requested drawArea is scaled to fit the bitmap size
+        "fit" - scaled so requested area is <= size
+          final size adjusted to have the same aspect ratio as the requested area
+        "zoom" - scaled so reqeusted area is >= size
+          size is not altered
+      pixelsPerPoint: [1]       # Ex: set to "2" for "retina" images [default = 1]
+      elementToDrawAreaMatrix:  # the draw matrix [see area's defaults]
+      drawArea: [see area]      # the area to capture in drawArea-space (overrides area's drawArea)
+      bitmapFactory: [null]     # overrides default bitmapFactory
+    OR
+    size: anything that point() accepts
 
   OUT promise.then ({bitmap, elementToBitmapMatrix}) ->
   ###
-  toBitmap: (options={}, callback) ->
-    console.error "callback DEPRICATED; toBitmap returns Promise now" if callback
+  toBitmapWithInfo: (optionsOrSize={}) ->
+    unless isPlainObject options = optionsOrSize
+      options = size: point optionsOrSize
+
     throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
 
     new Promise (resolve) =>
       stateEpoch.onNextReady =>
         resolve results = @toBitmapSync options
         callback? results.bitmap, results.elementToBitmapMatrix
+
+  toBitmap: (options) ->
+    log.error "DEPRICATED: ArtEngine.Element.toBitmap use toBitmapBasic of toBitmapWithInfo"
+    @toBitmapWithInfo options
+
+  # OUT: promise.then -> (bitmpa) ->
+  toBitmapBasic: (options) ->
+    @toBitmapWithInfo options
+    .then ({bitmap}) -> bitmap
 
   toBitmapSync: (options={}) ->
     if options.elementToDrawAreaMatrix && !options.area
@@ -1246,7 +1260,6 @@ defineModule module, class Element extends ElementBase
 
   getElementToElementMatrix: (o = @getRootElement()) ->
     if o == @                       then matrix()
-    else if o == @getRootElement()  then @getElementToAbsMatrix()
     else @getElementToAbsMatrix().mul o.getAbsToElementMatrix()
 
   getElementToTargetMatrix: (parentToTargetMatrix) -> @_elementToParentMatrix.mul parentToTargetMatrix

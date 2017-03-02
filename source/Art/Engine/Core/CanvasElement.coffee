@@ -562,7 +562,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       if @_dirtyDrawAreas
         for dirtyDrawArea in @_dirtyDrawAreas
           # draw
-          @canvasBitmap.clippedTo dirtyDrawArea, =>
+          @canvasBitmap.clippedTo dirtyDrawArea.mul(@_devicePixelsPerPoint), =>
             super @canvasBitmap, @elementToParentMatrix
       else
         super @canvasBitmap, @elementToParentMatrix
