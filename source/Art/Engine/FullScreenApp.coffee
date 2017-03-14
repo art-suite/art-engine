@@ -63,7 +63,7 @@ module.exports = class FullScreenApp
     {fonts} = config
 
     @writeDom config
-    FontLoader.loadFonts fonts
+    FontLoader.loadFonts fonts if fonts
     @getDomReadyPromise()
     .then ->
       FontLoader.allFontsLoaded fonts
