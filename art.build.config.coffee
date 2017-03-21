@@ -1,7 +1,12 @@
-module.exports = (require "art-foundation/configure_webpack")
-  entries: "index test"
-  dirname: __dirname
+module.exports =
+  webpack:
+    common: {}
+    targets:
+      index: {}
+      test: {}
+
   package:
+    description: "The ArtEngine is a layout, rendering and event engine for creating user interfaces in HTML5 Canvas elements."
     dependencies:
       "art-foundation": "git://github.com/imikimi/art-foundation.git"
       "art-canvas":     "git://github.com/imikimi/art-canvas.git"

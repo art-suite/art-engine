@@ -3,6 +3,7 @@
   "dependencies": {
     "art-canvas": "git://github.com/imikimi/art-canvas.git",
     "art-class-system": "^1.0.1",
+    "art-config": "^1.0.0",
     "art-events": "git://github.com/imikimi/art-events.git",
     "art-foundation": "git://github.com/imikimi/art-foundation.git",
     "art-standard-lib": "^1.1.0",
@@ -20,8 +21,10 @@
     "script-loader": "^0.7.0",
     "style-loader": "^0.13.1",
     "webpack": "^2.2.1",
-    "webpack-dev-server": "^2.3.0"
+    "webpack-dev-server": "^2.3.0",
+    "webpack-merge": "^3.0.0"
   },
+  "description": "The ArtEngine is a layout, rendering and event engine for creating user interfaces in HTML5 Canvas elements.",
   "license": "ISC",
   "name": "art-engine",
   "scripts": {
