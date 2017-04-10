@@ -1,0 +1,115 @@
+import &ArtStandardLib, &ArtAtomic, &ArtEngine
+
+
+testArtStructure = ->
+  new Element
+    location: x:123, y:456
+    size:     w: 80, h:60
+    new RectangleElement color:"orange"
+    new Element
+      angle: 0 - Math.PI/6
+      location: xpw:.25, yph:.5
+      size:     wpw:.5,  hph:.25
+      name: "child"
+      new RectangleElement color: "#700"
+
+suite: ->
+  {test} = global
+
+  test "toBitmap no options", ->
+    o = testArtStructure()
+
+    o.toBitmapBasic()
+    .then (bitmap)->
+      log bitmap
+      assert.eq bitmap.pixelsPerPoint, 1
+      assert.eq bitmap.size, o.currentSize
+
+  test "toBitmap translated", ->
+    (o = testArtStructure()).toBitmapBasic elementToDrawAreaMatrix:Matrix.translate(point(123,456))
+    .then (bitmap)->
+      log bitmap
+      assert.eq bitmap.size, o.currentSize
+
+  test "toBitmap pixelsPerPoint:2 - 'retina'", ->
+    o = testArtStructure()
+    o.toBitmapBasic pixelsPerPoint:2
+    .then (bitmap)->
+
+      log bitmap
+      assert.eq bitmap.pixelsPerPoint, 2
+      assert.eq bitmap.size, o.currentSize.mul 2
+
+  test "toBitmap rotated", ->
+    (o = testArtStructure()).toBitmapBasic elementToDrawAreaMatrix:Matrix.rotate(Math.PI/6), area:"targetDrawArea"
+    .then (bitmap)->
+      log bitmap
+      assert.eq bitmap.size, point 100, 92
+
+  test "toBitmap with blur", ->
+    o = testArtStructure()
+    o.addChild new BlurElement radius:10
+    o.toBitmap {}
+    .then ({bitmap})->
+
+      log bitmap
+      assert.eq bitmap.size, o.currentSize.add 20
+      assert.eq bitmap.size, o.elementSpaceDrawArea.size
+
+  test "toBitmap with out of bounds child and backgroundColor", ->
+    o = testArtStructure()
+    o.addChild new RectangleElement
+      color:  "#700"
+      location: xpw:-.25, yph:.75
+      size: ps: .5
+    o.toBitmap backgroundColor:"#ff7"
+    .then ({bitmap})->
+
+      log bitmap
+      assert.eq bitmap.size, point 100, 75
+      assert.eq bitmap.size, o.elementSpaceDrawArea.size
+
+  areaOptions =
+    logicalArea:       expectedSize: point(40, 15), expectedDrawMatrix: Matrix.translate -5
+    paddedArea:        expectedSize: point(50, 25), expectedDrawMatrix: matrix()
+    drawArea:          expectedSize: point(50, 35), expectedDrawMatrix: matrix()
+    parentLogicalArea: expectedSize: point 100, 80
+    parentPaddedArea:  expectedSize: point 80, 60
+    parentDrawArea:    expectedSize: point 61, 56
+    targetDrawArea:    expectedSize: point(121, 61), elementToDrawAreaMatrix: Matrix.rotate(Math.PI / 4).scaleXY 2, 1
+
+  each v, k from areaOptions
+    {expectedDrawMatrix, expectedSize} = v
+    test "toBitmap area: #{k} size should == #{expectedSize}", ->
+      new Element
+        size: w: 100, h: 80
+        padding: 10
+        child = new Element
+          angle: 0 - Math.PI/6
+          axis: .5
+          location: ps: .5
+          size: w:40, h:15
+          padding: -5
+          new RectangleElement color: "#f00"
+          new RectangleElement color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
+
+      child.toBitmap (merge v, area:k, backgroundColor:"#ddd")
+      .then ({bitmap, elementToBitmapMatrix})->
+        log area:k, toBitmap:bitmap
+        assert.eq bitmap.size, expectedSize
+        assert.eq elementToBitmapMatrix, expectedDrawMatrix if expectedDrawMatrix
+
+  each expectedSize, mode from a =
+      fit: point 100, 50
+      zoom: point 100
+
+    test "toBitmap mode: #{inspect mode}", ->
+      element = new Element
+        size: w: 200, h:100
+        new RectangleElement color: "orange"
+
+      element.toBitmap size:100, mode: mode, backgroundColor:"#ddd"
+      .then ({bitmap, elementToBitmapMatrix})->
+
+        log mode: mode, toBitmap:bitmap
+        assert.eq bitmap.size, expectedSize

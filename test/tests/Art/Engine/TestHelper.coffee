@@ -11,8 +11,8 @@ module.exports = class TestHelper
   @drawAndTestElement: (name, setup) ->
     test name, ->
       options = setup()
-      options.element.toBitmap pixelsPerPoint: 2
-      .then ({bitmap}) ->
+      options.element.toBitmapBasic pixelsPerPoint: 2
+      .then (bitmap) ->
         log bitmap, "test: #{name}"
         options.test? options.element
 

@@ -14,8 +14,17 @@ testLogBitmap = (name, setup) ->
   test name, ->
     {root, test} = setup()
     testNum = 1
-    root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
-    .then ({bitmap}) ->
+    root.toBitmapBasic area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap, name, testNum
+      test?()
+
+testKnownFailingLogBitmap = (name, setup) ->
+  skipKnownFailingTest name, ->
+    {root, test} = setup()
+    testNum = 1
+    root.toBitmapBasic area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
       log bitmap, name, testNum
       test?()
 
@@ -306,7 +315,7 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
           assert.eq sizes = (c.currentSize for c in root.children), [point(30, 100), point(50, 100)]
           assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
 
-    skipKnownFailingTest "order of variable children when one has a minimum height shouldn't matter", ->
+    testKnownFailingLogBitmap "order of variable children when one has a minimum height shouldn't matter", ->
       root: root = new Element
         size: w: 200, h: 100
         new RectangleElement color: "#ddd"
@@ -330,10 +339,10 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
           SBD - this one isn't trivial to fix. I haven't
           figured the right plan of attack yet.
           """
-        assert.eq sizes     = (c.currentSize for c in root1.children), [point(30, 60), point(50, 40)]
-        assert.eq sizes     = (c.currentSize for c in root2.children), [point(30, 40), point(50, 60)], knownFailingExplanation
-        assert.eq locations = (c.currentLocation for c in root1.children), [point(0, 0), point(0, 60)]
-        assert.eq locations = (c.currentLocation for c in root2.children), [point(0, 0), point(0, 40)]
+        assert.eq sizes     = (c.currentSize for c in root1.children),      [point(30, 60), point(50, 40)]
+        assert.eq sizes     = (c.currentSize for c in root2.children),      [point(30, 40), point(50, 60)], knownFailingExplanation
+        assert.eq locations = (c.currentLocation for c in root1.children),  [point(0, 0), point(0, 60)]
+        assert.eq locations = (c.currentLocation for c in root2.children),  [point(0, 0), point(0, 40)]
 
   suite "margins", ->
     testLogBitmap "no variable children, all same margin", ->

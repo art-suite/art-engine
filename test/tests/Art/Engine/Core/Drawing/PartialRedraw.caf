@@ -1,0 +1,157 @@
+import &ArtStandardLib, &ArtAtomic, &ArtEngine
+HtmlCanvas = &ArtFoundation.Browser.DomElementFactories.Canvas
+
+{compareDownsampledRedChannel} = &CoreHelper
+
+suite: ->
+  {test} = global
+
+  test "change location", ->
+    canvasElement = new CanvasElement
+      disableRetina: true
+      size: unitSize = 4
+      canvas: HtmlCanvas
+        width:  unitSize
+        height: unitSize
+      []
+        new RectangleElement color: "#480"
+        e = new RectangleElement
+          size: 1
+          location: unitSize - 2
+          color: "#8ff"
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change location - initialDraw", canvasElement, compactFlatten []
+        4 4 4 4
+        4 4 4 4
+        4 4 8 4
+        4 4 4 4
+
+      canvasElement.canvasBitmap.clear("black")
+      e.location = 1
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change location - partialDraw", canvasElement, compactFlatten []
+        0 0 0 0
+        0 8 0 0
+        0 0 4 0
+        0 0 0 0
+
+  test "change axis", ->
+    canvasElement = new CanvasElement
+      disableRetina: true
+      size: unitSize = 4
+      canvas: HtmlCanvas
+        width:  unitSize
+        height: unitSize
+      []
+        new RectangleElement color: "#480"
+        e = new Element
+          size: 2
+          location: 2
+          angle: 0
+          new RectangleElement color: "#8ff"
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - initialDraw", canvasElement, compactFlatten []
+        4 4 4 4
+        4 4 4 4
+        4 4 8 8
+        4 4 8 8
+
+      canvasElement.canvasBitmap.clear("black")
+      e.axis = "bottomLeft"
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - partialDraw", canvasElement, compactFlatten []
+        0 0 8 8
+        0 0 8 8
+        0 0 4 4
+        0 0 4 4
+
+  test "change opacity", ->
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 2
+      size: w: 4, h: 2
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: "#480"
+        e = new Element
+          new Element
+            axis:         :centerCenter
+            location: ps: :centerCenter
+            size: hh: 1, w: 2
+            new RectangleElement color: "#8ff"
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then -> compareDownsampledRedChannel "change axis - initialDraw",   canvasElement, [] 4, 4, 8, 8, 8, 8, 4, 4
+    .then ->
+      canvasElement.canvasBitmap.clear("black")
+      e.opacity = .5
+      canvasElement.onNextReady()
+    .then -> compareDownsampledRedChannel  "change axis - partialDraw",  canvasElement, [] 0, 0, 6, 6, 6, 6, 0, 0
+
+  test "clipping limits dirty redraw", ->
+    canvasElement = new CanvasElement
+      disableRetina: true
+      size: 4
+      canvas: HtmlCanvas
+        width: 4
+        height: 4
+      []
+        new RectangleElement color: "#480"
+        new Element
+          location: x: 1
+          size: 1
+          clip: true
+          e = new RectangleElement size: 2, color: "#8ff"
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [4, 8, 4, 4]
+
+      canvasElement.canvasBitmap.clear("black")
+      e.location = x: -1
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [0, 8, 0, 0]
+
+  test "TextElement alignment redraws both before and after areas", ->
+    canvasElement = new CanvasElement
+      disableRetina: true
+      size: w: 6, h: 2
+      canvas: HtmlCanvas
+        width: 6
+        height: 2
+      []
+        new RectangleElement color: "#480"
+        e = new TextElement
+          padding: 1
+          size: ps: 1
+          fontSize: 1
+          text: "."
+          align: "left"
+          color: "#8ff"
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "partialRedraw_initialDraw",         canvasElement, [] 4 4 4 4 4 4
+
+      canvasElement.canvasBitmap.clear("black")
+      e.align = "center"
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", canvasElement, [] 4 4 4 4 0 0
+
+      canvasElement.canvasBitmap.clear("black")
+      e.align = "bottomCenter"
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, [] 0 0 4 4 0 0

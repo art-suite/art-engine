@@ -5,4 +5,3 @@ module.exports = require './namespace'
 .addModules
   Basics:    require './Basics'   
   CacheDraw: require './CacheDraw'
-  Drawing:   require './Drawing'  

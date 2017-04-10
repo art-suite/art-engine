@@ -69,13 +69,14 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @canvasElement = @
     @_focusedElement = null
     @_wasFocusedElement = null
-    @_devicePixelsPerPoint = 1
+    @_devicePixelsPerPoint = options.pixelsPerPoint ? if options.disableRetina
+      1
+    else
+      getDevicePixelRatio()
 
     @_domEventListeners = []
     @_drawEpochPreprocessing = []
     @_drawEpochQueued = false
-
-    @retinaSupport = true unless options.disableRetina
 
     @_documentToElementMatrix =
     @_elementToDocumentMatrix =
@@ -276,16 +277,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @onNextReady => @_register()
 
     @_canvas = canvas
-    @_retinaSetup()
 
     if canvas
       @_updateCanvasGeometry()
 
       @_attachDomEventListeners()
-
-  # NOTE: you can inspect the pixelsPerPoint value by
-  _retinaSetup: ->
-    @_devicePixelsPerPoint = if @retinaSupport then getDevicePixelRatio() else 1
 
   _sizeChanged: (newSize, oldSize) ->
     super
