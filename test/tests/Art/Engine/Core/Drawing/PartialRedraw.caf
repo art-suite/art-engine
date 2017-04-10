@@ -8,7 +8,7 @@ suite: ->
 
   test "change location", ->
     canvasElement = new CanvasElement
-      disableRetina: true
+      pixelsPerPoint: 1
       size: unitSize = 4
       canvas: HtmlCanvas
         width:  unitSize
@@ -41,7 +41,7 @@ suite: ->
 
   test "change axis", ->
     canvasElement = new CanvasElement
-      disableRetina: true
+      pixelsPerPoint: 1
       size: unitSize = 4
       canvas: HtmlCanvas
         width:  unitSize
@@ -98,7 +98,7 @@ suite: ->
 
   test "clipping limits dirty redraw", ->
     canvasElement = new CanvasElement
-      disableRetina: true
+      pixelsPerPoint: 1
       size: 4
       canvas: HtmlCanvas
         width: 4
@@ -124,7 +124,7 @@ suite: ->
 
   test "TextElement alignment redraws both before and after areas", ->
     canvasElement = new CanvasElement
-      disableRetina: true
+      pixelsPerPoint: 1
       size: w: 6, h: 2
       canvas: HtmlCanvas
         width: 6

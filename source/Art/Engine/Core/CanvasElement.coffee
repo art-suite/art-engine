@@ -69,6 +69,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @canvasElement = @
     @_focusedElement = null
     @_wasFocusedElement = null
+    log.error "DEPRICATED: disableRetina. use: pixelsPerPoint: 1" if options.disableRetina
     @_devicePixelsPerPoint = options.pixelsPerPoint ? if options.disableRetina
       1
     else
