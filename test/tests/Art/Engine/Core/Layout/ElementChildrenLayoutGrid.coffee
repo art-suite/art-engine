@@ -14,8 +14,8 @@ StateEpochTestHelper = require '../StateEpochTestHelper'
 testLogBitmap = (name, setup) ->
   test name, ->
     {root, test} = setup()
-    root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
-    .then ({bitmap}) ->
+    root.toBitmapBasic area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
       log bitmap, name
       test?()
 

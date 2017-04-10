@@ -163,8 +163,8 @@ defineModule module, suite:
           angle: Math.PI/2
       stateEpoch.onNextReady()
       .then ->
-        root.toBitmap()
-      .then ({bitmap})->
+        root.toBitmapBasic()
+      .then (bitmap)->
         log bitmap:bitmap
         assert.eq el.elementToParentMatrix.angle, Math.PI/2
 
@@ -180,7 +180,7 @@ defineModule module, suite:
           angle: Math.PI
       stateEpoch.onNextReady()
       .then ->
-        root.toBitmap()
-      .then ({bitmap})->
+        root.toBitmapBasic()
+      .then (bitmap)->
         log bitmap:bitmap
         assert.eq el.elementToParentMatrix.angle, Math.PI

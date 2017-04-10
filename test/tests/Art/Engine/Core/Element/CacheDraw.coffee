@@ -24,13 +24,13 @@ doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement) -
   wrapperElement.onNextReady ->
     testElement = wrapperElement.find("testElement")[0]
     throw new Error "testElement not found" unless testElement
-    wrapperElement.toBitmap {}
+    wrapperElement.toBitmapWithInfo {}
     .then (firstRendered) ->
       firstCache = testElement._drawCacheBitmap
       firstImageData = firstCache.getImageData()
       assert.eq true, !!firstCache
       propChangeFunction testElement
-      wrapperElement.toBitmap {}
+      wrapperElement.toBitmapWithInfo {}
       .then (rendered) ->
         log
           result: rendered
@@ -69,19 +69,19 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         size: point 100, 50
         new RectangleElement color:"red"
 
-      el.toBitmap()
+      el.toBitmapWithInfo()
       .then (rendered) ->
         assert.eq true, !!result = el._drawCacheBitmap
 
     do ->
       test testName = "cacheDraw: true, no change, then setting cacheDraw = false resets cache", ->
         wrapperElement = newPropChangeTestElements true
-        wrapperElement.toBitmap {}
+        wrapperElement.toBitmapWithInfo {}
         .then (rendered) ->
           testElement = wrapperElement.find("testElement")[0]
           assert.eq true, !!testElement._drawCacheBitmap
           testElement.cacheDraw = false
-          wrapperElement.toBitmap {}
+          wrapperElement.toBitmapWithInfo {}
           .then (rendered) ->
             log
               result: rendered
@@ -99,7 +99,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           location: -1
         new RectangleElement color:"#444"
 
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then ({bitmap}) ->
         log {bitmap, _drawCacheBitmap:el._drawCacheBitmap?.clone()}
         result = el._drawCacheBitmap
@@ -118,10 +118,10 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         cacheDraw: true
         size: point 100, 50
 
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then (rendered) ->
         assert.eq false, !!el._drawCacheBitmap
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then (rendered) ->
         assert.eq false, !!result = el._drawCacheBitmap
 
@@ -130,10 +130,10 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         cacheDraw: true
         bitmap: new Canvas.Bitmap point 50
 
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then (rendered) ->
         assert.eq false, !!el._drawCacheBitmap
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then (rendered) ->
         assert.eq false, !!result = el._drawCacheBitmap
 
@@ -147,7 +147,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           cacheDraw: true
           new RectangleElement color: "#800"
 
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_initialDraw", cachedEl._drawCacheBitmap, [
           8, 8, 0, 0
@@ -167,14 +167,14 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           cacheDraw: true
           location: x: 2
           new RectangleElement color: "#8ff"
-      parent.toBitmap {}
+      parent.toBitmapWithInfo {}
       .then ({bitmap})->
         log {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
 
         el._drawCacheBitmap.clear("black")
         el.location = x: 1
-        parent.toBitmap {}
+        parent.toBitmapWithInfo {}
       .then ({bitmap})->
         log {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
@@ -190,7 +190,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           location: 2
           color: "#8ff"
 
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_initialDraw", el._drawCacheBitmap, [
           4, 4, 4, 4
@@ -201,7 +201,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
         el._drawCacheBitmap.clear("black")
         e.location = 1
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_partialDraw", el._drawCacheBitmap, [
           0, 0, 0, 0
@@ -220,13 +220,13 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           size: 1
           clip: true
           e = new RectangleElement size: 2, color: "#8ff"
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw clipping", el, [4, 8, 4, 4]
 
         el._drawCacheBitmap.clear("black")
         e.location = x: -1
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw clipping", el, [0, 8, 0, 0]
 
@@ -243,19 +243,19 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           text: "."
           align: "left"
           color: "#8ff"
-      el.toBitmap {}
+      el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_initialDraw", el, [4, 4, 4, 4, 4, 4]
 
         el._drawCacheBitmap.clear("black")
         e.align = "center"
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", el, [4, 4, 4, 4, 0, 0]
 
         el._drawCacheBitmap.clear("black")
         e.align = "bottomCenter"
-        el.toBitmap {}
+        el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_redrawCenter", el, [0, 4, 4, 4, 0, 0]
 
@@ -323,16 +323,16 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
               new TextElement m standardTextProps, text: "hi!"
 
         initialStagingBitmapsCreated = Element.stats.stagingBitmapsCreated
-        e.toBitmap()
+        e.toBitmapWithInfo()
         .then ({bitmap}) ->
           log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
           parent.angle = (Math.PI/180) * -5
-          e.toBitmap()
+          e.toBitmapWithInfo()
         .then ({bitmap}) ->
           log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
           assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1
           parent.angle = (Math.PI/180) * -10
-          e.toBitmap()
+          e.toBitmapWithInfo()
         .then ({bitmap}) ->
           log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
           assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1

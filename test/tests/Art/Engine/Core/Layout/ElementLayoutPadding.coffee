@@ -168,8 +168,8 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       name: "parent"
       new RectangleElement color: "red"
 
-    parent.toBitmap area: "logicalArea"
-    .then ({bitmap})->
+    parent.toBitmapBasic area: "logicalArea"
+    .then (bitmap)->
       log bitmap
       assert.eq bitmap.size, point 100
 
@@ -181,8 +181,8 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       r1 = new RectangleElement color: "blue", padding:-10
       r2 = new RectangleElement color: "red"
 
-    parent.toBitmap area: "logicalArea"
-    .then ({bitmap})->
+    parent.toBitmapBasic area: "logicalArea"
+    .then (bitmap)->
       log bitmap
       assert.eq r1.paddedArea, rect 0, 0, 100, 100
       assert.eq bitmap.size, point 100
@@ -208,7 +208,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       name: "parent"
       r1 = new RectangleElement color: "blue", size: hph:1, w:45
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq parent.currentSize, point 65, 100
@@ -233,7 +233,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
       name: "parent"
       text: "The quick brown fox jumped over the lazy dog."
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq parent._textLayout.fragments.length, 3
@@ -288,7 +288,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
         padding: left: 5, top: 10, right: 15, bottom: 20
         child = new RectangleElement color: "#0007"
 
-    grandParent.toBitmap area: "logicalArea"
+    grandParent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq child.currentSize, point 100 - 20, 100 - 30
@@ -307,7 +307,7 @@ suite "Art.Engine.Core.layout.padding.layout", ->
         size: cs: 1
         child = new RectangleElement color: "#0007", name: "c", size: 40
 
-    grandParent.toBitmap area: "logicalArea"
+    grandParent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq child.elementToAbsMatrix.location, point 40, 30

@@ -44,13 +44,13 @@ defineModule module, suite: ->
       new RectangleElement color: "red"
       child = new FillElement
 
-    element.toBitmap()
-    .then ({bitmap}) ->
+    element.toBitmapBasic()
+    .then (bitmap) ->
       log bitmap
       assert.eq element.currentSize, child.currentSize, "test 1"
       element.text = "!"
-      element.toBitmap()
-    .then ({bitmap}) ->
+      element.toBitmapBasic()
+    .then (bitmap) ->
       log bitmap, element.currentSize, child.currentSize
       assert.eq element.currentSize, child.currentSize, "test 2"
 

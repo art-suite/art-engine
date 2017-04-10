@@ -14,7 +14,7 @@ StateEpochTestHelper = require '../StateEpochTestHelper'
 testLogBitmap = (name, setup, tests...) ->
   test name, ->
     {root, test} = setup()
-    root.toBitmap area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap, name
       test?()
@@ -207,7 +207,7 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
       new TextElement text: "Hi"
       new TextElement text: "world."
 
-    root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap
       assert.eq (c.currentLocation for c in root.children), [point(), point(), point(), point(0, 12)]
@@ -223,7 +223,7 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
       new TextElement text: "Hi"
       new TextElement text: "world."
 
-    root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap
       assert.eq (c.currentLocation for c in root.children), [point(), point(), point(0, 12)]
@@ -237,7 +237,7 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
       new TextElement text: "Hi"
       new TextElement text: "world."
 
-    root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap
       assert.eq (c.currentLocation for c in root.children), [point(), point(25, 0), point(0, 25)]
@@ -253,7 +253,7 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
       new RectangleElement color: '#cfc', size: wpw:1, h:10
       new RectangleElement color: '#ccf', size: wpw:1, h:10
 
-    root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap
       assert.eq (c.currentLocation for c in root.children), [point(), point(0, 10), point(0, 20)]
@@ -266,7 +266,7 @@ suite "Art.Engine.Core.layout.childrenLayout.flow", ->
       new RectangleElement color: '#cfc', size: hph:1, w:10
       new RectangleElement color: '#ccf', size: hph:1, w:10
 
-    root.toBitmap area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
       log bitmap
       assert.eq (c.currentLocation for c in root.children), [point(), point(10, 0), point(20, 0)]

@@ -25,8 +25,8 @@ suite "Art.Engine.Core.layout.margin", ->
         color: "red"
         margin: 10
 
-    parent.toBitmap area: "logicalArea"
-    .then ({bitmap}) ->
+    parent.toBitmapBasic area: "logicalArea"
+    .then (bitmap) ->
       log bitmap
       assert.eq c1.currentLocation, point()
 
@@ -43,7 +43,7 @@ suite "Art.Engine.Core.layout.margin", ->
         color: "blue"
         margin: m
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq c2.currentLocation, point s + m, 0
@@ -61,7 +61,7 @@ suite "Art.Engine.Core.layout.margin", ->
         color: "blue"
         margin: m2 = 15
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq c2.currentLocation, point s + max(m1, m2), 0
@@ -79,7 +79,7 @@ suite "Art.Engine.Core.layout.margin", ->
         color: "blue"
         margin: m
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq c2.currentLocation, point 0, s + m
@@ -101,7 +101,7 @@ suite "Art.Engine.Core.layout.margin", ->
         color: "green"
         margin: m3 = 20
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq c1.currentLocation, point 0
@@ -123,7 +123,7 @@ suite "Art.Engine.Core.layout.margin", ->
         size: s
         color: "green"
 
-    parent.toBitmap area: "logicalArea"
+    parent.toBitmapBasic area: "logicalArea"
     .then (bitmap)->
       log bitmap
       assert.eq c1.currentLocation, point 0

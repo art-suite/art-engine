@@ -119,13 +119,13 @@ suite "Art.Engine.Core.layout.childrenLayout.row.dynamics", ->
     test: ->
       children[2].parent = null
       assert.eq testElement.currentSize, point 50
-      root.toBitmap()
-      .then ({bitmap})->
+      root.toBitmapBasic()
+      .then (bitmap)->
         log bitmap
         assert.eq testElement.currentSize, point 100, 50
         root.children = arrayWith root.children, new RectangleElement color:"orange",  size: 50
-        root.toBitmap()
-      .then ({bitmap})->
+        root.toBitmapBasic()
+      .then (bitmap)->
         log bitmap
         assert.eq testElement.currentSize, point 50
 

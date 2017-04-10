@@ -212,7 +212,7 @@ defineModule module, suite:
         e2 = new TextElement color:"red", text:"-------", fontSize:32
       e1.onNextReady()
       .then ->
-        e.toBitmap {}
+        e.toBitmapBasic {}
       .then (bitmap) ->
         log bitmap
         assert.neq e1.currentLocation, e2.currentLocation
@@ -379,13 +379,13 @@ defineModule module, suite:
             c2 = new TextElement merge(sharedProps, size: cs: 1),
               new RectangleElement color: "#0002"
               new FillElement
-          el.toBitmap()
-          .then ({bitmap}) ->
+          el.toBitmapBasic()
+          .then (bitmap) ->
             log shouldBeSame: bitmap
             assert.eq c1.currentSize, c2.currentSize
             c1.text = c2.text = "This should word wrap, though!"
-            el.toBitmap()
-          .then ({bitmap}) ->
+            el.toBitmapBasic()
+          .then (bitmap) ->
             log shouldBeDifferent: bitmap
             assert.neq c1.currentSize, c2.currentSize
 

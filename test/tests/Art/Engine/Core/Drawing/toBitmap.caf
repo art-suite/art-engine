@@ -16,7 +16,7 @@ testArtStructure = ->
 suite: ->
   {test} = global
 
-  test "toBitmap no options", ->
+  test "toBitmapBasic no options", ->
     o = testArtStructure()
 
     o.toBitmapBasic()
@@ -25,13 +25,13 @@ suite: ->
       assert.eq bitmap.pixelsPerPoint, 1
       assert.eq bitmap.size, o.currentSize
 
-  test "toBitmap translated", ->
+  test "toBitmapBasic translated", ->
     (o = testArtStructure()).toBitmapBasic elementToDrawAreaMatrix:Matrix.translate(point(123,456))
     .then (bitmap)->
       log bitmap
       assert.eq bitmap.size, o.currentSize
 
-  test "toBitmap pixelsPerPoint:2 - 'retina'", ->
+  test "toBitmapBasic pixelsPerPoint:2 - 'retina'", ->
     o = testArtStructure()
     o.toBitmapBasic pixelsPerPoint:2
     .then (bitmap)->
@@ -40,30 +40,30 @@ suite: ->
       assert.eq bitmap.pixelsPerPoint, 2
       assert.eq bitmap.size, o.currentSize.mul 2
 
-  test "toBitmap rotated", ->
+  test "toBitmapBasic rotated", ->
     (o = testArtStructure()).toBitmapBasic elementToDrawAreaMatrix:Matrix.rotate(Math.PI/6), area:"targetDrawArea"
     .then (bitmap)->
       log bitmap
       assert.eq bitmap.size, point 100, 92
 
-  test "toBitmap with blur", ->
+  test "toBitmapBasic with blur", ->
     o = testArtStructure()
     o.addChild new BlurElement radius:10
-    o.toBitmap {}
-    .then ({bitmap})->
+    o.toBitmapBasic {}
+    .then (bitmap)->
 
       log bitmap
       assert.eq bitmap.size, o.currentSize.add 20
       assert.eq bitmap.size, o.elementSpaceDrawArea.size
 
-  test "toBitmap with out of bounds child and backgroundColor", ->
+  test "toBitmapBasic with out of bounds child and backgroundColor", ->
     o = testArtStructure()
     o.addChild new RectangleElement
       color:  "#700"
       location: xpw:-.25, yph:.75
       size: ps: .5
-    o.toBitmap backgroundColor:"#ff7"
-    .then ({bitmap})->
+    o.toBitmapBasic backgroundColor:"#ff7"
+    .then (bitmap)->
 
       log bitmap
       assert.eq bitmap.size, point 100, 75
@@ -80,7 +80,7 @@ suite: ->
 
   each v, k from areaOptions
     {expectedDrawMatrix, expectedSize} = v
-    test "toBitmap area: #{k} size should == #{expectedSize}", ->
+    test "toBitmapWithInfo area: #{k} size should == #{expectedSize}", ->
       new Element
         size: w: 100, h: 80
         padding: 10
@@ -93,9 +93,9 @@ suite: ->
           new RectangleElement color: "#f00"
           new RectangleElement color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
 
-      child.toBitmap (merge v, area:k, backgroundColor:"#ddd")
+      child.toBitmapWithInfo (merge v, area:k, backgroundColor:"#ddd")
       .then ({bitmap, elementToBitmapMatrix})->
-        log area:k, toBitmap:bitmap
+        log area:k, bitmap:bitmap
         assert.eq bitmap.size, expectedSize
         assert.eq elementToBitmapMatrix, expectedDrawMatrix if expectedDrawMatrix
 
@@ -103,13 +103,13 @@ suite: ->
       fit: point 100, 50
       zoom: point 100
 
-    test "toBitmap mode: #{inspect mode}", ->
+    test "toBitmapWithInfo mode: #{inspect mode}", ->
       element = new Element
         size: w: 200, h:100
         new RectangleElement color: "orange"
 
-      element.toBitmap size:100, mode: mode, backgroundColor:"#ddd"
+      element.toBitmapWithInfo size:100, mode: mode, backgroundColor:"#ddd"
       .then ({bitmap, elementToBitmapMatrix})->
 
-        log mode: mode, toBitmap:bitmap
+        log mode: mode, bitmap:bitmap
         assert.eq bitmap.size, expectedSize
