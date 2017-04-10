@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtEngine
+import &ArtStandardLib, &ArtEngine, &ArtCanvas
 
 class CoreHelper
   @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, sliceAmount, options) ->
@@ -20,15 +20,18 @@ class CoreHelper
         shouldEqual: compare
         message: message
 
-    assert.eq compare, downsampled, message
+      assert.eq compare, downsampled, message
 
-  assert.downsampledRedChannelEq = (message, element, compare) =>
+  assert.downsampledRedChannelEq = (message, element, compare, options) =>
     if element instanceof CanvasElement
       element.onNextReady (e) -> e.canvasBitmap
-    else
+    else if element instanceof Bitmap
+      element
+    else if element instanceof Element
       element.toBitmapBasic()
+    else throw new Error "expecting Element, CanvasElement or Bitmap"
     .then (bitmap) =>
-      @compareDownsampledRedChannel message, bitmap, compare, downsampleBits: 5
+      @compareDownsampledRedChannel message, bitmap, compare, downsampleBits: options?.downsampleBits ? 5
 
   @testDownsampledRedChannelEq: (message, element, compare) =>
     global.test message, ->

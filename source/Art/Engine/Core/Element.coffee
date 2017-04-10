@@ -856,6 +856,8 @@ defineModule module, class Element extends ElementBase
   _addDirtyDrawArea: (dirtyArea = @drawArea) ->
     return unless dirtyArea.area > 0
 
+    dirtyArea = dirtyArea.roundOut()
+
     if @_dirtyDrawAreas
       foundOverlap = true
       dirtyArea = clone dirtyArea

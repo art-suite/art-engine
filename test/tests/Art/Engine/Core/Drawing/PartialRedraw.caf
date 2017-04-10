@@ -14,11 +14,11 @@ suite: ->
         width:  unitSize
         height: unitSize
       []
-        new RectangleElement color: "#480"
+        new RectangleElement color: #480
         e = new RectangleElement
           size: 1
           location: unitSize - 2
-          color: "#8ff"
+          color: #8ff
 
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
@@ -29,7 +29,7 @@ suite: ->
         4 4 8 4
         4 4 4 4
 
-      canvasElement.canvasBitmap.clear("black")
+      canvasElement.canvasBitmap.clear :black
       e.location = 1
       canvasElement.onNextReady()
     .then ->
@@ -43,16 +43,13 @@ suite: ->
     canvasElement = new CanvasElement
       pixelsPerPoint: 1
       size: unitSize = 4
-      canvas: HtmlCanvas
-        width:  unitSize
-        height: unitSize
+      canvas: HtmlCanvas()
       []
-        new RectangleElement color: "#480"
+        new RectangleElement color: #480
         e = new Element
           size: 2
           location: 2
-          angle: 0
-          new RectangleElement color: "#8ff"
+          new RectangleElement color: #8ff
 
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
@@ -63,8 +60,8 @@ suite: ->
         4 4 8 8
         4 4 8 8
 
-      canvasElement.canvasBitmap.clear("black")
-      e.axis = "bottomLeft"
+      canvasElement.canvasBitmap.clear :black
+      e.axis = :bottomLeft
       canvasElement.onNextReady()
     .then ->
       compareDownsampledRedChannel "change axis - partialDraw", canvasElement, compactFlatten []
@@ -73,26 +70,103 @@ suite: ->
         0 0 4 4
         0 0 4 4
 
+  test "change angle size 4 - fails without roundOut", ->
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 1
+      size: unitSize = 4
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: #200
+        e = new Element
+          size: ps: .5
+          location: ps: .5
+          axis: :centerCenter
+          new RectangleElement color: #f00
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      assert.downsampledRedChannelEq
+        "change angle - initialDraw"
+        canvasElement
+        compactFlatten []
+          02 02 02 02
+          02 15 15 02
+          02 15 15 02
+          02 02 02 02
+        downsampleBits: 4
+
+    .then ->
+
+      canvasElement.canvasBitmap.clear :black
+      e.angle = Math.PI/4
+      canvasElement.onNextReady()
+    .then ->
+      assert.downsampledRedChannelEq
+        "change angle - partialDraw"
+        canvasElement
+        compactFlatten []
+          02 03 03 02
+          03 14 14 03
+          03 14 14 03
+          02 03 03 02
+        downsampleBits: 4
+
+  test "change angle size 5", ->
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 1
+      size: unitSize = 5
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: #200
+        e = new Element
+          size: 3
+          location: ps: .5
+          axis: :centerCenter
+          new RectangleElement color: #f00
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      assert.downsampledRedChannelEq "change angle - initialDraw", canvasElement, compactFlatten []
+        1 1 1 1 1
+        1 7 7 7 1
+        1 7 7 7 1
+        1 7 7 7 1
+        1 1 1 1 1
+    .then ->
+
+      canvasElement.canvasBitmap.clear :black
+      e.angle = Math.PI/4
+      canvasElement.onNextReady()
+    .then ->
+      assert.downsampledRedChannelEq "change angle - partialDraw", canvasElement, compactFlatten []
+        1 1 2 1 1
+        1 4 7 4 1
+        3 7 7 7 3
+        1 4 7 4 1
+        1 1 2 1 1
+
   test "change opacity", ->
     canvasElement = new CanvasElement
       pixelsPerPoint: 2
       size: w: 4, h: 2
       canvas: HtmlCanvas()
       []
-        new RectangleElement color: "#480"
+        new RectangleElement color: #480
         e = new Element
           {}
           new Element
             axis:         :centerCenter
             location: ps: :centerCenter
             size: hh: 1, w: 2
-            new RectangleElement color: "#8ff"
+            new RectangleElement color: #8ff
 
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
     .then -> compareDownsampledRedChannel "change axis - initialDraw",   canvasElement, [] 4, 4, 8, 8, 8, 8, 4, 4
     .then ->
-      canvasElement.canvasBitmap.clear("black")
+      canvasElement.canvasBitmap.clear :black
       e.opacity = .5
       canvasElement.onNextReady()
     .then -> compareDownsampledRedChannel  "change axis - partialDraw",  canvasElement, [] 0, 0, 6, 6, 6, 6, 0, 0
@@ -105,19 +179,19 @@ suite: ->
         width: 4
         height: 4
       []
-        new RectangleElement color: "#480"
+        new RectangleElement color: #480
         new Element
           location: x: 1
           size: 1
           clip: true
-          e = new RectangleElement size: 2, color: "#8ff"
+          e = new RectangleElement size: 2, color: #8ff
 
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
     .then ->
       compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [4, 8, 4, 4]
 
-      canvasElement.canvasBitmap.clear("black")
+      canvasElement.canvasBitmap.clear :black
       e.location = x: -1
       canvasElement.onNextReady()
     .then ->
@@ -131,28 +205,28 @@ suite: ->
         width: 6
         height: 2
       []
-        new RectangleElement color: "#480"
+        new RectangleElement color: #480
         e = new TextElement
           padding: 1
           size: ps: 1
           fontSize: 1
           text: "."
           align: "left"
-          color: "#8ff"
+          color: #8ff
 
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
     .then ->
       compareDownsampledRedChannel "partialRedraw_initialDraw",         canvasElement, [] 4 4 4 4 4 4
 
-      canvasElement.canvasBitmap.clear("black")
+      canvasElement.canvasBitmap.clear :black
       e.align = "center"
       canvasElement.onNextReady()
     .then ->
       compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", canvasElement, [] 4 4 4 4 0 0
 
-      canvasElement.canvasBitmap.clear("black")
+      canvasElement.canvasBitmap.clear :black
       e.align = "bottomCenter"
       canvasElement.onNextReady()
     .then ->
-      compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, [] 0 0 4 4 0 0
+      compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, [] 0 4 4 4 0 0
