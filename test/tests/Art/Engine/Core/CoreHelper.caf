@@ -1,11 +1,10 @@
-{log, eq} = Neptune.Art.Foundation
-{Element} = Neptune.Art.Engine
+import &ArtStandardLib, &ArtEngine
 
-module.exports = class CoreHelper
+class CoreHelper
   @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, sliceAmount, options) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     {downsampleBits = 4} = options
-    out = (a >> downsampleBits for a in bitmap.getImageDataArray "red")
+    out = array a in bitmap.getImageDataArray "red" with a >> downsampleBits
     if sliceAmount
       out.slice 0, sliceAmount
     else
@@ -24,10 +23,15 @@ module.exports = class CoreHelper
     assert.eq compare, downsampled, message
 
   assert.downsampledRedChannelEq = (message, element, compare) =>
-    element.toBitmapBasic()
+    if element instanceof CanvasElement
+      element.onNextReady (e) -> e.canvasBitmap
+    else
+      element.toBitmapBasic()
     .then (bitmap) =>
       @compareDownsampledRedChannel message, bitmap, compare, downsampleBits: 5
 
   @testDownsampledRedChannelEq: (message, element, compare) =>
     global.test message, ->
-      assert.downsampledRedChannelEq message, element, compare
+      Promise.then -> element
+      .then (element) ->
+        assert.downsampledRedChannelEq message, element, compare

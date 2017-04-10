@@ -1,0 +1,23 @@
+import &ArtStandardLib, &ArtEngine
+HtmlCanvas = &ArtFoundation.Browser.DomElementFactories.Canvas
+
+{testDownsampledRedChannelEq} = &CoreHelper
+
+suite: ->
+  testDownsampledRedChannelEq
+    "opacity"
+    new CanvasElement
+      pixelsPerPoint: 2
+      size: w: 4, h: 2
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: :black
+        new Element
+          opacity: .5
+          new RectangleElement
+            color: "#f00"
+            location: x: 1
+            size: 2
+
+    compactFlatten []
+      0 0 4 4 4 4 0 0

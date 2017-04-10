@@ -81,6 +81,7 @@ suite: ->
       []
         new RectangleElement color: "#480"
         e = new Element
+          {}
           new Element
             axis:         :centerCenter
             location: ps: :centerCenter

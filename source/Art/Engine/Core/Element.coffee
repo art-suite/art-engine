@@ -759,7 +759,7 @@ defineModule module, class Element extends ElementBase
   # DRAW
   ##########################
 
-  _drawChildren: (target, elementToTargetMatrix, usingStagingBitmap) ->
+  _drawChildren: (target, elementToTargetMatrix) ->
     for child in @children when child.visible
       child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     @children # without this, coffeescript returns a new array
@@ -887,7 +887,15 @@ defineModule module, class Element extends ElementBase
 
   @_cachingDraws: 0
 
-  getCacheDrawRequired: (elementToTargetMatrix) -> @getNeedsStagingBitmap(elementToTargetMatrix) || (config.drawCacheEnabled && Element._cachingDraws == 0 && @getCacheable() && @getCacheDraw())
+  getCacheDrawRequired: (elementToTargetMatrix) ->
+    @getNeedsStagingBitmap(elementToTargetMatrix) ||
+    (
+      config.drawCacheEnabled &&
+      Element._cachingDraws == 0 &&
+      @getCacheable() &&
+      @getCacheDraw()
+    )
+
   getNeedsStagingBitmap: (elementToTargetMatrix) ->
     !!(
       @getIsMask() ||
@@ -912,6 +920,7 @@ defineModule module, class Element extends ElementBase
       throw new Error "expected both or neither: @_drawCacheToElementMatrix, @_drawCacheBitmap"
 
     return unless @_drawCacheBitmap
+
     target.drawBitmap(
       @_drawCacheToElementMatrix.mul elementToTargetMatrix
       @_drawCacheBitmap
@@ -933,42 +942,36 @@ defineModule module, class Element extends ElementBase
 
   # TODO - use new filterSource stuff and accountForOverdraw
   _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
-    # log generateDrawCache: {@_dirtyDrawAreas}
 
-    # @_clearDrawCache()
-
-    drawArea = @getElementSpaceDrawArea().roundOut()
-    return if drawArea.getArea() <= 0
+    elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut()
+    return if elementSpaceDrawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
-    elementSpaceCacheArea = drawArea.mul(pixelsPerPoint)
+    cacheSpaceDrawArea = elementSpaceDrawArea.mul(pixelsPerPoint)
 
     # don't cache if too big
     # TODO: this doesn't work; it causes errors to abort caching at this point
-    # return if elementSpaceCacheArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
+    # return if cacheSpaceDrawArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
 
     # re-use existing bitmap, if possible
-    d2eMatrix = Matrix.translateXY(-drawArea.x, -drawArea.y).scale(pixelsPerPoint).inv
-    if d2eMatrix.eq(@_drawCacheToElementMatrix) && elementSpaceCacheArea.size.eq @_drawCacheBitmap?.size
-      # log "reuse _drawCacheBitmap #{@_drawCacheBitmap.size}"
+    d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(pixelsPerPoint).inv
+    if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
       return unless @_dirtyDrawAreas || @_redrawAll
     else
-      # log "new _drawCacheBitmap":
-      #   {d2eMatrix, @_drawCacheToElementMatrix, elementSpaceCacheArea, _drawCacheBitmap_size: @_drawCacheBitmap?.size}
       @_clearDrawCache()
-      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, elementSpaceCacheArea.size
+      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheSpaceDrawArea.size
       @_dirtyDrawAreas = null
       @_redrawAll = true
 
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-    elementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection(elementSpaceCacheArea)
+    clippedElementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection elementSpaceDrawArea
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
 
-    if elementSpaceDrawArea && neq elementSpaceCacheArea, elementSpaceDrawArea
-      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection elementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceCacheArea]
+    if clippedElementSpaceDrawArea && neq elementSpaceDrawArea, clippedElementSpaceDrawArea
+      {insideAreas, outsideAreas}  = @_partitionAreasByInteresection clippedElementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceDrawArea]
       dirtyAreasToDraw = insideAreas
       remainingDirtyAreas = outsideAreas
 
@@ -993,16 +996,8 @@ defineModule module, class Element extends ElementBase
       if dirtyAreasToDraw
         for dirtyDrawArea in dirtyAreasToDraw
           drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
-          # drawCacheSpaceDrawAreaFloat = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea
-          # if !drawCacheSpaceDrawAreaFloat.eq drawCacheSpaceDrawArea
-          #   log {drawCacheSpaceDrawArea, drawCacheSpaceDrawAreaFloat}
-
-          # if (drawCacheSpaceDrawArea.area / @_drawCacheBitmap.size.area) > .1
-          #   log "updating #{ceil(1000 * drawCacheSpaceDrawArea.area / @_drawCacheBitmap.size.area)/10}% of drawCacheBitmap (#{@_drawCacheBitmap.size})"
           @_drawCacheBitmap.clippedTo drawCacheSpaceDrawArea, draw
-          # @_drawCacheBitmap.drawBorder null, drawCacheSpaceDrawArea, color: "red"
       else
-        # log "initializing 100% of drawCacheBitmap (#{@_drawCacheBitmap.size})"
         draw()
 
     finally
