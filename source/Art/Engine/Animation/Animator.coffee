@@ -120,11 +120,11 @@ module.exports = class Animator extends EventedMixin BaseObject
   activateAnimation: ->
     return if @activated
     @activated = true
-    # @log activateAnimation:@
+    log activateAnimation:@
     for animatedObject in @objects
-      # @log "  for: #{inspect animatedObject}"
+      log "  for: #{inspect animatedObject}"
       if animatedObject._activeAnimator
-        # @log "#{animatedObject.classPathName} already has _activeAnimator... aborting last animation to start this one"
+        log "#{animatedObject.classPathName} already has _activeAnimator... aborting last animation to start this one"
         animatedObject._activeAnimator.abort()
       animatedObject._activeAnimator = @
 
@@ -137,7 +137,7 @@ module.exports = class Animator extends EventedMixin BaseObject
         @log "  animatedObject: (#{inspect animatedObject, 1}"
         @log "  animatedObject._activeAnimator: (#{inspect animatedObject._activeAnimator, 1}"
         @log "  @: (#{inspect @, 1}"
-      delete animatedObject._activeAnimator
+      animatedObject._activeAnimator = null
 
   advance: ->
     return if @aborted || @deactivated

@@ -6,7 +6,7 @@ IdleEpoch = require './IdleEpoch'
 DrawCacheManager = require './DrawCacheManager'
 
 {
-  log, requestAnimationFrame, Map, miniInspect, time, arrayWithout, currentSecond, Epoch
+  log, requestAnimationFrame, miniInspect, time, arrayWithout, currentSecond, Epoch
   globalCount
   isPlainObject
   durationString

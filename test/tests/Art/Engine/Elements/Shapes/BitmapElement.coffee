@@ -31,28 +31,28 @@ suite "Art.Engine.Elements.Shapes.BitmapElement", ->
         color: "#0005"
 
   drawTest2 "zoom", ->
-    new BitmapElement bitmap:source, mode:"zoom", size:100
+    new BitmapElement bitmap:source, layout: "zoom", size:100
 
   drawTest2 "zoom with focus left", ->
-    new BitmapElement bitmap:source, mode:"zoom", size:100, focus: point(0, .5)
+    new BitmapElement bitmap:source, layout: "zoom", size:100, focus: point(0, .5)
 
   drawTest2 "zoom with focus right", ->
-    new BitmapElement bitmap:source, mode:"zoom", size:100, focus: point(1, .5)
+    new BitmapElement bitmap:source, layout: "zoom", size:100, focus: point(1, .5)
 
   drawTest2 "fit", ->
-    new BitmapElement bitmap:source, mode:"fit", size:100
+    new BitmapElement bitmap:source, layout: "fit", size:100
 
   drawTest2 "stretch", ->
-    new BitmapElement bitmap:source, mode:"stretch", size:100
+    new BitmapElement bitmap:source, layout: "stretch", size:100
 
   drawTest2 "sourceArea basic", ->
     new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40)
 
   drawTest2 "sourceArea zoom", ->
-    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"zoom", size:100
+    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), layout: "zoom", size:100
 
   drawTest2 "sourceArea fit", ->
-    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"fit", size:100
+    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), layout: "fit", size:100
 
   drawTest2 "sourceArea stretch", ->
-    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), mode:"stretch", size:100
+    new BitmapElement bitmap:source, sourceArea:rect(10,10,60,40), layout: "stretch", size:100

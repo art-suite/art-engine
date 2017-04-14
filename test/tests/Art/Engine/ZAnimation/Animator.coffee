@@ -48,6 +48,8 @@ module.exports = suite: ->
     el.onNextReady()
     .then ->
       assert.eq el.currentLocation, point 5
+      log "TEST FOR _activeAnimator"
+      assert.isPresent el._activeAnimator
       el._activeAnimator.finish()
       el.onNextReady()
     .then ->

@@ -1,5 +1,5 @@
 Foundation= require 'art-foundation'
-{defineModule, log, Map, miniInspect, currentSecond, arrayWithout, BaseObject, Stat} = Foundation
+{defineModule, log, miniInspect, currentSecond, arrayWithout, BaseObject, Stat} = Foundation
 
 defineModule module, class EngineStat extends BaseObject
   constructor: ->

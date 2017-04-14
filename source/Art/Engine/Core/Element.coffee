@@ -658,9 +658,11 @@ defineModule module, class Element extends ElementBase
       default: null
       getter: (pending) -> @_activeAnimator
       setter: (options) ->
+        log.error "DEPRICATED: `animate` property. Use `animators`."
         return if @_toVoidAnimationStatus
         @finishAnimations()
         stateEpoch.onNextReady =>
+          log "START ANIMATION"
           new Animator @, options if options
 
     preFilteredBaseDrawArea: (pending) ->
@@ -724,14 +726,14 @@ defineModule module, class Element extends ElementBase
     @onNextReady =>
       joiner = new Join
       joiner.do (done) =>
-        @toBitmap merge(toBitmapOptions, area:"logicalArea"), (bitmap) =>
+        @toBitmapWithInfo merge(toBitmapOptions, area:"logicalArea"), (bitmap) =>
           outPut = {}
           outPut[@inspectedName] = [@inspectedName, bitmap]
           done outPut
       for child, i in @children
         do (child, i) =>
           joiner.do (done) =>
-            child.toBitmap merge(toBitmapOptions, area: childArea), (bitmap) =>
+            child.toBitmapWithInfo merge(toBitmapOptions, area: childArea), (bitmap) =>
               ret = {}
               ret["child#{i}"] = [child.inspectedName, bitmap]
               done ret
@@ -1114,8 +1116,8 @@ defineModule module, class Element extends ElementBase
 
   logBitmap: (options = {})->
     options.pixelsPerPoint ||= @devicePixelsPerPoint
-    @toBitmap options
-    .then ({bitmap}) =>
+    @toBitmapBasic options
+    .then (bitmap) =>
       @log
         size: @currentSize
         location: @currentLocation
@@ -1485,6 +1487,7 @@ defineModule module, class Element extends ElementBase
     reverseChildren: -> @_children.slice().reverse()
 
     childrenMap: ->
+      throw new Error "DEPRICATED - simpifying the API - use the @children array to build your own Map"
       (new Map).tap (map) =>
         map.set child, true for child in @_children
 
