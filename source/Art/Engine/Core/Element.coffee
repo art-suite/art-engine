@@ -279,6 +279,7 @@ defineModule module, class Element extends ElementBase
 
     padding:
       default: 0
+      drawAreaProperty: true
       preprocess: (v) ->
         if isFunction v then v
         else if v == false || v == undefined || v == null
