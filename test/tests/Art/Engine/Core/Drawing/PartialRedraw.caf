@@ -230,3 +230,46 @@ suite: ->
       canvasElement.onNextReady()
     .then ->
       compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, [] 0 4 4 4 0 0
+
+
+  test "change color with negative padding", ->
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 1
+      size: 6
+      canvas: HtmlCanvas
+        width:  unitSize
+        height: unitSize
+      []
+        new RectangleElement color: #480
+        parent = new Element
+          size: 2
+          location: 2
+          child = new RectangleElement
+            padding: -1
+            radius: 1
+            color: #8ff
+
+    canvasElement.onNextReady()
+    .then ->
+      assert.eq parent.elementSpaceDrawArea, rect -1, -1, 4, 4
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change color with negative padding - initialDraw", canvasElement, compactFlatten []
+        4 4 4 4 4 4
+        4 7 8 8 7 4
+        4 8 8 8 8 4
+        4 8 8 8 8 4
+        4 7 8 8 7 4
+        4 4 4 4 4 4
+
+      canvasElement.canvasBitmap.clear :black
+      child.color = #6ff
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change color with negative padding - partialDraw", canvasElement, compactFlatten []
+        0 0 0 0 0 0
+        0 5 6 6 5 0
+        0 6 6 6 6 0
+        0 6 6 6 6 0
+        0 5 6 6 5 0
+        0 0 0 0 0 0
