@@ -21,12 +21,6 @@ module.exports = createWithPostCreate class FillableBase extends FilterAndFillab
     blur: 0
     offset: new PointLayout 0
   @drawProperty
-    # from:   default: "topLeft", preprocess: (v) -> point v
-    # to:     default: null, preprocess: (v) -> v? && point v
-    from: preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
-    to:   preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
-
-    gradientRadius: default: null
     shadow:
       default: null
       validate: (v) -> !v || v == true || isPlainObject v

@@ -50,6 +50,14 @@ defineModule module, class FilterAndFillableBase extends Element
           null
 
     colors: default: null
+    # from:   default: "topLeft", preprocess: (v) -> point v
+    # to:     default: null, preprocess: (v) -> v? && point v
+    from: preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
+    to:   preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
+
+    # number or [number, number]
+    # numbers are multiplied by: @currentSize.min()
+    gradientRadius: default: null
 
   #############
   # OVERRIDES

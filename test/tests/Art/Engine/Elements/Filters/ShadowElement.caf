@@ -1,4 +1,5 @@
 import &ArtStandardLib, &ArtAtomic, &ArtEngine, &Helper
+testSize = point 80 60
 
 suite:
   basics: ->
@@ -7,17 +8,77 @@ suite:
       stagingBitmapsCreateShouldBe: 1
       element: ->
         new RectangleElement
-          color:"red", size: point(80, 60)
+          color:  :red
+          size:   testSize
           new FillElement
           new ShadowElement radius: 10, location: 10
 
+  colors: ->
+    drawTest3
+      "solid red"
+      stagingBitmapsCreateShouldBe: 1
+      element: ->
+        new RectangleElement
+          size:   testSize
+          new FillElement
+          new ShadowElement radius: 10, location: 10, color: :red
+
+    drawTest3
+      "solid yellow"
+      stagingBitmapsCreateShouldBe: 1
+      element: ->
+        new RectangleElement
+          size:   testSize
+          new FillElement
+          new ShadowElement radius: 10, location: 10, color: :yellow
+
+    drawTest3
+      "gradient"
+      stagingBitmapsCreateShouldBe: 1
+      element: ->
+        new RectangleElement
+          size:   testSize
+          new FillElement
+          new ShadowElement
+            location:   10
+            color:      #70f :red
+
+    drawTest3
+      "blur and to"
+      stagingBitmapsCreateShouldBe: 1
+      element: ->
+        new RectangleElement
+          size:   testSize
+
+          new FillElement
+          new ShadowElement
+            radius:   10
+            location: 10
+            color:    :red, :yellow, :green
+            to:       :topRight
+
+    drawTest3
+      "fancy"
+      stagingBitmapsCreateShouldBe: 1
+      element: ->
+        new RectangleElement
+          size:   testSize
+          new FillElement
+          new ShadowElement
+            opacity:    .5
+            radius:     5
+            location:   10
+            color:      :black :black :yellow :yellow :black :black :yellow :yellow :black :black :yellow :yellow :black :black :yellow :yellow
+            to:         :bottomRight
+
+  more: ->
     drawTest3
       "shadow shadow"
       stagingBitmapsCreateShouldBe: 1
       elementSpaceDrawAreaShouldBe: rect 0, 0, 110, 90
       element: ->
         new RectangleElement
-          color: "red", size: point(80, 60)
+          color: "red", size: testSize
           new FillElement
           new ShadowElement key:"shadow1", radius: 0, color: "orange", location: 10
           new ShadowElement
@@ -33,7 +94,7 @@ suite:
       elementSpaceDrawAreaShouldBe: rect 0, 0, 120, 100
       element: ->
         new RectangleElement
-          color: "red", size: point(80, 60)
+          color: "red", size: testSize
           new FillElement
           new ShadowElement
             key:"shadow2"
@@ -48,7 +109,7 @@ suite:
       elementSpaceDrawAreaShouldBe: rect -10, -16, 170, 140
       element: ->
         new RectangleElement
-          color: "red", size: point(80, 60)
+          color: "red", size: testSize
           new FillElement
           new FillElement location: x:-8, y:-12
           new FillElement location: x:32, y:18
@@ -81,14 +142,14 @@ suite:
 
     drawTest2 "parent overdraw required", ->
       new RectangleElement
-        color:"red", size:point(80, 60), location: point(-100, -20)
+        color:"red", size:testSize, location: point -100 -20
         new FillElement
         new ShadowElement radius:10, location:point 10
 
     drawTest2 "gradient child filterSource", ->
       new RectangleElement
         color:          "red"
-        size:           point(80, 60)
+        size:           testSize
         radius:         50
         name:           "myFilterSource"
         new FillElement
@@ -114,37 +175,37 @@ suite:
       "opacity 50%"
       element: ->
         new RectangleElement
-          color:"red", size:point(80, 60)
+          color:"red", size:testSize
           new FillElement
-          new ShadowElement radius:10, opacity:.5, location:point 10
+          new ShadowElement radius:10, opacity:.5, location: 10
 
     drawTest2 "sourceIn", ->
       new RectangleElement
-        color:"red", size:point(80, 60)
+        color:"red", size:testSize
         new FillElement
-        new ShadowElement radius:10, compositeMode:"sourceIn", location:point 10
+        new ShadowElement radius:10, compositeMode:"sourceIn", location: 10
 
     drawTest2 "with 50% scaled drawMatrix", ->
       new RectangleElement
-        color:"red", size:point(80, 60), scale:point(.5)
+        color: :red scale: .5 size: testSize
         new FillElement
-        new ShadowElement radius:10, location:point 10
+        new ShadowElement radius: 10, location: 10
 
     drawTest2 "parent rotated 180deg - shadow should be to the upper-left", ->
       new RectangleElement
-        color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI
+        color:"red", size:testSize, axis:.5, location:point(50,30), angle:Math.PI
         new FillElement
         new ShadowElement radius:10, location:point 10
 
     drawTest2 "parent rotated 45deg - shadow should offset directly down", ->
       new RectangleElement
-        color:"red", size:point(80, 60), axis:.5, location:point(50,30), angle:Math.PI/4
+        color:"red", size:testSize, axis:.5, location:point(50,30), angle:Math.PI/4
         new FillElement
         new ShadowElement radius:10, location:point 10
 
     drawTest2 "shadow rotated 60deg", ->
       new RectangleElement
-        color:"red", size:point(80, 60)
+        color:"red", size:testSize
         new FillElement
         new ShadowElement radius:10, axis:.5, angle:Math.PI/3, location: wpw:.5, hph:.5, x:10, y:10
 
@@ -235,31 +296,31 @@ suite:
   inverted: ->
     drawTest2 "blurred", ->
       new RectangleElement
-        color:"red", size:point(80, 60)
+        color:"red", size:testSize
         new FillElement
         new ShadowElement inverted:true, radius:10, compositeMode:"sourceIn", location:point 10
 
     drawTest2 "no blur", ->
       new RectangleElement
-        color:"red", size:point(80, 60), radius: 20
+        color:"red", size:testSize, radius: 20
         new FillElement
         new ShadowElement inverted:true, compositeMode:"sourceIn", location:point 10
 
     drawTest2 "rotate", ->
       new RectangleElement
-        color:"red", size:point(80, 60), radius: 20
+        color:"red", size:testSize, radius: 20
         new FillElement
         new ShadowElement inverted:true, compositeMode:"sourceIn", angle: Math.PI/12, location:point 10
 
     drawTest2 "half scale", ->
       new RectangleElement
-        color:"red", size:point(80, 60), radius: 20
+        color:"red", size:testSize, radius: 20
         new FillElement
         new ShadowElement axis: .5, inverted:true, compositeMode:"sourceIn", scale: 1/2, radius: 10, location: ps: .5
 
     drawTest2 "half size", ->
       new RectangleElement
-        color:"red", size:point(80, 60), radius: 20
+        color:"red", size:testSize, radius: 20
         new FillElement
         new ShadowElement
           axis: .5

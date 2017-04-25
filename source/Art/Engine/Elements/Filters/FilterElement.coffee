@@ -71,7 +71,7 @@ module.exports = createWithPostCreate class FilterElement extends FilterAndFilla
   OUT: filterScratchBitmap with filter results or new bitmap of the same size
     NOTE: you can, and should if possible, re-use filterScratchBitmap
   ###
-  filter: (filterScratchBitmap, scale) ->
+  filter: (filterScratchBitmap, scale, elementToFilterScratchMatrix, options) ->
     imageData = filterScratchBitmap.getImageData()
     @filterPixelData filterScratchBitmap, imageData.data, scale
     filterScratchBitmap.putImageData imageData
@@ -83,7 +83,7 @@ module.exports = createWithPostCreate class FilterElement extends FilterAndFilla
   fillShape: (target, elementToTargetMatrix, options) ->
     scale = elementToTargetMatrix.exactScaler
 
-    {filterTargetToElementMatrix, filterTarget} = @_filterFilterSource scale, target
+    {filterTargetToElementMatrix, filterTarget} = @_filterFilterSource scale, target, options
 
     target.drawBitmap(
       filterTargetToElementMatrix.mul elementToTargetMatrix
@@ -141,7 +141,7 @@ module.exports = createWithPostCreate class FilterElement extends FilterAndFilla
   Can only be called when filterSource._currentToTargetMatrix is valid.
   I.E. in the middle of a draw cycle.
   ###
-  _filterFilterSource: (scale, bitmapFactory) ->
+  _filterFilterSource: (scale, bitmapFactory, options) ->
     filterSource = @getFilterSourceElement()
     elementSpaceDrawArea = @getElementSpaceDrawArea()
 
@@ -156,7 +156,7 @@ module.exports = createWithPostCreate class FilterElement extends FilterAndFilla
     .drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
 
     filterTargetToElementMatrix: elementToFilterScratchMatrix.inv
-    filterTarget: @filter filterScratch, scale
+    filterTarget: @filter filterScratch, scale, elementToFilterScratchMatrix, options
 
   #####################################
   # PRIVATE HELPER VIRTUAL PROPSERTIES

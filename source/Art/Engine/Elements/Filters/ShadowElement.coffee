@@ -1,17 +1,24 @@
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
+{defineModule, log, merge} = require 'art-standard-lib'
 FilterElement = require './FilterElement'
-{createWithPostCreate, log} = Foundation
 
-module.exports = createWithPostCreate class ShadowElement extends FilterElement
+defineModule module, class ShadowElement extends FilterElement
   defaultCompositeMode: "destOver"
 
   @drawProperty
     inverted: default: false
 
-  filter: (elementSpaceTarget, scale) ->
+  filter: (elementSpaceTarget, scale, elementToFilterScratchMatrix, options) ->
     elementSpaceTarget.blurAlpha @_radius * scale, inverted: @inverted
-    elementSpaceTarget.drawRectangle null, elementSpaceTarget.size, color:@_color, compositeMode:"targetAlphaMask"
+
+    options =
+      merge options,
+        compositeMode: "targetAlphaMask"
+        opacity: 1
+
+    options.from = elementToFilterScratchMatrix.transform options.from if options.from
+    options.to = elementToFilterScratchMatrix.transform options.to if options.to
+
+    elementSpaceTarget.drawRectangle null, elementSpaceTarget.size, options
 
   ###
   NOTES
