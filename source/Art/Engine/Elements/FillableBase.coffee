@@ -63,11 +63,10 @@ module.exports = createWithPostCreate class FillableBase extends Base
         offsetX: x
         offsetY: y
 
-  _expandRectangleByShadow: (r, pending) ->
-    shadow = @getShadow pending
-    return r unless shadow
+  _expandRectangleByShadow: (r, pending, normalizedShadow) ->
+    return r unless normalizedShadow
     {x, y, w, h} = r
-    {blur, offsetX, offsetY} = @getNormalizedShadow pending
+    {blur, offsetX, offsetY} = normalizedShadow
     offsetX ||= 0
     offsetY ||= 0
     blur ||= 0
@@ -85,7 +84,9 @@ module.exports = createWithPostCreate class FillableBase extends Base
   @virtualProperty
     drawAreaPadding: (pending) -> 0
     baseDrawArea: (pending) ->
-      @_expandRectangleByShadow @getPreFilteredBaseDrawArea(pending), pending
+      @_expandRectangleByShadow @getPreFilteredBaseDrawArea(pending),
+        pending
+        @getNormalizedShadow pending
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super

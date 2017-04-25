@@ -1,10 +1,10 @@
-{defineModule, inspect, log, isArray} = require 'art-standard-lib'
-{point, matrix, rect, Matrix} = require 'art-atomic'
-{Element, OutlineElement, RectangleElement} = Neptune.Art.Engine
+import &ArtStandardLib, &ArtAtomic, Neptune.Art.Engine
 
-{stateEpochTest} = require './StateEpochTestHelper'
+test = (a, f) -> global.test a, f
 
-defineModule module, suite:
+{stateEpochTest} = &StateEpochTestHelper
+
+suite:
   basic: ->
     stateEpochTest "basic parentSpaceDrawArea", ->
       o = new Element size:400
@@ -19,7 +19,8 @@ defineModule module, suite:
 
   children: ->
     stateEpochTest "with no mask and children", ->
-      o = new Element location:point(50,60), size: 400,
+      o = new Element
+        location: point(50,60), size: 400
         new Element location:point(100,200), size: 400
       ->
         assert.eq o.elementSpaceDrawArea, rect 100, 200, 400, 400
@@ -57,8 +58,10 @@ defineModule module, suite:
           assert.eq p.elementSpaceDrawArea, rect 45, 45, 23, 23
 
     stateEpochTest "grandchild effects grandparent", ->
-      gp = new Element {},
-        p = new Element {},
+      gp = new Element
+        {}
+        p = new Element
+          {}
           c = new Element size:23, location:45
       ->
         assert.eq gp.elementSpaceDrawArea, rect 45, 45, 23, 23
@@ -67,7 +70,8 @@ defineModule module, suite:
           assert.eq gp.elementSpaceDrawArea, rect 12, 12, 23, 23
 
     stateEpochTest "with mask and children outside mask", ->
-      o = new Element location:point(50,60), size: 400,
+      o = new Element
+        location:point(50,60), size: 400
         new Element location:point(100,200), size: 400
         new Element isMask:true
 
@@ -76,13 +80,15 @@ defineModule module, suite:
         assert.eq o.parentSpaceDrawArea,  rect 150, 260, 300, 200
 
     stateEpochTest "with some masked and some unmasked children", ->
-      o = new Element location:point(50,60), size: 400,
+      o = new Element
+        location:point(50,60), size: 400
         new Element location:point(100,200), size: 400
         new Element compositeMode:"alphaMask"
         new Element location:point(-100,-200), size: 40
 
       ->
         assert.eq o.parentSpaceDrawArea, rect 50-100, 60-200, 500, 600
+
 
   transforms: ->
     stateEpochTest "with intersting transformation matrix", ->
@@ -93,7 +99,9 @@ defineModule module, suite:
 
   outline: ->
     stateEpochTest "with outline", ->
-      o = new RectangleElement color:"#ff0", size: 50,
+      o = new RectangleElement
+        color: #ff0
+        size: 50
         outline = new OutlineElement
           lineWidth:20
           lineJoin: "round"
@@ -115,13 +123,15 @@ defineModule module, suite:
 
     parentSpace: ->
       test "positive", ->
-        new Element size: 50,
+        new Element
+          size: 50
           new Element padding: 10
         .onNextReady (parent) ->
           assert.eq parent.elementSpaceDrawArea, rect 10, 10, 30, 30
 
       test "negative", ->
-        new Element size: 50,
+        new Element
+          size: 50
           new Element padding: -10
         .onNextReady (parent) ->
           assert.eq parent.elementSpaceDrawArea, rect -10, -10, 70, 70

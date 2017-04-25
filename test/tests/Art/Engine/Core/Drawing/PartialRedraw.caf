@@ -86,14 +86,14 @@ suite: ->
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
     .then ->
-      assert.downsampledRedChannelEq
+      assert.compactRedChannelEq
         "change angle - initialDraw"
         canvasElement
         compactFlatten []
-          02 02 02 02
-          02 15 15 02
-          02 15 15 02
-          02 02 02 02
+          0 0 0 0
+          0 1 1 0
+          0 1 1 0
+          0 0 0 0
         downsampleBits: 4
 
     .then ->
@@ -102,14 +102,15 @@ suite: ->
       e.angle = Math.PI/4
       canvasElement.onNextReady()
     .then ->
-      assert.downsampledRedChannelEq
+      assert.compactRedChannelEq
         "change angle - partialDraw"
         canvasElement
         compactFlatten []
-          02 03 03 02
-          03 14 14 03
-          03 14 14 03
-          02 03 03 02
+          0 1 1 0
+          1 2 2 1
+          1 3 3 1
+          0 1 1 0
+
         downsampleBits: 4
 
   test "change angle size 5", ->
@@ -128,24 +129,24 @@ suite: ->
     canvasElement.onNextReady()
     .then -> canvasElement.onNextReady()
     .then ->
-      assert.downsampledRedChannelEq "change angle - initialDraw", canvasElement, compactFlatten []
-        1 1 1 1 1
-        1 7 7 7 1
-        1 7 7 7 1
-        1 7 7 7 1
-        1 1 1 1 1
+      assert.compactRedChannelEq "change angle - initialDraw", canvasElement, compactFlatten []
+        0 0 0 0 0
+        0 1 1 1 0
+        0 1 1 1 0
+        0 1 1 1 0
+        0 0 0 0 0
     .then ->
 
       canvasElement.canvasBitmap.clear :black
       e.angle = Math.PI/4
       canvasElement.onNextReady()
     .then ->
-      assert.downsampledRedChannelEq "change angle - partialDraw", canvasElement, compactFlatten []
-        1 1 2 1 1
-        1 4 7 4 1
-        3 7 7 7 3
-        1 4 7 4 1
-        1 1 2 1 1
+      assert.compactRedChannelEq "change angle - partialDraw", canvasElement, compactFlatten []
+        0 0 1 0 0
+        0 3 4 2 0
+        1 4 4 4 1
+        0 3 4 3 0
+        0 0 1 0 0
 
   test "change opacity", ->
     canvasElement = new CanvasElement

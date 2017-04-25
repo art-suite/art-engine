@@ -15,6 +15,11 @@ module.exports = createWithPostCreate class FillElement extends FillableBase
     preFilteredBaseDrawArea: (pending) ->
       @getParent(pending).getPreFilteredBaseDrawArea pending
 
+    baseDrawArea: (pending) ->
+      @_expandRectangleByShadow @getPreFilteredBaseDrawArea(pending),
+        pending
+        @getNormalizedShadow(pending) || @getParent(pending)?.getNormalizedShadow(pending)
+
   ###
   NOTE:
 

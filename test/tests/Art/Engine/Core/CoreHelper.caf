@@ -1,28 +1,83 @@
 import &ArtStandardLib, &ArtEngine, &ArtCanvas
 
 class CoreHelper
-  @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, sliceAmount, options) ->
-    bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
-    {downsampleBits = 4} = options
-    out = array a in bitmap.getImageDataArray "red" with a >> downsampleBits
+  @getRedImageData: getRedImageData = (bitmap) ->
+    if isPlainArray bitmap
+      bitmap
+    else
+      bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
+      .getImageDataArray "red"
+
+  getReducedAdjacent = (data, width, index, func, seed) ->
+    height = data.length / width
+    x = index % width
+    y = (index / width) | 0
+    maxY = height - 1
+    maxX = width - 1
+    if y > 0     then seed = func seed, data[(y - 1) * width + x    ]
+    if y < maxY  then seed = func seed, data[(y + 1) * width + x    ]
+    if x > 0     then seed = func seed, data[(y    ) * width + x - 1]
+    if x < maxX  then seed = func seed, data[(y    ) * width + x + 1]
+    seed
+
+  getAdjacentMin = (data, width, index) -> getReducedAdjacent data, width, index, min, 255
+  getAdjacentMax = (data, width, index) -> getReducedAdjacent data, width, index, max, 0
+
+  getCompactedRedChannel = (bitmap) ->
+    imageData = getRedImageData bitmap
+
+    out = array from imageData with -1
+
+    getMinValueNotdone = ->
+      seed = 256
+      each x, i from out when x < 0 && seed > v = imageData[i]
+        seed = v
+
+      seed
+
+    count = 0
+
+    while 256 > minValue = getMinValueNotdone()
+      each v, i in imageData when v == minValue # && v < minValue + 16
+        out[i] = count
+      count += 1
+
+    out
+
+  @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, options) ->
+    {downsampleBits = 4, sliceAmount} = options || {}
+    out = array a in getRedImageData bitmap with a >> downsampleBits
     if sliceAmount
       out.slice 0, sliceAmount
     else
       out
 
-  @compareDownsampledRedChannel: (message, bitmap, compare, options = {}) ->
+  @compareDownsampledRedChannel: (message, bitmap, expecting, options = {}) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     log "#{message}": bitmap.clone()
-    downsampled = getDownsampledRedChannel bitmap, compare.length, options
-    unless eq downsampled, compare
+    downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
+    unless eq downsampled, expecting
       log compareDownsampledRedChannel:
         this: downsampled
-        shouldEqual: compare
+        shouldEqual: expecting
         message: message
 
-      assert.eq compare, downsampled, message
+      assert.eq expecting, downsampled, message
 
-  assert.downsampledRedChannelEq = (message, element, compare, options) =>
+  compareProcessedRedChannelUsingFunction = (process, message, bitmap, expecting) ->
+    bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
+    log "#{message}": bitmap.clone()
+    output = process bitmap
+    unless eq output, expecting
+      log compareDownsampledRedChannel:
+        this: output
+        shouldEqual: expecting
+        message: message
+
+      assert.eq expecting, output, message
+
+
+  assert.downsampledRedChannelEq = (message, element, expecting, options) =>
     if element instanceof CanvasElement
       element.onNextReady (e) -> e.canvasBitmap
     else if element instanceof Bitmap
@@ -31,10 +86,40 @@ class CoreHelper
       element.toBitmapBasic()
     else throw new Error "expecting Element, CanvasElement or Bitmap"
     .then (bitmap) =>
-      @compareDownsampledRedChannel message, bitmap, compare, downsampleBits: options?.downsampleBits ? 5
+      @compareDownsampledRedChannel message, bitmap, expecting, downsampleBits: options?.downsampleBits ? 5
 
-  @testDownsampledRedChannelEq: (message, element, compare) =>
+
+  getBitmap = (element) ->
+    Promise.resolve if element instanceof CanvasElement
+      element.onNextReady (e) -> e.canvasBitmap
+    else if element instanceof Bitmap
+      element
+    else if element instanceof Element
+      element.toBitmapBasic()
+    else throw new Error "expecting Element, CanvasElement or Bitmap"
+
+  assert.rankedRedChannelEq = (message, element, expecting, options) =>
+    getBitmap element
+    .then (bitmap) =>
+      @compareDownsampledRedChannel message, bitmap, expecting, downsampleBits: options?.downsampleBits ? 5
+
+  assert.compactRedChannelEq = (message, element, expecting) =>
+    getBitmap element
+    .then (bitmap) =>
+      compareProcessedRedChannelUsingFunction
+        getCompactedRedChannel
+        message
+        bitmap
+        expecting
+
+  @testDownsampledRedChannelEq: (message, element, expecting) =>
     global.test message, ->
       Promise.then -> element
       .then (element) ->
-        assert.downsampledRedChannelEq message, element, compare
+        assert.downsampledRedChannelEq message, element, expecting
+
+  @testCompactRedChannelEq: (message, element, expecting) =>
+    global.test message, ->
+      Promise.then -> element
+      .then (element) ->
+        assert.compactRedChannelEq message, element, expecting

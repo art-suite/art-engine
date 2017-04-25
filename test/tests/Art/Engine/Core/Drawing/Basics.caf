@@ -1,6 +1,6 @@
 import &ArtStandardLib, &ArtEngine
 
-{testDownsampledRedChannelEq} = &CoreHelper
+{testDownsampledRedChannelEq, testCompactRedChannelEq} = &CoreHelper
 
 suite: ->
   testDownsampledRedChannelEq
@@ -39,7 +39,7 @@ suite: ->
       3 3
       3 7
 
-  testDownsampledRedChannelEq
+  testCompactRedChannelEq
     "rotated rectangle"
     new Element
       size: 6
@@ -47,20 +47,19 @@ suite: ->
       new Element
         location: ps: .5
         size:     ps: 2/3
-        axis: .5
-        angle: Math.PI/4
+        axis:     .5
+        angle:    Math.PI/4
         layoutPixelSnap: false
         new RectangleElement color: #700
         new RectangleElement
           color:    #f00
           location: ps: .5
-          size:     ps: .75
         new RectangleElement isMask: true
 
     compactFlatten []
       0 0 1 1 0 0
-      0 1 3 3 1 0
-      1 3 3 3 3 1
-      1 3 5 5 3 1
-      0 1 7 7 1 0
-      0 0 2 2 0 0
+      0 1 5 5 1 0
+      1 5 5 5 5 1
+      1 5 6 7 5 1
+      0 2 8 8 3 0
+      0 0 4 4 0 0
