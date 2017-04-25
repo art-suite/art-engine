@@ -2,19 +2,20 @@ import &ArtStandardLib, &ArtAtomic, Neptune.Art.Engine
 
 {drawTest, drawTest2} = &Helper
 {drawAndTestElement} = &TestHelper
+testSize = point 80 60
 
 test = (a, b) -> global.test a, b
 
 suite:
   basic: ->
     drawTest2 "basic", ->
-      new RectangleElement color:"red", size: point 80, 60
+      new RectangleElement color:"red", size: testSize
 
     drawTest2 "add compositeMode", ->
-      new RectangleElement compositeMode: "add", color: "red", size: point 80, 60
+      new RectangleElement compositeMode: "add", color: "red", size: testSize
 
     drawTest2 "with opacity .5", ->
-      new RectangleElement opacity: .5, color: "red", size: point 80, 60
+      new RectangleElement opacity: .5, color: "red", size: testSize
 
   children:
     basic: ->
@@ -88,32 +89,33 @@ suite:
           angle: Math.PI * .3
 
   gradient: ->
-    drawTest2 "gradient basic", ->
-      new RectangleElement colors:["red", "yellow"], size:point 80, 60
+    drawTest2 "color: array"  -> new RectangleElement size: testSize, color:  :red :yellow
+    drawTest2 "colors: array" -> new RectangleElement size: testSize, colors: :red :yellow
 
-    drawTest2 "gradient with gradientRadius", ->
+
+    drawTest2 "gradientRadius: number", ->
       new RectangleElement
         colors:["red", "yellow"]
         from: "centerCenter"
         gradientRadius: 1
-        size:point 80, 60
+        size:testSize
 
-    drawTest2 "gradient with gradientRadius array", ->
+    drawTest2 "gradientRadius: array", ->
       new RectangleElement
         colors:["black", "white", "black", "#777"]
         from: "centerCenter"
         gradientRadius: [.5, 1.5]
-        size:point 80, 60
+        size:testSize
 
     drawTest2 "gradient with from and to", ->
-      new RectangleElement colors:["red", "yellow"], from: "centerCenter", to: "topRight", size:point 80, 60
+      new RectangleElement colors:["red", "yellow"], from: "centerCenter", to: "topRight", size:testSize
 
     drawTest2 "gradient with PointLayout from and tos", ->
       new RectangleElement
         colors: ["red", "yellow"]
         from: hh: 1
         to:   ww: 1
-        size: point 80, 60
+        size: testSize
 
     drawTest2 "gradient with all options", ->
       new RectangleElement
@@ -121,7 +123,7 @@ suite:
         from: .5
         to: 1/4
         gradientRadius: [.5, 2]
-        size:point 80, 60
+        size:testSize
 
   drawArea:
     basic: ->

@@ -4,8 +4,8 @@
 module.exports = require './namespace'
 .includeInNamespace require './Elements'
 .addModules
-  Base:         require './Base'        
-  FillableBase: require './FillableBase'
+  FillableBase:          require './FillableBase'         
+  FilterAndFillableBase: require './FilterAndFillableBase'
 require './Filters'
 require './ShapeChildren'
 require './Shapes'

@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-Base = require './Base'
+FilterAndFillableBase = require './FilterAndFillableBase'
 {PointLayout, PointLayoutBase} = require '../Layout'
 {log, isPlainObject, min, max, createWithPostCreate, isNumber, merge} = Foundation
 {rgbColor, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
@@ -9,14 +9,12 @@ Base = require './Base'
 # can be a gradient fill or a solid-color fill
 # if the @gradient property is set (including indirectly by setting the @colors property), then it is a gradient
 # Otherwise, the @color property is used and @from and @to properties are ignored.
-module.exports = createWithPostCreate class FillableBase extends Base
+module.exports = createWithPostCreate class FillableBase extends FilterAndFillableBase
   @registerWithElementFactory: -> @ != FillableBase
 
   @getter
     cacheable: -> @getHasChildren()
 
-  defaultFrom = new PointLayout()
-  defaultTo = new PointLayout hh: 1
   defaultOffset = new PointLayout y: 2
   noShadow =
     color: rgbColor 0,0,0,0
@@ -28,7 +26,6 @@ module.exports = createWithPostCreate class FillableBase extends Base
     from: preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
     to:   preprocess: (v) -> v && if v instanceof PointLayoutBase then v else new PointLayout v
 
-    colors: default: null
     gradientRadius: default: null
     shadow:
       default: null
@@ -90,35 +87,4 @@ module.exports = createWithPostCreate class FillableBase extends Base
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
-    {_colors, _currentSize} = @
-
     drawOptions.shadow = @normalizedShadow
-
-    drawOptions.colors = null
-    drawOptions.gradientRadius = null
-    drawOptions.gradientRadius1 = null
-    drawOptions.gradientRadius2 = null
-    drawOptions.from = null
-    drawOptions.to = null
-
-    if _colors
-      {_from, _to, _gradientRadius} = @
-      _from ||= defaultFrom
-
-      drawOptions.colors = _colors
-      if _gradientRadius?
-        _to ||= _from
-        gradientScale = _currentSize.min() / 2
-        if isNumber _gradientRadius
-          drawOptions.gradientRadius = _gradientRadius * gradientScale
-        else
-          [r1, r2] = _gradientRadius
-          drawOptions.gradientRadius1 = r1 * gradientScale
-          drawOptions.gradientRadius2 = r2 * gradientScale
-
-      _to ||= defaultTo
-
-      # I don't love this solution to scaling the gradient from/to, but it's acceptable for now.
-      # It creates two new objects, which is unfortunate. It also mutates an object which should be immutable.
-      drawOptions.from   = _from.layout _currentSize
-      drawOptions.to     = _to.layout _currentSize

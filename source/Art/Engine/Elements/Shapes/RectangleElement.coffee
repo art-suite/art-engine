@@ -3,7 +3,7 @@ Atomic = require 'art-atomic'
 Text = require 'art-text'
 FillableBase = require '../FillableBase'
 {Paths} = require 'art-canvas'
-{pureMerge, floatEq, base, createWithPostCreate, isPlainObject, isNumber} = Foundation
+{pureMerge, floatEq, FilterAndFillableBase, createWithPostCreate, isPlainObject, isNumber} = Foundation
 {curriedRoundedRectangle} = Paths
 
 module.exports = createWithPostCreate class RectangleElement extends FillableBase
