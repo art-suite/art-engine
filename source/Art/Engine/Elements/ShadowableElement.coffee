@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-FilterAndFillableBase = require './FilterAndFillableBase'
+AtomElement = require './AtomElement'
 {PointLayout, PointLayoutBase} = require '../Layout'
 {log, isPlainObject, min, max, createWithPostCreate, isNumber, merge} = Foundation
 {rgbColor, Color, point, Point, rect, Rectangle, matrix, Matrix, point0, point1} = Atomic
@@ -9,8 +9,8 @@ FilterAndFillableBase = require './FilterAndFillableBase'
 # can be a gradient fill or a solid-color fill
 # if the @gradient property is set (including indirectly by setting the @colors property), then it is a gradient
 # Otherwise, the @color property is used and @from and @to properties are ignored.
-module.exports = createWithPostCreate class FillableBase extends FilterAndFillableBase
-  @registerWithElementFactory: -> @ != FillableBase
+module.exports = createWithPostCreate class ShadowableElement extends AtomElement
+  @registerWithElementFactory: -> @ != ShadowableElement
 
   @getter
     cacheable: -> @getHasChildren()
@@ -20,6 +20,7 @@ module.exports = createWithPostCreate class FillableBase extends FilterAndFillab
     color: rgbColor 0,0,0,0
     blur: 0
     offset: new PointLayout 0
+
   @drawProperty
     shadow:
       default: null

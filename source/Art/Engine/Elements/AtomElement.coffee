@@ -7,8 +7,8 @@ Element = require '../Core/Element'
 defaultFrom = new PointLayout()
 defaultTo = new PointLayout hh: 1
 
-defineModule module, class FilterAndFillableBase extends Element
-  @registerWithElementFactory: -> @ != FilterAndFillableBase
+defineModule module, class AtomElement extends Element
+  @registerWithElementFactory: -> @ != AtomElement
 
   constructor: ->
     super

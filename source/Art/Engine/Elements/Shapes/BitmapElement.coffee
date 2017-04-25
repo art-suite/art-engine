@@ -1,13 +1,13 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 
 {ceil, round} = Math
 {defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray} = Foundation
 {point, rect, Matrix, point0, point1} = Atomic
 
-defineModule module, class BitmapElement extends FillableBase
+defineModule module, class BitmapElement extends ShadowableElement
 
   class BitmapElement.SourceToBitmapCache extends BaseObject
     @singletonClass()

@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 {merge, createWithPostCreate, log, isPlainArray} = Foundation
 {color, Color, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
-module.exports = createWithPostCreate class OutlineElement extends FillableBase
+module.exports = createWithPostCreate class OutlineElement extends ShadowableElement
 
   validLineCaps = ["butt", "round", "square"]
   validLineJoins = ["round", "bevel", "miter"]

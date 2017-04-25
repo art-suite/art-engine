@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-FilterAndFillableBase = require '../FilterAndFillableBase'
+AtomElement = require '../AtomElement'
 {log, isString, createWithPostCreate} = Foundation
 {Matrix} = Atomic
 
@@ -13,7 +13,7 @@ TODO - Fully implelement Blur and Shadow's new semantics:
 
   Each has a sourceArea, in parent-space, default: rect @parent.size
 ###
-module.exports = createWithPostCreate class FilterElement extends FilterAndFillableBase
+module.exports = createWithPostCreate class FilterElement extends AtomElement
   @registerWithElementFactory: -> @ != FilterElement
 
   ########################

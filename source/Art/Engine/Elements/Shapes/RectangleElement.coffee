@@ -1,12 +1,12 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Text = require 'art-text'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 {Paths} = require 'art-canvas'
-{pureMerge, floatEq, FilterAndFillableBase, createWithPostCreate, isPlainObject, isNumber} = Foundation
+{pureMerge, floatEq, AtomElement, createWithPostCreate, isPlainObject, isNumber} = Foundation
 {curriedRoundedRectangle} = Paths
 
-module.exports = createWithPostCreate class RectangleElement extends FillableBase
+module.exports = createWithPostCreate class RectangleElement extends ShadowableElement
 
   @drawProperty
     radius:

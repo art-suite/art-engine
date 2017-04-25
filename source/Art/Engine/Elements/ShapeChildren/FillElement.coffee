@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 
 {log, createWithPostCreate} = Foundation
 {GradientFillStyle} = Canvas
@@ -9,7 +9,7 @@ FillableBase = require '../FillableBase'
 # can be a gradient fill or a solid-color fill
 # if the @gradient property is set (including indirectly by setting the @colors property), then it is a gradient
 # Otherwise, the @color property is used and @from and @to properties are ignored.
-module.exports = createWithPostCreate class FillElement extends FillableBase
+module.exports = createWithPostCreate class FillElement extends ShadowableElement
 
   @virtualProperty
     preFilteredBaseDrawArea: (pending) ->

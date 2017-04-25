@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Text = require 'art-text'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 
 {log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
@@ -14,7 +14,7 @@ GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 
 propInternalName = BaseObject.propInternalName
 propSetterName = BaseObject._propSetterName
-module.exports = createWithPostCreate class TextElement extends FillableBase
+module.exports = createWithPostCreate class TextElement extends ShadowableElement
 
   defaultSize: cs:1
 

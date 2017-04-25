@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Text = require 'art-text'
-FillableBase = require '../FillableBase'
+ShadowableElement = require '../ShadowableElement'
 {pureMerge, isFunction, createWithPostCreate} = Foundation
 
-module.exports = createWithPostCreate class ShapeElement extends FillableBase
+module.exports = createWithPostCreate class ShapeElement extends ShadowableElement
 
   constructor: ->
     super
