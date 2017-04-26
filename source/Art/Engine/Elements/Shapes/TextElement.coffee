@@ -62,12 +62,11 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
         maxLines:     _maxLines
         overflow:     _overflow
 
-  getBaseDrawArea: ->
-    @_textLayout?.getDrawArea() || rect()
 
-  getPendingBaseDrawArea: ->
-    # TODO: this doesn't actually fetch the Pending state.
-    @_textLayout?.getDrawArea() || rect()
+  @virtualProperty
+    preFilteredBaseDrawArea: (pending) ->
+      # TODO: this doesn't actually fetch the Pending state.
+      @_textLayout?.getDrawArea() || ShadowableElement.preFilteredBaseDrawArea.call @, pending
 
   customLayoutChildrenFirstPass: (size) ->
     ret = null

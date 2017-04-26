@@ -41,8 +41,7 @@ layoutTester = (element, tests) ->
   fragments && layoutFragmentTester element, fragments
   if tests.element
     for k, correctValue of tests.element
-      testValue = element[k]
-      roundedEq  testValue, correctValue, "testing: element.#{k}"
+      roundedEq  element[k], correctValue, "testing: element.#{k}"
   for k, correctValue of tests when k != "fragments" && k != "element"
     testValue = element._textLayout[k]
     roundedEq testValue, correctValue, "testing: element._textLayout.#{k}"
@@ -321,19 +320,19 @@ defineModule module, suite:
               element:
                 logicalArea:            rect -20, -10, 200, 72
                 paddedArea:             rect 0, 0, 160, 52
-                elementSpaceDrawArea:   rect 0, 0, 160, 52
+                elementSpaceDrawArea:   rect -8, -8, 150, 72
             }
           do (value, result) =>
             drawTest3 "align: '#{value}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
                 new TextElement
-                  size: w:200, hch:1
-                  padding: h:20, v:10
-                  align: value
-                  color:"red"
-                  text:"The quick brown fox jumped over the lazy dog."
-                  # fontSize:16
+                  size:     w:200, hch:1
+                  padding:  h:20, v:10
+                  color:    "red"
+                  text:     "The quick brown fox jumped over the lazy dog."
+                  fontSize: 16
+                  align:    value
                   new FillElement() # IMPORTANT FOR THIS TEST - DONT REMOVE
               test: (element) -> layoutTester element, result
 

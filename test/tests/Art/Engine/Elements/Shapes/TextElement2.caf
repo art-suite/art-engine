@@ -1,0 +1,54 @@
+import &ArtStandardLib, &ArtAtomic, Neptune.Art.Engine
+
+{drawTest, drawTest2} = &Helper
+{drawAndTestElement} = &TestHelper
+testSize = point 80 60
+
+test = (a, b) -> global.test a, b
+
+suite:
+  drawArea: ->
+    drawAndTestElement "basic", ->
+      element: new TextElement text: :M fontSize: 16
+
+      test: (root) ->
+        assert.ok root.drawArea.contains rect 16, 16  # 1em by 1em ;)
+
+    drawAndTestElement "quick", ->
+      element:
+        new TextElement
+          size:     w: 200  hch: 1
+          padding:  h: 20   v:   10
+          align:    value
+          color:    :red
+          text:     "" The quick brown fox jumped over the lazy dog.
+          fontSize: 16
+          new FillElement() # IMPORTANT FOR THIS TEST - DONT REMOVE
+
+      test: (root) ->
+        wordWrappedWidth = 137
+        fontSize = 16
+        leading = 1.25
+        lines = 3
+        height = (lines - 1) * leading * fontSize + fontSize # should be 56
+        log root.drawArea
+        assert.ok root.drawArea.contains rect wordWrappedWidth, height
+
+    # new TextElement
+    #                   size: w:200, hch:1
+    #                   padding: h:20, v:10
+    #                   align: value
+    #                   color:"red"
+    #                   text:
+
+    drawAndTestElement "shadow", ->
+      element:
+        new Element
+          {}
+          a = new TextElement text: :M
+          b = new TextElement text: :M shadow: true
+
+      test: ->
+        assert.neq a.drawArea, b.drawArea
+        assert.ok b.drawArea.contains a.drawArea
+
