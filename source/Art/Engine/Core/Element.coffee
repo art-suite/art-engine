@@ -18,10 +18,14 @@ DrawCacheManager = require './DrawCacheManager'
 {drawCacheManager} = DrawCacheManager
 {PointLayout, PointLayoutBase} = Layout
 
+{addDirtyDrawArea} = require './DrawAreaHelpers'
+
 truncateLayoutCoordinate = (v) ->
   floor v + 1/256
 
 {
+  each
+  find
   arrayWithout
   neq
   inspect, inspectLean
@@ -513,12 +517,24 @@ defineModule module, class Element extends ElementBase
     pointerEventPriority:   default: 0,                     preprocess: (v) -> v | 0
     userProps:              default: null,                  validate:   (v) -> !v? || isPlainObject v
 
-    # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
+    ###
+      Can be:
+        (pointInElementSpace, thisElement, pointInParentSpace) -> true / false
+      OR:
+        'never' == -> false
+        'inLogicalArea'   == (pointInElementSpace, thisElement) -> thisElement.logicalAreaInElementSpace.contains pointInElementSpace
+        'inPaddedArea'    == (pointInElementSpace, thisElement) -> thisElement.paddedAreaInElementSpace.contains pointInElementSpace
+        'passToChildren'  == calls pointerInside for every child, returns true if any return true
+    ###
     receivePointerEvents:   default: "inLogicalArea",       validate: (v) ->
+      isFunction(v) ||
       v == "never" ||
       v == "inLogicalArea" ||
       v == "inPaddedArea" ||
       v == "passToChildren"
+
+    # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
+    pointInsideTest: default: null, validate: (v) -> !v || isFunction v
 
   @concreteProperty
     cacheDraw:
@@ -857,22 +873,32 @@ defineModule module, class Element extends ElementBase
       @_redrawAll = true
 
   _addDirtyDrawArea: (dirtyArea = @drawArea) ->
-    return unless dirtyArea.area > 0
+    # return unless dirtyArea.area > 0
 
-    dirtyArea = dirtyArea.roundOut()
+    # dirtyArea = dirtyArea.roundOut()
 
-    if @_dirtyDrawAreas
-      foundOverlap = true
-      dirtyArea = clone dirtyArea
-      while foundOverlap
-        foundOverlap = false
-        for area, i in @_dirtyDrawAreas when area.overlaps dirtyArea
-          foundOverlap = true
-          area.unionInto dirtyArea
-          @_dirtyDrawAreas = arrayWithout @_dirtyDrawAreas, i
-      @_dirtyDrawAreas.push dirtyArea
-    else
-      @_dirtyDrawAreas = [dirtyArea]
+    # initialDirtyDrawAreas = @_dirtyDrawAreas
+    # dirtyDrawAreas = @_dirtyDrawAreas
+
+    # try
+    #   if dirtyDrawAreas
+    #     foundOverlap = true
+    #     dirtyArea = clone dirtyArea
+    #     while foundOverlap
+    #       foundOverlap = false
+    #       for area, i in dirtyDrawAreas when area.overlaps dirtyArea
+    #         foundOverlap = true
+    #         area.unionInto dirtyArea
+    #         dirtyDrawAreas = arrayWithout dirtyDrawAreas, i
+    #     dirtyDrawAreas.push dirtyArea
+    #   else
+    #     dirtyDrawAreas = [dirtyArea]
+    # catch e
+    #   log.error {initialDirtyDrawAreas, dirtyArea}
+    #   throw e
+
+    # @_dirtyDrawAreas = dirtyDrawAreas
+    @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea
 
   # Whenever the drawCacheManager evicts a cache entry, it calls this
   # on the appropriate element:
@@ -1322,34 +1348,37 @@ defineModule module, class Element extends ElementBase
   # p in parent space
   pointInside: (p) ->
     @_visible && !@getIsMask() &&
-    switch @_receivePointerEvents
-      when "never"          then false
-      when "passToChildren" then @pointInsideChildren p
-      when "inPaddedArea"
-        p2EM = @getParentToElementMatrix()
-        size = @_currentSize
-        padding = @_currentPadding
+    if isFunction @_receivePointerEvents
+      @_receivePointerEvents (@getParentToElementMatrix().transform p), @, p
+    else
+      switch @_receivePointerEvents
+        when "never"          then false
+        when "passToChildren" then @pointInsideChildren p
+        when "inPaddedArea"
+          p2EM = @getParentToElementMatrix()
+          size = @_currentSize
+          padding = @_currentPadding
 
-        x = p2EM.transformX p.x, p.y
-        y = p2EM.transformY p.x, p.y
-        w = size.x - padding.getWidth()
-        h = size.y - padding.getHeight()
+          x = p2EM.transformX p.x, p.y
+          y = p2EM.transformY p.x, p.y
+          w = size.x - padding.getWidth()
+          h = size.y - padding.getHeight()
 
-        x >= 0 && y >=0 && x < w && y < h
+          x >= 0 && y >=0 && x < w && y < h
 
-      when "inLogicalArea"
-        p2EM = @getParentToElementMatrix()
-        size = @_currentSize
-        padding = @_currentPadding
+        when "inLogicalArea"
+          p2EM = @getParentToElementMatrix()
+          size = @_currentSize
+          padding = @_currentPadding
 
-        x = p2EM.transformX p.x, p.y
-        y = p2EM.transformY p.x, p.y
-        x += padding.left
-        y += padding.top
-        w = size.x
-        h = size.y
+          x = p2EM.transformX p.x, p.y
+          y = p2EM.transformY p.x, p.y
+          x += padding.left
+          y += padding.top
+          w = size.x
+          h = size.y
 
-        x >= 0 && y >=0 && x < w && y < h
+          x >= 0 && y >=0 && x < w && y < h
 
   childUnderPoint: (pointInElementSpace) ->
     return child for child in @_children by -1 when child.pointInside pointInElementSpace

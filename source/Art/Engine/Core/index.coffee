@@ -6,6 +6,7 @@ module.exports
 .includeInNamespace require './Core'
 .addModules
   CanvasElement:        require './CanvasElement'       
+  DrawAreaHelpers:      require './DrawAreaHelpers'     
   DrawCacheManager:     require './DrawCacheManager'    
   DrawEpoch:            require './DrawEpoch'           
   Element:              require './Element'             
