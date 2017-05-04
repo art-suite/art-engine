@@ -28,6 +28,6 @@ defineModule module, class DrawAreaHelpers
       else
         dirtyDrawAreas = [dirtyArea]
 
-      @validateDrawAreas dirtyDrawAreas, dirtyArea
+      # @validateDrawAreas dirtyDrawAreas, dirtyArea
 
     dirtyDrawAreas
