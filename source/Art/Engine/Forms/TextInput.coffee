@@ -84,10 +84,15 @@ module.exports = createWithPostCreate class TextInput extends SynchronizedDomOve
 
     @lastValue = @value
 
+
   preprocessEventHandlers: (handlerMap) ->
     merge super,
-      focus: => @domElement.focus() unless @domElement.focused
-      blur:  => @domElement.blur()  if     @domElement.focused
+      focus: (event)=>
+        @domElement.focus() unless @domElementFocused
+        handlerMap.focus? event
+      blur:  =>
+        @domElement.blur() if     @domElementFocused
+        handlerMap.blur? event
       keyPress: (e) =>
         handlerMap.keyPress? e
         {props} = e

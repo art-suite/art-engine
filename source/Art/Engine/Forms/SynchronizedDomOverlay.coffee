@@ -15,7 +15,10 @@ module.exports = class SynchronizedDomOverlay extends Element
     @setDomElement options.domElement
     super
 
-  @getter domElement: -> @_domElement
+  @getter
+    domElement: -> @_domElement
+    domElementFocused: -> global.document.activeElement == @_domElement
+
   @setter domElement: (domElement) ->
     @_detachDomElement()
 
