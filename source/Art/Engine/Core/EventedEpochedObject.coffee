@@ -84,7 +84,7 @@ module.exports = class EventedEpochedObject extends EventedBaseMixin EpochedObje
           processedEvent = null
           @_handleErrorInHandler event, preprocessor, e
 
-      if processedEvent && handler = _on[type]
+      if processedEvent? && handler = _on[type]
         try
           handler processedEvent
         catch e
