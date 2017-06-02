@@ -1,15 +1,15 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-SynchronizedDomOverlay = require "./SynchronizedDomOverlay"
 
-{rgbColor} = Atomic
+{defineModule, log, merge, select, inspect, wordsArray, timeout} = require 'art-standard-lib'
+{rgbColor} = require 'art-atomic'
+
+Foundation = require 'art-foundation'
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
-{log, merge, select, inspect, createWithPostCreate, wordsArray, timeout} = Foundation
+SynchronizedDomOverlay = require "./SynchronizedDomOverlay"
 
-module.exports = createWithPostCreate class TextInput extends SynchronizedDomOverlay
+defineModule module, class TextInput extends SynchronizedDomOverlay
   # options
   #   value:      ""
   #   color:      "black"
