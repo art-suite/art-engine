@@ -5,4 +5,4 @@ module.exports = require './namespace'
 module.exports
 .addModules
   SynchronizedDomOverlay: require './SynchronizedDomOverlay'
-  TextInput:              require './TextInput'             
+  TextInputElement:       require './TextInputElement'      

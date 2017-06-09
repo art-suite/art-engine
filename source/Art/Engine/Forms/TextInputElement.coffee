@@ -9,7 +9,7 @@ Foundation = require 'art-foundation'
 {TextArea, Input} = Foundation.Browser.DomElementFactories
 SynchronizedDomOverlay = require "./SynchronizedDomOverlay"
 
-defineModule module, class TextInput extends SynchronizedDomOverlay
+defineModule module, class TextInputElement extends SynchronizedDomOverlay
   # options
   #   value:      ""
   #   color:      "black"
