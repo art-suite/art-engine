@@ -87,11 +87,11 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
-      focus: (event)=>
+      focus: (event) =>
         @domElement.focus() unless @domElementFocused
         handlerMap.focus? event
-      blur:  =>
-        @domElement.blur() if     @domElementFocused
+      blur:  (event) =>
+        @domElement.blur()  if     @domElementFocused
         handlerMap.blur? event
       keyPress: (e) =>
         handlerMap.keyPress? e
