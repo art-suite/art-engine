@@ -1,0 +1,71 @@
+import &ArtStandardLib, &ArtEngine
+
+{testDownsampledRedChannelEq, testCompactRedChannelEq} = &CoreHelper
+
+suite: ->
+  testDownsampledRedChannelEq
+    "basic clipping"
+    new Element
+      size: 4
+      new RectangleElement color: #000, size: 4
+      new Element
+        size: 2
+        location: 1
+        clip: true
+        new RectangleElement color: #fff, location: -1, size: 4
+    compactFlatten []
+      0 0 0 0
+      0 7 7 0
+      0 7 7 0
+      0 0 0 0
+
+  testDownsampledRedChannelEq
+    "padding with non-zero clipping"
+    new Element
+      size: 4
+      new RectangleElement color: #000, size: 4
+      new Element
+        size: 2
+        location: 1
+        padding: right: 1
+        clip: true
+        new RectangleElement color: #fff, location: -1, size: 4
+    compactFlatten []
+      0 0 0 0
+      0 7 0 0
+      0 7 0 0
+      0 0 0 0
+
+  testDownsampledRedChannelEq
+    "negative padding"
+    new Element
+      size: 4
+      new RectangleElement color: #000, size: 4
+      new Element
+        size: 2
+        location: 1
+        padding: right: -1
+        clip: true
+        new RectangleElement color: #fff, location: -1, size: 4
+    compactFlatten []
+      0 0 0 0
+      0 7 7 7
+      0 7 7 7
+      0 0 0 0
+
+  testDownsampledRedChannelEq
+    "over padding should not have negative clipping"
+    new Element
+      size: 4
+      new RectangleElement color: #000, size: 4
+      new Element
+        size: 2
+        location: 1
+        padding: right: 3
+        clip: true
+        new RectangleElement color: #fff, location: -1, size: 4
+    compactFlatten []
+      0 0 0 0
+      0 0 0 0
+      0 0 0 0
+      0 0 0 0

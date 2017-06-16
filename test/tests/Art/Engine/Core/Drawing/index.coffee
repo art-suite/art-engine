@@ -5,6 +5,7 @@ module.exports = require './namespace'
 module.exports
 .addModules
   Basics:        require './Basics'       
+  Clipping:      require './Clipping'     
   PartialRedraw: require './PartialRedraw'
   Retina:        require './Retina'       
   ToBitmap:      require './toBitmap'     

@@ -686,7 +686,7 @@ defineModule module, class Element extends ElementBase
       {_currentPadding, _currentSize} = @getState pending
       {x, y} = _currentSize
       {w, h} = _currentPadding
-      rect 0, 0, x - w, y - h
+      rect 0, 0, max(0, x - w), max(0, y - h)
 
     baseDrawArea: (pending) ->
       @getPreFilteredBaseDrawArea pending
