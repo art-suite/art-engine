@@ -1015,7 +1015,7 @@ defineModule module, class Element extends ElementBase
 
     draw = =>
       @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
-      if @getHasCustomClipping()
+      if @_clip && @getHasCustomClipping()
         @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
       else
         @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
