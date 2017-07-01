@@ -5,7 +5,7 @@
     "art-canvas": "git://github.com/imikimi/art-canvas.git",
     "art-class-system": "*",
     "art-config": "*",
-    "art-events": "^1.1.4",
+    "art-events": "*",
     "art-foundation": "git://github.com/imikimi/art-foundation.git",
     "art-standard-lib": "*",
     "art-testbench": "*",
