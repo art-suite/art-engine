@@ -176,9 +176,8 @@ module.exports = class FlexLayout extends BaseObject
     hasCrossAlignment = !floatEq 0, crossAlignment
 
     # main alignment
-    mainPos = if !elementMainAxisIsChildRelative && hasMainAlignment = !floatEq 0, mainAlignment
-      mainAlignment = childrenAlignment[mainCoordinate]
-      (elementMainSizeForChildren - totalMainSize) * mainAlignment
+    mainPos = if !elementMainAxisIsChildRelative
+      (elementMainSizeForChildren - totalMainSize) * childrenAlignment[mainCoordinate]
     else
       0
 
