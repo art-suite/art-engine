@@ -18,6 +18,7 @@ GestureRecognizer = require '../../Events/GestureRecognizer'
   maxChange
   absLt
   requestAnimationFrame
+  defineModule
 } = Foundation
 
 {point, Point, rect, Rectangle, matrix, Matrix, isPoint} = Atomic
@@ -338,7 +339,7 @@ AnimatorSupport = (superClass) -> class AnimatorSupport extends superClass
 
       queueNextFrameUpdate()
 
-module.exports = createWithPostCreate class PagingScrollElement extends AnimatorSupport Element
+defineModule module, class PagingScrollElement extends AnimatorSupport Element
 
   constructor: ->
     @initAnimatorSupport()
@@ -353,6 +354,8 @@ module.exports = createWithPostCreate class PagingScrollElement extends Animator
     @_pagesBeforeBaselineWrapper =
     @_pagesAfterBaselineWrapper = null
     @_setVerticalAxis()
+    @_lastScrollUpdatedAt = currentSecond()
+    @_activelyScrolling = false
     super
     self.pagingScrollElement = @
     @_updateHiddenChildren()
@@ -484,6 +487,16 @@ module.exports = createWithPostCreate class PagingScrollElement extends Animator
     scrollPosition:
       default: 0
       postSetter: (position) ->
+        unless @_activelyScrolling
+          @queueEvent "scrollingActive"
+          @_activelyScrolling = true
+
+        @_lastScrollUpdatedAt = thisScrollUpdateWasAt = currentSecond()
+        timeout 500, =>
+          if @_lastScrollUpdatedAt == thisScrollUpdateWasAt
+            @_activelyScrolling = false
+            @queueEvent "scrollingIdle"
+
         # throw new Error if maxCount-- < 0
         # console.error "setScrollPosition #{position}"
         @onNextReady => @_updateAtStartAndAtEnd()
@@ -953,3 +966,5 @@ module.exports = createWithPostCreate class PagingScrollElement extends Animator
     @_pagesBeforeBaselineWrapper.setSize commonSizeLayout
     @_pagesAfterBaselineWrapper.setSize commonSizeLayout
 
+    @_lastScrollUpdatedAt = currentSecond()
+    @_activelyScrolling = false
