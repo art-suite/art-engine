@@ -361,6 +361,7 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
     @_updateHiddenChildren()
     @onNextReady =>
       @jumpToEnd() if @startAtEnd
+      @_scrollPositionChanged()
 
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
@@ -487,16 +488,7 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
     scrollPosition:
       default: 0
       postSetter: (position) ->
-        unless @_activelyScrolling
-          @queueEvent "scrollingActive"
-          @_activelyScrolling = true
-
-        @_lastScrollUpdatedAt = thisScrollUpdateWasAt = currentSecond()
-        timeout 500, =>
-          if @_lastScrollUpdatedAt == thisScrollUpdateWasAt
-            @_activelyScrolling = false
-            @queueEvent "scrollingIdle"
-
+        @_scrollPositionChanged()
         # throw new Error if maxCount-- < 0
         # console.error "setScrollPosition #{position}"
         @onNextReady => @_updateAtStartAndAtEnd()
@@ -517,6 +509,17 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
         #   @_scrollContents.setAxis 0
         @_scrollContents.setLocation @newPoint position
   # maxCount = 5
+
+  _scrollPositionChanged: ->
+    unless @_activelyScrolling
+      @queueEvent "scrollingActive"
+      @_activelyScrolling = true
+
+    @_lastScrollUpdatedAt = thisScrollUpdateWasAt = currentSecond()
+    timeout 250, =>
+      if @_lastScrollUpdatedAt == thisScrollUpdateWasAt
+        @_activelyScrolling = false
+        @queueEvent "scrollingIdle"
 
   _updatePagesSplit: (pages = @getPendingPages(), referenceFrame = @getPendingReferenceFrame())->
 
