@@ -4,7 +4,7 @@ Canvas = require 'art-canvas'
 ShadowableElement = require '../ShadowableElement'
 
 {ceil, round} = Math
-{defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray} = Foundation
+{defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray, timeout} = Foundation
 {point, rect, Matrix, point0, point1} = Atomic
 
 defineModule module, class BitmapElement extends ShadowableElement
@@ -19,15 +19,19 @@ defineModule module, class BitmapElement extends ShadowableElement
 
     # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
-      if url.match "ImagePicker"
-        log "SourceToBitmapCache#get: cached:#{!!@_cache[url]} #{url}"
-        log "initializerPromise: #{!!initializerPromise}"
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
       out = @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
       out.then (bitmap) => @_loaded[url] = bitmap
       out
 
     loaded: (url) -> @_loaded[url]
+
+    temporaryPut: (duration, url, bitmap) ->
+      @get url, Promise.resolve bitmap
+      log temporaryPut: {bitmap, duration, url}
+      timeout duration, =>
+        log temporaryPut: release: {bitmap, url}
+        @release url
 
     # returns true if the bitmap was released
     # returns false if there are still other references
@@ -46,7 +50,7 @@ defineModule module, class BitmapElement extends ShadowableElement
       else
         false
 
-  sourceToBitmapCache = BitmapElement.SourceToBitmapCache.singleton
+  @bitmapCache: sourceToBitmapCache = BitmapElement.SourceToBitmapCache.singleton
 
   constructor: (options) ->
     super
