@@ -345,9 +345,10 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     @_prop = prop
     @_options = options
     @_active = false
-    @_startSecond = null
-    @_currentSecond = null
-    @_lastSecond = null
+    @_startSecond = 0
+    @_currentSecond = 0
+    @_lastSecond = 0
+    @_activatedAtSecond = 0
 
     @_startValue = null
     @_currentValue = null
@@ -402,7 +403,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
       @stop()
 
   _activate: ->
-    @_lastSecond = @_startSecond = @_currentSecond - @frameSeconds
+    @_lastSecond = @_startSecond = @_activatedAtSecond = @_currentSecond # - @frameSeconds
     @_startValue = @_currentValue
     @queueEvent "start"
     @_active = true
@@ -413,7 +414,12 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
   animateAbsoluteTime: (@_element, @_currentValue, toValue, @_currentSecond) ->
 
-    @_activate() unless @_active && eq toValue, @_toValue
+    if @_active && eq toValue, @_toValue
+      # start the animation timer from the second frame
+      if @_activatedAtSecond == @_startSecond
+        @_startSecond = @_currentSecond
+    else
+      @_activate()
 
     @_toValue = toValue
 
