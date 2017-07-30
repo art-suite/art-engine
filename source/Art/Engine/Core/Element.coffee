@@ -272,6 +272,7 @@ defineModule module, class Element extends ElementBase
       postSetter: -> @_locationLayoutDisabled = false
 
     childrenLayout:         default: null,                  validate:   (v) -> v == null || v == "flow" || v == "column" || v == "row"
+
     childrenGrid:           default: null,                  validate:   (v) -> v == null || isString(v) && v.match /^[ a-zA-Z]+$/
     childrenAlignment:      default: point0,                preprocess: (v) -> point v
       # default: "left"
@@ -297,6 +298,42 @@ defineModule module, class Element extends ElementBase
         else if v == false || v == undefined || v == null
           null
         else perimeter v
+
+  namedChildrenSizeFunctions =
+    ignoreTransforms: (child) ->
+      child.getPendingCurrentSize()
+
+    totalArea: (child) ->
+      child.getPendingAreaInParentSpace()
+
+  @layoutProperty
+    ###
+    childArea returns the area for a single child
+    as part of the childrenSize computation for layout.
+
+    Legal values:
+      A string matching one of the namedChildrenSizeFunctions (Above)
+      customChildAreaFunction
+        IN: child (Element)
+        OUT: area expressed as a point or rect
+          if a point, top == left == 0, right == x, bottom == y
+
+    Note: This happens during layout, so if providing a custom
+      function, you should use getPending* functions to
+      inspect the child element to get current values.
+
+    Note: Currently, childArea is ignored if childrenLayout is set.
+
+    ###
+    childArea:
+      default:    null
+      preprocess: (v) ->
+        if isFunction v
+          v
+        else
+          namedChildrenSizeFunctions[v]
+      validate:   (v) ->
+        !v? || isFunction(v) || namedChildrenSizeFunctions[v]
 
   @concreteProperty
     # TODO: I think currentSize should not be an epoched property. It should litterally be the currentSize - it gets updated during the stateEpoch
@@ -609,6 +646,36 @@ defineModule module, class Element extends ElementBase
         _elementToParentMatrix.transformX left, bottom
         _elementToParentMatrix.transformX right, top
         _elementToParentMatrix.transformX right, bottom
+      )
+
+    # OUT: rectangle
+    areaInParentSpace: (pending) ->
+      {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
+      padding = _currentPadding
+
+      left   = -padding.left
+      top    = -padding.top
+      right  = _currentSize.x + left
+      bottom = _currentSize.y + top
+
+      x = min(
+        x1 = _elementToParentMatrix.transformX left, top
+        x2 = _elementToParentMatrix.transformX left, bottom
+        x3 = _elementToParentMatrix.transformX right, top
+        x4 = _elementToParentMatrix.transformX right, bottom
+      )
+
+      y = min(
+        y1 = _elementToParentMatrix.transformY left, top
+        y2 = _elementToParentMatrix.transformY left, bottom
+        y3 = _elementToParentMatrix.transformY right, top
+        y4 = _elementToParentMatrix.transformY right, bottom
+      )
+
+      rect(
+        x, y
+        max(x1, x2, x3, x4) - x
+        max(y1, y2, y3, y4) - y
       )
 
     maxYInParentSpace: (pending) ->

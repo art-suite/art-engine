@@ -5,6 +5,7 @@ module.exports = require './namespace'
 module.exports
 .addModules
   ChildrenRelative:            require './ChildrenRelative'           
+  ChildrenSize:                require './ChildrenSize'               
   ElementChildrenLayoutColumn: require './ElementChildrenLayoutColumn'
   ElementChildrenLayoutFlow:   require './ElementChildrenLayoutFlow'  
   ElementChildrenLayoutGrid:   require './ElementChildrenLayoutGrid'  

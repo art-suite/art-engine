@@ -1,6 +1,3 @@
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-
 ArtEngineCore = require '../namespace'
 CoreLayout = require './namespace'
 
@@ -29,16 +26,17 @@ TODO:
   isInfiniteResult
 } = Basics
 
-{point, Point, perimeter} = Atomic
+{point, Point, perimeter} = require 'art-atomic'
 {
-  BaseObject
-  log, max
+
+  log, max, min
   shallowEq
   longestCommonSubsequence, select, Unique, peek, inspect, isFunction,
   eachRunAsCharCodes
   floatEq
   isNumber
-} = Foundation
+} = require 'art-standard-lib'
+{BaseObject} = require 'art-class-system'
 
 {point0} = Point
 {abs} = Math
@@ -112,10 +110,19 @@ module.exports = class StateEpochLayout extends BaseObject
 
     point childrenWidth, childrenHeight
 
-  layoutChildrenComputeArea = (currentPadding, parentSize, children, secondPassChildren, secondPassLocation) ->
+  layoutChildrenComputeArea = (
+    element
+    currentPadding, parentSize, children, secondPassChildren, secondPassLocation
+  ) ->
+    return point0 unless children
+    customComputeChildArea = element.getPendingChildArea()
+    tMin = lMin = bMax = rMax = 0
+    l = r = t = b = 0
+    tFirst = lFirst = bFirst = rFirst = true
+    firstChild = true
     childrenHeight = 0
     childrenWidth  = 0
-    return point0 unless children
+    tInfinite = lInfinite = false
 
     for child in children when children
 
@@ -140,21 +147,31 @@ module.exports = class StateEpochLayout extends BaseObject
 
         layoutElement child, parentSize, layoutLocationInSecondPass
 
-        x = child.getPendingMaxXInParentSpace()
-        y = child.getPendingMaxYInParentSpace()
+        if customComputeChildArea
+          area = customComputeChildArea child
+          lInfinite = isInfiniteResult l = area.getLeft()
+          tInfinite = isInfiniteResult t = area.getTop()
+          r = area.getRight()
+          b = area.getBottom()
 
-        xInfinite = isInfiniteResult x
-        yInfinite = isInfiniteResult y
+        else
+          r = child.getPendingMaxXInParentSpace()
+          b = child.getPendingMaxYInParentSpace()
 
-        if xInfinite || yInfinite
+        rInfinite = isInfiniteResult r
+        bInfinite = isInfiniteResult b
+
+        if rInfinite || bInfinite || lInfinite || tInfinite
           secondPassChildren.push child
         else if layoutLocationInSecondPass
           secondPassLocation.push child
 
-        childrenWidth  = max childrenWidth,  x unless xInfinite
-        childrenHeight = max childrenHeight, y unless yInfinite
+        lMin = min l, if lFirst then lFirst = false; l else lMin unless lInfinite
+        tMin = min t, if tFirst then tFirst = false; t else tMin unless tInfinite
+        rMax = max r, if rFirst then rFirst = false; r else rMax unless rInfinite
+        bMax = max b, if bFirst then bFirst = false; b else bMax unless bInfinite
 
-    sizeWithPadding childrenWidth, childrenHeight, currentPadding
+    sizeWithPadding (rMax - lMin), (bMax - tMin), currentPadding
 
   layoutChildrenFlowLine = (children, rightEdge, state) ->
     {y, firstChildOnLine, lastLineMarginBottom, maxWidth} = state
@@ -444,6 +461,7 @@ module.exports = class StateEpochLayout extends BaseObject
         s = currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildrenUnconstrained
         if pendingChildren?.length > 0
           s = s.max size = layoutChildrenComputeArea(
+            element
             currentPadding
             firstPassSizeForChildrenConstrained
             firstPassChildren
@@ -509,6 +527,7 @@ module.exports = class StateEpochLayout extends BaseObject
             childrenFlowState.childrenSize
           else
             layoutChildrenComputeArea(
+              element
               currentPadding
               firstPassSizeForChildrenConstrained
               firstPassChildren

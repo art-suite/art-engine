@@ -1,0 +1,57 @@
+import &ArtStandardLib, &ArtAtomic, &ArtEngine, &TestHelper
+test = (args...) -> global.test args...
+suite:
+  childrenLocation: ->
+    test "default - use visible area" ->
+      Element
+        size: cs: 1
+        Element
+          size: 50
+          axis: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 25
+
+    test "use total area" ->
+      Element
+        size: cs: 1
+        childArea: :totalArea
+        Element
+          size: 50
+          axis: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 50
+
+  childrenTransforms: ->
+    test "default - observe transforms" ->
+      Element
+        size: cs: 1
+        Element
+          size: 100
+          axis: .5
+          scale: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 25
+
+    test "default - ignore transforms" ->
+      Element
+        size: cs: 1
+        childArea: :ignoreTransforms
+        Element
+          size: 100
+          axis: .5
+          scale: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 100
+
+  custom: ->
+    test "simple" ->
+      Element
+        size: cs: 1
+        childArea: (child) ->
+          child.currentSize.add 123
+        Element
+          size: 100
+          axis: .5
+          scale: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 223
