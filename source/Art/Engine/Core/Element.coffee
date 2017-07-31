@@ -10,7 +10,7 @@ GlobalEpochCycle = require './GlobalEpochCycle'
 DrawCacheManager = require './DrawCacheManager'
 {config} = require '../Config'
 
-{isInfiniteResult} = require './EpochLayout/Basics'
+{isInfiniteResult} = require './EpochLayout/Infinity'
 
 {point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
 {floor, ceil} = Math

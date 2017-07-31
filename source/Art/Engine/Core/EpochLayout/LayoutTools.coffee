@@ -5,10 +5,11 @@ Atomic = require 'art-atomic'
 {BaseObject, isFunction, abs} = Foundation
 {nearInfiniteSize, nearInfinity, nearInfinityResult, isInfiniteResult} = require './Infinity'
 
-module.exports = class Basics extends BaseObject
+module.exports = class LayoutTools extends BaseObject
   @nearInfiniteSize: nearInfiniteSize
   @nearInfinity: nearInfinity
   @nearInfinityResult: nearInfinityResult
+  @isInfiniteResult: isInfiniteResult
 
   @layoutMargin: (element, parentSize) ->
     margin = element.getPendingMargin()
@@ -24,8 +25,6 @@ module.exports = class Basics extends BaseObject
     else
       padding
 
-  @isInfiniteResult: isInfiniteResult
-
   @deinfinitize: (p) ->
     {x, y} = p
     x = if isInfiniteResult x then 0 else x
@@ -37,3 +36,15 @@ module.exports = class Basics extends BaseObject
       width + currentPadding.getWidth()
       height + currentPadding.getHeight()
     )
+
+  ###
+  NOTE: layoutElement gets set via StateEpochLayout.coffee
+  IN:
+    element - the element to layout
+    parentSizeForChildren - size of the parent, augmented by padding
+    skipLocationLayout - if true, only the element's size is laid out.
+
+  OUT:
+    Element's pending currentSize
+  ###
+  @layoutElement: null # (element, parentSizeForChildren, skipLocationLayout) ->

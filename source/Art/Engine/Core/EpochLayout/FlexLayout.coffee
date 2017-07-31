@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 CoreLayout = require './namespace'
-Basics = require './Basics'
+LayoutTools = require './LayoutTools'
 
 {point, Point, perimeter} = Atomic
 {
@@ -15,7 +15,7 @@ Basics = require './Basics'
 {
   layoutMargin
   sizeWithPadding
-} = Basics
+} = LayoutTools
 
 {point0} = Point
 {abs, max} = Math

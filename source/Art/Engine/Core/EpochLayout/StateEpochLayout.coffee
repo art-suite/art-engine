@@ -2,7 +2,7 @@ ArtEngineCore = require '../namespace'
 CoreLayout = require './namespace'
 
 FlexLayout = require './FlexLayout'
-Basics = require './Basics'
+LayoutTools = require './LayoutTools'
 
 ###
 TODO:
@@ -24,7 +24,7 @@ TODO:
   layoutPadding
   deinfinitize
   isInfiniteResult
-} = Basics
+} = LayoutTools
 
 {point, Point, perimeter} = require 'art-atomic'
 {
@@ -375,7 +375,7 @@ module.exports = class StateEpochLayout extends BaseObject
           l = child.getPendingCurrentLocation()
           child._setElementToParentMatrixFromLayoutXY l.x + offsetX, l.y + offsetY, parentSize
 
-  Basics.layoutElement = CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
+  LayoutTools.layoutElement = CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
 
@@ -461,7 +461,7 @@ module.exports = class StateEpochLayout extends BaseObject
         s = currentPadding.addedToSize element.customLayoutChildrenFirstPass(
           firstPassSizeForChildrenConstrained
           firstPassChildren
-          Basics
+          LayoutTools
           firstPassSizeForChildrenUnconstrained
         )
         if pendingChildren?.length > 0

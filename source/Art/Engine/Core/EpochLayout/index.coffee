@@ -4,7 +4,7 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  Basics:           require './Basics'          
   FlexLayout:       require './FlexLayout'      
   Infinity:         require './Infinity'        
+  LayoutTools:      require './LayoutTools'     
   StateEpochLayout: require './StateEpochLayout'
