@@ -147,12 +147,11 @@ module.exports = class StateEpochLayout extends BaseObject
     children
     currentPadding
   ) ->
-    return point0 unless children
+    return point0 unless children?.length > 0
 
     tMin = lMin = bMax = rMax = 0
     l = r = t = b = 0
     tFirst = lFirst = bFirst = rFirst = true
-    tInfinite = lInfinite = false
 
     if customComputeChildArea = element.getPendingChildArea()
       for child in children when !child.getPendingLayoutSizeParentCircular()
@@ -425,18 +424,16 @@ module.exports = class StateEpochLayout extends BaseObject
     firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
     firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
 
-    hasCustomLayoutChildrenFirstPass = isFunction element.nonChildrenLayoutFirstPass
-    hasCustomLayoutChildrenSecondPass = isFunction element.nonChildrenLayoutFinalPass
-
     # Partition children into firstPassChildren and secondPassChildren
     pendingChildren = element.getPendingChildren()
     firstPassChildren = secondPassChildren = null
     childrenLayout = element.getPendingChildrenLayout()
+    layoutIsChildrenRelative = element.getPendingSize().getChildrenRelative()
 
     #####################################
     # Assign Children to Layout Passes
     #####################################
-    if hasCustomLayoutChildrenFirstPass || childrenLayout || element.getPendingSize().getChildrenRelative()
+    if childrenLayout || layoutIsChildrenRelative
       firstPassChildren = pendingChildren
 
       # split pendingChildren into firstPass and secondPass based on:
@@ -458,92 +455,89 @@ module.exports = class StateEpochLayout extends BaseObject
     else
       secondPassChildren = pendingChildren
 
+
+    #####################################
+    # non Children Layout First Pass
+    #####################################
+    childrenSize = if element.nonChildrenLayoutFirstPass
+      childrenSize = currentPadding.addedToSize element.nonChildrenLayoutFirstPass(
+        firstPassSizeForChildrenConstrained
+        firstPassSizeForChildrenUnconstrained
+      )
+    else point0
+
+
     #####################################
     # Children First-Pass
     #####################################
     if firstPassChildren
 
-      childrenSize = if hasCustomLayoutChildrenFirstPass
-        s = currentPadding.addedToSize element.nonChildrenLayoutFirstPass(
-          firstPassSizeForChildrenConstrained
-          firstPassSizeForChildrenUnconstrained
-        )
-        layoutChildren(
-          element
-          currentPadding
-          firstPassSizeForChildrenConstrained
-          firstPassChildren
-          secondPassChildren
-          secondPassLocationLayoutChildren
-        )
-        s.max computeChildrenSizeWithPadding element, firstPassChildren, currentPadding
-
-      else
-        childrenGrid = element.getPendingChildrenGrid()
-        switch childrenLayout
-          when "flow"
-            childrenFlowState = layoutChildrenFlow(
+      switch childrenLayout
+        when "flow"
+          childrenFlowState = layoutChildrenFlow(
+            element
+            currentPadding
+            firstPassSizeForChildrenUnconstrained
+            firstPassSizeForChildrenConstrained
+            firstPassChildren
+            secondPassSizeLayoutChildren
+          )
+          childrenFlowState.childrenSize
+        when "column"
+          childrenFlowState = if childrenGrid = element.getPendingChildrenGrid()
+            layoutChildrenRowGrid(
+              false
               element
+              childrenGrid
               currentPadding
-              firstPassSizeForChildrenUnconstrained
               firstPassSizeForChildrenConstrained
               firstPassChildren
               secondPassSizeLayoutChildren
             )
-            childrenFlowState.childrenSize
-          when "column"
-            childrenFlowState = if childrenGrid
-              layoutChildrenRowGrid(
-                false
-                element
-                childrenGrid
-                currentPadding
-                firstPassSizeForChildrenConstrained
-                firstPassChildren
-                secondPassSizeLayoutChildren
-              )
-            else
-              layoutChildrenFlex(
-                false
-                element
-                currentPadding
-                firstPassSizeForChildrenConstrained
-                firstPassChildren
-                parentSize
-              )
-            childrenFlowState.childrenSize
-          when "row"
-            childrenFlowState = if childrenGrid
-              layoutChildrenRowGrid(
-                true
-                element
-                childrenGrid
-                currentPadding
-                firstPassSizeForChildrenConstrained
-                firstPassChildren
-                secondPassSizeLayoutChildren
-              )
-            else
-              layoutChildrenFlex(
-                true
-                element
-                currentPadding
-                firstPassSizeForChildrenConstrained
-                firstPassChildren
-                parentSize
-              )
-            childrenFlowState.childrenSize
           else
-            layoutChildren(
+            layoutChildrenFlex(
+              false
               element
               currentPadding
               firstPassSizeForChildrenConstrained
               firstPassChildren
-              secondPassChildren
-              secondPassLocationLayoutChildren
+              parentSize
             )
+          childrenFlowState.childrenSize
+        when "row"
+          childrenFlowState = if childrenGrid = element.getPendingChildrenGrid()
+            layoutChildrenRowGrid(
+              true
+              element
+              childrenGrid
+              currentPadding
+              firstPassSizeForChildrenConstrained
+              firstPassChildren
+              secondPassSizeLayoutChildren
+            )
+          else
+            layoutChildrenFlex(
+              true
+              element
+              currentPadding
+              firstPassSizeForChildrenConstrained
+              firstPassChildren
+              parentSize
+            )
+          childrenFlowState.childrenSize
+        else
+          layoutChildren(
+            element
+            currentPadding
+            firstPassSizeForChildrenConstrained
+            firstPassChildren
+            secondPassChildren
+            secondPassLocationLayoutChildren
+          )
 
-        computeChildrenSizeWithPadding element, firstPassChildren, currentPadding
+      # if layoutIsChildrenRelative
+      if layoutIsChildrenRelative || childrenFlowState?.childrenAlignment
+        childrenSize = childrenSize.max computeChildrenSizeWithPadding element, firstPassChildren, currentPadding
 
       # compute final size
       finalSize = element._layoutSize parentSize, childrenSize
@@ -558,18 +552,22 @@ module.exports = class StateEpochLayout extends BaseObject
       if secondPassLocationLayoutChildren
         for child in secondPassLocationLayoutChildren
           child._setElementToParentMatrixFromLayout child._layoutLocation(finalSizeForChildren), parentSize
+
+      # Align Children
+      if childrenFlowState?.childrenAlignment
+        alignChildren childrenFlowState, finalSizeForChildren, childrenSize
     else
       finalSize = firstPassSize
       finalSizeForChildren = firstPassSizeForChildrenConstrained
 
     #####################################
-    # Children Second-Pass
+    # Non-Children Final-Pass
     #####################################
-    if childrenFlowState?.childrenAlignment
-      alignChildren childrenFlowState, finalSizeForChildren, childrenSize
-    else if hasCustomLayoutChildrenSecondPass
-      element.nonChildrenLayoutFinalPass finalSizeForChildren
+    element.nonChildrenLayoutFinalPass? finalSizeForChildren
 
+    #####################################
+    # Children Final-Pass
+    #####################################
     layoutElement child, finalSizeForChildren for child in secondPassChildren if secondPassChildren
 
     #####################################

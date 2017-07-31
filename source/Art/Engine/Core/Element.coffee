@@ -1819,17 +1819,6 @@ defineModule module, class Element extends ElementBase
         Simpler picture of layout at first-pass.
         Any nearInfinite values are replaced with the respective parentSize.
 
-      firstPassChildren
-        For layout, children are split into first and second-pass.
-        There are two main rules:
-
-        * inFlow: false
-          If a child has inFlow set to false, they are automatically in the second-pass
-
-        * circular dependencies in layout
-          if a child's layout is circularly dependent on the parent's size,
-          it is automatically bumped to the second-pass.
-
       firstPassSizeForChildrenUnconstrained
         More accurately captures the layout picture at the first-pass, but
           may contain nearInfinite values.
