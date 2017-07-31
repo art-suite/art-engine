@@ -68,14 +68,14 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
       # TODO: this doesn't actually fetch the Pending state.
       @_textLayout?.getDrawArea() || ShadowableElement.preFilteredBaseDrawArea.call @, pending
 
-  customLayoutChildrenFirstPass: (constrainedSize, firstPassChildren, LayoutTools, unconstrainedSize) ->
+  nonChildrenLayoutFirstPass: (constrainedSize, unconstrainedSize) ->
     ret = null
     globalEpochCycle.timePerformance "aimTL", =>
       @_textLayout = new Text.Layout @getPendingText(), @getPendingFont(), @getPendingFormat(), unconstrainedSize.x, unconstrainedSize.y
       ret = @_textLayout.getSize()
     ret
 
-  customLayoutChildrenSecondPass: (size) ->
+  nonChildrenLayoutFinalPass: (size) ->
     @_textLayout.setWidth size.x
     @_textLayout.size
 

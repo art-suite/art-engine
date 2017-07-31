@@ -343,10 +343,6 @@ defineModule module, class ScrollElement extends AnimatorSupport Element
   constructor: ->
     super
 
-  # customLayoutChildrenFirstPass: ->
-
-  # customLayoutChildrenSecondPass: ->
-
   # constructor: ->
   #   @initAnimatorSupport()
 

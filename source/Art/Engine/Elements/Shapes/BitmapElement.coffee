@@ -64,10 +64,8 @@ defineModule module, class BitmapElement extends ShadowableElement
     cacheable: -> false
 
   # returns childrenSize
-  customLayoutChildrenFirstPass: ->
+  nonChildrenLayoutFirstPass: ->
     @getPendingBitmap()?.pointSize || point0
-
-  customLayoutChildrenSecondPass: ->
 
   halfPoint = point(.5)
   @drawProperty

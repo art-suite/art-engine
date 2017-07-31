@@ -1808,7 +1808,7 @@ defineModule module, class Element extends ElementBase
   ################
 
   ###
-  customLayoutChildrenFirstPass: a function
+  nonChildrenLayoutFirstPass: a function
     EFFECT:
       optionally sets the location and/or size of
       one or more first-pass-children
@@ -1844,11 +1844,11 @@ defineModule module, class Element extends ElementBase
 
     childrenSizeBase is unioned with the computed area for all children
 
-  customLayoutChildrenSecondPass: a function
+  nonChildrenLayoutFinalPass: a function
     IN: finalSizeForChildren
       This is the finalSize, passed through @_sizeForChildren()
 
     OUT: ignored
   ###
-  customLayoutChildrenFirstPass: null
-  customLayoutChildrenSecondPass: null
+  nonChildrenLayoutFirstPass: null
+  nonChildrenLayoutFinalPass: null

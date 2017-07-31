@@ -44,16 +44,6 @@ TODO:
 getGlobalEpochCycle = ->
   ArtEngineCore.GlobalEpochCycle.globalEpochCycle
 
-partition = (src, f) ->
-  intoIfFalse = []
-  intoIfTrue = []
-  for v in src
-    if f v
-      intoIfTrue.push v
-    else
-      intoIfFalse.push v
-  [intoIfTrue, intoIfFalse]
-
 module.exports = class StateEpochLayout extends BaseObject
 
   @markLayoutPropertiesChanged: (changingElements) =>
@@ -110,35 +100,32 @@ module.exports = class StateEpochLayout extends BaseObject
 
     point childrenWidth, childrenHeight
 
-  layoutChildrenComputeArea = (
+  layoutChildren = (
     element
-    currentPadding, parentSize, children, secondPassChildren, secondPassLocation
+    currentPadding
+    parentSize
+    children
+    secondPassChildren
+    secondPassLocation
   ) ->
     return point0 unless children
-    customComputeChildArea = element.getPendingChildArea()
-    tMin = lMin = bMax = rMax = 0
-    l = r = t = b = 0
-    tFirst = lFirst = bFirst = rFirst = true
-    firstChild = true
-    childrenHeight = 0
-    childrenWidth  = 0
-    tInfinite = lInfinite = false
+    maxXInfinite = maxYInfinite = false
 
-    for child in children when children
+    for child in children
 
       if child.getPendingLayoutSizeParentCircular()
         ###
         If size is circular:
           - this element is automatically not "inFlow"
           - this element is not included in child-size calcs
-          - this element is only layed out after the parent-size is final.
+          - this element is only laid out after the parent-size is final.
         ###
         secondPassChildren.push child
       else
         ###
         If location is circular (but size is not):
           - this element's location is assumed to be point0 for child-size calc purposes
-          - this element's location layout is done in the second pass. (is it?!?)
+          - this element's location layout is done in the second pass.
         ###
 
         if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
@@ -147,29 +134,48 @@ module.exports = class StateEpochLayout extends BaseObject
 
         layoutElement child, parentSize, layoutLocationInSecondPass
 
-        if customComputeChildArea
-          area = customComputeChildArea child
-          lInfinite = isInfiniteResult l = area.getLeft()
-          tInfinite = isInfiniteResult t = area.getTop()
-          r = area.getRight()
-          b = area.getBottom()
+        maxXInfinite = isInfiniteResult child.getPendingMaxXInParentSpace()
+        maxYInfinite = isInfiniteResult child.getPendingMaxYInParentSpace()
 
-        else
-          r = child.getPendingMaxXInParentSpace()
-          b = child.getPendingMaxYInParentSpace()
-
-        rInfinite = isInfiniteResult r
-        bInfinite = isInfiniteResult b
-
-        if rInfinite || bInfinite || lInfinite || tInfinite
+        if maxXInfinite || maxYInfinite
           secondPassChildren.push child
         else if layoutLocationInSecondPass
           secondPassLocation.push child
 
-        lMin = min l, if lFirst then lFirst = false; l else lMin unless lInfinite
-        tMin = min t, if tFirst then tFirst = false; t else tMin unless tInfinite
-        rMax = max r, if rFirst then rFirst = false; r else rMax unless rInfinite
-        bMax = max b, if bFirst then bFirst = false; b else bMax unless bInfinite
+  computeChildrenSizeWithPadding = (
+    element
+    children
+    currentPadding
+  ) ->
+    return point0 unless children
+
+    tMin = lMin = bMax = rMax = 0
+    l = r = t = b = 0
+    tFirst = lFirst = bFirst = rFirst = true
+    tInfinite = lInfinite = false
+
+    if customComputeChildArea = element.getPendingChildArea()
+      for child in children when !child.getPendingLayoutSizeParentCircular()
+
+        area = customComputeChildArea child
+        l = area.getLeft()
+        t = area.getTop()
+        r = area.getRight()
+        b = area.getBottom()
+
+        lMin = min l, if lFirst then lFirst = false; l else lMin unless isInfiniteResult l
+        tMin = min t, if tFirst then tFirst = false; t else tMin unless isInfiniteResult t
+        rMax = max r, if rFirst then rFirst = false; r else rMax unless isInfiniteResult r
+        bMax = max b, if bFirst then bFirst = false; b else bMax unless isInfiniteResult b
+
+    else
+      for child in children when !child.getPendingLayoutSizeParentCircular()
+
+        r = child.getPendingMaxXInParentSpace()
+        b = child.getPendingMaxYInParentSpace()
+
+        rMax = max r, if rFirst then rFirst = false; r else rMax unless isInfiniteResult r
+        bMax = max b, if bFirst then bFirst = false; b else bMax unless isInfiniteResult b
 
     sizeWithPadding (rMax - lMin), (bMax - tMin), currentPadding
 
@@ -419,8 +425,8 @@ module.exports = class StateEpochLayout extends BaseObject
     firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
     firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
 
-    hasCustomLayoutChildrenFirstPass = isFunction element.customLayoutChildrenFirstPass
-    hasCustomLayoutChildrenSecondPass = isFunction element.customLayoutChildrenSecondPass
+    hasCustomLayoutChildrenFirstPass = isFunction element.nonChildrenLayoutFirstPass
+    hasCustomLayoutChildrenSecondPass = isFunction element.nonChildrenLayoutFinalPass
 
     # Partition children into firstPassChildren and secondPassChildren
     pendingChildren = element.getPendingChildren()
@@ -430,13 +436,13 @@ module.exports = class StateEpochLayout extends BaseObject
     #####################################
     # Assign Children to Layout Passes
     #####################################
-    if childrenLayout || element.getPendingSize().getChildrenRelative()
+    if hasCustomLayoutChildrenFirstPass || childrenLayout || element.getPendingSize().getChildrenRelative()
       firstPassChildren = pendingChildren
 
       # split pendingChildren into firstPass and secondPass based on:
       #   inFlow: true  -> firstPass
       #   inFlow: false -> secondPass
-      # And do it smart - don't create new arrays if children are inFlow, the default.
+      # And do it smart - don't create new arrays if all children are inFlow, the default.
       for child, childI in pendingChildren
         if child.getPendingInFlow()
           firstPassChildren.push child if secondPassChildren
@@ -455,25 +461,22 @@ module.exports = class StateEpochLayout extends BaseObject
     #####################################
     # Children First-Pass
     #####################################
-    if firstPassChildren || hasCustomLayoutChildrenFirstPass
+    if firstPassChildren
 
       childrenSize = if hasCustomLayoutChildrenFirstPass
-        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass(
+        s = currentPadding.addedToSize element.nonChildrenLayoutFirstPass(
           firstPassSizeForChildrenConstrained
-          firstPassChildren
-          LayoutTools
           firstPassSizeForChildrenUnconstrained
         )
-        if pendingChildren?.length > 0
-          s = s.max size = layoutChildrenComputeArea(
-            element
-            currentPadding
-            firstPassSizeForChildrenConstrained
-            firstPassChildren
-            secondPassChildren
-            secondPassLocationLayoutChildren
-          )
-        s
+        layoutChildren(
+          element
+          currentPadding
+          firstPassSizeForChildrenConstrained
+          firstPassChildren
+          secondPassChildren
+          secondPassLocationLayoutChildren
+        )
+        s.max computeChildrenSizeWithPadding element, firstPassChildren, currentPadding
 
       else
         childrenGrid = element.getPendingChildrenGrid()
@@ -531,7 +534,7 @@ module.exports = class StateEpochLayout extends BaseObject
               )
             childrenFlowState.childrenSize
           else
-            layoutChildrenComputeArea(
+            layoutChildren(
               element
               currentPadding
               firstPassSizeForChildrenConstrained
@@ -540,39 +543,41 @@ module.exports = class StateEpochLayout extends BaseObject
               secondPassLocationLayoutChildren
             )
 
+        computeChildrenSizeWithPadding element, firstPassChildren, currentPadding
+
       # compute final size
-      secondPassSize = element._layoutSize parentSize, childrenSize
-      secondPassSizeForChildren = element._sizeForChildren secondPassSize
+      finalSize = element._layoutSize parentSize, childrenSize
+      finalSizeForChildren = element._sizeForChildren finalSize
 
       # finalize layout except location as needed
       if secondPassSizeLayoutChildren
         for child in secondPassSizeLayoutChildren
-          layoutElement child, secondPassSizeForChildren, true
+          layoutElement child, finalSizeForChildren, true
 
       # finalize locations as needed
       if secondPassLocationLayoutChildren
         for child in secondPassLocationLayoutChildren
-          child._setElementToParentMatrixFromLayout child._layoutLocation(secondPassSizeForChildren), parentSize
+          child._setElementToParentMatrixFromLayout child._layoutLocation(finalSizeForChildren), parentSize
     else
-      secondPassSize = firstPassSize
-      secondPassSizeForChildren = firstPassSizeForChildrenConstrained
+      finalSize = firstPassSize
+      finalSizeForChildren = firstPassSizeForChildrenConstrained
 
     #####################################
     # Children Second-Pass
     #####################################
     if childrenFlowState?.childrenAlignment
-      alignChildren childrenFlowState, secondPassSizeForChildren, childrenSize
+      alignChildren childrenFlowState, finalSizeForChildren, childrenSize
     else if hasCustomLayoutChildrenSecondPass
-      element.customLayoutChildrenSecondPass secondPassSizeForChildren
+      element.nonChildrenLayoutFinalPass finalSizeForChildren
 
-    layoutElement child, secondPassSizeForChildren for child in secondPassChildren if secondPassChildren
+    layoutElement child, finalSizeForChildren for child in secondPassChildren if secondPassChildren
 
     #####################################
     # Final Layout
     #####################################
-    # store the final location and size, returning secondPassSize
-    element._setSizeFromLayout     deinfinitize secondPassSize
+    # store the final location and size, returning finalSize
+    element._setSizeFromLayout     deinfinitize finalSize
     element._setElementToParentMatrixFromLayout deinfinitize(finalLocation), parentSize unless skipLocation
 
-    secondPassSize
+    finalSize
 
