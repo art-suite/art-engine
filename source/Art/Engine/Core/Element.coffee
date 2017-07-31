@@ -273,7 +273,12 @@ defineModule module, class Element extends ElementBase
 
     childrenLayout:         default: null,                  validate:   (v) -> v == null || v == "flow" || v == "column" || v == "row"
 
-    childrenGrid:           default: null,                  validate:   (v) -> v == null || isString(v) && v.match /^[ a-zA-Z]+$/
+    childrenGrid:
+      default: null
+      validate:   (v) -> v == null || isString(v) && v.match /^[ a-zA-Z]+$/
+      preprocess: (v) ->
+        log.error "DEPRICATED: `childrenGrid` property. Use `childrenLayout and layoutWeight`."
+        v
     childrenAlignment:      default: point0,                preprocess: (v) -> point v
       # default: "left"
       # validate:   (v) -> !v || v == "left" || v == "center" || v == "right"
@@ -382,7 +387,7 @@ defineModule module, class Element extends ElementBase
 
     layout:
       getter: -> throw new Error "get layout is depricated"
-      setter:    -> throw new Error "set layout is depricated"
+      setter: -> throw new Error "set layout is depricated"
 
     elementToAbsMatrix:
       getter: (pending) ->
