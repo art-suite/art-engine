@@ -105,8 +105,8 @@ module.exports = class StateEpochLayout extends BaseObject
     currentPadding
     parentSize
     children
-    secondPassChildren
-    secondPassLocation
+    finalPassChildren
+    finalPassChildrenLocationOnly
   ) ->
     return point0 unless children
     maxXInfinite = maxYInfinite = false
@@ -120,7 +120,7 @@ module.exports = class StateEpochLayout extends BaseObject
           - this element is not included in child-size calcs
           - this element is only laid out after the parent-size is final.
         ###
-        secondPassChildren.push child
+        finalPassChildren.push child
       else
         ###
         If location is circular (but size is not):
@@ -130,7 +130,7 @@ module.exports = class StateEpochLayout extends BaseObject
 
         if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
           child._setElementToParentMatrixFromLayout point0, parentSize
-          secondPassLocation.push child
+          finalPassChildrenLocationOnly.push child
 
         layoutElement child, parentSize, layoutLocationInSecondPass
 
@@ -138,9 +138,9 @@ module.exports = class StateEpochLayout extends BaseObject
         maxYInfinite = isInfiniteResult child.getPendingMaxYInParentSpace()
 
         if maxXInfinite || maxYInfinite
-          secondPassChildren.push child
+          finalPassChildren.push child
         else if layoutLocationInSecondPass
-          secondPassLocation.push child
+          finalPassChildrenLocationOnly.push child
 
   computeChildrenSizeWithPadding = (
     element
@@ -252,11 +252,11 @@ module.exports = class StateEpochLayout extends BaseObject
     state.firstChildOnLine = lastChildOnLine + 1
     state.maxWidth = max maxWidth, x
 
-  subLayoutChildrenAndGatherInformation = (parentSize, children, secondPassSizeLayoutChildren) ->
+  subLayoutChildrenAndGatherInformation = (parentSize, children, finalPassChildrenSizeOnly) ->
     for child in children
       if child.getPendingLayoutSizeParentCircular()
         child._setSizeFromLayout child._layoutSize point0, point0
-        secondPassSizeLayoutChildren.push child
+        finalPassChildrenSizeOnly.push child
       else
         layoutElement child, parentSize, true
 
@@ -266,10 +266,10 @@ module.exports = class StateEpochLayout extends BaseObject
       firstPassSizeForChildrenUnconstrained,
       firstPassSizeForChildrenConstrained,
       children,
-      secondPassSizeLayoutChildren
+      finalPassChildrenSizeOnly
     ) ->
 
-    subLayoutChildrenAndGatherInformation firstPassSizeForChildrenConstrained, children, secondPassSizeLayoutChildren
+    subLayoutChildrenAndGatherInformation firstPassSizeForChildrenConstrained, children, finalPassChildrenSizeOnly
 
     # flow children
     halfPixel = .5 # TODO: should this should take into account pixelsPerPoint? Or is it just a layout thing and this should be halfPoint - and always .5?
@@ -323,7 +323,7 @@ module.exports = class StateEpochLayout extends BaseObject
   #       childrenGrid: " ab"
   #       new Element axis: "topCenter"
   #       new Element axis: "topCenter"
-  layoutChildrenRowGrid = (isRowLayout, element, gridString, currentPadding, parentSize, children, secondPassSizeLayoutChildren) ->
+  layoutChildrenRowGrid = (isRowLayout, element, gridString, currentPadding, parentSize, children, finalPassChildrenSizeOnly) ->
     # TODO: distribute rounding error among the spaces, if there are spaces.
     # TODO: do we need to do anything special for circular layout items?
 
@@ -424,9 +424,9 @@ module.exports = class StateEpochLayout extends BaseObject
     firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
     firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
 
-    # Partition children into firstPassChildren and secondPassChildren
+    # Partition children into firstPassChildren and finalPassChildren
     pendingChildren = element.getPendingChildren()
-    firstPassChildren = secondPassChildren = null
+    firstPassChildren = finalPassChildren = null
     childrenLayout = element.getPendingChildrenLayout()
     layoutIsChildrenRelative = element.getPendingSize().getChildrenRelative()
 
@@ -436,25 +436,24 @@ module.exports = class StateEpochLayout extends BaseObject
     if childrenLayout || layoutIsChildrenRelative
       firstPassChildren = pendingChildren
 
-      # split pendingChildren into firstPass and secondPass based on:
+      # split pendingChildren into firstPass and finalPass based on:
       #   inFlow: true  -> firstPass
-      #   inFlow: false -> secondPass
+      #   inFlow: false -> finalPass
       # And do it smart - don't create new arrays if all children are inFlow, the default.
       for child, childI in pendingChildren
         if child.getPendingInFlow()
-          firstPassChildren.push child if secondPassChildren
+          firstPassChildren.push child if finalPassChildren
         else
-          unless secondPassChildren
+          unless finalPassChildren
             firstPassChildren = pendingChildren.slice 0, childI
-            secondPassChildren = []
-          secondPassChildren.push child
+            finalPassChildren = []
+          finalPassChildren.push child
 
-      secondPassSizeLayoutChildren = []
-      secondPassLocationLayoutChildren = []
-      secondPassChildren ||= []
+      finalPassChildrenSizeOnly = []
+      finalPassChildrenLocationOnly = []
+      finalPassChildren ||= []
     else
-      secondPassChildren = pendingChildren
-
+      finalPassChildren = pendingChildren
 
     #####################################
     # non Children Layout First Pass
@@ -465,7 +464,6 @@ module.exports = class StateEpochLayout extends BaseObject
         firstPassSizeForChildrenUnconstrained
       )
     else point0
-
 
     #####################################
     # Children First-Pass
@@ -480,7 +478,7 @@ module.exports = class StateEpochLayout extends BaseObject
             firstPassSizeForChildrenUnconstrained
             firstPassSizeForChildrenConstrained
             firstPassChildren
-            secondPassSizeLayoutChildren
+            finalPassChildrenSizeOnly
           )
           childrenFlowState.childrenSize
         when "column"
@@ -492,7 +490,7 @@ module.exports = class StateEpochLayout extends BaseObject
               currentPadding
               firstPassSizeForChildrenConstrained
               firstPassChildren
-              secondPassSizeLayoutChildren
+              finalPassChildrenSizeOnly
             )
           else
             layoutChildrenFlex(
@@ -513,7 +511,7 @@ module.exports = class StateEpochLayout extends BaseObject
               currentPadding
               firstPassSizeForChildrenConstrained
               firstPassChildren
-              secondPassSizeLayoutChildren
+              finalPassChildrenSizeOnly
             )
           else
             layoutChildrenFlex(
@@ -531,8 +529,8 @@ module.exports = class StateEpochLayout extends BaseObject
             currentPadding
             firstPassSizeForChildrenConstrained
             firstPassChildren
-            secondPassChildren
-            secondPassLocationLayoutChildren
+            finalPassChildren
+            finalPassChildrenLocationOnly
           )
 
       # if layoutIsChildrenRelative
@@ -544,13 +542,13 @@ module.exports = class StateEpochLayout extends BaseObject
       finalSizeForChildren = element._sizeForChildren finalSize
 
       # finalize layout except location as needed
-      if secondPassSizeLayoutChildren
-        for child in secondPassSizeLayoutChildren
+      if finalPassChildrenSizeOnly
+        for child in finalPassChildrenSizeOnly
           layoutElement child, finalSizeForChildren, true
 
       # finalize locations as needed
-      if secondPassLocationLayoutChildren
-        for child in secondPassLocationLayoutChildren
+      if finalPassChildrenLocationOnly
+        for child in finalPassChildrenLocationOnly
           child._setElementToParentMatrixFromLayout child._layoutLocation(finalSizeForChildren), parentSize
 
       # Align Children
@@ -568,7 +566,7 @@ module.exports = class StateEpochLayout extends BaseObject
     #####################################
     # Children Final-Pass
     #####################################
-    layoutElement child, finalSizeForChildren for child in secondPassChildren if secondPassChildren
+    layoutElement child, finalSizeForChildren for child in finalPassChildren if finalPassChildren
 
     #####################################
     # Final Layout

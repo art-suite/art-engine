@@ -1,26 +1,21 @@
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-CoreLayout = require './namespace'
-LayoutTools = require './LayoutTools'
-
-{point, Point, perimeter} = Atomic
 {
-  BaseObject
   log, inspect
   shallowEq
   select, peek, inspect,
   floatEq
-} = Foundation
+} = require 'art-standard-lib'
+
+{point, Point, perimeter} = require 'art-atomic'
 
 {
   layoutMargin
   sizeWithPadding
-} = LayoutTools
+} = LayoutTools = require './LayoutTools'
 
 {point0} = Point
 {abs, max} = Math
 
-module.exports = class FlexLayout extends BaseObject
+module.exports = class FlexLayout
 
   @layoutChildrenFlex: (isRowLayout, element, currentPadding, elementSizeForChildren, children, parentSize) ->
     ###
@@ -95,7 +90,7 @@ module.exports = class FlexLayout extends BaseObject
         childFlexWeight = child.getPendingLayoutWeight()
         totalFlexWeight += childFlexWeight
       else
-        CoreLayout.layoutElement child, elementSizeForChildren, true
+        LayoutTools.layoutElement child, elementSizeForChildren, true
 
         currentSize = child.getPendingCurrentSize()
         mainSize = currentSize[mainCoordinate]
@@ -129,7 +124,7 @@ module.exports = class FlexLayout extends BaseObject
       ratio = childFlexWeight / totalFlexWeight
 
       flexParentSize = toPoint mainSizeForChild = spaceForFlexChildren * ratio, elementCrossSizeForChildren
-      CoreLayout.layoutElement child, flexParentSize, true
+      LayoutTools.layoutElement child, flexParentSize, true
 
       currentSize = child.getPendingCurrentSize()
       mainSize = currentSize[mainCoordinate]
@@ -167,7 +162,7 @@ module.exports = class FlexLayout extends BaseObject
           toPoint mainSizeForChild, elementCrossSizeForChildren
         else
           secondPassSizeForChildren
-        CoreLayout.layoutElement child, sizeForChild, true
+        LayoutTools.layoutElement child, sizeForChild, true
 
     ####################
     # FINAL FLEX PASS - LOCATION LAYOUT
