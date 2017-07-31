@@ -74,7 +74,9 @@ module.exports = class FlexLayout extends BaseObject
 
     state = {}
 
+    ###########################################
     # FIRST FLEX PASS - Fixed children layout
+    ###########################################
     lastChildsNextMargin = 0
     finalPassSizeLayoutChildren = null
     finalPassMainSizesForChildren = null

@@ -1802,3 +1802,53 @@ defineModule module, class Element extends ElementBase
 
   @getter
     pointerEventsCaptured: -> @getCanvasElement()?.pointerEventsCapturedBy @
+
+  ################
+  # Layout Overrides
+  ################
+
+  ###
+  customLayoutChildrenFirstPass: a function
+    EFFECT:
+      optionally sets the location and/or size of
+      one or more first-pass-children
+
+      Always iterate through firstPassChildren and NOT @children!
+    IN:
+      firstPassSizeForChildrenConstrained
+        Simpler picture of layout at first-pass.
+        Any nearInfinite values are replaced with the respective parentSize.
+
+      firstPassChildren
+        For layout, children are split into first and second-pass.
+        There are two main rules:
+
+        * inFlow: false
+          If a child has inFlow set to false, they are automatically in the second-pass
+
+        * circular dependencies in layout
+          if a child's layout is circularly dependent on the parent's size,
+          it is automatically bumped to the second-pass.
+
+      firstPassSizeForChildrenUnconstrained
+        More accurately captures the layout picture at the first-pass, but
+          may contain nearInfinite values.
+        Useful for flow/text layout.
+
+        NOTE: FlexLayout (currently/2017) doesn't need this at all, so most
+        layouts shouldn't need it.
+
+    OUT: childrenSizeBase
+    EFFECT:
+      sets size and location for children
+
+    childrenSizeBase is unioned with the computed area for all children
+
+  customLayoutChildrenSecondPass: a function
+    IN: finalSizeForChildren
+      This is the finalSize, passed through @_sizeForChildren()
+
+    OUT: ignored
+  ###
+  customLayoutChildrenFirstPass: null
+  customLayoutChildrenSecondPass: null

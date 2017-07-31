@@ -375,7 +375,7 @@ module.exports = class StateEpochLayout extends BaseObject
           l = child.getPendingCurrentLocation()
           child._setElementToParentMatrixFromLayoutXY l.x + offsetX, l.y + offsetY, parentSize
 
-  CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
+  Basics.layoutElement = CoreLayout.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
 
@@ -458,7 +458,12 @@ module.exports = class StateEpochLayout extends BaseObject
     if firstPassChildren || hasCustomLayoutChildrenFirstPass
 
       childrenSize = if hasCustomLayoutChildrenFirstPass
-        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass firstPassSizeForChildrenUnconstrained
+        s = currentPadding.addedToSize element.customLayoutChildrenFirstPass(
+          firstPassSizeForChildrenConstrained
+          firstPassChildren
+          Basics
+          firstPassSizeForChildrenUnconstrained
+        )
         if pendingChildren?.length > 0
           s = s.max size = layoutChildrenComputeArea(
             element
