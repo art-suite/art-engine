@@ -39,32 +39,3 @@ module.exports = suite: ->
       el.onNextReady()
     .then ->
       assert.eq el.currentLocation, point 10
-
-  test "Element Animator - Declarative - Explicit", ->
-    el = new Element animate:
-      from: location: 5
-      to:   location: 10
-
-    el.onNextReady()
-    .then ->
-      assert.eq el.currentLocation, point 5
-      log "TEST FOR _activeAnimator"
-      assert.isPresent el._activeAnimator
-      el._activeAnimator.finish()
-      el.onNextReady()
-    .then ->
-      assert.eq el.currentLocation, point 10
-
-  test "Animate Layout", ->
-    el = new Element animate:
-      from: size: 100
-      to:   size: 200
-
-    el.onNextReady()
-    .then ->
-      el._activeAnimator.updateValues .5
-      assert.eq el.pendingSize.layoutX(), 150
-      el._activeAnimator.finish()
-      el.onNextReady()
-    .then ->
-      assert.eq el.pendingSize.layoutX(), 200
