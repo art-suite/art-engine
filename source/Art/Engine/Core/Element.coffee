@@ -311,6 +311,9 @@ defineModule module, class Element extends ElementBase
     totalArea: (child, into) ->
       child.getAreaInParentSpace true, into
 
+    logicalArea: (child, into) ->
+      child.getLogicalAreaInParentSpace true, into
+
   @layoutProperty
     ###
     childArea returns the area for a single child
@@ -644,41 +647,49 @@ defineModule module, class Element extends ElementBase
 
     maxXInParentSpace: (pending) ->
       {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
-      padding = _currentPadding
 
-      left   = -padding.left
-      top    = -padding.top
-      right  = _currentSize.x + left
-      bottom = _currentSize.y + top
+      right  = _currentSize.x + left   = -_currentPadding.left
+      bottom = _currentSize.y + top    = -_currentPadding.top
 
       max (
-        _elementToParentMatrix.transformX left, top
-        _elementToParentMatrix.transformX left, bottom
+        _elementToParentMatrix.transformX left,  top
+        _elementToParentMatrix.transformX left,  bottom
         _elementToParentMatrix.transformX right, top
         _elementToParentMatrix.transformX right, bottom
+      )
+
+    maxYInParentSpace: (pending) ->
+      {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
+
+      right  = _currentSize.x + left   = -_currentPadding.left
+      bottom = _currentSize.y + top    = -_currentPadding.top
+
+      max (
+        _elementToParentMatrix.transformY left,  top
+        _elementToParentMatrix.transformY left,  bottom
+        _elementToParentMatrix.transformY right, top
+        _elementToParentMatrix.transformY right, bottom
       )
 
     # OUT: rectangle
     areaInParentSpace: (pending, into) ->
       {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
 
-      into ||= rect()
+      into ||= new Rectangle
 
-      left   = -_currentPadding.left
-      top    = -_currentPadding.top
-      right  = _currentSize.x + left
-      bottom = _currentSize.y + top
+      right  = _currentSize.x + left   = -_currentPadding.left
+      bottom = _currentSize.y + top    = -_currentPadding.top
 
       into.x = x = min(
-        x1 = _elementToParentMatrix.transformX left, top
-        x2 = _elementToParentMatrix.transformX left, bottom
+        x1 = _elementToParentMatrix.transformX left,  top
+        x2 = _elementToParentMatrix.transformX left,  bottom
         x3 = _elementToParentMatrix.transformX right, top
         x4 = _elementToParentMatrix.transformX right, bottom
       )
 
       into.y = y = min(
-        y1 = _elementToParentMatrix.transformY left, top
-        y2 = _elementToParentMatrix.transformY left, bottom
+        y1 = _elementToParentMatrix.transformY left,  top
+        y2 = _elementToParentMatrix.transformY left,  bottom
         y3 = _elementToParentMatrix.transformY right, top
         y4 = _elementToParentMatrix.transformY right, bottom
       )
@@ -687,21 +698,17 @@ defineModule module, class Element extends ElementBase
       into.h = max(y1, y2, y3, y4) - y
       into
 
-    maxYInParentSpace: (pending) ->
-      {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
-      padding = _currentPadding
 
-      left   = -padding.left
-      top    = -padding.top
-      right  = _currentSize.x + left
-      bottom = _currentSize.y + top
+    # OUT: rectangle
+    logicalAreaInParentSpace: (pending, into) ->
+      {_axis, _currentSize} = @getState pending
 
-      max (
-        _elementToParentMatrix.transformY left, top
-        _elementToParentMatrix.transformY left, bottom
-        _elementToParentMatrix.transformY right, top
-        _elementToParentMatrix.transformY right, bottom
-      )
+      into ||= new Rectangle
+      into.x = @getCurrentLocationX(pending) - _currentSize.x * _axis.x
+      into.y = @getCurrentLocationY(pending) - _currentSize.y * _axis.y
+      into.w = _currentSize.x
+      into.h = _currentSize.y
+      into
 
     widthInParentSpace: (pending) ->
       state = @getState pending

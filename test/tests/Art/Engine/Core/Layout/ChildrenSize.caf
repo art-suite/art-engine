@@ -1,57 +1,135 @@
 import &ArtStandardLib, &ArtAtomic, &ArtEngine, &TestHelper
 test = (args...) -> global.test args...
 suite:
-  childrenLocation: ->
-    test "default - use visible area" ->
+  childArea: ->
+    test "visibleArea" ->
       Element
         size: cs: 1
         Element
           size: 50
           axis: .5
+        Element
+          location: 10
+          size: 25
+          axis: .5
+          scale: 2
       .onNextReady (element) ->
-        assert.eq element.currentSize, point 25
+        assert.eq element.currentSize, point 35
 
-    test "use total area" ->
+    test "totalArea" ->
       Element
         size: cs: 1
         childArea: :totalArea
         Element
           size: 50
           axis: .5
+        Element
+          location: 10
+          size: 25
+          axis: .5
+          scale: 2
       .onNextReady (element) ->
-        assert.eq element.currentSize, point 50
+        assert.eq element.currentSize, point 60
 
-  childrenTransforms: ->
-    test "default - observe transforms" ->
+    test "logicalArea" ->
       Element
         size: cs: 1
+        childArea: :logicalArea
         Element
-          size: 100
+          size: 50
           axis: .5
-          scale: .5
+        Element
+          location: 100
+          size: 25
+          scale: 2
       .onNextReady (element) ->
-        assert.eq element.currentSize, point 25
+        assert.eq element.currentSize, point 150
 
-    test "default - ignore transforms" ->
+    test "ignoreTransforms" ->
       Element
         size: cs: 1
         childArea: :ignoreTransforms
         Element
-          size: 100
+          size: 50
           axis: .5
-          scale: .5
+        Element
+          location: 100
+          size: 25
+          scale: 2
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 50
+
+  padding: ->
+    test "visibleArea" ->
+      Element
+        size: cs: 1
+        Element
+          size: 50
+          padding: 10
+          innerElement = Element()
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 50
+        assert.eq innerElement.currentSize, point 30
+
+    test "totalArea" ->
+      Element
+        size: cs: 1
+        childArea: :totalArea
+        Element
+          size: 50
+          padding: 10
+          scale: 2
       .onNextReady (element) ->
         assert.eq element.currentSize, point 100
 
-  custom: ->
-    test "simple" ->
+    test "logicalArea" ->
       Element
         size: cs: 1
-        childArea: (child) ->
-          child.currentSize.add 123
+        childArea: :logicalArea
         Element
-          size: 100
+          size: 50
+          padding: 10
+          scale: 2
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 50
+
+  custom: ->
+    test "simple point" ->
+      Element
+        size: cs: 1
+        childArea: (child) -> point 123, 456
+
+        Element
+          size: w: 100, h: 200
           axis: .5
           scale: .5
       .onNextReady (element) ->
-        assert.eq element.currentSize, point 223
+        assert.eq element.currentSize, point 123, 456
+
+    test "simple rect" ->
+      Element
+        size: cs: 1
+        childArea: (child) -> rect 123, 456
+
+        Element
+          size: w: 100, h: 200
+          axis: .5
+          scale: .5
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 123, 456
+
+    test "reusable intoRect" ->
+      Element
+        size: cs: 1
+        childArea: (child, intoRect) ->
+          intoRect.x = intoRect.y = 0
+          {x, y} = child.getPendingCurrentSize()
+          intoRect.w = x + 123
+          intoRect.h = y + 123
+          intoRect
+
+        Element
+          size: w: 100, h: 200
+
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 223, 323
