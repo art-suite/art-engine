@@ -308,8 +308,8 @@ defineModule module, class Element extends ElementBase
     ignoreTransforms: (child) ->
       child.getPendingCurrentSize()
 
-    totalArea: (child) ->
-      child.getPendingAreaInParentSpace()
+    totalArea: (child, into) ->
+      child.getAreaInParentSpace true, into
 
   @layoutProperty
     ###
@@ -319,7 +319,12 @@ defineModule module, class Element extends ElementBase
     Legal values:
       A string matching one of the namedChildrenSizeFunctions (Above)
       customChildAreaFunction
-        IN: child (Element)
+        IN:
+          child (Element)
+          intoRectangle
+            For efficiency, you can optionally write your result into "intoRectangle"
+            and return intoRectangle.
+            This avoids creating new objects.
         OUT: area expressed as a point or rect
           if a point, top == left == 0, right == x, bottom == y
 
@@ -654,34 +659,33 @@ defineModule module, class Element extends ElementBase
       )
 
     # OUT: rectangle
-    areaInParentSpace: (pending) ->
+    areaInParentSpace: (pending, into) ->
       {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending
-      padding = _currentPadding
 
-      left   = -padding.left
-      top    = -padding.top
+      into ||= rect()
+
+      left   = -_currentPadding.left
+      top    = -_currentPadding.top
       right  = _currentSize.x + left
       bottom = _currentSize.y + top
 
-      x = min(
+      into.x = x = min(
         x1 = _elementToParentMatrix.transformX left, top
         x2 = _elementToParentMatrix.transformX left, bottom
         x3 = _elementToParentMatrix.transformX right, top
         x4 = _elementToParentMatrix.transformX right, bottom
       )
 
-      y = min(
+      into.y = y = min(
         y1 = _elementToParentMatrix.transformY left, top
         y2 = _elementToParentMatrix.transformY left, bottom
         y3 = _elementToParentMatrix.transformY right, top
         y4 = _elementToParentMatrix.transformY right, bottom
       )
 
-      rect(
-        x, y
-        max(x1, x2, x3, x4) - x
-        max(y1, y2, y3, y4) - y
-      )
+      into.w = max(x1, x2, x3, x4) - x
+      into.h = max(y1, y2, y3, y4) - y
+      into
 
     maxYInParentSpace: (pending) ->
       {_currentPadding, _currentSize, _elementToParentMatrix} = @getState pending

@@ -188,7 +188,7 @@ module.exports = class FlexLayout
       childrenAlignment
     )
 
-    # computer cross-alignment per element and apply all alignment
+    # compute cross-alignment per element and apply all alignment
     for child, i in inFlowChildren
       margin = child.getPendingCurrentMargin()
       if i > 0
@@ -223,5 +223,4 @@ module.exports = class FlexLayout
 
       mainChildrenOffset += mainSize
 
-    state.childrenSize = toPoint isRowLayout, mainChildrenOffset, maxCrossSize, currentPadding
     state

@@ -8,7 +8,7 @@
   isNumber
 } = require 'art-standard-lib'
 {BaseObject} = require 'art-class-system'
-{point, Point, perimeter, point0} = require 'art-atomic'
+{point, Point, perimeter, point0, Rectangle} = require 'art-atomic'
 
 ArtEngineCore = require '../namespace'
 
@@ -94,36 +94,28 @@ module.exports = class StateEpochLayout extends BaseObject
     maxXInfinite = maxYInfinite = false
 
     for child in children
+      ###
+      firstPassChildren contains no size-circular children
+      If location is circular (but size is not):
+        - this element's location is assumed to be point0 for child-size calc purposes
+        - this element's location layout is done in the second pass.
+      ###
 
-      if child.getPendingLayoutSizeParentCircular()
-        ###
-        If size is circular:
-          - this element is automatically not "inFlow"
-          - this element is not included in child-size calcs
-          - this element is only laid out after the parent-size is final.
-        ###
+      if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
+        child._setElementToParentMatrixFromLayout point0, parentSize
+        finalPassChildrenLocationOnly.push child
+
+      layoutElement child, parentSize, layoutLocationInSecondPass
+
+      maxXInfinite = isInfiniteResult child.getPendingMaxXInParentSpace()
+      maxYInfinite = isInfiniteResult child.getPendingMaxYInParentSpace()
+
+      if maxXInfinite || maxYInfinite
         finalPassChildren.push child
-      else
-        ###
-        If location is circular (but size is not):
-          - this element's location is assumed to be point0 for child-size calc purposes
-          - this element's location layout is done in the second pass.
-        ###
+      else if layoutLocationInSecondPass
+        finalPassChildrenLocationOnly.push child
 
-        if layoutLocationInSecondPass = child.getPendingLayoutLocationParentCircular()
-          child._setElementToParentMatrixFromLayout point0, parentSize
-          finalPassChildrenLocationOnly.push child
-
-        layoutElement child, parentSize, layoutLocationInSecondPass
-
-        maxXInfinite = isInfiniteResult child.getPendingMaxXInParentSpace()
-        maxYInfinite = isInfiniteResult child.getPendingMaxYInParentSpace()
-
-        if maxXInfinite || maxYInfinite
-          finalPassChildren.push child
-        else if layoutLocationInSecondPass
-          finalPassChildrenLocationOnly.push child
-
+  reusableRectForChildrenSizeCalc = new Rectangle
   computeChildrenSizeWithPadding = (
     element
     children
@@ -133,30 +125,42 @@ module.exports = class StateEpochLayout extends BaseObject
 
     tMin = lMin = bMax = rMax = 0
     l = r = t = b = 0
-    tFirst = lFirst = bFirst = rFirst = true
+    first = true
 
     if customComputeChildArea = element.getPendingChildArea()
-      for child in children when !child.getPendingLayoutSizeParentCircular()
+      for child in children
 
-        area = customComputeChildArea child
+        area = customComputeChildArea child, reusableRectForChildrenSizeCalc
         l = area.getLeft()
         t = area.getTop()
         r = area.getRight()
         b = area.getBottom()
 
-        lMin = min l, if lFirst then lFirst = false; l else lMin unless isInfiniteResult l
-        tMin = min t, if tFirst then tFirst = false; t else tMin unless isInfiniteResult t
-        rMax = max r, if rFirst then rFirst = false; r else rMax unless isInfiniteResult r
-        bMax = max b, if bFirst then bFirst = false; b else bMax unless isInfiniteResult b
+        if first
+          first = false
+          lMin = l
+          tMin = t
+          rMax = r
+          bMax = b
+        else
+          lMin = min l, lMin
+          tMin = min t, tMin
+          rMax = max r, rMax
+          bMax = max b, bMax
 
     else
-      for child in children when !child.getPendingLayoutSizeParentCircular()
+      for child in children
 
         r = child.getPendingMaxXInParentSpace()
         b = child.getPendingMaxYInParentSpace()
 
-        rMax = max r, if rFirst then rFirst = false; r else rMax unless isInfiniteResult r
-        bMax = max b, if bFirst then bFirst = false; b else bMax unless isInfiniteResult b
+        if first
+          first = false
+          rMax = r
+          bMax = b
+        else
+          rMax = max r, rMax
+          bMax = max b, bMax
 
     sizeWithPadding (rMax - lMin), (bMax - tMin), currentPadding
 
@@ -205,9 +209,6 @@ module.exports = class StateEpochLayout extends BaseObject
           child.getPendingCurrentSize().x
 
       offset += gridSize
-
-    childrenSize:
-      sizeWithPadding offset, maxCrossSize, currentPadding
 
   defaultWidthOfEachLine = (i, widthOfEachLine) -> widthOfEachLine[i]
   alignChildren = (state, parentSize, childrenSize) ->
@@ -294,7 +295,7 @@ module.exports = class StateEpochLayout extends BaseObject
       #   inFlow: false -> finalPass
       # And do it smart - don't create new arrays if all children are inFlow, the default.
       for child, childI in pendingChildren
-        if child.getPendingInFlow()
+        if child.getPendingInFlow() && (childrenLayout || !child.getPendingLayoutSizeParentCircular())
           firstPassChildren.push child if finalPassChildren
         else
           unless finalPassChildren
@@ -333,9 +334,8 @@ module.exports = class StateEpochLayout extends BaseObject
             firstPassChildren
             finalPassChildrenSizeOnly
           )
-          childrenFlowState.childrenSize
         when "column"
-          childrenFlowState = if childrenGrid = element.getPendingChildrenGrid()
+          if childrenGrid = element.getPendingChildrenGrid()
             layoutChildrenRowGrid(
               false
               element
@@ -354,9 +354,8 @@ module.exports = class StateEpochLayout extends BaseObject
               firstPassChildren
               parentSize
             )
-          childrenFlowState.childrenSize
         when "row"
-          childrenFlowState = if childrenGrid = element.getPendingChildrenGrid()
+          if childrenGrid = element.getPendingChildrenGrid()
             layoutChildrenRowGrid(
               true
               element
@@ -375,7 +374,6 @@ module.exports = class StateEpochLayout extends BaseObject
               firstPassChildren
               parentSize
             )
-          childrenFlowState.childrenSize
         else
           layoutChildren(
             element
@@ -385,6 +383,7 @@ module.exports = class StateEpochLayout extends BaseObject
             finalPassChildren
             finalPassChildrenLocationOnly
           )
+          null
 
       # if layoutIsChildrenRelative
       if layoutIsChildrenRelative || childrenFlowState?.childrenAlignment
