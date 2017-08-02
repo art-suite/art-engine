@@ -347,15 +347,19 @@ defineModule module, class ScrollElement extends Element
     # number, typically between 0-1, multiplied by the focusChild's major-axis
     focusedChildAxis: default: point0
 
-  getMainFlexPos:
-      (
+  getFlexMainChildrenOffset: (
       inFlowChildren
       mainElementSizeForChildren
       mainChildrenSize
       mainAlignment
       mainCoordinate
-      )->
-
+      mainElementSizeIsChildRelative
+      childrenAlignment
+    )->
+    if mainElementSizeIsChildRelative
+      0
+    else
+      (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
 
 
   # constructor: ->

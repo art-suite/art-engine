@@ -1846,3 +1846,18 @@ defineModule module, class Element extends ElementBase
   ###
   nonChildrenLayoutFirstPass: null
   nonChildrenLayoutFinalPass: null
+
+  getFlexMainChildrenOffset: (
+      inFlowChildren
+      mainElementSizeForChildren
+      mainChildrenSize
+      mainAlignment
+      mainCoordinate
+      mainElementSizeIsChildRelative
+      childrenAlignment
+    )->
+    if mainElementSizeIsChildRelative
+      0
+    else
+      (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
+

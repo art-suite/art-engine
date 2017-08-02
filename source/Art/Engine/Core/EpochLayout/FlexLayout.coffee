@@ -60,7 +60,7 @@ module.exports = class FlexLayout
       nextMargin = "right"
       relativeTestFunction = "getXRelativeToParentW"
       crossRelativeTestFunction = "getYRelativeToParentH"
-      elementMainAxisIsChildRelative = element.getPendingSize().getXRelativeToChildrenW()
+      mainElementSizeIsChildRelative = element.getPendingSize().getXRelativeToChildrenW()
     else
       mainCoordinate = "y"
       crossCoordinate = "x"
@@ -68,16 +68,16 @@ module.exports = class FlexLayout
       nextMargin = "bottom"
       relativeTestFunction = "getYRelativeToParentH"
       crossRelativeTestFunction = "getXRelativeToParentW"
-      elementMainAxisIsChildRelative = element.getPendingSize().getYRelativeToChildrenH()
+      mainElementSizeIsChildRelative = element.getPendingSize().getYRelativeToChildrenH()
 
-    elementMainSizeForChildren = elementSizeForChildren[mainCoordinate]
-    elementCrossSizeForChildren = elementSizeForChildren[crossCoordinate]
+    mainElementSizeForChildren = elementSizeForChildren[mainCoordinate]
+    crossElementSizeForChildren = elementSizeForChildren[crossCoordinate]
 
     heightRemainingChildren = null
     maxCrossSize =
     totalFlexWeight = 0
     spaceForFlexChildren = elementSizeForChildren[mainCoordinate]
-    totalMainSize = 0
+    mainChildrenSize = 0
 
     state = {}
 
@@ -99,7 +99,7 @@ module.exports = class FlexLayout
         currentSize = child.getPendingCurrentSize()
         mainSize = currentSize[mainCoordinate]
 
-        totalMainSize += mainSize
+        mainChildrenSize += mainSize
         spaceForFlexChildren -= mainSize
 
         if child.getPendingLayoutSizeParentCircular()
@@ -110,7 +110,7 @@ module.exports = class FlexLayout
 
       margin = layoutMargin child, elementSizeForChildren
       if i > 0
-        totalMainSize += effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
+        mainChildrenSize += effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
         spaceForFlexChildren -= effectivePrevMargin
 
       lastChildsNextMargin = margin[nextMargin]
@@ -126,7 +126,7 @@ module.exports = class FlexLayout
       childFlexWeight = child.getPendingLayoutWeight()
       ratio = childFlexWeight / totalFlexWeight
 
-      flexParentSize = toPoint isRowLayout, mainSizeForChild = spaceForFlexChildren * ratio, elementCrossSizeForChildren
+      flexParentSize = toPoint isRowLayout, mainSizeForChild = spaceForFlexChildren * ratio, crossElementSizeForChildren
       LayoutTools.layoutElement child, flexParentSize, true
 
       currentSize = child.getPendingCurrentSize()
@@ -141,29 +141,29 @@ module.exports = class FlexLayout
 
       totalFlexWeight -= childFlexWeight
       spaceForFlexChildren -= mainSize
-      totalMainSize += mainSize
+      mainChildrenSize += mainSize
 
     ####################
     # maxCrossSize is now final
     ####################
-    childrenSize = toPoint isRowLayout, totalMainSize, maxCrossSize, currentPadding
+    childrenSize = toPoint isRowLayout, mainChildrenSize, maxCrossSize, currentPadding
     if isRowLayout
-      elementMainSizeForChildren   = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
-      elementCrossSizeForChildren  = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
+      mainElementSizeForChildren   = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
+      crossElementSizeForChildren  = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
     else
-      elementCrossSizeForChildren  = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
-      elementMainSizeForChildren   = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
+      crossElementSizeForChildren  = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
+      mainElementSizeForChildren   = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
 
     ####################
     # FINAL PASS
     ####################
     if finalPassSizeLayoutChildren = finalPassProps.finalPassSizeLayoutChildren
       {finalPassMainSizesForChildren} = finalPassProps
-      secondPassSizeForChildren = toPoint isRowLayout, elementMainSizeForChildren, elementCrossSizeForChildren
+      secondPassSizeForChildren = toPoint isRowLayout, mainElementSizeForChildren, crossElementSizeForChildren
 
       for child, i in finalPassSizeLayoutChildren
         sizeForChild = if mainSizeForChild = finalPassMainSizesForChildren[i]
-          toPoint isRowLayout, mainSizeForChild, elementCrossSizeForChildren
+          toPoint isRowLayout, mainSizeForChild, crossElementSizeForChildren
         else
           secondPassSizeForChildren
         LayoutTools.layoutElement child, sizeForChild, true
@@ -173,34 +173,41 @@ module.exports = class FlexLayout
     ####################
     lastChildsNextMargin = 0
     childrenAlignment = element.getPendingChildrenAlignment()
+    mainAlignment = childrenAlignment[mainCoordinate]
     crossAlignment = childrenAlignment[crossCoordinate]
     hasCrossAlignment = !floatEq 0, crossAlignment
 
-    # main alignment
-    mainPos = if !elementMainAxisIsChildRelative
-      (elementMainSizeForChildren - totalMainSize) * childrenAlignment[mainCoordinate]
-    else
-      0
+    # compute main alignment
+    mainChildrenOffset = element.getFlexMainChildrenOffset(
+      inFlowChildren
+      mainElementSizeForChildren
+      mainChildrenSize
+      mainAlignment
+      mainCoordinate
+      mainElementSizeIsChildRelative
+      childrenAlignment
+    )
 
+    # computer cross-alignment per element and apply all alignment
     for child, i in inFlowChildren
       margin = child.getPendingCurrentMargin()
       if i > 0
         effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
-        mainPos += effectivePrevMargin
+        mainChildrenOffset += effectivePrevMargin
       lastChildsNextMargin = margin[nextMargin]
 
       currentSize = child.getPendingCurrentSize()
 
-      mainSize = if !elementMainAxisIsChildRelative && i == inFlowChildren.length - 1
-        elementMainSizeForChildren - mainPos
+      mainSize = if !mainElementSizeIsChildRelative && i == inFlowChildren.length - 1
+        mainElementSizeForChildren - mainChildrenOffset
       else
         currentSize[mainCoordinate]
 
       crossOffset = 0
-      adjustedCrossSize = elementCrossSizeForChildren
+      adjustedCrossSize = crossElementSizeForChildren
       if hasCrossAlignment
         childCrossSize = currentSize[crossCoordinate]
-        crossOffset = (elementCrossSizeForChildren - childCrossSize) * crossAlignment
+        crossOffset = (crossElementSizeForChildren - childCrossSize) * crossAlignment
         adjustedCrossSize = childCrossSize
 
       # LAYOUT LOCATION
@@ -209,12 +216,12 @@ module.exports = class FlexLayout
       locationX = child._layoutLocationX adjustedParentSize
       locationY = child._layoutLocationY adjustedParentSize
 
-      if isRowLayout then locationX += mainPos; locationY += crossOffset
-      else                locationY += mainPos; locationX += crossOffset
+      if isRowLayout then locationX += mainChildrenOffset; locationY += crossOffset
+      else                locationY += mainChildrenOffset; locationX += crossOffset
 
       child._setElementToParentMatrixFromLayoutXY locationX, locationY, adjustedParentSize
 
-      mainPos += mainSize
+      mainChildrenOffset += mainSize
 
-    state.childrenSize = toPoint isRowLayout, mainPos, maxCrossSize, currentPadding
+    state.childrenSize = toPoint isRowLayout, mainChildrenOffset, maxCrossSize, currentPadding
     state
