@@ -1,0 +1,50 @@
+import &ArtStandardLib, &ArtAtomic, &ArtEngine, &TestHelper
+test = (args...) -> global.test args...
+suite:
+  layoutCircular: ->
+    test "first child determines the second's height" ->
+      Element
+        size: w: 200, hch: 1
+        childrenLayout: :row
+        Element size: ww: 1, h: 60
+        Element size: w: 50, hh: 1
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 200, 60
+        assert.eq
+          []
+            point 150 60
+            point 50 60
+          array el from element.children
+            el.currentSize
+
+    test "second child determines the first's height" ->
+      Element
+        size: w: 200, hch: 1
+        childrenLayout: :row
+        Element size: w: 50, hh: 1
+        Element size: ww: 1, h: 60
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 200, 60
+        assert.eq
+          []
+            point 50 60
+            point 150 60
+          array el from element.children
+            el.currentSize
+
+    test "first child determines the other two's height" ->
+      Element
+        size: w: 200, hch: 1
+        childrenLayout: :row
+        Element size: ww: 1, h: 60
+        Element size: w: 40, hh: 1
+        Element size: w: 50, hh: 1
+      .onNextReady (element) ->
+        assert.eq element.currentSize, point 200, 60
+        assert.eq
+          []
+            point 110 60
+            point 40 60
+            point 50 60
+          array el from element.children
+            el.currentSize

@@ -209,16 +209,17 @@ module.exports = class StateEpochLayout extends BaseObject
     childrenSize:
       sizeWithPadding offset, maxCrossSize, currentPadding
 
+  defaultWidthOfEachLine = (i, widthOfEachLine) -> widthOfEachLine[i]
   alignChildren = (state, parentSize, childrenSize) ->
     {childrenAlignment, flowChildren, firstChildIndexOfEachLine, lastChildIndexOfEachLine, widthOfEachLine, widthOfEachLineFunction} = state
-    widthOfEachLineFunction ||= (i) -> widthOfEachLine[i]
+    widthOfEachLineFunction ||= defaultWidthOfEachLine
 
     childrenAlignmentX = childrenAlignment.x
     childrenAlignmentY = childrenAlignment.y
 
     for firstIndex, i in firstChildIndexOfEachLine
       lastIndex = lastChildIndexOfEachLine[i]
-      width = widthOfEachLineFunction i
+      width = widthOfEachLineFunction i, widthOfEachLine
       firstChildOnLine = flowChildren[firstIndex]
 
       if firstChildOnLine.getPendingLayoutSizeParentCircular() && firstChildOnLine.getPendingSize().getXParentRelative()
@@ -398,14 +399,13 @@ module.exports = class StateEpochLayout extends BaseObject
         for child in finalPassChildrenSizeOnly
           layoutElement child, finalSizeForChildren, true
 
-      # finalize locations as needed
-      if finalPassChildrenLocationOnly
+      # finalize locations
+      if childrenFlowState?.childrenAlignment
+        alignChildren childrenFlowState, finalSizeForChildren, childrenSize
+      else
         for child in finalPassChildrenLocationOnly
           child._setElementToParentMatrixFromLayout child._layoutLocation(finalSizeForChildren), parentSize
 
-      # Align Children
-      if childrenFlowState?.childrenAlignment
-        alignChildren childrenFlowState, finalSizeForChildren, childrenSize
     else
       finalSize = firstPassSize
       finalSizeForChildren = firstPassSizeForChildrenConstrained

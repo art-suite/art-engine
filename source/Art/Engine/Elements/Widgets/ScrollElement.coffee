@@ -339,9 +339,24 @@ AnimatorSupport = (superClass) -> class AnimatorSupport extends superClass
 
       queueNextFrameUpdate()
 
-defineModule module, class ScrollElement extends AnimatorSupport Element
-  constructor: ->
-    super
+defineModule module, class ScrollElement extends Element
+
+  @layoutProperty
+    focusedChild: default: null
+
+    # number, typically between 0-1, multiplied by the focusChild's major-axis
+    focusedChildAxis: default: point0
+
+  getMainFlexPos:
+      (
+      inFlowChildren
+      mainElementSizeForChildren
+      mainChildrenSize
+      mainAlignment
+      mainCoordinate
+      )->
+
+
 
   # constructor: ->
   #   @initAnimatorSupport()
