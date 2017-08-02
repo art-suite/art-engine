@@ -79,8 +79,6 @@ module.exports = class FlexLayout
     spaceForFlexChildren = elementSizeForChildren[mainCoordinate]
     mainChildrenSize = 0
 
-    state = {}
-
     ###########################################
     # FIRST FLEX PASS - Fixed inFlowChildren layout
     ###########################################
@@ -223,4 +221,4 @@ module.exports = class FlexLayout
 
       mainChildrenOffset += mainSize
 
-    state
+    null
