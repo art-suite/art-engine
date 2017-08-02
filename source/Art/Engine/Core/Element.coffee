@@ -363,17 +363,17 @@ defineModule module, class Element extends ElementBase
       setter: (_new, _old) -> _old # setting this property is ignored
 
   @virtualProperty
-    currentLocationX: (pending) ->
+    currentLocationX: (pending, customAxis) ->
       state = @getState pending
       s = state._currentSize;
-      a = state._axis;
+      a = customAxis || state._axis;
       p = state._currentPadding;
       state._elementToParentMatrix.transformX s.x * a.x - p.left, s.y * a.y - p.top
 
-    currentLocationY: (pending) ->
+    currentLocationY: (pending, customAxis) ->
       state = @getState pending
       s = state._currentSize
-      a = state._axis
+      a = customAxis || state._axis
       p = state._currentPadding
       state._elementToParentMatrix.transformY s.x * a.x - p.left, s.y * a.y - p.top
 

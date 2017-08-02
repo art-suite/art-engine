@@ -347,6 +347,11 @@ defineModule module, class ScrollElement extends Element
     # number, typically between 0-1, multiplied by the focusChild's major-axis
     focusedChildAxis: default: point0
 
+    scrollPos: default: 0
+
+  defaultChildrenLayout: "column"
+  defaultChildArea: "logicalArea"
+
   getFlexMainChildrenOffset: (
       inFlowChildren
       mainElementSizeForChildren
@@ -356,11 +361,15 @@ defineModule module, class ScrollElement extends Element
       mainElementSizeIsChildRelative
       childrenAlignment
     )->
-    if mainElementSizeIsChildRelative
-      0
+    {_focusedChild, _focusedChildAxis, _scrollPos} = @getState true
+    if _focusedChild && mainChildrenSize > mainElementSizeForChildren
+      currentPos = if mainCoordinate == "x"
+        _focusedChild.getCurrentLocationX true, _focusedChildAxis
+      else
+        _focusedChild.getCurrentLocationY true, _focusedChildAxis
+      _scrollPos - currentPos
     else
-      (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
-
+      super
 
   # constructor: ->
   #   @initAnimatorSupport()
