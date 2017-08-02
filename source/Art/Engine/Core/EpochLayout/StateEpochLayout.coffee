@@ -123,11 +123,13 @@ module.exports = class StateEpochLayout extends BaseObject
   ) ->
     return point0 unless children?.length > 0
 
-    tMin = lMin = bMax = rMax = 0
-    l = r = t = b = 0
-    first = true
+    bMax = rMax = 0
 
     if customComputeChildArea = element.getPendingChildArea()
+      tMin = lMin = 0
+      l = r = t = b = 0
+      first = true
+
       for child in children
 
         area = customComputeChildArea child, reusableRectForChildrenSizeCalc
@@ -148,21 +150,14 @@ module.exports = class StateEpochLayout extends BaseObject
           rMax = max r, rMax
           bMax = max b, bMax
 
+      sizeWithPadding (rMax - lMin), (bMax - tMin), currentPadding
+
     else
       for child in children
+        rMax = max rMax, child.getPendingMaxXInParentSpace()
+        bMax = max bMax, child.getPendingMaxYInParentSpace()
 
-        r = child.getPendingMaxXInParentSpace()
-        b = child.getPendingMaxYInParentSpace()
-
-        if first
-          first = false
-          rMax = r
-          bMax = b
-        else
-          rMax = max r, rMax
-          bMax = max b, bMax
-
-    sizeWithPadding (rMax - lMin), (bMax - tMin), currentPadding
+      sizeWithPadding rMax, bMax, currentPadding
 
   # NOTE: grid layout determines an area dedicated to each element.
   #   This area is passed to the element as-if it was the parent's full children-area
@@ -209,6 +204,7 @@ module.exports = class StateEpochLayout extends BaseObject
           child.getPendingCurrentSize().x
 
       offset += gridSize
+    null
 
   defaultWidthOfEachLine = (i, widthOfEachLine) -> widthOfEachLine[i]
   alignChildren = (state, parentSize, childrenSize) ->
