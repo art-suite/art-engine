@@ -367,6 +367,7 @@ defineModule module, class ScrollElement extends Element
         _focusedChild.getCurrentLocationX true, _focusedChildAxis
       else
         _focusedChild.getCurrentLocationY true, _focusedChildAxis
+      log {_scrollPos, _focusedChildAxis, currentPos}
       _scrollPos - currentPos
     else
       super

@@ -155,6 +155,7 @@ module.exports = class FlexLayout
     ####################
     # FINAL PASS
     ####################
+    oldMaxCrossSize = maxCrossSize
     if finalPassSizeLayoutChildren = finalPassProps.finalPassSizeLayoutChildren
       {finalPassMainSizesForChildren} = finalPassProps
       secondPassSizeForChildren = toPoint isRowLayout, mainElementSizeForChildren, crossElementSizeForChildren
@@ -164,7 +165,18 @@ module.exports = class FlexLayout
           toPoint isRowLayout, mainSizeForChild, crossElementSizeForChildren
         else
           secondPassSizeForChildren
+
         LayoutTools.layoutElement child, sizeForChild, true
+        maxCrossSize = max maxCrossSize, child.getPendingCurrentSize()[crossCoordinate]
+
+      if oldMaxCrossSize != maxCrossSize
+        childrenSize = toPoint isRowLayout, mainChildrenSize, maxCrossSize, currentPadding
+        if isRowLayout
+          mainElementSizeForChildren   = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
+          crossElementSizeForChildren  = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
+        else
+          crossElementSizeForChildren  = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
+          mainElementSizeForChildren   = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
 
     ####################
     # FINAL FLEX PASS - LOCATION LAYOUT

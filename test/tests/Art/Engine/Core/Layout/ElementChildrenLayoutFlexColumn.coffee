@@ -181,19 +181,6 @@ suite "Art.Engine.Core.layout.childrenLayout.column", ->
         assert.eq root.currentSize, point 100, 120
         assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 30), point(0, 80)]
 
-    testLogBitmap "circular height - FlexLayout should use grandparent's height", ->
-      root: new Element
-        size: w: 100, h: 123
-        root = new Element
-          size: w: 100, hch:1
-          childrenLayout: "column"
-          new RectangleElement color:"red",   size: 30
-          new RectangleElement color:"green", size: hph:1, w:50
-          new RectangleElement color:"blue",  size: 40
-
-      test: ->
-        assert.eq root.currentSize, point 100, 123
-
   suite "column fixed-height fixed children", ->
 
     testLogBitmap "basic column layout", ->
