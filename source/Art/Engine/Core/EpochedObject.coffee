@@ -464,6 +464,7 @@ module.exports = class EpochedObject extends BaseObject
   onIdle:       (callback) -> stateEpoch.onNextReady callback
 
   getState: (pending = false) -> if pending then @_pendingState else @
+  getPendingState: -> @_pendingState
 
   ######################
   # ANIMATORS for PROPS

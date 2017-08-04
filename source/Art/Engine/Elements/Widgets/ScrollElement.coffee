@@ -344,10 +344,6 @@ defineModule module, class ScrollElement extends Element
   @layoutProperty
     focusedChild: default: null
 
-    # number, typically between 0-1, multiplied by the focusChild's major-axis
-    focusedChildAxis:   default: point0
-    focusedParentAxis:  default: point0
-
     track:              default: "start"
     tracking:           default: null
 
@@ -358,43 +354,71 @@ defineModule module, class ScrollElement extends Element
 
   constructor: ->
     super
-    @_contentFits = true
     @_maxScrollPosition = 0
     @_initGestureProps()
 
-  postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
-    {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition} = @getState true
+  postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset) ->
+    {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition, _tracking} = @getState true
     # log postFlexLayout: {mainChildrenSize, mainElementSizeForChildren}
     @_maxScrollPosition = max 0, mainChildrenSize - mainElementSizeForChildren
-    offset = if mainChildrenSize > mainElementSizeForChildren
-      @_contentFits = false
-      # log {mainElementSizeForChildren, size: @getPendingCurrentSize(), padding: @getPendingPadding()}
-      if _focusedChild
-        currentPos = if mainCoordinate == "x"
-          _focusedChild.getCurrentLocationX true, _focusedChildAxis
-        else
-          _focusedChild.getCurrentLocationY true, _focusedChildAxis
-        offset = _scrollPos - currentPos
-      else
-        switch @_pendingState._tracking ||= @_pendingState._track
-          when "start"
-            _scrollPosition
-          when "end"
-            _scrollPosition + mainElementSizeForChildren - mainChildrenSize
+    offsetDelta =
+      switch _tracking
+        when "start", null then _scrollPosition - mainChildrenAlignedOffset
+        when "end"         then _scrollPosition + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
+        when "child"
+          focusLine = mainElementSizeForChildren / 2
+          _scrollPosition + focusLine - if mainCoordinate == "x"
+            _focusedChild.getCurrentLocationX true, point0
+          else
+            _focusedChild.getCurrentLocationY true, point0
+        else throw new Error "bad tracking: #{_tracking}"
 
-    else
-      if @_contentFits
-        _scrollPosition
-      else
-        @_contentFits = true
-        @_pendingState._scrollPosition = 0
-
-    if 0 != offset -= mainChildrenOffset
-      # log {_scrollPos, _focusedChildAxis, currentPos, offset}
+    if 0 != offsetDelta
       if mainCoordinate == "x"
-        child._translateLocationXY offset, 0 for child in inFlowChildren
+        child._translateLocationXY offsetDelta, 0 for child in inFlowChildren
       else
-        child._translateLocationXY 0, offset for child in inFlowChildren
+        child._translateLocationXY 0, offsetDelta for child in inFlowChildren
+
+    @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset + offsetDelta
+
+  _updateTracking: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
+    {_scrollPosition, _tracking, _track} = @getPendingState()
+
+    contentFits = mainChildrenSize <= mainElementSizeForChildren
+    wasntTracking = !_tracking
+    scrolledPastEnd   = mainChildrenOffset + mainChildrenSize <= mainElementSizeForChildren
+    scrolledPastStart = mainChildrenOffset >= 0
+
+    @_pendingState._tracking = _tracking = switch
+      when contentFits       then null
+      when wasntTracking     then _track
+      when scrolledPastEnd   then "end"
+      when scrolledPastStart then "start"
+      else "child"
+
+    @_pendingState._scrollPosition = switch _tracking
+      when null, "start" then mainChildrenOffset
+      when "end"         then mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize
+      when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
+
+    log "tracking: #{@_pendingState._tracking}"
+
+  # OUT: child's position relative to the focus-line
+  _findFocusedChild: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren) ->
+    focusLine = mainElementSizeForChildren / 2
+    if mainCoordinate == "x"
+      for child in inFlowChildren
+        if focusLine < childPos = child.getCurrentLocationX true, point0
+          focusedChild = child
+          break
+    else
+      for child in inFlowChildren
+        if focusLine < childPos = child.getCurrentLocationY true, point0
+          focusedChild = child
+          break
+    throw new Error "no focused child" unless focusedChild
+    @_pendingState._focusedChild = focusedChild
+    childPos - focusLine
 
   # constructor: ->
   #   @initAnimatorSupport()
@@ -840,11 +864,13 @@ defineModule module, class ScrollElement extends Element
   gestureEnd: (e)->
     log
       gestureEnd: @getMainCoordinate e.location
-    switch @getTracking true
-      when "start"
-        @scrollPosition = bound -@_maxScrollPosition, @getScrollPosition(true), 0
-      when "end"
-        @scrollPosition = bound 0, @getScrollPosition(true), @_maxScrollPosition
+    pendingScrollPosition = @getScrollPosition true
+
+    @scrollPosition = switch @getTracking true
+      when "start"  then bound -@_maxScrollPosition, pendingScrollPosition, 0
+      when "end"    then bound 0, pendingScrollPosition, @_maxScrollPosition
+      when null     then 0
+      when "child"  then pendingScrollPosition
     # @_gestureActive = false
     # if absGt @_flickSpeed, minimumFlickVelocity
     #   scrollAnimator = @getScrollAnimator()
