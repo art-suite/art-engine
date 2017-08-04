@@ -1321,6 +1321,10 @@ defineModule module, class Element extends ElementBase
 
     @
 
+  _translateLocationXY: (x, y) ->
+    @_pendingState._elementToParentMatrix = @_pendingState._elementToParentMatrix.translateXY x, y
+    @_elementChanged()
+
   _sizeDirectlyEffectsDrawing: ->
     ((c = @getPendingChildren()) && c.length == 0) || @getPendingClip()
 
@@ -1858,17 +1862,4 @@ defineModule module, class Element extends ElementBase
   nonChildrenLayoutFirstPass: null
   nonChildrenLayoutFinalPass: null
 
-  getFlexMainChildrenOffset: (
-      inFlowChildren
-      mainElementSizeForChildren
-      mainChildrenSize
-      mainAlignment
-      mainCoordinate
-      mainElementSizeIsChildRelative
-      childrenAlignment
-    )->
-    if mainElementSizeIsChildRelative
-      0
-    else
-      (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
-
+  postFlexLayout: (mainCoordinate, inFlowChildren) ->

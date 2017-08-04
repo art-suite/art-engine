@@ -24,7 +24,7 @@ toPoint = (isRowLayout, mainPos, crossPos, currentPadding) ->
   else
     point x, y
 
-addSecondPassChild = (finalPassProps, child, mainSizeForChild) ->
+addFinalPassSizeLayoutChild = (finalPassProps, child, mainSizeForChild) ->
   if finalPassProps.finalPassSizeLayoutChildren
     finalPassProps.finalPassSizeLayoutChildren.push child
     finalPassProps.finalPassMainSizesForChildren.push mainSizeForChild
@@ -58,7 +58,7 @@ module.exports = class FlexLayout
       crossCoordinate = "y"
       previousMargin = "left"
       nextMargin = "right"
-      relativeTestFunction = "getXRelativeToParentW"
+      mainAxisRelativeTestFunction = "getXRelativeToParentW"
       crossRelativeTestFunction = "getYRelativeToParentH"
       mainElementSizeIsChildRelative = element.getPendingSize().getXRelativeToChildrenW()
     else
@@ -66,7 +66,7 @@ module.exports = class FlexLayout
       crossCoordinate = "x"
       previousMargin = "top"
       nextMargin = "bottom"
-      relativeTestFunction = "getYRelativeToParentH"
+      mainAxisRelativeTestFunction = "getYRelativeToParentH"
       crossRelativeTestFunction = "getXRelativeToParentW"
       mainElementSizeIsChildRelative = element.getPendingSize().getYRelativeToChildrenH()
 
@@ -87,7 +87,7 @@ module.exports = class FlexLayout
     finalPassProps.finalPassMainSizesForChildren = null
 
     for child, i in inFlowChildren
-      if child.getPendingSize()[relativeTestFunction]()
+      if child.getPendingSize()[mainAxisRelativeTestFunction]()
         currentSize = child._layoutSize elementSizeForChildren, point0
         childFlexWeight = child.getPendingLayoutWeight()
         totalFlexWeight += childFlexWeight
@@ -101,7 +101,7 @@ module.exports = class FlexLayout
         spaceForFlexChildren -= mainSize
 
         if child.getPendingLayoutSizeParentCircular()
-          addSecondPassChild finalPassProps, child, null
+          addFinalPassSizeLayoutChild finalPassProps, child, null
         else
           crossSize = currentSize[crossCoordinate]
           maxCrossSize = max maxCrossSize, crossSize
@@ -120,7 +120,7 @@ module.exports = class FlexLayout
     # SECOND FLEX PASS
     # Relative inFlowChildren layout
     ###########################################
-    for child, i in inFlowChildren when child.getPendingSize()[relativeTestFunction]()
+    for child, i in inFlowChildren when child.getPendingSize()[mainAxisRelativeTestFunction]()
       childFlexWeight = child.getPendingLayoutWeight()
       ratio = childFlexWeight / totalFlexWeight
 
@@ -132,7 +132,7 @@ module.exports = class FlexLayout
       # crossSize = currentSize[crossCoordinate]
 
       if child.getPendingLayoutSizeParentCircular()
-        addSecondPassChild finalPassProps, child, mainSizeForChild
+        addFinalPassSizeLayoutChild finalPassProps, child, mainSizeForChild
       else
         crossSize = currentSize[crossCoordinate]
         maxCrossSize = max maxCrossSize, crossSize
@@ -142,7 +142,7 @@ module.exports = class FlexLayout
       mainChildrenSize += mainSize
 
     ####################
-    # maxCrossSize is now final
+    # maxCrossSize is potentially final
     ####################
     childrenSize = toPoint isRowLayout, mainChildrenSize, maxCrossSize, currentPadding
     if isRowLayout
@@ -155,8 +155,8 @@ module.exports = class FlexLayout
     ####################
     # FINAL PASS
     ####################
-    oldMaxCrossSize = maxCrossSize
     if finalPassSizeLayoutChildren = finalPassProps.finalPassSizeLayoutChildren
+      oldMaxCrossSize = maxCrossSize
       {finalPassMainSizesForChildren} = finalPassProps
       secondPassSizeForChildren = toPoint isRowLayout, mainElementSizeForChildren, crossElementSizeForChildren
 
@@ -183,33 +183,28 @@ module.exports = class FlexLayout
     ####################
     lastChildsNextMargin = 0
     childrenAlignment = element.getPendingChildrenAlignment()
-    mainAlignment = childrenAlignment[mainCoordinate]
-    crossAlignment = childrenAlignment[crossCoordinate]
+    mainAlignment     = childrenAlignment[mainCoordinate]
+    crossAlignment    = childrenAlignment[crossCoordinate]
     hasCrossAlignment = !floatEq 0, crossAlignment
 
     # compute main alignment
-    mainChildrenOffset = element.getFlexMainChildrenOffset(
-      inFlowChildren
-      mainElementSizeForChildren
-      mainChildrenSize
-      mainAlignment
-      mainCoordinate
-      mainElementSizeIsChildRelative
-      childrenAlignment
-    )
+    mainChildrenOffset = mainPos = if mainElementSizeIsChildRelative
+      0
+    else
+      (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
 
     # compute cross-alignment per element and apply all alignment
     for child, i in inFlowChildren
       margin = child.getPendingCurrentMargin()
       if i > 0
         effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
-        mainChildrenOffset += effectivePrevMargin
+        mainPos += effectivePrevMargin
       lastChildsNextMargin = margin[nextMargin]
 
       currentSize = child.getPendingCurrentSize()
 
       mainSize = if !mainElementSizeIsChildRelative && i == inFlowChildren.length - 1
-        mainElementSizeForChildren - mainChildrenOffset
+        mainElementSizeForChildren - mainPos
       else
         currentSize[mainCoordinate]
 
@@ -226,11 +221,13 @@ module.exports = class FlexLayout
       locationX = child._layoutLocationX adjustedParentSize
       locationY = child._layoutLocationY adjustedParentSize
 
-      if isRowLayout then locationX += mainChildrenOffset; locationY += crossOffset
-      else                locationY += mainChildrenOffset; locationX += crossOffset
+      if isRowLayout then locationX += mainPos; locationY += crossOffset
+      else                locationY += mainPos; locationX += crossOffset
 
       child._setElementToParentMatrixFromLayoutXY locationX, locationY, adjustedParentSize
 
-      mainChildrenOffset += mainSize
+      mainPos += mainSize
+
+    element.postFlexLayout mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset
 
     null

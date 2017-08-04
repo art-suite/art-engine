@@ -345,32 +345,56 @@ defineModule module, class ScrollElement extends Element
     focusedChild: default: null
 
     # number, typically between 0-1, multiplied by the focusChild's major-axis
-    focusedChildAxis: default: point0
+    focusedChildAxis:   default: point0
+    focusedParentAxis:  default: point0
 
-    scrollPos: default: 0
+    track:              default: "top"
+    currentlyTracking:  default: null
 
-  defaultChildrenLayout: "column"
-  defaultChildArea: "logicalArea"
+    scrollPosition:     default: 0
 
-  getFlexMainChildrenOffset: (
-      inFlowChildren
-      mainElementSizeForChildren
-      mainChildrenSize
-      mainAlignment
-      mainCoordinate
-      mainElementSizeIsChildRelative
-      childrenAlignment
-    )->
-    {_focusedChild, _focusedChildAxis, _scrollPos} = @getState true
-    if _focusedChild && mainChildrenSize > mainElementSizeForChildren
-      currentPos = if mainCoordinate == "x"
-        _focusedChild.getCurrentLocationX true, _focusedChildAxis
+  defaultChildrenLayout:  "column"
+  defaultChildArea:       "logicalArea"
+
+  constructor: ->
+    super
+    @_contentFits = true
+    @_maxScrollPosition = 0
+    @_initGestureProps()
+
+  postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
+    {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition} = @getState true
+    # log postFlexLayout: {mainChildrenSize, mainElementSizeForChildren}
+    @_maxScrollPosition = max 0, mainChildrenSize - mainElementSizeForChildren
+    offset = if mainChildrenSize > mainElementSizeForChildren
+      @_contentFits = false
+      # log {mainElementSizeForChildren, size: @getPendingCurrentSize(), padding: @getPendingPadding()}
+      if _focusedChild
+        currentPos = if mainCoordinate == "x"
+          _focusedChild.getCurrentLocationX true, _focusedChildAxis
+        else
+          _focusedChild.getCurrentLocationY true, _focusedChildAxis
+        offset = _scrollPos - currentPos
       else
-        _focusedChild.getCurrentLocationY true, _focusedChildAxis
-      log {_scrollPos, _focusedChildAxis, currentPos}
-      _scrollPos - currentPos
+        switch @_pendingState._currentlyTracking ||= @_pendingState._track
+          when "top"
+            _scrollPosition
+          when "bottom"
+            _scrollPosition + mainElementSizeForChildren - mainChildrenSize
+
     else
-      super
+      if @_contentFits
+        _scrollPosition
+      else
+        @_contentFits = true
+        @_pendingState._scrollPosition = 0
+
+    if 0 != offset -= mainChildrenOffset
+      # log {_scrollPos, _focusedChildAxis, currentPos, offset}
+      if mainCoordinate == "x"
+        child._translateLocationXY offset, 0 for child in inFlowChildren
+      else
+        child._translateLocationXY 0, offset for child in inFlowChildren
 
   # constructor: ->
   #   @initAnimatorSupport()
@@ -394,48 +418,48 @@ defineModule module, class ScrollElement extends Element
   #     @jumpToEnd() if @startAtEnd
   #     @_scrollPositionChanged()
 
-  # preprocessEventHandlers: (handlerMap) ->
-  #   merge @_externalHandlerMap = handlerMap,
-  #     mouseWheel: (event) =>
-  #       @_mostRecentMouseWheelEvent = event
-  #       {windowSize} = @
+  preprocessEventHandlers: (handlerMap) ->
+    merge @_externalHandlerMap = handlerMap,
+      # mouseWheel: (event) =>
+      #   @_mostRecentMouseWheelEvent = event
+      #   {windowSize} = @
 
-  #       scrollValue = if horizontal = @scroll == "horizontal"
-  #         event.props.deltaX || 0
-  #       else
-  #         event.props.deltaY || 0
-  #       switch event.props.deltaMode
-  #         when "line" then scrollValue *= 16
-  #         when "page" then scrollValue *= windowSize * .75
+      #   scrollValue = if horizontal = @scroll == "horizontal"
+      #     event.props.deltaX || 0
+      #   else
+      #     event.props.deltaY || 0
+      #   switch event.props.deltaMode
+      #     when "line" then scrollValue *= 16
+      #     when "page" then scrollValue *= windowSize * .75
 
-  #       unless @getActiveScrollAnimator()
-  #         @startScrollAnimatorTracking()
+      #   unless @getActiveScrollAnimator()
+      #     @startScrollAnimatorTracking()
 
-  #       scrollValue = bound -windowSize, -scrollValue, windowSize
+      #   scrollValue = bound -windowSize, -scrollValue, windowSize
 
-  #       position = @getScrollAnimator().desiredScrollPosition + scrollValue
-  #       @getScrollAnimator().desiredScrollPosition = bound(
-  #         @getScrollAnimator().minScrollPosition
-  #         position
-  #         @getScrollAnimator().maxScrollPosition
-  #       )
+      #   position = @getScrollAnimator().desiredScrollPosition + scrollValue
+      #   @getScrollAnimator().desiredScrollPosition = bound(
+      #     @getScrollAnimator().minScrollPosition
+      #     position
+      #     @getScrollAnimator().maxScrollPosition
+      #   )
 
-  #       timeout 100
-  #       .then =>
-  #         return unless @_mostRecentMouseWheelEvent == event
-  #         @endScrollAnimatorTracking()
+      #   timeout 100
+      #   .then =>
+      #     return unless @_mostRecentMouseWheelEvent == event
+      #     @endScrollAnimatorTracking()
 
-  #     animatorDone: ({props}) =>
-  #       {animator} = props
-  #       if animator == @_scrollAnimator
-  #         @_scrollAnimator = null
-  #     createGestureRecognizer
-  #       custom:
-  #         resume:     @gestureResume.bind @
-  #         recognize:  @gestureRecognize.bind @
-  #         begin:      @gestureBegin.bind @
-  #         move:       @gestureMove.bind @
-  #         end:        @gestureEnd.bind @
+      # animatorDone: ({props}) =>
+      #   {animator} = props
+      #   if animator == @_scrollAnimator
+      #     @_scrollAnimator = null
+      createGestureRecognizer
+        custom:
+          resume:     @gestureResume.bind @
+          recognize:  @gestureRecognize.bind @
+          begin:      @gestureBegin.bind @
+          move:       @gestureMove.bind @
+          end:        @gestureEnd.bind @
 
   # _setVerticalAxis: ->
   #   @newPoint = (mainV, crossV = 0) -> point crossV, mainV
@@ -736,13 +760,13 @@ defineModule module, class ScrollElement extends Element
   # ###################
   # # Gestures
   # ###################
-  # _initGestureProps: ->
-  #   @_flicked = false
-  #   @_pointerStartPosition = 0
-  #   @_pointerReferenceFrame = null
-  #   @_lastPointerEventTime = null
-  #   @_flickSpeed = 0
-  #   @_gestureActive = false # TODO: do we really need this? Right now it is needed to make tap-while-momenum-scrolling behave reasonably.
+  _initGestureProps: ->
+    @_flicked = false
+    @_pointerStartPosition = 0
+    @_pointerReferenceFrame = null
+    @_lastPointerEventTime = null
+    @_flickSpeed = 0
+    @_gestureActive = false # TODO: do we really need this? Right now it is needed to make tap-while-momenum-scrolling behave reasonably.
   #   @_scrollAnimator = null
 
   # @getter
@@ -762,72 +786,68 @@ defineModule module, class ScrollElement extends Element
   #     pagesAfter: (child.inspectedName + " " + ((@getMainCoordinate child.currentSize) | 0)  for child in @_pagesAfterBaselineWrapper.children)
   #     geometry: @currentGeometry
 
-  # gestureRecognize: ({delta}) ->
-  #   # log gestureRecognize: delta: delta
-  #   if @_scroll == "vertical"
-  #     1 > delta.absoluteAspectRatio
-  #   else
-  #     1 < delta.absoluteAspectRatio
+  getMainCoordinate: (pnt) ->
+    if @_childrenLayout == "row"
+      pnt.x
+    else
+      pnt.y
 
-  # gestureBegin: (e) ->
-  #   {location, timeStamp} = e
-  #   @_flickSpeed = 0
-  #   @_gestureActive = true
-  #   location = @getMainCoordinate location
+  gestureRecognize: ({delta}) ->
+    # log gestureRecognize: delta: delta
+    if @_childrenLayout == "column"
+      1 > delta.absoluteAspectRatio
+    else
+      1 < delta.absoluteAspectRatio
 
-  #   # log gestureBegin:
-  #   #   location: location
-  #   #   state: @debugState
+  gestureBegin: (e) ->
+    {location, timeStamp} = e
+    log "gestureBegin"
+    # @_flickSpeed = 0
+    # @_gestureActive = true
 
-  #   @_pointerReferenceFrame = @_referenceFrame
-  #   @_pointerStartPosition = location - @_scrollPosition
-  #   @_lastPointerEventTime = timeStamp
+    # @_pointerReferenceFrame = @_referenceFrame
+    # @_lastPointerEventTime = timeStamp
 
-  #   if @getActiveScrollAnimator()
-  #     @_flicked = false
-  #     timeout 60, =>
-  #       if !@_flicked && @_gestureActive
-  #         # log "gestureBegin: was scrolling: no flick"
+    # if @getActiveScrollAnimator()
+    #   @_flicked = false
+    #   timeout 60, =>
+    #     if !@_flicked && @_gestureActive
 
-  #         @_pointerReferenceFrame = @_referenceFrame
-  #         scrollPosition = @getPendingScrollPosition()
-  #         referenceFrame = @getPendingReferenceFrame()
-  #         @_pointerStartPosition = location - scrollPosition
-  #         @getScrollAnimator().startTracking scrollPosition, referenceFrame
-  #   else
-  #     @startScrollAnimatorTracking()
+    #       @_pointerReferenceFrame = @_referenceFrame
+    #       scrollPosition = @getPendingScrollPosition()
+    #       referenceFrame = @getPendingReferenceFrame()
+    #       @_pointerStartPosition = location - scrollPosition
+    #       @getScrollAnimator().startTracking scrollPosition, referenceFrame
+    # else
+    #   @startScrollAnimatorTracking()
 
-  # gestureResume: (e) ->
-  #   !!@getActiveScrollAnimator()
+  gestureResume: (e) ->
+    # !!@getActiveScrollAnimator()
 
-  # gestureMove: (e) ->
-  #   {timeStamp, delta, location} = e
+  gestureMove: (e) ->
+    {timeStamp, delta, location} = e
 
-  #   location = @getMainCoordinate location
-  #   delta = @getMainCoordinate deltaV = delta
-  #   # log gestureMove: location
+    @scrollPosition = @getScrollPosition(true) + @getMainCoordinate delta
+    # scrollAnimator = @getScrollAnimator()
 
-  #   scrollAnimator = @getScrollAnimator()
+    # if timeStamp > @_lastPointerEventTime
+    #   @_flickSpeed = deltaV.getMagnitude() / (timeStamp - @_lastPointerEventTime)
+    #   @_flickDirection = (delta / abs delta) || 1
+    #   @_lastPointerEventTime = timeStamp
 
-  #   if timeStamp > @_lastPointerEventTime
-  #     @_flickSpeed = deltaV.getMagnitude() / (timeStamp - @_lastPointerEventTime)
-  #     @_flickDirection = (delta / abs delta) || 1
-  #     @_lastPointerEventTime = timeStamp
+    # scrollAnimator.setDesiredScrollPosition location - @_pointerStartPosition
 
-  #   scrollAnimator.setDesiredScrollPosition location - @_pointerStartPosition
-
-  # gestureEnd: (e)->
-  #   # log gestureEnd: @getMainCoordinate e.location
-  #   @_gestureActive = false
-  #   # @_pointerEvents.push e
-  #   if absGt @_flickSpeed, minimumFlickVelocity
-  #     # log "gestureEnd: flicked"
-  #     scrollAnimator = @getScrollAnimator()
-  #     scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
-  #     @_flicked = true
-  #   else
-  #     # log  "gestureEnd: no flick (#{@_flickSpeed} < #{minimumFlickVelocity})"
-  #     @endScrollAnimatorTracking()
+  gestureEnd: (e)->
+    log
+      gestureEnd: @getMainCoordinate e.location
+    @scrollPosition = bound 0, @getScrollPosition(true), @_maxScrollPosition
+    # @_gestureActive = false
+    # if absGt @_flickSpeed, minimumFlickVelocity
+    #   scrollAnimator = @getScrollAnimator()
+    #   scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
+    #   @_flicked = true
+    # else
+    #   @endScrollAnimatorTracking()
 
   # startScrollAnimatorTracking: ->
   #   @getScrollAnimator().startTracking @_scrollPosition, @_referenceFrame
