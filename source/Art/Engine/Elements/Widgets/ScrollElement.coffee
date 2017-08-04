@@ -358,26 +358,38 @@ defineModule module, class ScrollElement extends Element
       preprocess: (v) -> legalTrackingValues[v]
     tracking:           default: null
 
-    scrollPosition:     default: 0
+    scrollPosition:
+      default: 0
+      postSetter: (position) -> @_scrollPositionChanged()
 
   defaultChildrenLayout:  "column"
   defaultChildArea:       "logicalArea"
 
   constructor: ->
     super
-    @_maxScrollPosition = 0
+    @_childrenOffset = 0
+    @_childrenSize = 0
+    @_windowSize = 0
+    @_firstOnScreenChildIndex = -1
+    @_lastOnScreenChildIndex = -1
+    @_focusedChildIndex = -1
     @_initGestureProps()
+    @onNextReady =>
+      # @jumpToEnd() if @startAtEnd
+      @_scrollPositionChanged()
+
+  @getter "firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize"
 
   postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset) ->
     {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition, _tracking} = @getState true
-    # log postFlexLayout: {mainChildrenSize, mainElementSizeForChildren}
-    @_maxScrollPosition = max 0, mainChildrenSize - mainElementSizeForChildren
+    @_windowSize = mainElementSizeForChildren
+    @_childrenSize = mainChildrenSize
 
     offsetDelta = if mainChildrenSize <= mainElementSizeForChildren
-      _scrollPosition
+      _scrollPosition / 2
     else switch _tracking
-      when "start", null then _scrollPosition - mainChildrenAlignedOffset
-      when "end"         then _scrollPosition + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
+      when "start", null then _scrollPosition / 2 - mainChildrenAlignedOffset
+      when "end"         then _scrollPosition / 2 + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
       when "child"
         _scrollPosition - if mainCoordinate == "x"
           _focusedChild.getCurrentLocationX true, point0
@@ -391,7 +403,7 @@ defineModule module, class ScrollElement extends Element
       else
         child._translateLocationXY 0, offsetDelta for child in inFlowChildren
 
-    @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset + offsetDelta
+    @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, @_childrenOffset = mainChildrenAlignedOffset + offsetDelta
 
   _updateTracking: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
     {_scrollPosition, _tracking, _track} = @getPendingState()
@@ -415,16 +427,64 @@ defineModule module, class ScrollElement extends Element
     @_scrollPositionManuallySet = false
 
     @_pendingState._scrollPosition = switch _tracking
-      when null, "start" then (if !scrolled then 0 else mainChildrenOffset)
-      when "end"         then (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
+      when null, "start" then 2 * (if !scrolled then 0 else mainChildrenOffset)
+      when "end"         then 2 * (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
       when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
 
     if _tracking != "child"
       @_pendingState._focusedChild = null
-    if @_focusedChild != @_pendingState._focusedChild
-      @queueEvent "focusedChildChanged", focusedChild: @_pendingState._focusedChild
+
+    @_updateOnScreenInfo()
 
     log "tracking: #{@_pendingState._tracking} #{_scrollPosition}"
+
+  _updateOnScreenInfo: (inFlowChildren) ->
+    {isVertical, childrenSize, windowSize} = @
+
+    focusedChild = @_pendingState._focusedChild
+
+    children = @_pendingState._children
+    firstOnScreenChildIndex = children.length
+    focusedChildIndex = lastOnScreenChildIndex = -1
+
+    for child, i in children
+      if child.getPendingInFlow()
+        if isVertical
+          pos = child.getCurrentLocationY false, point0
+          size = child.getCurrentSize().y
+        else
+          pos = child.getCurrentLocationX false, point0
+          size = child.getCurrentSize().x
+
+        if pos < windowSize && pos + size > 0
+          firstOnScreenChildIndex = min i, firstOnScreenChildIndex
+          lastOnScreenChildIndex  = max i, lastOnScreenChildIndex
+          if child == focusedChild
+            focusedChildIndex = i
+
+    firstOnScreenChildIndex = -1 if firstOnScreenChildIndex == children.length
+
+    if (
+        firstOnScreenChildIndex != @_firstOnScreenChildIndex ||
+        lastOnScreenChildIndex  != @_lastOnScreenChildIndex ||
+        focusedChildIndex       != @_focusedChildIndex ||
+        focusedChild            != @_focusedChild
+      )
+      @queueEvent "scrollUpdate", =>
+        {
+          childrenSize
+          windowSize
+          focusedChild
+          firstOnScreenChildIndex
+          lastOnScreenChildIndex
+          focusedChildIndex
+        }
+
+    @_firstOnScreenChildIndex = firstOnScreenChildIndex
+    @_lastOnScreenChildIndex  = lastOnScreenChildIndex
+    @_focusedChildIndex       = focusedChildIndex
+
+    null
 
   # OUT: child's position relative to this, it's parent
   _findFocusedChild: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren) ->
@@ -470,9 +530,16 @@ defineModule module, class ScrollElement extends Element
   animateToValidScrollPosition: ->
     pendingScrollPosition = @getScrollPosition true
 
-    @scrollPosition = switch @getTracking true
-      when "start"  then bound -@_maxScrollPosition, pendingScrollPosition, 0
-      when "end"    then bound 0, pendingScrollPosition, @_maxScrollPosition
+    {childrenSize, windowSize} = @
+
+    offscreenChildrenSize = childrenSize - windowSize
+
+    pendingTracking = @getTracking true
+    pendingTracking = null if childrenSize <= windowSize
+
+    @scrollPosition = switch pendingTracking
+      when "start"  then bound -offscreenChildrenSize, pendingScrollPosition, 0
+      when "end"    then bound 0, pendingScrollPosition, offscreenChildrenSize
       when null     then 0
       when "child"  then pendingScrollPosition
 
@@ -626,16 +693,16 @@ defineModule module, class ScrollElement extends Element
   #       @_scrollContents.setLocation @newPoint position
   # # maxCount = 5
 
-  # _scrollPositionChanged: ->
-  #   unless @_activelyScrolling
-  #     @queueEvent "scrollingActive"
-  #     @_activelyScrolling = true
+  _scrollPositionChanged: ->
+    unless @_activelyScrolling
+      @queueEvent "scrollingActive"
+      @_activelyScrolling = true
 
-  #   @_lastScrollUpdatedAt = thisScrollUpdateWasAt = currentSecond()
-  #   timeout 250, =>
-  #     if @_lastScrollUpdatedAt == thisScrollUpdateWasAt
-  #       @_activelyScrolling = false
-  #       @queueEvent "scrollingIdle"
+    @_lastScrollUpdatedAt = thisScrollUpdateWasAt = currentSecond()
+    timeout 250, =>
+      if @_lastScrollUpdatedAt == thisScrollUpdateWasAt
+        @_activelyScrolling = false
+        @queueEvent "scrollingIdle"
 
   # _updatePagesSplit: (pages = @getPendingPages(), referenceFrame = @getPendingReferenceFrame())->
 
@@ -751,8 +818,23 @@ defineModule module, class ScrollElement extends Element
 
   # ######################################
   @getter
-    windowSize:                -> @getMainCoordinate @getCurrentSize()
     isVertical:                -> @_childrenLayout == "column"
+
+    numChildrenOnScreen: ->
+      {isVertical, windowSize} = @
+      numChildrenOnScreen = 0
+
+      for child in @children when child.inFlow
+        if isVertical
+          pos = child.getCurrentLocationY false, point0
+          size = child.getCurrentSize().y
+        else
+          pos = child.getCurrentLocationX false, point0
+          size = child.getCurrentSize().x
+        numChildrenOnScreen++ if pos < windowSize && pos + size > 0
+
+      numChildrenOnScreen
+
   #   atEnd:                     -> @_atEnd
   #   atStart:                   -> @_atStart
   #   inMiddle:                  -> !@_atEnd && !@_atStart
@@ -1045,17 +1127,6 @@ defineModule module, class ScrollElement extends Element
 
   #   if referenceFrame.page != newCurrentPage || referenceFrame.atEndEdge != atEndEdge
   #     @setReferenceFrame page: newCurrentPage, atEndEdge: atEndEdge
-
-  # _queueUpdateEvent: (newReferenceFrame, previousReferenceFrame)->
-  #   @onNextReady =>
-  #     referenceFrame = @getReferenceFrame()
-  #     @queueEvent "scrollUpdate",
-  #       previousReferenceFrame:previousReferenceFrame
-  #       referenceFrame:       referenceFrame
-  #       focusedPage:          referenceFrame.page
-  #       currentGeometry:      @getCurrentGeometry()
-  #       pagesBeforeBaseline:  @getPagesBeforeBaseline()
-  #       pagesAfterBaseline:   @getPagesAfterBaseline()
 
   # _sizeChanged: (newSize, oldSize) ->
   #   @_queueUpdateEvent()
