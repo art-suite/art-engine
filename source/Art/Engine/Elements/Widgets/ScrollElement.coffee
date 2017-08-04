@@ -348,7 +348,7 @@ defineModule module, class ScrollElement extends Element
     focusedChildAxis:   default: point0
     focusedParentAxis:  default: point0
 
-    track:              default: "top"
+    track:              default: "start"
     currentlyTracking:  default: null
 
     scrollPosition:     default: 0
@@ -377,9 +377,9 @@ defineModule module, class ScrollElement extends Element
         offset = _scrollPos - currentPos
       else
         switch @_pendingState._currentlyTracking ||= @_pendingState._track
-          when "top"
+          when "start"
             _scrollPosition
-          when "bottom"
+          when "end"
             _scrollPosition + mainElementSizeForChildren - mainChildrenSize
 
     else
