@@ -349,7 +349,7 @@ defineModule module, class ScrollElement extends Element
     focusedParentAxis:  default: point0
 
     track:              default: "start"
-    currentlyTracking:  default: null
+    tracking:           default: null
 
     scrollPosition:     default: 0
 
@@ -376,7 +376,7 @@ defineModule module, class ScrollElement extends Element
           _focusedChild.getCurrentLocationY true, _focusedChildAxis
         offset = _scrollPos - currentPos
       else
-        switch @_pendingState._currentlyTracking ||= @_pendingState._track
+        switch @_pendingState._tracking ||= @_pendingState._track
           when "start"
             _scrollPosition
           when "end"
@@ -840,7 +840,11 @@ defineModule module, class ScrollElement extends Element
   gestureEnd: (e)->
     log
       gestureEnd: @getMainCoordinate e.location
-    @scrollPosition = bound 0, @getScrollPosition(true), @_maxScrollPosition
+    switch @getTracking true
+      when "start"
+        @scrollPosition = bound -@_maxScrollPosition, @getScrollPosition(true), 0
+      when "end"
+        @scrollPosition = bound 0, @getScrollPosition(true), @_maxScrollPosition
     # @_gestureActive = false
     # if absGt @_flickSpeed, minimumFlickVelocity
     #   scrollAnimator = @getScrollAnimator()
