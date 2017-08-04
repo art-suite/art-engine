@@ -109,242 +109,253 @@ scrollElement api:
 onIdle is called when all animations and gestures have stopped.
 
 ###
-class ScrollAnimator extends BaseObject
-  constructor: (@scrollElement, @maximumVelocity)->
-    super
-    @_referenceFrame = @scrollElement.getPendingReferenceFrame()
-    @_velocity = 0
-    @_mode = "tracking"
-    ###
-    modes:
-      braking:      friction only
-      spring:       spring
-      tracking:     direct tracking, no physics
-    ###
+# class ScrollAnimator extends BaseObject
+#   constructor: (@scrollElement, @maximumVelocity)->
+#     super
+#     @_referenceFrame = @scrollElement.getPendingReferenceFrame()
+#     @_velocity = 0
+#     @_mode = "tracking"
+#     ###
+#     modes:
+#       braking:      friction only
+#       spring:       spring
+#       tracking:     direct tracking, no physics
+#     ###
 
-  @getter "desiredScrollPosition",
-    mode:               -> @_mode
-    minScrollPosition:  -> @scrollElement.getMinScrollPositionInReferenceFrame @_referenceFrame
-    maxScrollPosition:  -> @scrollElement.getMaxScrollPositionInReferenceFrame @_referenceFrame
-    scrollPosition:     -> @scrollElement.getScrollPositionInReferenceFrame @_referenceFrame
-    # closestPageLocation: -> @scrollElement.getClosestPageLocation()
-    animationDone: ->
-      switch @mode
-        when "spring"  then @velocityIsSlow() && @_desiredScrollPosition == @getScrollPosition()
-        when "braking" then @velocityIsSlow()
-        else !@_activeTouch # && abs(@_velocity) < 1 && l >= @minScrollPosition && l <= @maxScrollPosition
-    animationContinues: -> !@getAnimationDone()
-    # shouldSnapToPage: ->
-    #   abs(@closestPageLocation - @scrollPosition) < @scrollElement.snapToPageDistance
+#   @getter "desiredScrollPosition",
+#     mode:               -> @_mode
+#     minScrollPosition:  -> @scrollElement.getMinScrollPositionInReferenceFrame @_referenceFrame
+#     maxScrollPosition:  -> @scrollElement.getMaxScrollPositionInReferenceFrame @_referenceFrame
+#     scrollPosition:     -> @scrollElement.getScrollPositionInReferenceFrame @_referenceFrame
+#     # closestPageLocation: -> @scrollElement.getClosestPageLocation()
+#     animationDone: ->
+#       switch @mode
+#         when "spring"  then @velocityIsSlow() && @_desiredScrollPosition == @getScrollPosition()
+#         when "braking" then @velocityIsSlow()
+#         else !@_activeTouch # && abs(@_velocity) < 1 && l >= @minScrollPosition && l <= @maxScrollPosition
+#     animationContinues: -> !@getAnimationDone()
+#     # shouldSnapToPage: ->
+#     #   abs(@closestPageLocation - @scrollPosition) < @scrollElement.snapToPageDistance
 
-  @setter "desiredScrollPosition",
-    mode: (v) -> @_mode = v
-    referenceFrame: (v) ->
-      # log "scrollAnimator referenceFrame: #{inspect v}"
-      @_referenceFrame = v
-    scrollPosition: (l) -> @scrollElement.setScrollPositionInReferenceFrame round(l), @_referenceFrame
-    activeTouch: (v) ->
-      unless @_activeTouch = !!v
-        @mode = "spring"
-        @_desiredScrollPosition = @boundLocation @_desiredScrollPosition
-        # @snapToPage() if @shouldSnapToPage
+#   @setter "desiredScrollPosition",
+#     mode: (v) -> @_mode = v
+#     referenceFrame: (v) ->
+#       # log "scrollAnimator referenceFrame: #{inspect v}"
+#       @_referenceFrame = v
+#     scrollPosition: (l) -> @scrollElement.setScrollPositionInReferenceFrame round(l), @_referenceFrame
+#     activeTouch: (v) ->
+#       unless @_activeTouch = !!v
+#         @mode = "spring"
+#         @_desiredScrollPosition = @boundLocation @_desiredScrollPosition
+#         # @snapToPage() if @shouldSnapToPage
 
-  addToDesiredScrollPosition: (delta) ->
-    @_desiredScrollPosition += delta
+#   addToDesiredScrollPosition: (delta) ->
+#     @_desiredScrollPosition += delta
 
-  animateToLocation: (desiredScrollPosition) ->
-    @mode = "spring"
-    @_desiredScrollPosition = desiredScrollPosition
+#   animateToLocation: (desiredScrollPosition) ->
+#     @mode = "spring"
+#     @_desiredScrollPosition = desiredScrollPosition
 
-  boundLocation: (scrollPosition) ->
-    # log "boundedLocation", scrollPosition,
-    bound @getMinScrollPosition(), scrollPosition, @getMaxScrollPosition()
+#   boundLocation: (scrollPosition) ->
+#     # log "boundedLocation", scrollPosition,
+#     bound @getMinScrollPosition(), scrollPosition, @getMaxScrollPosition()
 
-  startTracking: (desiredScrollPosition, referenceFrame) ->
-    @_referenceFrame = referenceFrame
-    @mode = "tracking"
-    @_velocity = 0
-    @setDesiredScrollPosition desiredScrollPosition
-    @_activeTouch = true
+#   startTracking: (desiredScrollPosition, referenceFrame) ->
+#     @_referenceFrame = referenceFrame
+#     @mode = "tracking"
+#     @_velocity = 0
+#     @setDesiredScrollPosition desiredScrollPosition
+#     @_activeTouch = true
 
-  addVelocity: (v) ->
-    @_velocity = v
-    @mode = "braking"
+#   addVelocity: (v) ->
+#     @_velocity = v
+#     @mode = "braking"
 
-  velocityIsSlow: -> absLte @_velocity, 60
+#   velocityIsSlow: -> absLte @_velocity, 60
 
-  # returns true if animation continues
-  frameCount = 0
-  missCount = 0
-  frameUpdate: (frameTime) ->
-    # log frameUpdate:
-    #   frameTimeFPS: (1 / frameTime) + .5 | 0
-    #   mode: @_mode
+#   # returns true if animation continues
+#   frameCount = 0
+#   missCount = 0
+#   frameUpdate: (frameTime) ->
+#     # log frameUpdate:
+#     #   frameTimeFPS: (1 / frameTime) + .5 | 0
+#     #   mode: @_mode
 
-    # <DEBUG>
-    tookFrames = Math.round frameTime * 60
-    frameCount++
-    if absLt frameTime*60 - 1, .25
-    else
-      missCount++ if tookFrames > 1
-      # log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
-    # </DEBUG>
+#     # <DEBUG>
+#     tookFrames = Math.round frameTime * 60
+#     frameCount++
+#     if absLt frameTime*60 - 1, .25
+#     else
+#       missCount++ if tookFrames > 1
+#       # log "frameUpdate #{@_mode}: took #{frameTime*60} frames (miss rate: #{missCount} / #{frameCount})"
+#     # </DEBUG>
 
-    scrollPosition = @getScrollPosition()
-    targetScrollPosition = @_desiredScrollPosition
+#     scrollPosition = @getScrollPosition()
+#     targetScrollPosition = @_desiredScrollPosition
 
-    @_velocity = maxMagnitude @_velocity, @maximumVelocity
+#     @_velocity = maxMagnitude @_velocity, @maximumVelocity
 
-    switch @_mode
-      when "tracking"
-        # DIRECT TRACKING (no animation)
-        {windowSize} = @scrollElement
-        boundedTargetLocation = @boundLocation targetScrollPosition
-        maxBeyond = windowSize / 3
-        minV = min boundedTargetLocation, targetScrollPosition
-        maxV = max boundedTargetLocation, targetScrollPosition
-        targetScrollPosition = bound minV,
-          boundedTargetLocation + Math.atan((targetScrollPosition - boundedTargetLocation) / maxBeyond ) * (2 / Math.PI) * maxBeyond
-          maxV
-        @_velocity = 0
-        @setScrollPosition targetScrollPosition
+#     switch @_mode
+#       when "tracking"
+#         # DIRECT TRACKING (no animation)
+#         {windowSize} = @scrollElement
+#         boundedTargetLocation = @boundLocation targetScrollPosition
+#         maxBeyond = windowSize / 3
+#         minV = min boundedTargetLocation, targetScrollPosition
+#         maxV = max boundedTargetLocation, targetScrollPosition
+#         targetScrollPosition = bound minV,
+#           boundedTargetLocation + Math.atan((targetScrollPosition - boundedTargetLocation) / maxBeyond ) * (2 / Math.PI) * maxBeyond
+#           maxV
+#         @_velocity = 0
+#         @setScrollPosition targetScrollPosition
 
-      when "braking"
-        @_activeTouch = false
-        frictionConstant = brakingFactor
-        frictionAcceleration = @_velocity * -frictionConstant
-        acceleration = frictionAcceleration
-        @_velocity += acceleration * frameTime
-        scrollPosition = scrollPosition + @_velocity * frameTime
-        @setScrollPosition scrollPosition
+#       when "braking"
+#         @_activeTouch = false
+#         frictionConstant = brakingFactor
+#         frictionAcceleration = @_velocity * -frictionConstant
+#         acceleration = frictionAcceleration
+#         @_velocity += acceleration * frameTime
+#         scrollPosition = scrollPosition + @_velocity * frameTime
+#         @setScrollPosition scrollPosition
 
-        if scrollPosition != boundedLocation = @boundLocation scrollPosition
-          @mode = "spring"
-          @_desiredScrollPosition = boundedLocation
+#         if scrollPosition != boundedLocation = @boundLocation scrollPosition
+#           @mode = "spring"
+#           @_desiredScrollPosition = boundedLocation
 
-        # if abs(@_velocity) < 15 && @shouldSnapToPage
-        #   @snapToPage()
+#         # if abs(@_velocity) < 15 && @shouldSnapToPage
+#         #   @snapToPage()
 
-      when "spring"
-        # PHYSICS
-        currentToTargetVector = targetScrollPosition - scrollPosition
-        distanceSquared = currentToTargetVector * currentToTargetVector
+#       when "spring"
+#         # PHYSICS
+#         currentToTargetVector = targetScrollPosition - scrollPosition
+#         distanceSquared = currentToTargetVector * currentToTargetVector
 
-        springConstant   = animatorSpringConstant
-        frictionConstant = animatorSpringFriction
-        springAcceleration = currentToTargetVector * springConstant
-        frictionAcceleration = @_velocity * -frictionConstant
-        acceleration = springAcceleration + frictionAcceleration
+#         springConstant   = animatorSpringConstant
+#         frictionConstant = animatorSpringFriction
+#         springAcceleration = currentToTargetVector * springConstant
+#         frictionAcceleration = @_velocity * -frictionConstant
+#         acceleration = springAcceleration + frictionAcceleration
 
-        @_velocity = @_velocity + acceleration * frameTime
-        @setScrollPosition if @velocityIsSlow() && abs(scrollPosition - targetScrollPosition) <= 1
-          targetScrollPosition
-        else
-          scrollPosition + minMagnitude @_velocity * frameTime, 1
+#         @_velocity = @_velocity + acceleration * frameTime
+#         @setScrollPosition if @velocityIsSlow() && abs(scrollPosition - targetScrollPosition) <= 1
+#           targetScrollPosition
+#         else
+#           scrollPosition + minMagnitude @_velocity * frameTime, 1
 
-    # <DEBUG>
-    unless @getAnimationContinues()
-      log "frameUpdate #{@_mode}: DONE (miss rate: #{missCount} / #{frameCount})"
-    # </DEBUG>
+#     # <DEBUG>
+#     unless @getAnimationContinues()
+#       log "frameUpdate #{@_mode}: DONE (miss rate: #{missCount} / #{frameCount})"
+#     # </DEBUG>
 
-    @getAnimationContinues()
+#     @getAnimationContinues()
 
-AnimatorSupport = (superClass) -> class AnimatorSupport extends superClass
+# AnimatorSupport = (superClass) -> class AnimatorSupport extends superClass
 
-  @getter
-    animatorsActive: -> !!@_activeAnimators
+#   @getter
+#     animatorsActive: -> !!@_activeAnimators
 
-  initAnimatorSupport: ->
-    @_lastTime = 0
-    @_activeAnimators = null
-    @_frameUpdateQueued = false
+#   initAnimatorSupport: ->
+#     @_lastTime = 0
+#     @_activeAnimators = null
+#     @_frameUpdateQueued = false
 
-  # OUT: animator
-  startAnimator: (animator) ->
-    if @getAnimatorsActive()
-      @_activeAnimators.push animator
-    else
-      @_activeAnimators = [animator]
-      @_lastTime = currentSecond()
-      @getAnimatorsActive()
+#   # OUT: animator
+#   startAnimator: (animator) ->
+#     if @getAnimatorsActive()
+#       @_activeAnimators.push animator
+#     else
+#       @_activeAnimators = [animator]
+#       @_lastTime = currentSecond()
+#       @getAnimatorsActive()
 
-    @_startAnimatorLoop()
-    animator
+#     @_startAnimatorLoop()
+#     animator
 
-  ###
-  OUT: newAnimator
-  SIDE-EFFECT:
-    if oldAnimator is in @_activeAnimators
-    then: replaced it with newAnimator
-    else: @startAnimator newAnimator
+#   ###
+#   OUT: newAnimator
+#   SIDE-EFFECT:
+#     if oldAnimator is in @_activeAnimators
+#     then: replaced it with newAnimator
+#     else: @startAnimator newAnimator
 
-  POST ASSERTIONS
-    newAnimator is in @_activeAnimators
-    oldAnimator is NOT in @_activeAnimators
+#   POST ASSERTIONS
+#     newAnimator is in @_activeAnimators
+#     oldAnimator is NOT in @_activeAnimators
 
-  ###
-  replaceAnimator: (newAnimator, oldAnimator) ->
-    return @startAnimator newAnimator unless @_activeAnimators && oldAnimator
-    index = @_activeAnimators.indexOf oldAnimator
-    return @startAnimator newAnimator unless index >= 0
-    @_activeAnimators[index] = newAnimator
+#   ###
+#   replaceAnimator: (newAnimator, oldAnimator) ->
+#     return @startAnimator newAnimator unless @_activeAnimators && oldAnimator
+#     index = @_activeAnimators.indexOf oldAnimator
+#     return @startAnimator newAnimator unless index >= 0
+#     @_activeAnimators[index] = newAnimator
 
-  stopAllAnimators: ->
-    @_activeAnimators = null
+#   stopAllAnimators: ->
+#     @_activeAnimators = null
 
-  _frameUpdate: (frameTime)->
-    return unless @_activeAnimators
-    # log "_frameUpdate"
-    now = frameTime #currentSecond()
-    frameTime = now - @_lastTime
+#   _frameUpdate: (frameTime)->
+#     return unless @_activeAnimators
+#     # log "_frameUpdate"
+#     now = frameTime #currentSecond()
+#     frameTime = now - @_lastTime
 
-    nextAnimators = null
-    for animator, i in @_activeAnimators
-      if animator.frameUpdate frameTime
-        nextAnimators?.push animator
-      else
-        # log _frameUpdate: animatorDone: animator
-        @queueEvent "animatorDone", animator: animator
-        nextAnimators ||= @_activeAnimators.slice 0, i
+#     nextAnimators = null
+#     for animator, i in @_activeAnimators
+#       if animator.frameUpdate frameTime
+#         nextAnimators?.push animator
+#       else
+#         # log _frameUpdate: animatorDone: animator
+#         @queueEvent "animatorDone", animator: animator
+#         nextAnimators ||= @_activeAnimators.slice 0, i
 
-    if nextAnimators
-      if nextAnimators.length == 0
-        @_activeAnimators = null
-        @queueEvent "allAnimatorsDone"
-      else
-        @_activeAnimators = nextAnimators
+#     if nextAnimators
+#       if nextAnimators.length == 0
+#         @_activeAnimators = null
+#         @queueEvent "allAnimatorsDone"
+#       else
+#         @_activeAnimators = nextAnimators
 
-    @_lastTime = now
+#     @_lastTime = now
 
-  _startAnimatorLoop: ->
-    return if @_frameUpdateQueued
-    requestAnimationFrame (frameTimeMs) =>
-      @_lastTime = frameTimeMs / 1000
+#   _startAnimatorLoop: ->
+#     return if @_frameUpdateQueued
+#     requestAnimationFrame (frameTimeMs) =>
+#       @_lastTime = frameTimeMs / 1000
 
-      queueNextFrameUpdate = =>
-        # log "_startAnimatorLoop: queueNextFrameUpdate", @_activeAnimators
-        return unless @getAnimatorsActive()
-        @_frameUpdateQueued = true
-        requestAnimationFrame (frameTimeMs) =>
+#       queueNextFrameUpdate = =>
+#         # log "_startAnimatorLoop: queueNextFrameUpdate", @_activeAnimators
+#         return unless @getAnimatorsActive()
+#         @_frameUpdateQueued = true
+#         requestAnimationFrame (frameTimeMs) =>
 
-        # TODO: I want to rework this to use onNextReady
-        # eventEpoch.onNextReady will help us track time spent preparing the next frame
-        # BUT, I need to use the frameTimeMs requestAnimationFrame provides - it smooths out the animation.
-        # ALL animations need to start using it.
-        #
-        # eventEpoch.onNextReady =>
-          @_frameUpdateQueued = false
-          @_frameUpdate frameTimeMs / 1000
-          queueNextFrameUpdate()
+#         # TODO: I want to rework this to use onNextReady
+#         # eventEpoch.onNextReady will help us track time spent preparing the next frame
+#         # BUT, I need to use the frameTimeMs requestAnimationFrame provides - it smooths out the animation.
+#         # ALL animations need to start using it.
+#         #
+#         # eventEpoch.onNextReady =>
+#           @_frameUpdateQueued = false
+#           @_frameUpdate frameTimeMs / 1000
+#           queueNextFrameUpdate()
 
-      queueNextFrameUpdate()
+#       queueNextFrameUpdate()
 
 defineModule module, class ScrollElement extends Element
+
+  legalTrackingValues =
+    top:    "start"
+    start:  "start"
+    left:   "start"
+    bottom: "end"
+    right:  "end"
+    end:    "end"
 
   @layoutProperty
     focusedChild: default: null
 
-    track:              default: "start"
+    track:
+      default: "start"
+      validate: (v) -> !!legalTrackingValues[v]
+      preprocess: (v) -> legalTrackingValues[v]
     tracking:           default: null
 
     scrollPosition:     default: 0
@@ -361,17 +372,18 @@ defineModule module, class ScrollElement extends Element
     {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition, _tracking} = @getState true
     # log postFlexLayout: {mainChildrenSize, mainElementSizeForChildren}
     @_maxScrollPosition = max 0, mainChildrenSize - mainElementSizeForChildren
-    offsetDelta =
-      switch _tracking
-        when "start", null then _scrollPosition - mainChildrenAlignedOffset
-        when "end"         then _scrollPosition + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
-        when "child"
-          focusLine = mainElementSizeForChildren / 2
-          _scrollPosition + focusLine - if mainCoordinate == "x"
-            _focusedChild.getCurrentLocationX true, point0
-          else
-            _focusedChild.getCurrentLocationY true, point0
-        else throw new Error "bad tracking: #{_tracking}"
+
+    offsetDelta = if mainChildrenSize <= mainElementSizeForChildren
+      _scrollPosition
+    else switch _tracking
+      when "start", null then _scrollPosition - mainChildrenAlignedOffset
+      when "end"         then _scrollPosition + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
+      when "child"
+        _scrollPosition - if mainCoordinate == "x"
+          _focusedChild.getCurrentLocationX true, point0
+        else
+          _focusedChild.getCurrentLocationY true, point0
+      else throw new Error "bad tracking: #{_tracking}"
 
     if 0 != offsetDelta
       if mainCoordinate == "x"
@@ -389,36 +401,49 @@ defineModule module, class ScrollElement extends Element
     scrolledPastEnd   = mainChildrenOffset + mainChildrenSize <= mainElementSizeForChildren
     scrolledPastStart = mainChildrenOffset >= 0
 
+    maintainTracking = _tracking != "child" && _scrollPosition == 0
+    scrolled = @_scrollPosition != _scrollPosition
+
     @_pendingState._tracking = _tracking = switch
       when contentFits       then null
-      when wasntTracking     then _track
+      when wasntTracking     then _track        # if we switched from !contentFits to contentFits, use the specified tracking.
+      when maintainTracking  then _tracking     # maintain current tracking if scrollPosition didn't change
       when scrolledPastEnd   then "end"
       when scrolledPastStart then "start"
       else "child"
 
+    @_scrollPositionManuallySet = false
+
     @_pendingState._scrollPosition = switch _tracking
-      when null, "start" then mainChildrenOffset
-      when "end"         then mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize
+      when null, "start" then (if !scrolled then 0 else mainChildrenOffset)
+      when "end"         then (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
       when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
 
-    log "tracking: #{@_pendingState._tracking}"
+    if _tracking != "child"
+      @_pendingState._focusedChild = null
+    if @_focusedChild != @_pendingState._focusedChild
+      @queueEvent "focusedChildChanged", focusedChild: @_pendingState._focusedChild
 
-  # OUT: child's position relative to the focus-line
+    log "tracking: #{@_pendingState._tracking} #{_scrollPosition}"
+
+  # OUT: child's position relative to this, it's parent
   _findFocusedChild: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren) ->
     focusLine = mainElementSizeForChildren / 2
+    focusedChild = null
+    focusedChildPos = 0
     if mainCoordinate == "x"
       for child in inFlowChildren
-        if focusLine < childPos = child.getCurrentLocationX true, point0
+        if (focusLine > childPos = child.getCurrentLocationX true, point0) || !focusedChild
           focusedChild = child
-          break
+          focusedChildPos = childPos
     else
       for child in inFlowChildren
-        if focusLine < childPos = child.getCurrentLocationY true, point0
+        if (focusLine > childPos = child.getCurrentLocationY true, point0) || !focusedChild
           focusedChild = child
-          break
+          focusedChildPos = childPos
     throw new Error "no focused child" unless focusedChild
     @_pendingState._focusedChild = focusedChild
-    childPos - focusLine
+    focusedChildPos
 
   # constructor: ->
   #   @initAnimatorSupport()
@@ -442,36 +467,48 @@ defineModule module, class ScrollElement extends Element
   #     @jumpToEnd() if @startAtEnd
   #     @_scrollPositionChanged()
 
+  animateToValidScrollPosition: ->
+    pendingScrollPosition = @getScrollPosition true
+
+    @scrollPosition = switch @getTracking true
+      when "start"  then bound -@_maxScrollPosition, pendingScrollPosition, 0
+      when "end"    then bound 0, pendingScrollPosition, @_maxScrollPosition
+      when null     then 0
+      when "child"  then pendingScrollPosition
+
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
-      # mouseWheel: (event) =>
-      #   @_mostRecentMouseWheelEvent = event
-      #   {windowSize} = @
+      mouseWheel: (event) =>
+        @_mostRecentMouseWheelEvent = event
+        {windowSize} = @
 
-      #   scrollValue = if horizontal = @scroll == "horizontal"
-      #     event.props.deltaX || 0
-      #   else
-      #     event.props.deltaY || 0
-      #   switch event.props.deltaMode
-      #     when "line" then scrollValue *= 16
-      #     when "page" then scrollValue *= windowSize * .75
+        scrollValue = if @isVertical
+          event.props.deltaY || 0
+        else
+          event.props.deltaX || 0
 
-      #   unless @getActiveScrollAnimator()
-      #     @startScrollAnimatorTracking()
+        switch event.props.deltaMode
+          when "line" then scrollValue *= 16
+          when "page" then scrollValue *= windowSize * .75
 
-      #   scrollValue = bound -windowSize, -scrollValue, windowSize
+        # unless @getActiveScrollAnimator()
+        #   @startScrollAnimatorTracking()
 
-      #   position = @getScrollAnimator().desiredScrollPosition + scrollValue
-      #   @getScrollAnimator().desiredScrollPosition = bound(
-      #     @getScrollAnimator().minScrollPosition
-      #     position
-      #     @getScrollAnimator().maxScrollPosition
-      #   )
+        scrollValue = bound -windowSize, -scrollValue, windowSize
 
-      #   timeout 100
-      #   .then =>
-      #     return unless @_mostRecentMouseWheelEvent == event
-      #     @endScrollAnimatorTracking()
+        @scrollPosition = @getScrollPosition(true) + scrollValue
+
+        # position = @getScrollAnimator().desiredScrollPosition + scrollValue
+        # @getScrollAnimator().desiredScrollPosition = bound(
+        #   @getScrollAnimator().minScrollPosition
+        #   position
+        #   @getScrollAnimator().maxScrollPosition
+        # )
+
+        timeout 100
+        .then =>
+          return unless @_mostRecentMouseWheelEvent == event
+          @animateToValidScrollPosition()
 
       # animatorDone: ({props}) =>
       #   {animator} = props
@@ -713,12 +750,13 @@ defineModule module, class ScrollElement extends Element
   #       atEndEdge: true
 
   # ######################################
-  # @getter
+  @getter
+    windowSize:                -> @getMainCoordinate @getCurrentSize()
+    isVertical:                -> @_childrenLayout == "column"
   #   atEnd:                     -> @_atEnd
   #   atStart:                   -> @_atStart
   #   inMiddle:                  -> !@_atEnd && !@_atStart
   #   pagesFitInWindow:          -> @getWindowSize() >= @getTotalPageSize()
-  #   windowSize:                -> @getMainCoordinate @getCurrentSize()
   #   currentPagePosition:       -> @getMainCoordinate @_scrollContents.getCurrentLocation()
   #   pagesBeforeBaselineSize:   -> @getMainCoordinate @_pagesBeforeBaselineWrapper.getCurrentSize()
   #   pagesAfterBaselineSize:    -> @getMainCoordinate @_pagesAfterBaselineWrapper.getCurrentSize()
@@ -864,13 +902,8 @@ defineModule module, class ScrollElement extends Element
   gestureEnd: (e)->
     log
       gestureEnd: @getMainCoordinate e.location
-    pendingScrollPosition = @getScrollPosition true
 
-    @scrollPosition = switch @getTracking true
-      when "start"  then bound -@_maxScrollPosition, pendingScrollPosition, 0
-      when "end"    then bound 0, pendingScrollPosition, @_maxScrollPosition
-      when null     then 0
-      when "child"  then pendingScrollPosition
+    @animateToValidScrollPosition()
     # @_gestureActive = false
     # if absGt @_flickSpeed, minimumFlickVelocity
     #   scrollAnimator = @getScrollAnimator()
