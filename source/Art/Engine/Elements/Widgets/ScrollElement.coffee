@@ -131,11 +131,16 @@ defineModule module, class ScrollElement extends Element
     @_lastOnScreenChildIndex = -1
     @_focusedChildIndex = -1
     @_initGestureProps()
+    @_preventOverScrollForOneFrame = false
     @onNextReady =>
       # @jumpToEnd() if @startAtEnd
       @_scrollPositionChanged()
 
   @getter "firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize"
+
+  overScrollTransformation = (scrollPosition, windowSize) ->
+    maxBeyond = windowSize / 3
+    Math.atan(scrollPosition / maxBeyond ) * (2 / Math.PI) * maxBeyond
 
   postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset) ->
     {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition, _tracking} = @getState true
@@ -143,16 +148,29 @@ defineModule module, class ScrollElement extends Element
     @_childrenSize = mainChildrenSize
 
     offsetDelta = if mainChildrenSize <= mainElementSizeForChildren
-      _scrollPosition / 2
+      overScrollTransformation _scrollPosition, @windowSize
     else switch _tracking
-      when "start", null then _scrollPosition / 2 - mainChildrenAlignedOffset
-      when "end"         then _scrollPosition / 2 + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
+      when "start", null then overScrollTransformation(_scrollPosition, @windowSize) - mainChildrenAlignedOffset
+      when "end"         then overScrollTransformation(_scrollPosition, @windowSize) + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
       when "child"
         _scrollPosition - if mainCoordinate == "x"
           _focusedChild.getCurrentLocationX true, point0
         else
           _focusedChild.getCurrentLocationY true, point0
       else throw new Error "bad tracking: #{_tracking}"
+
+    if @_preventOverScrollForOneFrame
+      @_preventOverScrollForOneFrame = false
+      offset = if mainChildrenSize <= mainElementSizeForChildren
+        0
+      else
+        bound(
+          mainElementSizeForChildren - mainChildrenSize
+          offsetDelta + mainChildrenAlignedOffset
+          0
+        )
+      @_pendingState._scrollPosition = 0 if offset - mainChildrenAlignedOffset != offsetDelta
+      offsetDelta = offset - mainChildrenAlignedOffset
 
     if 0 != offsetDelta
       if mainCoordinate == "x"
@@ -183,10 +201,11 @@ defineModule module, class ScrollElement extends Element
 
     @_scrollPositionManuallySet = false
 
-    @_pendingState._scrollPosition = switch _tracking
-      when null, "start" then 2 * (if !scrolled then 0 else mainChildrenOffset)
-      when "end"         then 2 * (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
-      when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
+    if @_tracking != _tracking || _tracking == "child"
+      @_pendingState._scrollPosition = switch _tracking
+        when null, "start" then (if !scrolled then 0 else mainChildrenOffset)
+        when "end"         then (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
+        when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
 
     if _tracking != "child"
       @_pendingState._focusedChild = null
@@ -284,7 +303,7 @@ defineModule module, class ScrollElement extends Element
     merge @_externalHandlerMap = handlerMap,
       mouseWheel: (event) =>
         @_mostRecentMouseWheelEvent = event
-        {windowSize} = @
+        {windowSize, tracking} = @
 
         scrollValue = if @isVertical
           event.props.deltaY || 0
@@ -298,9 +317,8 @@ defineModule module, class ScrollElement extends Element
         # unless @getActiveScrollAnimator()
         #   @startScrollAnimatorTracking()
 
-        scrollValue = bound -windowSize, -scrollValue, windowSize
-
-        @scrollPosition = @getScrollPosition(true) + scrollValue
+        @scrollPosition = @getScrollPosition(true) + bound -windowSize, -scrollValue, windowSize
+        @_preventOverScrollForOneFrame = true
 
         # position = @getScrollAnimator().desiredScrollPosition + scrollValue
         # @getScrollAnimator().desiredScrollPosition = bound(
