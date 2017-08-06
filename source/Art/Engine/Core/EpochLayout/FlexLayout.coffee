@@ -102,9 +102,10 @@ module.exports = class FlexLayout
 
         if child.getPendingLayoutSizeParentCircular()
           addFinalPassSizeLayoutChild finalPassProps, child, null
+          if (!isRowLayout && child._pendingState._size.xChildrenRelative) || (isRowLayout && child._pendingState._size.yChildrenRelative)
+            maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
         else
-          crossSize = currentSize[crossCoordinate]
-          maxCrossSize = max maxCrossSize, crossSize
+          maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
 
       margin = layoutMargin child, elementSizeForChildren
       if i > 0
@@ -112,6 +113,14 @@ module.exports = class FlexLayout
         spaceForFlexChildren -= effectivePrevMargin
 
       lastChildsNextMargin = margin[nextMargin]
+
+    # log
+    #   element: element.inspectedName
+    #   maxCrossSize: maxCrossSize
+    #   mainChildrenSize: mainChildrenSize
+    #   finalPassSizeLayoutChildren:
+    #     for child in finalPassProps.finalPassSizeLayoutChildren || []
+    #       "#{child.inspectedName} #{child.getPendingCurrentSize()}"
 
     # set locations
     relativeSizeIndex = 0
@@ -151,6 +160,8 @@ module.exports = class FlexLayout
     else
       crossElementSizeForChildren  = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
       mainElementSizeForChildren   = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
+
+    # log {childrenSize, mainElementSizeForChildren, crossElementSizeForChildren}
 
     ####################
     # FINAL PASS

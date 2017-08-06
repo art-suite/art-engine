@@ -1,0 +1,50 @@
+import &StandardImport
+
+suite: ->
+  renderTest
+    "middlemen pass through ancestor's size"
+    render: ->
+      Element
+        key: "ancestor"
+        size: 120
+        RectangleElement
+          color: "#eee"
+
+        Element
+          key: "parent"
+          size: cs: 1
+          Element
+            key: "child"
+            size: cs: 1, max: ww: 1
+            clip: true
+
+            RectangleElement
+              size:   140
+              color:  :blue
+
+            RectangleElement
+              size:   ww: 1 h: 35
+              color:  :red
+              compositeMode: :add
+
+    test: (gp) ->
+      [p] = gp.find "parent"
+      [c] = gp.find "child"
+      assert.eq p.currentSize, point 120, 140
+      assert.eq c.currentSize, point 120, 140
+
+      assert.eq
+        array el in c.children with el.currentSize
+        []
+          point 140
+          point 120 35
+
+      gp.size = 150
+      gp.onNextReady ->
+        assert.eq p.currentSize, point 140, 140
+        assert.eq c.currentSize, point 140, 140
+        assert.eq
+          array el in c.children with el.currentSize
+          []
+            point 140
+            point 140 35

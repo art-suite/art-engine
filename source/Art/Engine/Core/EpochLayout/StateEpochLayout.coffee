@@ -230,10 +230,17 @@ module.exports = class StateEpochLayout extends BaseObject
           l = child.getPendingCurrentLocation()
           child._setElementToParentMatrixFromLayoutXY l.x + offsetX, l.y + offsetY, parentSize
 
+  childIsAllowedToAffectParentSize = (child) ->
+    !child.getPendingLayoutSizeParentCircular() || child._pendingState._size.childrenRelative
+
   LayoutTools.layoutElement = layoutElement = (element, parentSize, skipLocation) =>
     # Don't layout more than we need to
     # key = element.getObjectId() #element.inspectedName - inspectedName is really slow. getObjectId is OK
 
+    # log layoutElement: element.inspectedName, parentSize: parentSize
+
+    # if parentSize.w == 0 && element.inspectedName.match /wrappedText/
+    #   throw new Error "wrappedText"
 
     ###
     TODO - increase effieciency
@@ -291,7 +298,7 @@ module.exports = class StateEpochLayout extends BaseObject
       #   inFlow: false -> finalPass
       # And do it smart - don't create new arrays if all children are inFlow, the default.
       for child, childI in pendingChildren
-        if child.getPendingInFlow() && (childrenLayout || !child.getPendingLayoutSizeParentCircular())
+        if child.getPendingInFlow() && (childrenLayout || childIsAllowedToAffectParentSize child)
           firstPassChildren.push child if finalPassChildren
         else
           unless finalPassChildren
@@ -422,4 +429,5 @@ module.exports = class StateEpochLayout extends BaseObject
     element._setSizeFromLayout deinfinitize finalSize
     element._setElementToParentMatrixFromLayout deinfinitize(finalLocation), parentSize unless skipLocation
 
+    # log layoutElement: element.inspectedName, finalSize: finalSize
     finalSize

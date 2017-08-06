@@ -1,0 +1,47 @@
+import &StandardImport
+
+suite: ->
+  renderTest
+    "" layout second child using max
+    render: ->
+      Element
+        size: w: 200, h: 50
+        childrenLayout: :row
+        RectangleElement color: :red size: 50
+        RectangleElement
+          color: :blue
+          size: hh: 1, w: 1000, max: ww:1
+    test: (element) ->
+      assert.eq
+        []
+          point 50
+          point 150, 50
+        array child in element.children
+          child.currentSize
+
+  renderTest
+    "" layout second child using function
+    render: ->
+      Element
+        size: w: 200, h: 50
+        childrenLayout: :row
+        RectangleElement color: :red size: 50
+        RectangleElement
+          color: :blue
+          size:
+            hh: 1
+            w: (ps, cs) -> min cs.x, ps.x
+          clip: true
+          FillElement()
+          RectangleElement
+            padding: 5
+            color: #eee
+            size: hh: 1, w: 1000
+
+    test: (element) ->
+      assert.eq
+        []
+          point 50
+          point 150, 50
+        array child in element.children
+          child.currentSize

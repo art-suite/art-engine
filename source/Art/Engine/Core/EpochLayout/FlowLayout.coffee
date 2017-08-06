@@ -8,7 +8,7 @@ defineModule module, class FlexLayout
 
   subLayoutChildrenAndGatherInformation = (parentSize, children, finalPassChildrenSizeOnly) ->
     for child in children
-      if child.getPendingLayoutSizeParentCircular()
+      if child.getPendingLayoutSizeParentCircular() && !child._pendingState._size.childrenRelative
         child._setSizeFromLayout child._layoutSize point0, point0
         finalPassChildrenSizeOnly.push child
       else

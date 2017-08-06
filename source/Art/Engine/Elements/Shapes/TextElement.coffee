@@ -69,6 +69,7 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
       @_textLayout?.getDrawArea() || ShadowableElement.preFilteredBaseDrawArea.call @, pending
 
   nonChildrenLayoutFirstPass: (constrainedSize, unconstrainedSize) ->
+    # log TextElement: nonChildrenLayoutFirstPass: {@inspectedName,constrainedSize, unconstrainedSize}
     ret = null
     globalEpochCycle.timePerformance "aimTL", =>
       @_textLayout = new Text.Layout @getPendingText(), @getPendingFont(), @getPendingFormat(), unconstrainedSize.x, unconstrainedSize.y
@@ -76,6 +77,7 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
     ret
 
   nonChildrenLayoutFinalPass: (size) ->
+    # log TextElement: nonChildrenLayoutFinalPass: {@inspectedName, size}
     @_textLayout.setWidth size.x
     @_textLayout.size
 

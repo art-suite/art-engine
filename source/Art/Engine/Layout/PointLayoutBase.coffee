@@ -29,6 +29,17 @@ module.exports = class PointLayoutBase extends BaseObject
     @layoutY = -> 0
     @layout  = (ps, cs) -> point @layoutX(ps, cs), @layoutY(ps, cs)
 
+  mergeInLayoutRelativity: (layout) ->
+    @_xRelativeToParentW   ||= layout._xRelativeToParentW
+    @_xRelativeToParentH   ||= layout._xRelativeToParentH
+    @_yRelativeToParentW   ||= layout._yRelativeToParentW
+    @_yRelativeToParentH   ||= layout._yRelativeToParentH
+    @_xRelativeToChildrenW ||= layout._xRelativeToChildrenW
+    @_xRelativeToChildrenH ||= layout._xRelativeToChildrenH
+    @_yRelativeToChildrenW ||= layout._yRelativeToChildrenW
+    @_yRelativeToChildrenH ||= layout._yRelativeToChildrenH
+
+
   interpolate: (toLayout, p) ->
     if p == 0 then @
     else if p == 1 then toLayout

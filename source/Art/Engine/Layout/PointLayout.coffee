@@ -41,6 +41,9 @@ class Components
     else
       returnZero
 
+    newPointLayout.mergeInLayoutRelativity maxLayout if maxLayout
+    newPointLayout
+
 
   ###################
   # private

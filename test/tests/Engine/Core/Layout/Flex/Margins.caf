@@ -1,0 +1,67 @@
+import &StandardImport
+
+suite:
+  column: ->
+    renderTest
+      "" no variable children, all same margin
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: "column"
+          RectangleElement color:"red",   margin: 10, size: 30
+          RectangleElement color:"green", margin: 10, size: 50
+          RectangleElement color:"blue",  margin: 10, size: 40
+      test: (root)->
+        assert.eq root.currentSize, point 50, 140
+        assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 40), point( 0, 100)]
+
+    renderTest
+      "" no variable children, various margins
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: "column"
+          RectangleElement color:"red",   size: 30, margin: 10
+          RectangleElement color:"green", size: 50, margin: top: 15, bottom: 5, left: 11, right: 7
+          RectangleElement color:"blue",  size: 40, margin: 10
+      test: (root) ->
+        assert.eq root.currentSize, point 50, 145
+        assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 45), point( 0, 105)]
+
+  row: ->
+
+    renderTest
+      "" no variable children, all same margin
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: :row
+          RectangleElement color: :red   margin: 10 size: 30
+          RectangleElement color: :green margin: 10 size: 50
+          RectangleElement color: :blue  margin: 10 size: 40
+      test: (root)->
+        assert.eq root.currentSize, point 140, 50
+        assert.eq
+          array c in root.children with c.currentLocation
+          []
+            point 0   0
+            point 40  0
+            point 100 0
+
+    renderTest
+      "" no variable children, various margins
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: :row
+          RectangleElement color: :red   size: 30 margin: 10
+          RectangleElement color: :green size: 50 margin: top: 15, bottom: 5, left: 11, right: 7
+          RectangleElement color: :blue  size: 40 margin: 10
+      test: (root) ->
+        assert.eq root.currentSize, point 141, 50
+        assert.eq
+          array c in root.children with c.currentLocation
+          []
+            point 0   0
+            point 41  0
+            point 101 0

@@ -1,0 +1,10 @@
+import &ArtStandardLib, &ArtEngine
+{elementClasses} = &ArtEngine.ElementFactory
+
+&ArtObjectTreeFactory.createObjectTreeFactories
+  array klass from elementClasses
+    klass.getName()
+
+  (className, props, children) ->
+    elementClass = elementClasses[className]
+    new elementClass props, children

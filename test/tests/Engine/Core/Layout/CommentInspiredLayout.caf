@@ -1,0 +1,184 @@
+import &StandardImport
+suite: ->
+  renderTest
+    "horizontal line should be the width of the wider word"
+    render: -> Element
+      size: cs:1
+      childrenLayout: :column
+      TextElement text: :Hi
+      RectangleElement color: #ccc size: wpw:1, h:10
+      TextElement text: "world."
+    test: (root) ->
+      assert.eq (array c in root.children with c.currentSize.rounded), [point(16, 12), point(41, 10), point(41, 12)]
+      assert.eq (array c in root.children with c.currentLocation    ), [point( 0,  0), point( 0, 12), point( 0, 22)]
+
+  renderTest
+    "word-wrap align-left with-flex"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        childrenLayout: "column"
+        TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        RectangleElement color: 'orange', size: wpw:1, h:10
+        TextElement text: "!", size: cs: 1, max: ww: 1
+
+    test: (root) ->
+      assert.eq root.currentSize.rounded, point 78, 54
+      assert.eq (array c in root.children with c.currentSize.rounded), [] point(78, 32), point(78, 10), point(5, 12)
+      assert.eq (array c in root.children with c.currentLocation    ), [] point( 0,  0), point( 0, 32), point( 0, 42)
+
+  # 2017 August SBD note: I think non-flex should have the same two-pass properties as flex. It doesn't currently.
+  renderTest
+    "word-wrap align-left no-flex"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        TextElement key:"wrappedText", text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        RectangleElement color: 'orange', size: wpw:1, h:10
+        TextElement text: "!", size: cs: 1, max: ww: 1
+
+    test: (root) ->
+      assert.eq root.currentSize.rounded, point 78, 32
+      assert.eq (array c in root.children with c.currentSize.rounded), [] point(78, 32), point(78, 10), point(5, 12)
+      assert.eq (array c in root.children with c.currentLocation    ), [] point0, point0, point0
+
+  renderTest
+    "word-wrap align-right"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        childrenLayout: "column"
+        childrenAlignment: "right"
+        TextElement align: "right", text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        RectangleElement color: 'orange', size: wpw:.75, h:10
+        TextElement text: "!", size: cs: 1, max: ww: 1
+
+    test: (root)->
+      assert.eq root.currentSize.rounded, point 78, 54
+      assert.eq (array c in root.children with c.currentSize.rounded    ), [point(78, 32), point(59, 10), point(5,  12)]
+      assert.eq (array c in root.children with c.currentLocation.rounded), [point( 0,  0), point(20, 32), point(73, 42)]
+
+  renderTest
+    "word-wrap align-center"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        childrenLayout: "column"
+        childrenAlignment: "center"
+        TextElement align: "center", text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        RectangleElement color: 'orange', size: wpw:.75, h:10
+        TextElement text: "!", size: cs: 1, max: ww: 1
+
+    test: (root) ->
+      assert.eq root.currentSize.rounded, point 78, 54
+      assert.eq     (array c in root.children with c.currentSize.rounded    ), [point(78, 32), point(59, 10), point(5,  12)]
+      assert.within
+        array c in root.children with c.currentLocation.rounded
+        [point( 0,  0), point(10, 32), point(36, 42)]
+        [point( 0,  0), point(10, 32), point(37, 42)]
+
+  renderTest
+    "flow"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        childrenLayout: "flow"
+        TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        RectangleElement color: '#ccc', size: wpw:1, h:10
+        TextElement text: "word", size: cs: 1, max: ww: 1
+
+    test: (root) ->
+      assert.eq root.currentSize.rounded, point 78, 54
+      assert.eq (array c in root.children with c.currentSize.rounded    ), [point(78, 32), point(78, 10), point(33, 12)]
+      assert.eq (array c in root.children with c.currentLocation.rounded), [point( 0,  0), point( 0, 32), point( 0, 42)]
+
+  renderTest
+    "regression"
+    render: ->
+      Element
+        size: w:100, h:25
+        Element
+          size: wcw:1
+          childrenLayout: "row"
+
+          RectangleElement color: "blue", size: wh:1, hh:1
+          RectangleElement color: "red",  size: wh:1, hh:1
+    test: (root) ->
+      [root] = root.children
+      assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point(25, 0)]
+      assert.eq (array c in root.children with c.currentSize    ), [point(25, 25), point(25, 25)]
+
+  renderTest
+    "" manual alignment - if a child has non-0 axis or location layout, it should get layout out within its parent-determined children-layout-box
+    render: ->
+      Element
+        size: cs:1
+        childrenLayout: "column"
+        TextElement text: "Hi"      , axis: "topCenter", location: xw: .5
+        TextElement text: "world."  , axis: "topCenter", location: xw: .5
+    test: (root) ->
+
+      assert.within
+        array c in root.children with c.currentLocation
+        [point(20.5, 0), point(20.5, 12)]
+        [point(20.7, 0), point(20.7, 12)]
+      assert.within
+        array c in root.children with c.currentSize
+        [point(15, 12), point(41, 12)]
+        [point(16, 12), point(42, 12)]
+
+  renderTest
+    "child location layout should be within parent padded area - horizontal padding"
+    render: ->
+      Element
+        size: w:100, hch:1
+        padding: h:10
+        childrenLayout: "column"
+        RectangleElement color: "#0002", inFlow: false
+        RectangleElement
+          color:"red"
+          size: ww: 1/2, h:50
+          location: xw: .5
+          axis: "topCenter"
+
+    test: (root) ->
+      [a, child] = root.children
+      assert.eq child.currentSize, point 40, 50
+      assert.eq child.currentLocation, point 40, 0
+
+  renderTest
+    "child location layout should be within parent padded area - vertical padding"
+    render: ->
+      Element
+        size: w:100, hch:1
+        padding: v:10
+        childrenLayout: "column"
+        RectangleElement color: "#0002", inFlow: false
+        RectangleElement
+          color:"red"
+          size: ww: 1/2, h:50
+          location: xw: .5
+          axis: "topCenter"
+
+    test: (root) ->
+      [a, child] = root.children
+      assert.eq root.currentSize, point 100, 70
+      assert.eq child.currentSize, point 50
+      assert.eq child.currentLocation, point 50, 0
+
+  renderTest
+    "full comment-inspired test: text drives width but has an upper limit"
+    render: ->
+      Element
+        size: cs: 1, max: w: 100
+        padding: 10
+        childrenLayout: "column"
+        RectangleElement inFlow: false, padding: -10, color: #07f radius: 10
+        TextElement margin: 10 text: "The quick brown fox..." color: #fffe size: cs: 1, max: ww: 1
+        RectangleElement color: #fff7 size: wpw:1, h:1
+        TextElement margin: 10 text: "Ok?" color: #fffe size: cs: 1, max: ww: 1
+
+    test: (root) ->
+      assert.eq root.currentSize.rounded, point 98, 85
+      assert.eq (array c in root.children with c.currentSize.rounded), [] point(78, 65), point(78, 32), point(78, 1), point(27, 12)
+      assert.eq (array c in root.children with c.currentLocation    ), [] point(0, 0),   point(0, 0),   point(0, 42), point(0, 53)

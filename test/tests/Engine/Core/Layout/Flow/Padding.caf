@@ -1,0 +1,34 @@
+import &StandardImport
+
+suite: ->
+  renderTest
+    "padding and flow"
+    render: ->
+      Element
+        size: 100
+        padding: 10
+        childrenLayout: "flow"
+        name: "parent"
+        new RectangleElement color: "blue", size:45
+        new RectangleElement color: "red", size:45
+
+    test: (root) ->
+      [r1, r2] = root.children
+      assert.eq r1.currentLocation, point 0
+      assert.eq r2.currentLocation, point 0, 45
+
+  renderTest
+    "padding and child-relative layout"
+    render: ->
+      Element
+        size: wcw:1, h:100
+        padding: 10
+        childrenLayout: "flow"
+        name: "parent"
+        RectangleElement color: "blue", size: hph:1, w:45
+
+    test: (root) ->
+      [r1] = root.children
+      assert.eq root.currentSize, point 65, 100
+      assert.eq r1.currentSize, point 45, 80
+

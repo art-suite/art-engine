@@ -1,0 +1,249 @@
+Foundation = require 'art-foundation'
+Atomic = require 'art-atomic'
+Canvas = require 'art-canvas'
+Engine = require 'art-engine'
+StateEpochTestHelper = require '../../StateEpochTestHelper'
+
+{inspect, log, isArray, min, max} = Foundation
+{point, matrix, Matrix} = Atomic
+{stateEpochTest, drawAndTestElement} = StateEpochTestHelper
+
+{Element, TextElement, RectangleElement, Layout} = Engine
+{LinearLayout} = Layout
+
+testLogBitmap = (name, setup, tests...) ->
+  test name, ->
+    {root, test} = setup()
+    root.toBitmapBasic area:"logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap, name
+      test?()
+
+module.exports = suite: ->
+
+  testLogBitmap "flow layout", ->
+    root: root = new Element
+      size: 100
+      childrenLayout: "flow"
+      new RectangleElement color:"red",   size: 30
+      new RectangleElement color:"green", size: 50
+      new RectangleElement color:"blue",  size: 40
+
+    test: ->
+      assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50), point(40)]
+      assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(30, 0), point(0, 50)]
+      log sizes: sizes, locations:locations
+
+  drawAndTestElement "flow and childrenLayout (constrained)", ->
+    element: root = new Element
+      size:
+        w: (ps, cs) -> min 100, cs.x
+        hch: 1
+      name: "flow and childrenLayout element"
+      childrenLayout: "flow"
+      new RectangleElement size: 30, color: "red"
+      new RectangleElement size: 50, color: "green"
+      new RectangleElement size: 40, color: "blue"
+
+    test: ->
+      assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(30, 0), point(0, 50)]
+      assert.eq root.currentSize, point 80, 90
+
+  drawAndTestElement "flow and childrenLayout (unconstrained)", ->
+    element: root = new Element
+      size:
+        wcw: 1
+        h: (ps, cs) -> min 100, cs.y
+      name: "flow and childrenLayout element"
+      childrenLayout: "flow"
+      new RectangleElement size: 30, color: "red"
+      new RectangleElement size: 50, color: "green"
+      new RectangleElement size: 40, color: "blue"
+
+    test: ->
+      assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(30, 0), point(80, 0)]
+      assert.eq root.currentSize, point 120, 50
+
+
+  testLogBitmap "horizontal line should be the width of the wider word", ->
+    root: root = new Element
+      size:
+        w: (ps, cs) -> min 50, cs.x
+        hch: 1
+      childrenLayout: "flow"
+      c1 = new TextElement text: "Hi"
+      c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
+      c3 = new TextElement text: "world."
+
+    # test: ->
+    #   assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(0, 20), point(0, 30)]
+    #   assert.within c2.currentSize, point(41, 10), point(42, 10)
+    #   assert.within root.currentSize, point(41, 50), point(42, 50)
+
+  testLogBitmap "horizontal line with right alignment", ->
+    root: root = new Element
+      size:
+        w: (ps, cs) -> min 50, cs.x
+        hch: 1
+      childrenLayout: "flow"
+      childrenAlignment: "right"
+      c1 = new TextElement text: "Hi"
+      c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
+      c3 = new TextElement text: "world."
+
+    test: ->
+      assert.within c1.currentLocation, point(25,0), point(26,0)
+      assert.eq c2.currentLocation, point 0, 12
+      assert.eq c3.currentLocation, point 0, 22
+      assert.within c2.currentSize, point(41, 10), point(42, 10)
+      assert.within root.currentSize, point(41, 34), point(42, 34)
+
+  test "flow with layout {scs:1}: child with layout ss:1 should work the same with or without inFlow: false, ", ->
+    root = new Element
+      size:
+        w: (ps, cs) -> min 50, cs.x
+        hch: 1
+      childrenLayout: "flow"
+      c1 = new RectangleElement color: '#ccc'  # has size:point0 for flow because it's size is parent-circular
+      c2 = new RectangleElement color: '#ccc', inFlow: false
+      new TextElement text: "Hi"
+      new TextElement text: "world."
+
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap
+      assert.eq (c.currentLocation for c in root.children), [point(), point(), point(), point(0, 12)]
+      assert.eq c1.currentSize, root.currentSize
+      assert.eq c2.currentSize, root.currentSize
+      assert.within root.currentSize, point(41, 24), point(42, 24)
+
+  test "flow with fixed size: inFlow: false required to have background", ->
+    root = new Element
+      size: 50
+      childrenLayout: "flow"
+      c1 = new RectangleElement color: '#ccc', inFlow: false
+      new TextElement text: "Hi"
+      new TextElement text: "world."
+
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap
+      assert.eq (c.currentLocation for c in root.children), [point(), point(), point(0, 12)]
+      assert.eq c1.currentSize, root.currentSize
+
+  test "flow with fixed size: ss:.5 child is placed in flow", ->
+    root = new Element
+      size: 50
+      childrenLayout: "flow"
+      c1 = new RectangleElement color: '#ccc', size: ps:.5
+      new TextElement text: "Hi"
+      new TextElement text: "world."
+
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap
+      assert.eq (c.currentLocation for c in root.children), [point(), point(25, 0), point(0, 25)]
+      assert.eq c1.currentSize, point 25
+      assert.eq root.currentSize, point 50
+
+
+  test "all full-width", ->
+    root = new Element
+      size: hch:1, w:50
+      childrenLayout: "flow"
+      new RectangleElement color: '#fcc', size: wpw:1, h:10
+      new RectangleElement color: '#cfc', size: wpw:1, h:10
+      new RectangleElement color: '#ccf', size: wpw:1, h:10
+
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap
+      assert.eq (c.currentLocation for c in root.children), [point(), point(0, 10), point(0, 20)]
+
+  test "all full-height", ->
+    root = new Element
+      size: wcw:1, h:50
+      childrenLayout: "flow"
+      new RectangleElement color: '#fcc', size: hph:1, w:10
+      new RectangleElement color: '#cfc', size: hph:1, w:10
+      new RectangleElement color: '#ccf', size: hph:1, w:10
+
+    root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
+    .then (bitmap) ->
+      log bitmap
+      assert.eq (c.currentLocation for c in root.children), [point(), point(10, 0), point(20, 0)]
+
+  testLogBitmap "flow with child ss:1 and child ww:1, h:10", ->
+    root:newRoot = new Element
+      size: cs:1
+      new RectangleElement color: '#eee', size: ps:1
+
+      root = new Element
+        size: cs:1
+        padding: 10
+        childrenLayout: "flow"
+        c1 = new RectangleElement color: '#ccc'
+        new TextElement text: "Hi"
+        c2 = new RectangleElement color: '#777', size: wpw:1, h:10
+        new TextElement text: "world."
+
+    test: ->
+      assert.eq (c.currentLocation for c in root.children), [point(), point(), point(0, 12), point(0, 22)]
+      assert.eq c1.currentSize, root.currentSize.sub(20)
+      assert.within root.currentSize, point(61, 54), point(62, 54)
+
+  testLogBitmap "padding, right-aligned with inFlow:false child", ->
+    root:
+      root = new Element
+        size: cs:1 #, max: ww:1
+        padding: 10
+        childrenLayout: "flow"
+        childrenAlignment: "right"
+        c1 = new RectangleElement name:"inflowfalse", color: '#ccc', inFlow: false
+        new TextElement text: "Hi"
+        c2 = new RectangleElement name:"h-line", color: '#777', size: wpw:1, h:10
+        new TextElement text: "world."
+
+    test: ->
+      assert.eq root.currentSize.sub(20), c1.currentSize
+
+  stateEpochTest "min layout with children-dependent height", ->
+    p = new Element
+      size:175
+      childrenLayout: "flow"
+      name: "parent"
+      c = new Element
+        name: "child"
+        size:
+          x: (ps) -> ps.x
+          y: (ps, cs) -> max 35, cs.y
+
+    ->
+      assert.eq c.currentSize, point 175, 35
+
+  stateEpochTest "flow and update", ->
+    new Element
+      size: 200
+      childrenLayout: "flow"
+
+      new Element
+        size: w:125, h:50
+
+      child = new Element
+        size: w:125, hch:1
+
+        grandchild = new RectangleElement
+          size: w:125, h:50
+          color: "red"
+
+    ->
+      l1 = child.currentLocation
+      assert.neq l1, point()
+      grandchild.color = "blue"
+
+      ->
+        l2 = child.currentLocation
+        assert.eq l1, l2
+        assert.neq l2, point()
+
+

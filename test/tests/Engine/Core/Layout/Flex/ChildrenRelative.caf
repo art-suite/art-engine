@@ -1,0 +1,33 @@
+import &StandardImport
+suite: ->
+  renderTest
+    "regression 1"
+    render: ->
+      textMargin = 10
+      dialogText = fontFamily: "Arial", margin: textMargin, fontSize: 16
+
+      Element
+        size: w: 300, h: 400
+        Element
+          size: ww:1, hch:1
+          clip: true
+          margin: textMargin
+          childrenLayout: "column"
+          RectangleElement inFlow: false, color: "#ff0", radius: 5
+
+          Element
+            childrenLayout: "row"
+            childrenAlignment: "centerLeft"
+            size: ww:1, hch:1
+            Element key: :testElement size: w:40
+            RectangleElement inFlow: false, color: "#f00", radius: 5
+            RectangleElement size: 15
+            TextElement
+              dialogText
+              text: "fill"
+              size: wcw:1, h: 30
+              align: "centerLeft"
+
+    test: (root) ->
+      [e] = root.find :testElement
+      assert.eq e.currentSize, point 40, 30

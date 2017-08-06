@@ -1,0 +1,37 @@
+import &ArtStandardLib
+{stats} = &ArtEngine.Element
+
+test = (args...) -> global.test args...
+
+class TestHelper
+
+  @drawAndTestElement: (name, setup) ->
+    test name, ->
+      log.warn "DEPRICATED: drawAndTestElement. Use renderTest. Test: #{name}"
+      options = setup()
+      options.element.toBitmapBasic pixelsPerPoint: 2
+      .then (bitmap) ->
+        log bitmap, "test: #{name}"
+        options.test? options.element
+
+  @renderTest: (name, options) ->
+    test name, ->
+      throw new Error "stagingBitmapsCreateShouldBe was mispelled. Use stagingBitmapsCreatedShouldBe" if options.stagingBitmapsCreateShouldBe
+      stagingBitmapsCreatedBefore = stats.stagingBitmapsCreated
+
+      options.render()
+      .onNextReady (element) ->
+        element.toBitmapBasic()
+        .then (bitmap) ->
+          log bitmap, name
+        .then ->
+          options.test element, name
+        .then ->
+          if (v = options.stagingBitmapsCreatedShouldBe)?
+            stagingBitmapsCreated = stats.stagingBitmapsCreated - stagingBitmapsCreatedBefore
+            assert.eq stagingBitmapsCreated, v, :stagingBitmapsCreatedShouldBe
+
+          if (v = options.elementSpaceDrawAreaShouldBe)?
+            assert.eq element.elementSpaceDrawArea, v, :elementSpaceDrawAreaShouldBe
+
+  object &ArtEngineFactories into @

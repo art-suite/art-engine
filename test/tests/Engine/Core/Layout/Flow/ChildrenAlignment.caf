@@ -1,0 +1,29 @@
+import &StandardImport
+
+suite: ->
+  array locations, alignment from {}
+      left:         [point( 0,  0), point( 30,   0), point(  0,  50)]
+      topCenter:    [point(10,  0), point( 40,   0), point( 30,  50)]
+      right:        [point(20,  0), point( 50,   0), point( 60,  50)]
+      bottom:       [point( 0, 10), point( 30,  10), point(  0,  60)]
+      bottomCenter: [point(10, 10), point( 40,  10), point( 30,  60)]
+      bottomRight:  [point(20, 10), point( 50,  10), point( 60,  60)]
+      centerLeft:   [point( 0,  5), point( 30,   5), point(  0,  55)]
+      centerCenter: [point(10,  5), point( 40,   5), point( 30,  55)]
+      center:       [point(10,  0), point( 40,   0), point( 30,  50)]
+      centerRight:  [point(20,  5), point( 50,   5), point( 60,  55)]
+    renderTest
+      "" childrenAlignment: '#{alignment}'
+      render: ->
+        Element
+          size: 100
+          childrenLayout: "flow"
+          childrenAlignment: alignment
+          RectangleElement color: :red:   size: 30
+          RectangleElement color: :green: size: 50
+          RectangleElement color: :blue:  size: 40
+
+      test: (root) ->
+        assert.eq
+          locations
+          array c in root.children with c.currentLocation

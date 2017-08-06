@@ -1,0 +1,79 @@
+import &StandardImport
+
+suite: ->
+  renderTest
+    "middlemen pass through ancestor's size"
+    render: ->
+      Element
+        key: "ancestor"
+        size: 120
+        RectangleElement
+          color: "#eee"
+
+        Element
+          key: "parent"
+          size: cs: 1
+          Element
+            key: "child"
+            size: cs: 1, max: ww: 1
+            childrenLayout: "flow"
+            RectangleElement size: 50, color:"red"
+            RectangleElement size: 55, color:"green"
+            RectangleElement size: 60, color:"blue"
+
+    test: (gp) ->
+      [p] = gp.find "parent"
+      [c] = gp.find "child"
+      assert.eq
+        array el in c.children with el.currentLocation
+        []
+          point 0
+          point 50, 0
+          point 0, 55
+      assert.eq p.currentSize, point 105, 115
+
+      gp.size = 90
+      gp.onNextReady ->
+        assert.eq
+          array el in c.children with el.currentLocation
+          []
+            point 0
+            point 0, 50
+            point 0, 105
+        assert.eq p.currentSize, point 60, 165
+
+  ###
+    I was trying to find a scenario where a change would not propgate the parent's
+    constraining size down since we aren't EXPLICITLY parent-relative for most elements
+    here, even though element C does need access to the size of GP.
+
+    FuI couldn't get it to happen...
+
+  renderTest
+    "middlemen layout propagation"
+    render: ->
+      Element
+        key: "gp"
+        size: 120
+        Element
+          key: :testElement
+          size: cs: 1
+          Element
+            size: cs: 1
+            Element
+              size: cs: 1
+              Element
+                key: "c"
+                size: cs: 1, max: ww: 1
+                childrenLayout: "flow"
+                RectangleElement size: 45 color: :red
+                RectangleElement size: 45 color: :green key: :greenRectangle
+                RectangleElement size: 60 color: :blue
+
+    test: (root) ->
+      [testElement] = root.find :testElement
+      assert.eq testElement.currentSize, point 90, 105
+
+      root.find(:greenRectangle)[0].size = 40
+      root.onNextReady ->
+        assert.eq testElement.currentSize, point 85, 105
