@@ -47,5 +47,5 @@
     "test": "webpack-dev-server --progress",
     "testInBrowser": "webpack-dev-server --progress"
   },
-  "version": "1.38.3"
+  "version": "1.39.0"
 }
