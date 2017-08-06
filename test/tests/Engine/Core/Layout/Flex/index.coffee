@@ -9,4 +9,5 @@ module.exports
   Column:               require './Column'              
   Margins:              require './Margins'             
   MaxLayout:            require './MaxLayout'           
+  Regressions:          require './Regressions'         
   Row:                  require './Row'                 

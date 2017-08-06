@@ -25,7 +25,7 @@ class TestHelper
         .then (bitmap) ->
           log bitmap, name
         .then ->
-          options.test element, name
+          options.test? element, name
         .then ->
           if (v = options.stagingBitmapsCreatedShouldBe)?
             stagingBitmapsCreated = stats.stagingBitmapsCreated - stagingBitmapsCreatedBefore

@@ -32,13 +32,13 @@ addFinalPassSizeLayoutChild = (finalPassProps, child, mainSizeForChild) ->
     finalPassProps.finalPassSizeLayoutChildren = [child]
     finalPassProps.finalPassMainSizesForChildren = [mainSizeForChild]
 
-finalPassProps =
-  finalPassSizeLayoutChildren: null
-  finalPassMainSizesForChildren: null
-
 module.exports = class FlexLayout
 
   @layoutChildrenFlex: (isRowLayout, element, currentPadding, elementSizeForChildren, inFlowChildren, parentSize) ->
+    # log layoutChildrenFlex:
+    #   element: element.inspectedName
+    #   elementSizeForChildren: elementSizeForChildren
+    #   parentSize: parentSize
     ###
     Flexbox terminology: https://developer.mozilla.org/en-US/docs/Web/Guide/CSS/Flexible_boxes
 
@@ -83,8 +83,9 @@ module.exports = class FlexLayout
     # FIRST FLEX PASS - Fixed inFlowChildren layout
     ###########################################
     lastChildsNextMargin = 0
-    finalPassProps.finalPassSizeLayoutChildren = null
-    finalPassProps.finalPassMainSizesForChildren = null
+    finalPassProps =
+      finalPassSizeLayoutChildren: null
+      finalPassMainSizesForChildren: null
 
     for child, i in inFlowChildren
       if child.getPendingSize()[mainAxisRelativeTestFunction]()
@@ -161,7 +162,13 @@ module.exports = class FlexLayout
       crossElementSizeForChildren  = element.getPendingSize().layoutX(parentSize, childrenSize) - currentPadding.getWidth()
       mainElementSizeForChildren   = element.getPendingSize().layoutY(parentSize, childrenSize) - currentPadding.getHeight()
 
-    # log {childrenSize, mainElementSizeForChildren, crossElementSizeForChildren}
+    # log layoutChildrenFlex2: {
+    #   element: element.inspectedName
+    #   childrenSize
+    #   mainElementSizeForChildren
+    #   crossElementSizeForChildren
+    #   finalPassSizeLayoutChildren: finalPassProps.finalPassSizeLayoutChildren?.length
+    # }
 
     ####################
     # FINAL PASS
@@ -179,6 +186,7 @@ module.exports = class FlexLayout
 
         LayoutTools.layoutElement child, sizeForChild, true
         maxCrossSize = max maxCrossSize, child.getPendingCurrentSize()[crossCoordinate]
+        # log {child: child.inspectedName, sizeForChild, maxCrossSize}
 
       if oldMaxCrossSize != maxCrossSize
         childrenSize = toPoint isRowLayout, mainChildrenSize, maxCrossSize, currentPadding

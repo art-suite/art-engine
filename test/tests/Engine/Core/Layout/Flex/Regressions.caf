@@ -1,0 +1,39 @@
+import &StandardImport
+
+suite: ->
+  renderTest
+    "" recursive flex layouts shouldn't interfer with each other
+    render: ->
+      padding = 10
+      radius = 10
+      Element
+        size: 500
+        key: :root
+        childrenLayout: :column
+
+        Element
+          size:
+            w: 300
+            hch: 1
+
+          Element
+            key: :testElement1
+            size: ww: 1, hch: 1
+            childrenLayout: :column
+
+            Element
+              key: :testElement2
+              size: ww: 1, hch: 1, max: hh: 1
+
+              RectangleElement
+                color: :red
+                size:
+                  ww: 1
+                  hw: 1
+
+    test: (root) ->
+      [testElement1] = root.find :testElement1
+      [testElement2] = root.find :testElement2
+      assert.eq testElement1.currentSize, point 300
+      assert.eq testElement2.currentSize, point 300
+
