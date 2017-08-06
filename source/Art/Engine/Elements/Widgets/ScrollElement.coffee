@@ -212,7 +212,7 @@ defineModule module, class ScrollElement extends Element
 
     @_updateOnScreenInfo()
 
-    log "tracking: #{@_pendingState._tracking} #{_scrollPosition}"
+    # log "tracking: #{@_pendingState._tracking} #{_scrollPosition}"
 
   _updateOnScreenInfo: ->
     {isVertical, windowSize} = @
