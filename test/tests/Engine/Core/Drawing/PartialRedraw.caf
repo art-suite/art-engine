@@ -94,7 +94,6 @@ suite: ->
           0 1 1 0
           0 1 1 0
           0 0 0 0
-        downsampleBits: 4
 
     .then ->
 
@@ -108,10 +107,14 @@ suite: ->
         compactFlatten []
           0 1 1 0
           1 2 2 1
-          1 3 3 1
+          1 2 2 1
           0 1 1 0
 
-        downsampleBits: 4
+        compactFlatten []
+          0 1 1 0
+          1 2 2 1
+          1 3 3 1
+          0 1 1 0
 
   test "change angle size 5", ->
     canvasElement = new CanvasElement
@@ -141,12 +144,21 @@ suite: ->
       e.angle = Math.PI/4
       canvasElement.onNextReady()
     .then ->
-      assert.compactRedChannelEq "change angle - partialDraw", canvasElement, compactFlatten []
-        0 0 1 0 0
-        0 3 4 2 0
-        1 4 4 4 1
-        0 3 4 3 0
-        0 0 1 0 0
+      assert.compactRedChannelEq
+        "change angle - partialDraw"
+        canvasElement
+        compactFlatten []
+          0 0 1 0 0
+          0 3 4 2 0
+          1 4 4 4 1
+          0 3 4 3 0
+          0 0 1 0 0
+        compactFlatten []
+          0 1 3 1 0
+          2 5 6 5 2
+          4 6 6 6 4
+          2 5 6 5 2
+          0 1 3 1 0
 
   test "change opacity", ->
     canvasElement = new CanvasElement
@@ -255,13 +267,24 @@ suite: ->
       assert.eq parent.elementSpaceDrawArea, rect -1, -1, 4, 4
       canvasElement.onNextReady()
     .then ->
-      compareDownsampledRedChannel "change color with negative padding - initialDraw", canvasElement, compactFlatten []
-        4 4 4 4 4 4
-        4 7 8 8 7 4
-        4 8 8 8 8 4
-        4 8 8 8 8 4
-        4 7 8 8 7 4
-        4 4 4 4 4 4
+      compareDownsampledRedChannel
+        "change color with negative padding - initialDraw"
+        canvasElement
+        compactFlatten []
+          4 4 4 4 4 4
+          4 6 8 8 6 4
+          4 8 8 8 8 4
+          4 8 8 8 8 4
+          4 6 8 8 6 4
+          4 4 4 4 4 4
+
+        compactFlatten []
+          4 4 4 4 4 4
+          4 7 8 8 7 4
+          4 8 8 8 8 4
+          4 8 8 8 8 4
+          4 7 8 8 7 4
+          4 4 4 4 4 4
 
       canvasElement.canvasBitmap.clear :black
       child.color = #6ff

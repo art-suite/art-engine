@@ -52,30 +52,39 @@ class CoreHelper
     else
       out
 
-  @compareDownsampledRedChannel: (message, bitmap, expecting, options = {}) ->
+  @compareDownsampledRedChannel: (message, bitmap, expecting, a, b) ->
+    [expecting2, options] = if b? || isPlainArray a
+      [a, b || {}]
+    else
+      [expecting, a || {}]
+
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     log "#{message}": bitmap.clone()
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
-    unless eq downsampled, expecting
-      log compareDownsampledRedChannel:
-        this: downsampled
-        shouldEqual: expecting
+    assert.within
+      downsampled
+      expecting
+      expecting2
+      compareDownsampledRedChannel:
+        downsampled: downsampled
+        '>=': expecting
+        '<=': expecting2
         message: message
 
-      assert.eq expecting, downsampled, message
-
-  compareProcessedRedChannelUsingFunction = (process, message, bitmap, expecting) ->
+  compareProcessedRedChannelUsingFunction = (process, message, bitmap, expecting, expecting2) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     log "#{message}": bitmap.clone()
     output = process bitmap
-    unless eq output, expecting
-      log compareDownsampledRedChannel:
-        this: output
-        shouldEqual: expecting
+    expecting2 ||= expecting
+    assert.within
+      output
+      expecting
+      expecting2
+      compareDownsampledRedChannel:
+        output: output
+        '>=': expecting
+        '<=': expecting2
         message: message
-
-      assert.eq expecting, output, message
-
 
   assert.downsampledRedChannelEq = (message, element, expecting, options) =>
     if element instanceof CanvasElement
@@ -103,7 +112,7 @@ class CoreHelper
     .then (bitmap) =>
       @compareDownsampledRedChannel message, bitmap, expecting, downsampleBits: options?.downsampleBits ? 5
 
-  assert.compactRedChannelEq = (message, element, expecting) =>
+  assert.compactRedChannelEq = (message, element, expecting, expecting2) =>
     getBitmap element
     .then (bitmap) =>
       compareProcessedRedChannelUsingFunction
@@ -111,6 +120,7 @@ class CoreHelper
         message
         bitmap
         expecting
+        expecting2
 
   @testDownsampledRedChannelEq: (message, element, expecting) =>
     global.test message, ->
@@ -118,8 +128,8 @@ class CoreHelper
       .then (element) ->
         assert.downsampledRedChannelEq message, element, expecting
 
-  @testCompactRedChannelEq: (message, element, expecting) =>
+  @testCompactRedChannelEq: (message, element, expecting, expecting2) =>
     global.test message, ->
       Promise.then -> element
       .then (element) ->
-        assert.compactRedChannelEq message, element, expecting
+        assert.compactRedChannelEq message, element, expecting, expecting2

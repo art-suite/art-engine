@@ -5,7 +5,7 @@ Helper = require '../Helper'
 StateEpochTestHelper = require '../../Core/StateEpochTestHelper'
 
 {defineModule, inspect, log, min, isNumber, isPlainObject, merge} = Foundation
-{point, matrix, Matrix, Point, rect} = Atomic
+{point, matrix, Matrix, Point, rect, point1} = Atomic
 {Element, RectangleElement, FillElement, TextElement, Shapes} = Engine
 {drawTest, drawTest2, drawTest3} =  Helper
 {pow} = Math
@@ -369,7 +369,9 @@ defineModule module, suite:
           el.toBitmapBasic()
           .then (bitmap) ->
             log shouldBeSame: bitmap
-            assert.eq c1.currentSize, c2.currentSize
+            assert.lt c1.currentSize.sub(c2.currentSize).abs, point1,
+              c1: c1.currentSize
+              c2: c2.currentSize
             c1.text = c2.text = "This should word wrap, though!"
             el.toBitmapBasic()
           .then (bitmap) ->
@@ -482,7 +484,7 @@ defineModule module, suite:
       hCenterAligned  = [50   ]
       vCenterAligned  = [50   ]
       for value, result of {
-          top:          top:      topAligned,     left:     leftAligned, h: {min:[29],max:[31]}, w: min:[44], max:[46]
+          top:          top:      topAligned,     left:     leftAligned, h: {min:[29],max:[31]}, w: min:[43], max:[44]
           left:         top:      topAligned,     left:     leftAligned
           center:       top:      topAligned,     hCenter:  hCenterAligned
           right:        top:      topAligned,     right:    rightAligned
