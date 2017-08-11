@@ -283,6 +283,7 @@ defineModule module, class Element extends ElementBase
       # default: "left"
       # validate:   (v) -> !v || v == "left" || v == "center" || v == "right"
       # preprocess: (v) -> v || "left"
+
     axis:                   default: point0,                preprocess: (v) -> point v
     inFlow:                 default: true,                  preprocess: (v) -> !!v
     layoutWeight:           default: 1,                     validate:   (v) -> isNumber v
@@ -297,7 +298,15 @@ defineModule module, class Element extends ElementBase
         else perimeter v
 
     margin:
-      default: 0
+      default: null
+      preprocess: (v) ->
+        if isFunction v then v
+        else if v == false || v == undefined || v == null
+          null
+        else perimeter v
+
+    childrenMargins:
+      default: null
       preprocess: (v) ->
         if isFunction v then v
         else if v == false || v == undefined || v == null

@@ -209,29 +209,6 @@ module.exports = suite:
         assert.eq sizes = (c.currentSize.x for c in root.children), [200, 20, 180]
         assert.eq locations = (c.currentLocation.x for c in root.children), [0, 0, 20]
 
-  margins: ->
-    drawAndTestElement "no variable children, all same margin", ->
-      element: root = new Element
-        size: cs:1
-        childrenLayout: "row"
-        new RectangleElement color:"red",   margin: 10, size: 30
-        new RectangleElement color:"green", margin: 10, size: 50
-        new RectangleElement color:"blue",  margin: 10, size: 40
-      test: ->
-        assert.eq root.currentSize, point 140, 50
-        assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point( 40, 0), point( 100, 0)]
-
-    drawAndTestElement "no variable children, various margins", ->
-      element: root = new Element
-        size: cs:1
-        childrenLayout: "row"
-        new RectangleElement color:"red",   size: 30, margin: 10
-        new RectangleElement color:"green", size: 50, margin: top: 15, bottom: 5, left: 11, right: 7
-        new RectangleElement color:"blue",  size: 40, margin: 10
-      test: ->
-        assert.eq root.currentSize, point 141, 50
-        assert.eq (c.currentLocation for c in root.children), [point( 0,  0), point( 41, 0), point( 101, 0)]
-
   alignment: ->
     drawAndTestElement "alignment and margins", ->
       element: root = new Element

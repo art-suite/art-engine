@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 
-{point, Point, perimeter} = Atomic
+{point, Point, perimeter, perimeter0} = Atomic
 {BaseObject, isFunction, abs} = Foundation
 {nearInfiniteSize, nearInfinity, nearInfinityResult, isInfiniteResult} = require './Infinity'
 
@@ -11,19 +11,19 @@ module.exports = class LayoutTools extends BaseObject
   @nearInfinityResult: nearInfinityResult
   @isInfiniteResult: isInfiniteResult
 
-  @layoutMargin: (element, parentSize) ->
-    margin = element.getPendingMargin()
+  @layoutMargin: (element, parentSize, parentElement) ->
+    margin = element.getPendingMargin() || parentElement?.getPendingChildrenMargins()
     element._setMarginFromLayout perimeter if isFunction margin
       margin parentSize
     else
-      margin
+      margin || perimeter0
 
   @layoutPadding: (element, parentSize) ->
     padding = element.getPendingPadding()
     element._setPaddingFromLayout perimeter if isFunction padding
       padding parentSize
     else
-      padding
+      padding || perimeter0
 
   @deinfinitize: (p) ->
     {x, y} = p

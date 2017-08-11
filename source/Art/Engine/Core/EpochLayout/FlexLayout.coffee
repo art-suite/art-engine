@@ -15,6 +15,9 @@
 {point0} = Point
 {abs, max} = Math
 
+combineMargins = (a, b) ->
+  (a + b) / 2
+
 toPoint = (isRowLayout, mainPos, crossPos, currentPadding) ->
   x = y = 0
   if isRowLayout then x = mainPos; y = crossPos
@@ -108,9 +111,10 @@ module.exports = class FlexLayout
         else
           maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
 
-      margin = layoutMargin child, elementSizeForChildren
+      margin = layoutMargin child, elementSizeForChildren, element
+
       if i > 0
-        mainChildrenSize += effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
+        mainChildrenSize += effectivePrevMargin = combineMargins lastChildsNextMargin, margin[previousMargin]
         spaceForFlexChildren -= effectivePrevMargin
 
       lastChildsNextMargin = margin[nextMargin]
@@ -215,8 +219,9 @@ module.exports = class FlexLayout
     # compute cross-alignment per element and apply all alignment
     for child, i in inFlowChildren
       margin = child.getPendingCurrentMargin()
+
       if i > 0
-        effectivePrevMargin = max lastChildsNextMargin, margin[previousMargin]
+        effectivePrevMargin = combineMargins lastChildsNextMargin, margin[previousMargin]
         mainPos += effectivePrevMargin
       lastChildsNextMargin = margin[nextMargin]
 

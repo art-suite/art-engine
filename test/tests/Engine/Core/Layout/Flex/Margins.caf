@@ -16,17 +16,30 @@ suite:
         assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 40), point( 0, 100)]
 
     renderTest
-      "" no variable children, various margins
+      "" no variable children, default margins mixed with margins
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: "column"
+          RectangleElement color:"red",   size: 30
+          RectangleElement color:"green", size: 40, margin: 10
+          RectangleElement color:"blue",  size: 50
+      test: (root)->
+        assert.eq root.currentSize, point 50, 130
+        assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 35), point( 0, 80)]
+
+    renderTest
+      "" no variable children, margins are averaged
       render: ->
         Element
           size: cs:1
           childrenLayout: "column"
           RectangleElement color:"red",   size: 30, margin: 10
-          RectangleElement color:"green", size: 50, margin: top: 15, bottom: 5, left: 11, right: 7
+          RectangleElement color:"green", size: 50, margin: top: 20, bottom: 30
           RectangleElement color:"blue",  size: 40, margin: 10
       test: (root) ->
-        assert.eq root.currentSize, point 50, 145
-        assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 45), point( 0, 105)]
+        assert.eq root.currentSize, point 50, 155
+        assert.eq (array c in root.children with c.currentLocation), [point( 0,  0), point( 0, 45), point( 0, 115)]
 
   row: ->
 
@@ -49,19 +62,78 @@ suite:
             point 100 0
 
     renderTest
-      "" no variable children, various margins
+      "" no variable children, margins are averaged
       render: ->
         Element
           size: cs:1
           childrenLayout: :row
           RectangleElement color: :red   size: 30 margin: 10
-          RectangleElement color: :green size: 50 margin: top: 15, bottom: 5, left: 11, right: 7
+          RectangleElement color: :green size: 50 margin: left: 20, right: 30
           RectangleElement color: :blue  size: 40 margin: 10
       test: (root) ->
-        assert.eq root.currentSize, point 141, 50
+        assert.eq root.currentSize, point 155, 50
         assert.eq
           array c in root.children with c.currentLocation
           []
             point 0   0
-            point 41  0
-            point 101 0
+            point 45  0
+            point 115 0
+
+  childrenMargins: ->
+    renderTest
+      "" basic
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: "column"
+          childrenMargins: 10
+          RectangleElement color:"red",   size: 10
+          RectangleElement color:"green", size: 30
+          RectangleElement color:"blue",  size: 60
+
+      test: (root)->
+        assert.eq root.currentSize, point 60, 120
+        assert.eq
+          array c in root.children with c.currentLocation
+          []
+            point 0  0
+            point 0 20
+            point 0 60
+        root.childrenMargins = 20
+        root.onNextReady ->
+          assert.eq root.currentSize, point 60, 140
+          assert.eq
+            array c in root.children with c.currentLocation
+            []
+              point 0   0
+              point 0  30
+              point 0  80
+
+    renderTest
+      "" with override
+      render: ->
+        Element
+          size: cs:1
+          childrenLayout: "column"
+          childrenMargins: 10
+          RectangleElement color:"red",   size: 10
+          RectangleElement color:"green", size: 30
+          RectangleElement color:"blue",  size: 60, margin: 90
+
+      test: (root)->
+        assert.eq root.currentSize, point 60, 160
+        assert.eq
+          array c in root.children with c.currentLocation
+          []
+            point 0   0
+            point 0  20
+            point 0 100
+        root.childrenMargins = 20
+        root.onNextReady ->
+          assert.eq root.currentSize, point 60, 175
+          assert.eq
+            array c in root.children with c.currentLocation
+            []
+              point 0   0
+              point 0  30
+              point 0 115

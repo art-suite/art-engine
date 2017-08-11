@@ -172,11 +172,12 @@ suite: ->
       Element
         size: cs: 1, max: w: 100
         padding: 10
-        childrenLayout: "column"
+        childrenLayout: :column
+        childrenMargins: 10
         RectangleElement inFlow: false, padding: -10, color: #07f radius: 10
-        TextElement margin: 10 text: "The quick brown fox..." color: #fffe size: cs: 1, max: ww: 1
-        RectangleElement color: #fff7 size: wpw:1, h:1
-        TextElement margin: 10 text: "Ok?" color: #fffe size: cs: 1, max: ww: 1
+        TextElement       text: "The quick brown fox..." color: #fffe size: cs: 1, max: ww: 1
+        RectangleElement  color: #fff7 size: wpw:1, h:1
+        TextElement       text: "Ok?" color: #fffe size: cs: 1, max: ww: 1
 
     test: (root) ->
       assert.eq root.currentSize.rounded, point 98, 85

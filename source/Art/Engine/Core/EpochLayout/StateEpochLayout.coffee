@@ -277,7 +277,7 @@ module.exports = class StateEpochLayout extends BaseObject
     finalLocation = element._layoutLocation parentSize unless skipLocation
     firstPassSize = element._layoutSize parentSize, nearInfiniteSize
     currentPadding = layoutPadding element, parentSize
-    currentMargin  = layoutMargin element, parentSize
+    currentMargin  = layoutMargin element, parentSize, element.getPendingParent()
     firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
     firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
 
