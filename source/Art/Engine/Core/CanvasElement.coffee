@@ -241,6 +241,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   @setter
     cssCursor: (cursor) ->
+      cursor = null unless cursor?
       if cursor != @_cssCursor
         @_canvas?.style.cursor = cursor
         @_cssCursor = cursor

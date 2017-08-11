@@ -423,7 +423,10 @@ defineModule module, class Element extends ElementBase
         @getState(pending)._elementToParentMatrix
 
   @concreteProperty
-    cursor:                 default: null,                  validate:   (v) -> v == null || typeof v is "string"
+    cursor:
+      default: null
+      validate: (v) -> !v || typeof v is "string"
+
     elementToParentMatrix:
       default: Matrix.identityMatrix
       preprocess: (v) -> matrix v
