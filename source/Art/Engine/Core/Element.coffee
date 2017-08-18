@@ -1074,11 +1074,9 @@ defineModule module, class Element extends ElementBase
     return if elementSpaceDrawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
 
-    cacheScale = if @getCacheDraw() then point(pixelsPerPoint) else point(
-      pixelsPerPoint * elementToTargetMatrix.getScaleX()
-      pixelsPerPoint * elementToTargetMatrix.getScaleY()
-    )
-    cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale
+    cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale =
+      pixelsPerPoint *
+        if @getCacheDraw() then 1 else elementToTargetMatrix.getExactScaler()
 
     # don't cache if too big
     # TODO: this doesn't work; it causes errors to abort caching at this point
