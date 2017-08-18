@@ -28,9 +28,9 @@ defineModule module, class BitmapElement extends ShadowableElement
 
     temporaryPut: (duration, url, bitmap) ->
       @get url, Promise.resolve bitmap
-      log temporaryPut: {bitmap, duration, url}
+      # log temporaryPut: {bitmap, duration, url}
       timeout duration, =>
-        log temporaryPut: release: {bitmap, url}
+        # log temporaryPut: release: {bitmap, url}
         @release url
 
     # returns true if the bitmap was released
