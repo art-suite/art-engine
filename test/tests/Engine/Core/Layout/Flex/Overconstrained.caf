@@ -1,0 +1,98 @@
+import &StandardImport
+
+c1 = #000
+c2 = #c00
+c3 = #888
+c4 = #ccc
+
+suite:
+  basic: ->
+    renderTest
+      "" under
+      render: ->
+        Element
+          size: w: 50, h: 100
+          key: :root
+          childrenLayout: :column
+
+          RectangleElement color: c1, size: ww: 1, h: 20
+          RectangleElement color: c2, size: ww: 1, hh: 1
+          RectangleElement color: c3, size: ww: 1, h: 20
+          RectangleElement color: c4, size: ww: 1, h: 20
+
+      test: (root) ->
+        assert.eq
+          array child from root.children with child.currentLocation.y
+          0 20 60 80
+
+    renderTest
+      "" exact
+      render: ->
+        Element
+          size: w: 50, h: 60
+          key: :root
+          childrenLayout: :column
+
+          RectangleElement color: c1, size: ww: 1, h: 20
+          RectangleElement color: c2, size: ww: 1, hh: 1
+          RectangleElement color: c3, size: ww: 1, h: 20
+          RectangleElement color: c4, size: ww: 1, h: 20
+
+      test: (root) ->
+        assert.eq
+          array child from root.children with child.currentLocation.y
+          0 20 20 40
+
+    renderTest
+      "" overconstrained should not overlap elements
+      render: ->
+        Element
+          size: w: 50, h: 50
+          key: :root
+          childrenLayout: :column
+
+          RectangleElement color: c1, size: ww: 1, h: 20
+          RectangleElement color: c2, size: ww: 1, hh: 1
+          RectangleElement color: c3, size: ww: 1, h: 20
+          RectangleElement color: c4, size: ww: 1, h: 20
+
+      test: (root) ->
+        assert.eq
+          array child from root.children with child.currentLocation.y
+          0 20 20 40
+  childRelative: ->
+    renderTest
+      "" underconstrained
+      render: ->
+        Element
+          size: w: 50, h: (ps, cs) -> min cs.y, 75
+          key: :root
+          childrenLayout: :column
+
+          RectangleElement color: c1, size: ww: 1, h: 20
+          RectangleElement color: c2, size: ww: 1, hh: 1
+          RectangleElement color: c3, size: ww: 1, h: 20
+          RectangleElement color: c4, size: ww: 1, h: 20
+
+      test: (root) ->
+        assert.eq
+          array child from root.children with child.currentLocation.y
+          0 20 35 55
+
+    renderTest
+      "" overconstrained
+      render: ->
+        Element
+          size: w: 50, h: (ps, cs) -> min cs.y, 50
+          key: :root
+          childrenLayout: :column
+
+          RectangleElement color: c1, size: ww: 1, h: 20
+          RectangleElement color: c2, size: ww: 1, hh: 1
+          RectangleElement color: c3, size: ww: 1, h: 20
+          RectangleElement color: c4, size: ww: 1, h: 20
+
+      test: (root) ->
+        assert.eq
+          array child from root.children with child.currentLocation.y
+          0 20 20 40
