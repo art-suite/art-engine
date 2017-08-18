@@ -55,6 +55,7 @@ truncateLayoutCoordinate = (v) ->
 
 stats = clone zeroedStats =
   stagingBitmapsCreated: 0
+  lastStagingBitmapSize: null
   elementsDrawn: 0
 
 defaultSize = point 100
@@ -1072,14 +1073,19 @@ defineModule module, class Element extends ElementBase
     elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut()
     return if elementSpaceDrawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
-    cacheSpaceDrawArea = elementSpaceDrawArea.mul(pixelsPerPoint)
+
+    cacheScale = if @getCacheDraw() then point(pixelsPerPoint) else point(
+      pixelsPerPoint * elementToTargetMatrix.getScaleX()
+      pixelsPerPoint * elementToTargetMatrix.getScaleY()
+    )
+    cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale
 
     # don't cache if too big
     # TODO: this doesn't work; it causes errors to abort caching at this point
     # return if cacheSpaceDrawArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
 
     # re-use existing bitmap, if possible
-    d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(pixelsPerPoint).inv
+    d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
       return unless @_dirtyDrawAreas || @_redrawAll
     else
@@ -1103,6 +1109,7 @@ defineModule module, class Element extends ElementBase
 
     # stats
     stats.stagingBitmapsCreated++
+    stats.lastStagingBitmapSize = @_drawCacheBitmap.size
     globalEpochCycle.logEvent "generateDrawCache", @uniqueId
 
     @_currentDrawTarget = @_drawCacheBitmap

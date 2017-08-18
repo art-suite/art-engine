@@ -1,17 +1,17 @@
-import &ArtStandardLib, &ArtAtomic, &ArtEngine
-
+# import &ArtStandardLib, &ArtAtomic, &ArtEngine
+import &StandardImport
 
 testArtStructure = ->
-  new Element
+  Element
     location: x:123, y:456
     size:     w: 80, h:60
-    new RectangleElement color:"orange"
-    new Element
+    RectangleElement color:"orange"
+    Element
       angle: 0 - Math.PI/6
       location: xpw:.25, yph:.5
       size:     wpw:.5,  hph:.25
       name: "child"
-      new RectangleElement color: "#700"
+      RectangleElement color: "#700"
 
 suite: ->
   {test} = global
@@ -48,7 +48,7 @@ suite: ->
 
   test "toBitmapBasic with blur", ->
     o = testArtStructure()
-    o.addChild new BlurElement radius:10
+    o.addChild BlurElement radius:10
     o.toBitmapBasic {}
     .then (bitmap)->
 
@@ -58,7 +58,7 @@ suite: ->
 
   test "toBitmapBasic with out of bounds child and backgroundColor", ->
     o = testArtStructure()
-    o.addChild new RectangleElement
+    o.addChild RectangleElement
       color:  "#700"
       location: xpw:-.25, yph:.75
       size: ps: .5
@@ -81,17 +81,17 @@ suite: ->
   each v, k from areaOptions
     {expectedDrawMatrix, expectedSize} = v
     test "toBitmapWithInfo area: #{k} size should == #{expectedSize}", ->
-      new Element
+      Element
         size: w: 100, h: 80
         padding: 10
-        child = new Element
+        child = Element
           angle: 0 - Math.PI/6
           axis: .5
           location: ps: .5
           size: w:40, h:15
           padding: -5
-          new RectangleElement color: "#f00"
-          new RectangleElement color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
+          RectangleElement color: "#f00"
+          RectangleElement color: "#0f0", compositeMode: "add", location:10, size: w:30, h:25
 
       child.toBitmapWithInfo (merge v, area:k, backgroundColor:"#ddd")
       .then ({bitmap, elementToBitmapMatrix})->
@@ -104,12 +104,44 @@ suite: ->
       zoom: point 100
 
     test "toBitmapWithInfo mode: #{inspect mode}", ->
-      element = new Element
+      element = Element
         size: w: 200, h:100
-        new RectangleElement color: "orange"
+        RectangleElement color: "orange"
 
       element.toBitmapWithInfo size:100, mode: mode, backgroundColor:"#ddd"
       .then ({bitmap, elementToBitmapMatrix})->
 
         log mode: mode, bitmap:bitmap
         assert.eq bitmap.size, expectedSize
+
+  test "toBitmapBasic elementToDrawAreaMatrix: Matrix.scale 5", ->
+    element = # Element
+      # size: w: 200, h:100
+      # RectangleElement color: "orange"
+      # RectangleElement color: "back", radius: 1000
+
+      TextElement
+        color:      :red
+        text:       :Test
+        fontSize:   32
+        fontFamily: "Arial Black"
+        layoutMode: :tight0
+        align:      :center
+        FillElement()
+        OutlineElement
+          color: :black
+          compositeMode: :destOver
+          lineWidth: 4
+          lineJoin: :miter
+          miterLimit: 3
+
+
+    element.toBitmapBasic elementToDrawAreaMatrix: Matrix.scale 1
+    .then (bitmap1) ->
+      bitmap1StagingStats = merge &ArtEngine.Element.stats
+      element.toBitmapBasic elementToDrawAreaMatrix: Matrix.scale 5
+      .then (bitmap2) ->
+        bitmap2StagingStats = merge &ArtEngine.Element.stats
+        log {bitmap1, bitmap2, bitmap1StagingStats}
+        assert.eq 1, bitmap2StagingStats.stagingBitmapsCreated - bitmap1StagingStats.stagingBitmapsCreated
+        assert.eq point(5), bitmap2StagingStats.lastStagingBitmapSize.div bitmap1StagingStats.lastStagingBitmapSize
