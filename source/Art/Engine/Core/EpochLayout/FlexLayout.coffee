@@ -27,12 +27,6 @@ toPoint = (isRowLayout, mainPos, crossPos, currentPadding) ->
   else
     point x, y
 
-addFinalPassSizeLayoutChild = (finalPassProps, child) ->
-  if finalPassProps.finalPassSizeLayoutChildren
-    finalPassProps.finalPassSizeLayoutChildren.push child
-  else
-    finalPassProps.finalPassSizeLayoutChildren = [child]
-
 module.exports = class FlexLayout
 
   @layoutChildrenFlex: (isRowLayout, element, currentPadding, elementSizeForChildren, inFlowChildren, parentSize) ->
@@ -84,8 +78,7 @@ module.exports = class FlexLayout
     # FIRST FLEX PASS - Fixed inFlowChildren layout
     ###########################################
     lastChildsNextMargin = 0
-    finalPassProps =
-      finalPassSizeLayoutChildren: null
+    finalPassSizeLayoutChildren = null
 
     for child, i in inFlowChildren
       if child.getPendingSize()[mainAxisRelativeTestFunction]()
@@ -102,7 +95,7 @@ module.exports = class FlexLayout
         spaceForFlexChildren -= mainSize
 
         if child.getPendingLayoutSizeParentCircular()
-          addFinalPassSizeLayoutChild finalPassProps, child
+          (finalPassSizeLayoutChildren||=[]).push child
           if (!isRowLayout && child._pendingState._size.xChildrenRelative) || (isRowLayout && child._pendingState._size.yChildrenRelative)
             maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
         else
@@ -145,7 +138,7 @@ module.exports = class FlexLayout
       mainSize = currentSize[mainCoordinate]
 
       if child.getPendingLayoutSizeParentCircular()
-        addFinalPassSizeLayoutChild finalPassProps, child
+        (finalPassSizeLayoutChildren||=[]).push child
       else
         crossSize = currentSize[crossCoordinate]
         maxCrossSize = max maxCrossSize, crossSize
@@ -177,7 +170,7 @@ module.exports = class FlexLayout
     ####################
     # FINAL PASS
     ####################
-    if finalPassSizeLayoutChildren = finalPassProps.finalPassSizeLayoutChildren
+    if finalPassSizeLayoutChildren
       oldMaxCrossSize = maxCrossSize
       secondPassSizeForChildren = toPoint isRowLayout, mainElementSizeForChildren, crossElementSizeForChildren
 
