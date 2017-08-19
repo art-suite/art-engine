@@ -129,6 +129,7 @@ defineModule module, class Element extends ElementBase
 
   _initComputedFields: ->
     @_elementSpaceDrawArea = null
+    @_filterChildren = []
     # @_filterDescendants = []
     # @_filterSource = null
 
@@ -189,7 +190,7 @@ defineModule module, class Element extends ElementBase
       opacity
 
     isChanging: -> @__stateChangeQueued
-    # isFilter:      -> false
+    isFilter:      -> false
     # filterSource:  -> @_filterSource || @_parent
     rootElement:   -> @_rootElement ||= if @_parent then @_parent.getRootElement() else @
     bitmapFactory: -> @_bitmapFactory || @getCanvasElement()?.bitmapFactory || Canvas.Bitmap
@@ -456,11 +457,13 @@ defineModule module, class Element extends ElementBase
         p
 
     children:
-      default: initialChildren = []
+      default: noChildren = []
       setter: (newChildren, oldChildren) ->
         @__drawPropertiesChanged = true # TODO - this is a hack-fix; is this the right way to do this?
         newChildren = compactFlatten newChildren, keepIfRubyTrue
-        firstTimeSettingChildren = oldChildren == initialChildren
+        firstTimeSettingChildren = oldChildren == noChildren
+
+        @_filterChildren = null
 
         # detect childrenHaveRemovedAnimations
         for child in oldChildren when child.getPendingHasToVoidAnimators()
@@ -489,9 +492,14 @@ defineModule module, class Element extends ElementBase
         # update children which were added:
         #   remove from old parent
         #   update parent
-        for child in newChildren when (oldParent = child.getPendingParent()) != @
-          oldParent?._setChildrenOnly oldParent.pendingChildrenWithout child
-          child._setParentOnly @
+        for child in newChildren
+          if child.getIsFilter()
+            (@_filterChildren ||= []).push child
+          if (oldParent = child.getPendingParent()) != @
+            oldParent?._setChildrenOnly oldParent.pendingChildrenWithout child
+            child._setParentOnly @
+
+        @_filterChildren ||= noChildren
 
         newChildren
 
@@ -1043,7 +1051,6 @@ defineModule module, class Element extends ElementBase
 
     @_generateDrawCache targetSpaceDrawArea, elementToTargetMatrix
 
-    drawCacheManager.useDrawCache @
     if !!@_drawCacheBitmap != !!@_drawCacheToElementMatrix
       throw new Error "expected both or neither: @_drawCacheToElementMatrix, @_drawCacheBitmap"
 
@@ -1079,6 +1086,7 @@ defineModule module, class Element extends ElementBase
       pixelsPerPoint *
         if @getCacheDraw() then 1 else elementToTargetMatrix.getExactScaler()
 
+    cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut()
     # don't cache if too big
     # TODO: this doesn't work; it causes errors to abort caching at this point
     # return if cacheSpaceDrawArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
@@ -1086,10 +1094,14 @@ defineModule module, class Element extends ElementBase
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
+      drawCacheManager.useDrawCache @
       return unless @_dirtyDrawAreas || @_redrawAll
     else
+      {size} = cacheSpaceDrawArea.size
+      if (unioned = @_drawCacheBitmap?.size.max size) && unioned.area < size.area * 2
+        size = unioned
       @_clearDrawCache()
-      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheSpaceDrawArea.size
+      @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, size
       @_dirtyDrawAreas = null
       @_redrawAll = true
 
@@ -1118,28 +1130,27 @@ defineModule module, class Element extends ElementBase
       # disable draw-caching for children
       Element._cachingDraws++
 
-      if dirtyAreasToDraw
+      if config.partialRedrawEnabled && dirtyAreasToDraw && @_filterChildren.length == 0
         for dirtyDrawArea in dirtyAreasToDraw
           drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
           lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
-          @_cachedDrawInternal()
+          @_drawCachedBitmapInternal()
           @_drawCacheBitmap.closeClipping lastClippingInfo
 
       else
-        @_cachedDrawInternal()
+        @_drawCachedBitmapInternal()
 
     finally
       @_redrawAll = false
       @_dirtyDrawAreas = remainingDirtyAreas
       Element._cachingDraws--
 
-  _cachedDrawInternal: ->
+  _drawCachedBitmapInternal: ->
     @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
     if @_clip && @getHasCustomClipping()
       @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
     else
       @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
-
 
   #################
   # ToBitmap
