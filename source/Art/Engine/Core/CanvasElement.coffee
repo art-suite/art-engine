@@ -13,6 +13,8 @@ Element = require './Element'
 GlobalEpochCycle = require './GlobalEpochCycle'
 DrawEpoch = require './DrawEpoch'
 EngineStat= require './EngineStat'
+{config} = require '../Config'
+
 
 {
   log, inspect
@@ -557,9 +559,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @lastFrameTime = frameStartTime
 
     if @canvasBitmap
-      if @_dirtyDrawAreas
+      if config.partialRedrawEnabled && @_dirtyDrawAreas
         for dirtyDrawArea in @_dirtyDrawAreas
-          # draw
           @canvasBitmap.clippedTo dirtyDrawArea.mul(@_devicePixelsPerPoint), =>
             super @canvasBitmap, @elementToParentMatrix
       else
