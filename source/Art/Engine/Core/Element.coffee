@@ -882,8 +882,9 @@ defineModule module, class Element extends ElementBase
   # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
     throw new Error "bad matrix" unless elementToTargetMatrix.getIsTranslateAndScaleOnly()
-    target.clippedTo clipArea, =>
-      @_drawChildren target, elementToTargetMatrix
+    lastClippingInfo = target.openClipping clipArea
+    @_drawChildren target, elementToTargetMatrix
+    target.closeClipping lastClippingInfo
 
   @getter
     hasCustomClipping: -> false
@@ -1113,13 +1114,6 @@ defineModule module, class Element extends ElementBase
     @_currentDrawTarget = @_drawCacheBitmap
     @_currentToTargetMatrix = @_elementToDrawCacheMatrix
 
-    draw = =>
-      @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
-      if @_clip && @getHasCustomClipping()
-        @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
-      else
-        @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
-
     try
       # disable draw-caching for children
       Element._cachingDraws++
@@ -1127,14 +1121,25 @@ defineModule module, class Element extends ElementBase
       if dirtyAreasToDraw
         for dirtyDrawArea in dirtyAreasToDraw
           drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
-          @_drawCacheBitmap.clippedTo drawCacheSpaceDrawArea, draw
+          lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
+          @_cachedDrawInternal()
+          @_drawCacheBitmap.closeClipping lastClippingInfo
+
       else
-        draw()
+        @_cachedDrawInternal()
 
     finally
       @_redrawAll = false
       @_dirtyDrawAreas = remainingDirtyAreas
       Element._cachingDraws--
+
+  _cachedDrawInternal: ->
+    @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
+    if @_clip && @getHasCustomClipping()
+      @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
+    else
+      @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
+
 
   #################
   # ToBitmap

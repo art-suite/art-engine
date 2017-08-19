@@ -54,21 +54,12 @@ module.exports = class StateEpochLayout extends BaseObject
       markParentLayoutPropertiesChanged element
 
   @updateLayouts: (layoutChangedElements) =>
-    process = =>
 
-      # @_elementsLayedOut = {}
+    # TODO: add back getGlobalEpochCycle(), but don't use timePerformance; closures cost too much
 
-      for element in layoutChangedElements when element.__layoutPropertiesChanged
-        layoutElement element, element.getPendingParentSizeForChildren()
+    for element in layoutChangedElements when element.__layoutPropertiesChanged
+      layoutElement element, element.getPendingParentSizeForChildren()
 
-      # apply layouts for sortedLayoutDirtyElements
-      # if a layout changes the element's size, recurse on children.
-      # We need to process all "parent" layouts before "child" layouts,
-      # so sortedLayoutDirtyElements is sorted by depth ascending.
-    if getGlobalEpochCycle() # loaded
-      getGlobalEpochCycle().timePerformance "aimLayout", process
-    else
-      process()
     null
 
   ####################

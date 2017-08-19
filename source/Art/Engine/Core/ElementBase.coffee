@@ -123,7 +123,7 @@ module.exports = class ElementBase extends EventedEpochedObject
 
     # log "ArtEngineElementBase: register #{instanceId}"
     _elementInstanceRegistry[instanceId] = @
-    @eachChild (child) => child._register()
+    child._register() for child in @_children
     @
 
   _unregister: ->
@@ -132,7 +132,7 @@ module.exports = class ElementBase extends EventedEpochedObject
     @_deactivatePersistantAnimators()
 
     delete _elementInstanceRegistry[instanceId]
-    @eachChild (child) => child._unregister()
+    child._unregister() for child in @_children
     @queueEvent "unregistered"
     null
 
