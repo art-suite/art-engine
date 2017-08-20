@@ -21,7 +21,7 @@ module.exports = createWithPostCreate class ShadowableElement extends AtomElemen
     blur: 0
     offset: new PointLayout 0
 
-  @drawProperty
+  @drawLayoutProperty
     shadow:
       default: null
       validate: (v) -> !v || v == true || isPlainObject v
