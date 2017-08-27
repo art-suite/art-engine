@@ -386,7 +386,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
     new Promise (resolve, reject) =>
       # reactivate if already active
-      @_activate() if @_active
+      @_toValueChanged() if @_active
 
       @_element[@_prop] = @_toValue = @toVoid
 
@@ -403,21 +403,28 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
       @stop()
 
   _activate: ->
+    throw new Error if @_active
     @_lastSecond = @_startSecond = @_activatedAtSecond = @_currentSecond # - @frameSeconds
     @_startValue = @_currentValue
     @queueEvent "start"
     @_active = true
+
+  _toValueChanged: ->
+    @_lastSecond = @_startSecond = @_currentSecond - @frameSeconds
+    @_startValue = @_currentValue
 
   _deactivate: ->
     @queueEvent "done"
     @_active = false
 
   animateAbsoluteTime: (@_element, @_currentValue, toValue, @_currentSecond) ->
-
-    if @_active && eq toValue, @_toValue
-      # start the animation timer from the second frame
-      if @_activatedAtSecond == @_startSecond
-        @_startSecond = @_currentSecond
+    if @_active
+      if eq toValue, @_toValue
+        # start the animation timer from the second frame
+        if @_activatedAtSecond == @_startSecond
+          @_startSecond = @_currentSecond
+      else
+        @_toValueChanged()
     else
       @_activate()
 
