@@ -51,6 +51,7 @@ truncateLayoutCoordinate = (v) ->
   modulo
   inspectedObjectLiteral
   defineModule
+  isArray
 } = Foundation
 
 stats = clone zeroedStats =
@@ -550,7 +551,7 @@ defineModule module, class Element extends ElementBase
   _activateToVoidAnimators: ->
     return unless !@_toVoidAnimationStatus && @getPendingHasToVoidAnimators()
     @_toVoidAnimationStatus = "active"
-    for prop, animator of @getPendingAnimators()
+    for prop, animator of @getPendingAnimators() when animator.getHasToVoidAnimation()
       animator.startToVoidAnimation(@).then => @_toVoidAnimationDone()
 
   @getter
@@ -882,10 +883,34 @@ defineModule module, class Element extends ElementBase
   # DRAW
   ##########################
 
+  @drawProperty
+    # is an array of keys and one 'null' entry.
+    # null indicates 'all other children'
+    # Keys are keys for elements to draw, if a matching child is found
+    drawOrder:
+      default: null
+      validate: (v) -> !v? || isArray v
+      # example: [null, "titleBar"] # always draw titleBar last
+  ###
+
+    # in _drawChildren
+      normal drawChildren
+  ###
+
   _drawChildren: (target, elementToTargetMatrix) ->
-    for child in @children when child.visible
-      child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
-    @children # without this, coffeescript returns a new array
+    {children} = @
+    if customDrawOrder = @getDrawOrder()
+      for drawKey in customDrawOrder
+        if drawKey?
+          for child in children when drawKey == child.key
+            child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
+        else
+          for child in children when !(key = child.key)? || !key in customDrawOrder
+            child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
+    else
+      for child in children when child.visible
+        child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
+    children # without this, coffeescript returns a new array
 
   # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
