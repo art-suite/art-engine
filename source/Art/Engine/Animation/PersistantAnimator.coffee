@@ -1,8 +1,7 @@
-Foundation = require 'art-foundation'
 Events = require 'art-events'
 
 {
-  log, BaseObject
+  log
   isFunction, isString
   capitalize
   inspectedObjectLiteral
@@ -10,7 +9,10 @@ Events = require 'art-events'
   isPlainObject
   eq
   rubyOr
-} = Foundation
+  isNumber
+  rubyTrue
+} = require 'art-standard-lib'
+{BaseObject} = require 'art-class-system'
 {EventedMixin} = Events
 
 ###
@@ -278,14 +280,22 @@ Options: (events)
 module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
   @interpolate: interpolate = (startValue, toValue, pos) ->
-    if isFunction startValue.interpolate
+    if pos == 0
+      startValue
+    else if pos == 1
+      toValue
+    else unless rubyTrue(startValue) && rubyTrue(toValue)
+      startValue || toValue
+    else if isFunction startValue.interpolate
       startValue.interpolate toValue, pos
     else if isPlainObject startValue
       out = {}
       out[k] = interpolate v, toValue[k], pos for k, v of startValue
       out
-    else
+    else if isNumber startValue
       startValue + (toValue - startValue) * pos
+    else
+      toValue
 
   @getter "options prop element startValue currentValue toValue continuous voidValue currentSecond startSecond"
   @getter
@@ -406,7 +416,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     throw new Error if @_active
     @_lastSecond = @_startSecond = @_activatedAtSecond = @_currentSecond # - @frameSeconds
     @_startValue = @_currentValue
-    @queueEvent "start"
+    @queueEvent "start", target: @_element, animator: @
     @_active = true
 
   _toValueChanged: ->
@@ -414,7 +424,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     @_startValue = @_currentValue
 
   _deactivate: ->
-    @queueEvent "done"
+    @queueEvent "done", target: @_element, animator: @
     @_active = false
 
   animateAbsoluteTime: (@_element, @_currentValue, toValue, @_currentSecond) ->
@@ -435,7 +445,8 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     newValue = @animate()
 
     if @_active
-      @queueEvent "update" if animationSeconds > 0
+      if animationSeconds > 0
+        @queueEvent "update", target: @_element, animator: @
       @_element.onNextEpoch =>
         @_element[@_prop] = @_toValue
     else
