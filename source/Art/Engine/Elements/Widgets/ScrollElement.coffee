@@ -40,60 +40,35 @@ minimumFlickVelocity = 300  # pixels per second
 animatorSpringConstant = 300
 animatorSpringFriction = 25
 flickSpeedMultiplier = 1
-###
-TODO: Pages should be able to have margins!
-  But we have a big problem. Pages are split across two parents and the two parents
-  can't inherit the children's margins.
-
-I'm more and more thinking I want a fully custom ArtEngine layout for PSE.
-It would make a lot of things simpler to understand...
-###
 
 ###
-PagingScrollElement
+ScrollElement
 
 guarantee:
   Will never scroll more than one "windowSize" per frame.
   That means you need at least as many "pages" as it will take to display one more window-full of content
   above or below the current displayed content.
 
-margins:
-  Margins on paging elements are currently not supported.
-  We could relatively easilly support constant margins.
-  Anything more complex gets a little tedious.
-  Recomendation: Use Padding instead of Margins.
-
 events:
-  currentPageChanged:
-    oldCurrentPage: element
-    currentPage:    element
+  scrollingUpdate:
+  scrollingActive:
   scrollUpdate:
-    childrenOffset:           number (pixels)
-    childrenSize:             number (pixels)
-    windowSize:               number (pixels)
-    focusedChild:             element
-    firstOnScreenChildIndex:  number
-    lastOnScreenChildIndex:   number
-    focusedChildIndex:        number
 
-naming:
+TODO:
+  scrollPosition should be "absolute" instead of "relative to 'tracking'".
+    Starts out at 0 (or viewHeight-childrenHeight if track = end).
+    Absolute means it tracks the total distance scrolled over all time.
+    Why? Animation!
 
-  All "positions" are scalers.
-  All "positions" are relative to the top/left of the PagingScrollElement.
-  Positive values indicate more to the bottom/right of the PagingScrollElement.
+  However, 'tracking' still needs to do everything it does.
+  Which means we need another value - trackedReferencePosition
+  The tracking-line is placed on-screen relative to parent at:
+    trackedReferencePosition + scrollPosition
 
-  "scrollPosition" is the main geometry value for the PagingScrollElement.
+  If elements are only added and existing elements never change height, then
+  scrollPosition is always the start of the scroll area and trackedReferncePoisition
+  is the distance from start to the tracking-line.
 
-  I chose "scrollPosition" over just "position" or "location".
-  location vs position: http://www.eng-tips.com/viewthread.cfm?qid=180516
-    position can be used to refer to internal configuration, which scrollPosition is,
-    but location cannot. This avoids confusion with Element's currentLocations.
-
-Implementation Notes:
-
-  When to use "pending" property values:
-    - use pending values only as inputs to computation that results in setting another property
-    - use current (non-pending) poperty values for all getters
 ###
 
 defineModule module, class ScrollElement extends Element
