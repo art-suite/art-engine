@@ -4,12 +4,11 @@
 
 * pointerDown
 * pointerUp
-* pointerMoved
+* pointerMove (logically the same as pointerDrag)
 
 ## Derived Pointer Events
 These events are generated under certain combinations of the basic pointer events.
 
 * pointerClick
-* pointerDrag
 * pointerIn
 * pointerOut
