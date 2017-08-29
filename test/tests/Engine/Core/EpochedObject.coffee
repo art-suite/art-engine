@@ -17,7 +17,7 @@ class TestableEpochedObject extends EpochedObject
   _setMarginFromLayout: ->
   _setPaddingFromLayout: ->
   _setSizeFromLayout: ->
-  _sizeForChildren: -> point 100
+  getSizeForChildren: -> point 100
   getChildrenChanged: -> false
   getElementToParentMatrixChanged: -> false
   getParentChanged: -> false

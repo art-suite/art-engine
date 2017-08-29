@@ -639,9 +639,9 @@ defineModule module, class Element extends ElementBase
     sizeAffectsLocation:  (pending) -> state = @getState(pending); state._axis.x != 0 || state._axis.y != 0
     absoluteAxis:         (pending) -> state = @getState(pending); state._currentSize.mul state._axis
 
-    sizeForChildren: (pending) ->
+    sizeForChildren: (pending, customParentSize) ->
       {_currentPadding, _currentSize} = @getState pending
-      _currentPadding.subtractedFromSize _currentSize
+      _currentPadding.subtractedFromSize customParentSize || _currentSize
 
     parentSize: -> throw new Error "parentSize depricated"
 
@@ -905,7 +905,7 @@ defineModule module, class Element extends ElementBase
           for child in children when drawKey == child.key
             child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
         else
-          for child in children when !(key = child.key)? || !key in customDrawOrder
+          for child in children when !(key = child.key)? || !(key in customDrawOrder)
             child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
     else
       for child in children when child.visible
@@ -1540,7 +1540,7 @@ defineModule module, class Element extends ElementBase
   #   elementToTargetMatrix.rectanglesOverlap @_elementSpaceDrawArea, target.size
   # This avoids creating a rectangle object by adding a method to Matrix:
   #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
-  drawAreaIn: (elementToTargetMatrix) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
+  drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
   drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
 
   @getter
@@ -1847,9 +1847,6 @@ defineModule module, class Element extends ElementBase
   _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize
   _layoutLocationY:          (parentSize)-> @getPendingLocation().layoutY parentSize
 
-  _sizeForChildren: (size) ->
-    @getPendingCurrentPadding().subtractedFromSize size
-
   ##########################
   # EVENTS
   ##########################
@@ -1913,7 +1910,7 @@ defineModule module, class Element extends ElementBase
 
   nonChildrenLayoutFinalPass: a function
     IN: finalSizeForChildren
-      This is the finalSize, passed through @_sizeForChildren()
+      This is the finalSize, passed through @getSizeForChildren()
 
     OUT: ignored
   ###

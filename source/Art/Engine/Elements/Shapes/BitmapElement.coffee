@@ -130,7 +130,7 @@ defineModule module, class BitmapElement extends ShadowableElement
     super
     drawOptions.focus       = @_focus
     drawOptions.layout      = @getLayout()
-    drawOptions.targetSize  = @getCurrentSize()
+    drawOptions.targetSize  = @getSizeForChildren()
     drawOptions.aspectRatio = @getAspectRatio()
 
   fillShape: (target, elementToTargetMatrix, options) ->

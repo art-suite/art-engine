@@ -269,8 +269,8 @@ module.exports = class StateEpochLayout extends BaseObject
     firstPassSize = element._layoutSize parentSize, nearInfiniteSize
     currentPadding = layoutPadding element, parentSize
     currentMargin  = layoutMargin element, parentSize, element.getPendingParent()
-    firstPassSizeForChildrenUnconstrained = element._sizeForChildren firstPassSize
-    firstPassSizeForChildrenConstrained = element._sizeForChildren element._layoutSizeForChildren parentSize, nearInfiniteSize
+    firstPassSizeForChildrenUnconstrained = element.getSizeForChildren true, firstPassSize
+    firstPassSizeForChildrenConstrained = element.getSizeForChildren true, element._layoutSizeForChildren parentSize, nearInfiniteSize
 
     # Partition children into firstPassChildren and finalPassChildren
     pendingChildren = element.getPendingChildren()
@@ -385,7 +385,7 @@ module.exports = class StateEpochLayout extends BaseObject
 
       # compute final size
       finalSize = element._layoutSize parentSize, childrenSize
-      finalSizeForChildren = element._sizeForChildren finalSize
+      finalSizeForChildren = element.getSizeForChildren true, finalSize
 
       # finalize layout except location as needed
       if finalPassChildrenSizeOnly
