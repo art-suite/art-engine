@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Pointer = require './Pointer'
 
-{defineModule, inspect, clone, peek, first, BaseObject, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
+{defineModule, inspect, merge, clone, peek, first, BaseObject, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
 {point, rect, matrix} = Atomic
 
 pointerDeadZone = Pointer.pointerDeadZone
@@ -52,7 +52,7 @@ defineModule module, class GestureRecognizer extends BaseObject
 
   pointerHandlers = ["pointerDown", "pointerUp", "pointerMove", "pointerCancel"]
   constructor: (gestureRecognizers)->
-    @_nonGestureHandlers = select gestureRecognizers, pointerHandlers
+    @_nonGestureHandlers = gestureRecognizers #select gestureRecognizers, pointerHandlers
     @_gestureRecognizers = objectWithout gestureRecognizers, pointerHandlers
     @_activeGesture = null
     @_lastActiveGesture = null
@@ -68,40 +68,39 @@ defineModule module, class GestureRecognizer extends BaseObject
       switch k
         when "horizontal" then v.recognize ||= (e) -> d = e.delta; abs(d.y) < abs(d.x)
         when "vertical"   then v.recognize ||= (e) -> d = e.delta; abs(d.y) > abs(d.x)
-        else
-          throw new Error "'recognize' function required for recognizer '#{k}'" unless isFunction v.recognize
 
   @getter
     pointerHandlers: ->
-      pointerDown:  (e) =>
-        @_nonGestureHandlers.pointerDown? e
-        @_startEvent = if e.newEvent then e.newEvent() else clone e
-        @_resumeGesture e if @_lastActiveGesture?.resume? e
+      merge @_nonGestureHandlers,
+        pointerDown:  (e) =>
+          @_nonGestureHandlers.pointerDown? e
+          @_startEvent = if e.newEvent then e.newEvent() else clone e
+          @_resumeGesture e if @_lastActiveGesture?.resume? e
 
-      pointerMove:  (e) =>
-        if ag = @_activeGesture
-          ag.move? e
-        else
-          if @_startEvent && !e.pointer.stayedWithinDeadzone
-            @_startGesture e
-            @_nonGestureHandlers.pointerCancel? e
+        pointerMove:  (e) =>
+          if ag = @_activeGesture
+            ag.move? e
           else
-            @_nonGestureHandlers.pointerMove? e
+            if @_startEvent && !e.pointer.stayedWithinDeadzone
+              @_startGesture e
+              @_nonGestureHandlers.pointerCancel? e
+            else
+              @_nonGestureHandlers.pointerMove? e
 
-      pointerUp:     (e) =>
-        if @_activeGesture
-          @_activeGesture.end? e
-          @_activeGesture = null
-        else
-          @_nonGestureHandlers.pointerUp? e
+        pointerUp:     (e) =>
+          if @_activeGesture
+            @_activeGesture.end? e
+            @_activeGesture = null
+          else
+            @_nonGestureHandlers.pointerUp? e
 
-      pointerCancel: (e) =>
-        if @_activeGesture
-          @_activeGesture.cancel? e
-          @_activeGesture = null
-        else
-          @_nonGestureHandlers.pointerCancel? e
-        @_startEvent = null
+        pointerCancel: (e) =>
+          if @_activeGesture
+            @_activeGesture.cancel? e
+            @_activeGesture = null
+          else
+            @_nonGestureHandlers.pointerCancel? e
+          @_startEvent = null
 
   _resumeGesture: (e) ->
     e.target?.capturePointerEvents?()
@@ -109,10 +108,9 @@ defineModule module, class GestureRecognizer extends BaseObject
     @_activeGesture.begin? @_startEvent
 
   _startGesture: (e) ->
-    for k, v of @_gestureRecognizers
-      if v.recognize(e)
-        @_lastActiveGesture = @_activeGesture = v
-        break
+    for k, v of @_gestureRecognizers when v.recognize? e
+      @_lastActiveGesture = @_activeGesture = v
+      break
 
     if @_activeGesture
       e.target?.capturePointerEvents?()
