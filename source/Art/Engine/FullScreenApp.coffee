@@ -2,7 +2,9 @@ Foundation = require 'art-foundation'
 
 {merge, Promise, parseQuery, log, ConfigRegistry, isPlainObject} = Foundation
 {Meta, Link} = Foundation.Browser.DomElementFactories
+{getDomReadyPromise} = Foundation.Browser
 {FontLoader} = require 'art-canvas'
+{rgbColor} = require 'art-atomic'
 
 module.exports = class FullScreenApp
 
@@ -21,24 +23,30 @@ module.exports = class FullScreenApp
 
       ###
       TODO:
-      this indirectly requires jquery...
-      1) dom-console doesn't really need jquery, it just needs a refactor
-      2) I'd like a way to easily build production vs dev code.
-      3) DomConsole should only be included in dev code.
+      1) I'd like a way to easily build production vs dev code.
+      2) DomConsole should only be included in dev code.
+      ANSWER:
+        1. make DomConsole its own NPM
+        2. let webpack rewrite the following require into a noop for production.
       ###
-      DomConsole = require 'art-foundation/dev_tools/dom_console'
+      require 'art-foundation/dev_tools/dom_console'
+      {DomConsole} = Neptune.Art.Foundation.DevTools
 
       DomConsole.enable()
       Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs == "true"
 
     log "Art.Engine.FullScreenApp: app ready"
 
-  @getDomReadyPromise: ->
-    new Promise (resolve) =>
-      document.onreadystatechange = =>
-        if document.readyState == "interactive"
-          @_domReady()
-          resolve()
+  @_setBodyStyles: ({backgroundColor})->
+    if global.document
+      {body, documentElement} = global.document
+      body.style.padding = "0px"
+      body.style.margin = "0px"
+      body.style.backgroundColor = "#{rgbColor backgroundColor || "#eee"}"
+      body.style.overflow = "hidden"
+      body.style.fontSize = "0px"
+      body.style.height = "100%"
+      documentElement.style.height = "100%"
 
   ###
   IN:
@@ -65,10 +73,13 @@ module.exports = class FullScreenApp
     @writeDom config
     Promise.all [
       Promise.resolve fonts && FontLoader.loadFonts fonts
-      @getDomReadyPromise()
+      getDomReadyPromise()
+      .then =>
+        @_domReady()
+        @_setBodyStyles config
     ]
 
-  @writeDom: ({title, styleSheets, scripts, meta, link, manifest})->
+  @writeDom: ({title, styleSheets, scripts, meta, link, manifest, backgroundColor})->
 
     document.title = title || "Art App"
     scripts ||= []
@@ -111,7 +122,7 @@ module.exports = class FullScreenApp
           body {
             padding: 0px;
             margin: 0px;
-            background-color: #eee;
+            background-color: #{rgbColor backgroundColor || "#eee"};
             overflow: hidden;
             font-size: 0px;
             height: 100%;
