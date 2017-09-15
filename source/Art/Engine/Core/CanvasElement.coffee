@@ -71,7 +71,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @canvasElement = @
     @_focusedElement = null
     @_wasFocusedElement = null
-    log.error "DEPRICATED: disableRetina. use: pixelsPerPoint: 1" if options.disableRetina
     @_devicePixelsPerPoint = options.pixelsPerPoint ? if options.disableRetina
       1
     else
@@ -101,17 +100,24 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _getOrCreateCanvasElement: ({canvas, canvasId, parentHtmlElement, noHtmlCanvasElement}) ->
     unless noHtmlCanvasElement
-      canvas || document.getElementById(canvasId) || @_createCanvasElement parentHtmlElement
+      @_parentHtmlElement = parentHtmlElement || document.getElementById("artDomConsoleArea") || document.body
+      if canvas ||= document.getElementById(canvasId)
+        @_parentHtmlElement = canvas.parentElement || @_parentHtmlElement
+        canvas
+      else
+        @_createCanvasElement @_parentHtmlElement
 
   _createCanvasElement: (parentHtmlElement) ->
-    parentHtmlElement ||= document.getElementById("artDomConsoleArea") || document.body
-    parentHtmlElement.appendChild @_createdHtmlCanvasElement = HtmlCanvas
+    @_createdHtmlCanvasElement = HtmlCanvas
       style: merge @pendingStyle,
         position: "absolute"
         outline: "none"
         top: "0"
         left: "0"
       id: "artCanvas"
+    @onNextReady().then =>
+      parentHtmlElement.appendChild @_createdHtmlCanvasElement
+    @_createdHtmlCanvasElement
 
   @concreteProperty
 
@@ -131,8 +137,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     parentSize: (pending) ->
       if @_canvas
         point(
-          @_canvas.parentElement?.clientWidth || 100
-          @_canvas.parentElement?.clientHeight || 100
+          @_parentHtmlElement?.clientWidth || global.screen.width
+          @_parentHtmlElement?.clientHeight || global.screen.height
         )
       else point 100
 
@@ -349,13 +355,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     )
 
   _detachResizeListener: ->
-    @_canvas.parentElement && removeResizeListener @_canvas.parentElement, @_resizeListener
+    @_parentHtmlElement && removeResizeListener @_parentHtmlElement, @_resizeListener
 
   _attachResizeListener: ->
     @_domListener window, "resize", (domEvent)=>
       @_updateDocumentMatricies()
 
-    @_canvas.parentElement && addResizeListener @_canvas.parentElement, @_resizeListener = =>
+    @_parentHtmlElement && addResizeListener @_parentHtmlElement, @_resizeListener = =>
       @_updateCanvasGeometry()
 
       # NOTE: must process immediately to avoid showing a stretched canvas
