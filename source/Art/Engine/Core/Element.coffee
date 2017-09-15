@@ -276,12 +276,6 @@ defineModule module, class Element extends ElementBase
 
     childrenLayout:         default: null,                  validate:   (v) -> v == null || v == "flow" || v == "column" || v == "row"
 
-    childrenGrid:
-      default: null
-      validate:   (v) -> v == null || isString(v) && v.match /^[ a-zA-Z]+$/
-      preprocess: (v) ->
-        log.error "DEPRICATED: `childrenGrid` property. Use `childrenLayout and layoutWeight`."
-        v
     childrenAlignment:      default: point0,                preprocess: (v) -> point v
       # default: "left"
       # validate:   (v) -> !v || v == "left" || v == "center" || v == "right"
@@ -404,10 +398,6 @@ defineModule module, class Element extends ElementBase
     currentScale: (pending) ->
       state = @getState pending
       state._elementToParentMatrix.getExactScale()
-
-    layout:
-      getter: -> throw new Error "get layout is depricated"
-      setter: -> throw new Error "set layout is depricated"
 
     elementToAbsMatrix:
       getter: (pending) ->
@@ -555,10 +545,6 @@ defineModule module, class Element extends ElementBase
       animator.startToVoidAnimation(@).then => @_toVoidAnimationDone()
 
   @getter
-    # element-space rectangle covering the element's unpadded size
-    area: ->
-      throw new Error "depricated - use logicalArea"
-
     logicalArea: ->
       p = @getCurrentPadding()
       size = @_currentSize
@@ -642,8 +628,6 @@ defineModule module, class Element extends ElementBase
     sizeForChildren: (pending, customParentSize) ->
       {_currentPadding, _currentSize} = @getState pending
       _currentPadding.subtractedFromSize customParentSize || _currentSize
-
-    parentSize: -> throw new Error "parentSize depricated"
 
     parentSizeForChildren: (pending) -> @getState(pending)._parent?.getSizeForChildren(pending) || defaultSize
 
@@ -775,17 +759,6 @@ defineModule module, class Element extends ElementBase
 
     layoutMovesChildren: (pending) ->
       !!(@getState pending)._childrenLayout
-
-    animate:
-      default: null
-      getter: (pending) -> @_activeAnimator
-      setter: (options) ->
-        log.error "DEPRICATED: `animate` property. Use `animators`."
-        return if @_toVoidAnimationStatus
-        @finishAnimations()
-        stateEpoch.onNextReady =>
-          log "START ANIMATION"
-          new Animator @, options if options
 
     preFilteredBaseDrawArea: (pending) ->
       {_currentPadding, _currentSize} = @getState pending
@@ -1212,8 +1185,6 @@ defineModule module, class Element extends ElementBase
   toBitmapWithInfo: (optionsOrSize={}) ->
     unless isPlainObject options = optionsOrSize
       options = size: point optionsOrSize
-
-    throw new Error "elementSpaceDrawArea option depricated" if options.elementSpaceDrawArea
 
     new Promise (resolve) =>
       stateEpoch.onNextReady =>
@@ -1660,11 +1631,6 @@ defineModule module, class Element extends ElementBase
     topMostParent:   -> if @_parent then @_parent.topMostParent || @_parent else null
     hasChildren:     -> @_children.length > 0
     reverseChildren: -> @_children.slice().reverse()
-
-    childrenMap: ->
-      throw new Error "DEPRICATED - simpifying the API - use the @children array to build your own Map"
-      (new Map).tap (map) =>
-        map.set child, true for child in @_children
 
     elementPath: ->
       if @parent

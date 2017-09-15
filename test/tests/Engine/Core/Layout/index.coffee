@@ -4,9 +4,8 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  CommentInspiredLayout:     require './CommentInspiredLayout'    
-  ElementChildrenLayoutGrid: require './ElementChildrenLayoutGrid'
-  TextElement:               require './TextElement'              
+  CommentInspiredLayout: require './CommentInspiredLayout'
+  TextElement:           require './TextElement'          
 require './Flex'
 require './Flow'
 require './Functional'

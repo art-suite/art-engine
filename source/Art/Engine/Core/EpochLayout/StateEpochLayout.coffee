@@ -150,53 +150,6 @@ module.exports = class StateEpochLayout extends BaseObject
 
       sizeWithPadding rMax, bMax, currentPadding
 
-  # NOTE: grid layout determines an area dedicated to each element.
-  #   This area is passed to the element as-if it was the parent's full children-area
-  #   The child can layout its location and size within this area.
-  #   Ex: The default propertires for location: 0 and size: ps:1 will result an element perfectly
-  #     filling the allocated area.
-  #   Ex: You could choose a fixed size and center the element in the grid-laid out area:
-  #     location: ps: .5
-  #     axis: .5
-  #     size: 25
-  #   Ex: Define a 3-slot grid with 2 gridlines and center the two children on those grid-lines:
-  #     new Element
-  #       childrenLayout: "row"
-  #       childrenGrid: " ab"
-  #       new Element axis: "topCenter"
-  #       new Element axis: "topCenter"
-  layoutChildrenRowGrid = (isRowLayout, element, gridString, currentPadding, parentSize, children, finalPassChildrenSizeOnly) ->
-    # TODO: distribute rounding error among the spaces, if there are spaces.
-    # TODO: do we need to do anything special for circular layout items?
-
-    gridCount = gridString.length
-    lowerCaseACode = 97
-
-    gridStep = (if isRowLayout then parentSize.x else parentSize.y) / gridCount
-
-    maxCrossSize = offset = 0
-    eachRunAsCharCodes gridString.toLowerCase(), (charCode, count) ->
-      gridSize = count * gridStep
-      if child = children[charCode - lowerCaseACode]
-        adjustedParentSize = if isRowLayout
-          parentSize.withX gridSize
-        else
-          parentSize.withY gridSize
-        layoutElement child, adjustedParentSize, true
-
-        locationX = child._layoutLocationX adjustedParentSize
-        locationY = child._layoutLocationY adjustedParentSize
-
-        maxCrossSize = max maxCrossSize, if isRowLayout
-          child._setElementToParentMatrixFromLayoutXY offset + locationX, locationY, parentSize
-          child.getPendingCurrentSize().y
-        else
-          child._setElementToParentMatrixFromLayoutXY locationX, offset + locationY, parentSize
-          child.getPendingCurrentSize().x
-
-      offset += gridSize
-    null
-
   defaultWidthOfEachLine = (i, widthOfEachLine) -> widthOfEachLine[i]
   alignChildren = (state, parentSize, childrenSize) ->
     {childrenAlignment, flowChildren, firstChildIndexOfEachLine, lastChildIndexOfEachLine, widthOfEachLine, widthOfEachLineFunction} = state
@@ -329,45 +282,23 @@ module.exports = class StateEpochLayout extends BaseObject
             finalPassChildrenSizeOnly
           )
         when "column"
-          if childrenGrid = element.getPendingChildrenGrid()
-            layoutChildrenRowGrid(
-              false
-              element
-              childrenGrid
-              currentPadding
-              firstPassSizeForChildrenConstrained
-              firstPassChildren
-              finalPassChildrenSizeOnly
-            )
-          else
-            layoutChildrenFlex(
-              false
-              element
-              currentPadding
-              firstPassSizeForChildrenConstrained
-              firstPassChildren
-              parentSize
-            )
+          layoutChildrenFlex(
+            false
+            element
+            currentPadding
+            firstPassSizeForChildrenConstrained
+            firstPassChildren
+            parentSize
+          )
         when "row"
-          if childrenGrid = element.getPendingChildrenGrid()
-            layoutChildrenRowGrid(
-              true
-              element
-              childrenGrid
-              currentPadding
-              firstPassSizeForChildrenConstrained
-              firstPassChildren
-              finalPassChildrenSizeOnly
-            )
-          else
-            layoutChildrenFlex(
-              true
-              element
-              currentPadding
-              firstPassSizeForChildrenConstrained
-              firstPassChildren
-              parentSize
-            )
+          layoutChildrenFlex(
+            true
+            element
+            currentPadding
+            firstPassSizeForChildrenConstrained
+            firstPassChildren
+            parentSize
+          )
         else
           layoutChildren(
             element
