@@ -92,6 +92,8 @@ module.exports = class FullScreenApp
 
     nameContentMetas = merge
       "viewport": "user-scalable=no, width=device-width, initial-scale=1.0"
+      "mobile-web-app-capable": "yes"
+      "apple-touch-fullscreen": "yes"
       "apple-mobile-web-app-capable": "yes"
       "apple-mobile-web-app-status-bar-style": "black" #"black-translucent"
       "format-detection": "telephone=no"
