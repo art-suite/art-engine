@@ -170,22 +170,22 @@ module.exports = class PointLayoutBase extends BaseObject
     if layoutLength > 0
       @_yRelativeToParentW   = isParentWRelative(layoutY, layoutBaseline, point0, nearInfinityPointX) || isParentWRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
       @_yRelativeToParentH   = isParentHRelative(layoutY, layoutBaseline, point0, nearInfinityPointY) || isParentHRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
-      if layoutLength == 1 && !@_yRelativeToParentW && !@_yRelativeToParentH
-        console.warn "#{@}: vertical/y/h layout function has 1 input, which suggests
-          it should be parent-relative, but it doesn't appear to be.
-          \n\nResolution: If the input
-          is unused, remove it. Otherwise, alter your function to respond differently
-          for parent-sizes of 0 and children-sizes of near-infinity."
+      # if layoutLength == 1 && !@_yRelativeToParentW && !@_yRelativeToParentH
+      #   console.warn "#{@}: vertical/y/h layout function has 1 input, which suggests
+      #     it should be parent-relative, but it doesn't appear to be.
+      #     \n\nResolution: If the input
+      #     is unused, remove it. Otherwise, alter your function to respond differently
+      #     for parent-sizes of 0 and children-sizes of near-infinity."
 
     if layoutLength > 1
       @_yRelativeToChildrenW = isChildrenWRelative(layoutY, layoutBaseline, point0, nearInfinityPointX) || isChildrenWRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointY)
       @_yRelativeToChildrenH = isChildrenHRelative(layoutY, layoutBaseline, point0, nearInfinityPointY) || isChildrenHRelative(layoutY, nearInfinityBaseline, nearInfinityPoint, nearInfinityPointX)
-      unless @_yRelativeToChildrenW || @_yRelativeToChildrenH
-        console.warn "#{@}: vertical/y/h layout function has 2 inputs, which suggests
-          it should be child-relative, but it doesn't appear to be.
-          \n\nResolution: If the second input
-          is unused, remove it. Otherwise, alter your function to respond differently
-          for children-sizes of 0 vs near-infinity when parent-size is 0."
+      # unless @_yRelativeToChildrenW || @_yRelativeToChildrenH
+      #   console.warn "#{@}: vertical/y/h layout function has 2 inputs, which suggests
+      #     it should be child-relative, but it doesn't appear to be.
+      #     \n\nResolution: If the second input
+      #     is unused, remove it. Otherwise, alter your function to respond differently
+      #     for children-sizes of 0 vs near-infinity when parent-size is 0."
 
   _detectRelativity: ->
     @_detectXRelativity()
