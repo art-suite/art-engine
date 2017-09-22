@@ -66,8 +66,8 @@ defineModule module, class GestureRecognizer extends BaseObject
   setupDefaultRecognizers: ->
     for k, v of @_gestureRecognizers
       switch k
-        when "horizontal" then v.recognize ||= (e) -> d = e.delta; abs(d.y) < abs(d.x)
-        when "vertical"   then v.recognize ||= (e) -> d = e.delta; abs(d.y) > abs(d.x)
+        when "horizontal" then v.recognize ||= (e) -> e.delta.absoluteAspectRatio > 1
+        when "vertical"   then v.recognize ||= (e) -> e.delta.absoluteAspectRatio < 1
 
   @getter
     pointerHandlers: ->
@@ -116,5 +116,3 @@ defineModule module, class GestureRecognizer extends BaseObject
       e.target?.capturePointerEvents?()
       @_activeGesture.begin? @_startEvent
       @_activeGesture.move? e
-    else
-      @_startEvent = null
