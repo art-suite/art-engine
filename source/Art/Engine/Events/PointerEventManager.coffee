@@ -1,3 +1,17 @@
+{
+  inspect, clone, shallowClone, peek, first, min, max, eq, arrayWithoutValue, stableSort, log, isObject,
+  formattedInspect
+  isArray
+} = require 'art-standard-lib'
+{BaseClass} = require 'art-class-system'
+{point, rect, matrix} = require 'art-atomic'
+{EventEpoch} = require 'art-events'
+{eventEpoch} = EventEpoch
+
+Pointer = require './Pointer'
+PointerEvent = require './PointerEvent'
+KeyEvent = require './KeyEvent'
+
 ###
 PointerEventManager
 
@@ -105,19 +119,7 @@ GUARANTEES
       On either desktop or touch devices, if you are tracking move events, the pointer's location won't have changed between the last mouseMove event and the pointerUp event.
 ###
 
-Atomic = require 'art-atomic'
-Foundation = require 'art-foundation'
-Events = require 'art-events'
-Pointer = require './Pointer'
-PointerEvent = require './PointerEvent'
-KeyEvent = require './KeyEvent'
-
-{EventEpoch} = Events
-{eventEpoch} = EventEpoch
-{point, rect, matrix} = Atomic
-{inspect, clone, shallowClone, peek, first, min, max, eq, arrayWithoutValue, stableSort, log, isObject} = Foundation
-
-module.exports = class PointerEventManager extends Foundation.BaseObject
+module.exports = class PointerEventManager extends BaseClass
 
   constructor: (options={})->
     super
@@ -403,7 +405,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
   updateFocusedPath: (pointer, element)->
     pointer ||= @activePointers[0]
 
-    newPath = rootToElementPath element || peek @currentFocusedPath
+    newPath = if isArray element then element else rootToElementPath element || peek @currentFocusedPath
     newPath = @validatedFocusPath if newPath[0] != @canvasElement
 
     @_currentFocusedPath = updatePath @currentFocusedPath, newPath,
@@ -417,7 +419,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     @currentFocusedPath
 
   focus: (pointer, element) ->
-    @updateFocusedPath pointer, element
+    @updateFocusedPath pointer, element || @pointerElementPath pointer
 
   updateMousePath: ->
     pointer = @mouse
@@ -438,7 +440,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
     pointer = @activePointers[id] = new Pointer id, location
 
     if @_numActivePointers == 1
-      @focus pointer, peek @pointerElementPath pointer
+      @focus pointer
 
     @queuePointerEvents "pointerDown", pointer, timeStampInPerformanceSeconds
 
@@ -467,6 +469,7 @@ module.exports = class PointerEventManager extends Foundation.BaseObject
   # pointerUp - user activity cased this
   pointerUp: (id, timeStampInPerformanceSeconds) ->
     eventEpoch.logEvent "pointerUp", id
+
     unless pointer = @activePointers[id]
       return console.error "pointerUp(#{id}): no active pointer for that id"
 
