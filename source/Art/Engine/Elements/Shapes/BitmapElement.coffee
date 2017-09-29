@@ -6,6 +6,7 @@ ShadowableElement = require '../ShadowableElement'
 {ceil, round} = Math
 {defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray, timeout} = Foundation
 {point, rect, Matrix, point0, point1} = Atomic
+{isImage} = Canvas
 
 defineModule module, class BitmapElement extends ShadowableElement
 
@@ -19,6 +20,7 @@ defineModule module, class BitmapElement extends ShadowableElement
 
     # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
+      return Canvas.Bitmap.get url unless isString url # non-string sources are not cached
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
       out = @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
       out.then (bitmap) => @_loaded[url] = bitmap
@@ -36,7 +38,7 @@ defineModule module, class BitmapElement extends ShadowableElement
     # returns true if the bitmap was released
     # returns false if there are still other references
     release: (url) ->
-      return unless url
+      return unless isString url
       # log "SourceToBitmapCache#release: #{url}"
       throw new Error "no references for #{url}" unless isNumber @_referenceCounts[url]
       if @_referenceCounts[url] == 0 || !isNumber @_referenceCounts[url]
@@ -97,7 +99,11 @@ defineModule module, class BitmapElement extends ShadowableElement
     ###
     source:
       default:    null
-      validate:   (v) -> !v || isString v
+      validate:   (v) ->
+        !v ||
+        (isImage v) ||
+        (isString v)
+
       postSetter: (v) -> v && @_loadBitmapFromSource v
 
     ###
