@@ -233,7 +233,6 @@ defineModule module, class Element extends ElementBase
     size:
       default: ps:1
       preprocess: (v, previousValue) ->
-        log setSize: {previousValue} if previousValue
         if v instanceof PointLayoutBase then v else new PointLayout v, previousValue || defaultSizeLayout
 
     ###
