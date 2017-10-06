@@ -20,7 +20,7 @@ class Components
       applyFunction v, newPointLayout
 
     newPointLayout.layoutX = if newPointLayout._hasXLayout
-      layoutX = @_buildXLayoutFromComponents(maxLayout)
+      layoutX = @_buildXLayoutFromComponents maxLayout
       newPointLayout._detectXRelativity layoutX if @needToDetectXRelativity
       layoutX
     else if previousLayout?._hasXLayout
@@ -208,11 +208,11 @@ class Components
 
     wpw:                      xpw
     hph:                      yph
-    wcw:                      xcw
-    hch:                      ych
-
     wph:                      xph
     hpw:                      ypw
+
+    wcw:                      xcw
+    hch:                      ych
 
     width:                    x
     height:                   y
