@@ -24,6 +24,7 @@ class Components
       newPointLayout._detectXRelativity layoutX if @needToDetectXRelativity
       layoutX
     else if previousLayout?._hasXLayout
+      newPointLayout._inheritedXLayout = previousLayout
       newPointLayout._hasXLayout = true
       newPointLayout._copyXRelativity previousLayout
       previousLayout.layoutX
@@ -35,6 +36,7 @@ class Components
       newPointLayout._detectYRelativity layoutY if @needToDetectYRelativity
       layoutY
     else if previousLayout?._hasYLayout
+      newPointLayout._inheritedYLayout = previousLayout
       newPointLayout._hasYLayout = true
       newPointLayout._copyYRelativity previousLayout
       previousLayout.layoutY
@@ -314,12 +316,15 @@ defineModule module, class PointLayout extends PointLayoutBase
     "PointLayout(#{@toStringLean()})"
 
   toStringLean: ->
-    if @initializer
+    out = if @initializer
       if @initializer instanceof Point && @initializer.x == @initializer.y
         @initializer.x
       else
         inspectLean @initializer
     else '0'
+    out += ", inheritedXLayout: #{@_inheritedXLayout}" if @_inheritedXLayout
+    out += ", inheritedYLayout: #{@_inheritedYLayout}" if @_inheritedYLayout
+    out
 
   @getter
     inspectedInitializer: -> if @initializer then inspect @initializer else '0'

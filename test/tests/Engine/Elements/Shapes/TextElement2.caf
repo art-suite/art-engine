@@ -19,7 +19,6 @@ suite:
         new TextElement
           size:     w: 200  hch: 1
           padding:  h: 20   v:   10
-          align:    value
           color:    :red
           text:     "" The quick brown fox jumped over the lazy dog.
           fontSize: 16

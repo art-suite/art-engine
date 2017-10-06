@@ -544,7 +544,7 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
     scroll:
       default: "vertical"
       validate: (v) -> v == "vertical" || v == "horizontal"
-      postSetter: (newV, oldValue) ->
+      postSetter: (newV) ->
         if newV == "vertical"
           @_setVerticalAxis()
         else

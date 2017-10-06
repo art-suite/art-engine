@@ -22,6 +22,7 @@ module.exports = class PointLayoutBase extends BaseObject
     @_yRelativeToChildrenH = false
 
     @_hasXLayout = @_hasYLayout = false
+    @_inheritedXLayout = @_inheritedYLayout = false
 
     # NOTE: Chome is 3x faster if we just make these member functions, but Safari is 20% slower.
     # Since we are optimizing primarilly for Safari, and they are both still "fast", sticking with this.

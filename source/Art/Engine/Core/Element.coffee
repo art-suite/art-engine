@@ -232,7 +232,9 @@ defineModule module, class Element extends ElementBase
   @layoutProperty
     size:
       default: ps:1
-      preprocess: (v) -> if v instanceof PointLayoutBase then v else new PointLayout v, defaultSizeLayout
+      preprocess: (v, previousValue) ->
+        log setSize: {previousValue} if previousValue
+        if v instanceof PointLayoutBase then v else new PointLayout v, previousValue || defaultSizeLayout
 
     ###
     TODO: Update StateEpochLayout to use: childrenSizePreprocessor
@@ -262,7 +264,8 @@ defineModule module, class Element extends ElementBase
 
     location:
       default: 0
-      preprocess: (v) -> if v instanceof PointLayoutBase then v else new PointLayout v, defaultLocationLayout
+      preprocess: (v, oldV) ->
+        if v instanceof PointLayoutBase then v else new PointLayout v, oldV || defaultLocationLayout
       postSetter: -> @_locationLayoutDisabled = false
 
     scale:

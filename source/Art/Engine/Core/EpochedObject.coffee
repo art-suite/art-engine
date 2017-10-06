@@ -64,8 +64,24 @@ module.exports = class EpochedObject extends BaseObject
     setter: (preprocessedNewValue, oldValue, rawNewValue, preprocessAndValidate) ->
       THIS: the Element
       IN:
+        preprocessedNewValue: the new value that has been validated and preprocssed
+
+        oldValue: the currently set value.
+          WARNING: Setting is replacing!
+            The oldValue should not impact the newly set value in any
+            LOGICALLY IMPORTANT WAY.
+
+            Basically, only use oldValue to enhance performance OR trigger change-events;
+            the actually-set-value should not be logically the same with or without it.
+
+            For an example of how this is used to increase performance, see the
+            'children' property. In this example we both enhance performance AND
+            we can trigger detailed change-events.
+
         rawNewValue: the exact, unprocessed, unvalidated value of 'foo' passed by the setYourProp(foo) or @yourProp = foo statement.
-        oldValue: the (custom-setter-processed) value that was last set (i.e. the value in @_pendingState)
+        preprocessAndValidate: your custom preprocessor and validator are merged into a single function you can use
+          as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
+
         preprocessAndValidate: your custom preprocessor and validator are merged into a single function you can use
           as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
       OUT: It should return the value to set in @_pendingState.
@@ -106,11 +122,23 @@ module.exports = class EpochedObject extends BaseObject
       This is particularly useful when writing custom Elements which consist of a struture of other
       elements. Often you'll want to update that structure in response to properties being set.
 
-    preprocess: (rawValue) -> processedValue
-      IN: raw setter input
+    # keyword: preprocessor
+    preprocess: (rawValue, baseValue) -> processedValue
+      IN:
+        rawValue: raw value passed in to setter
+        baseValue: a baseline value in case rawValue only partially specifies the final value.
+          This is useful for size and location layouts where you may want to specify one dimension,
+          but inherit the other dimension.
+          toFrom-void Animators pass in the current value as the baseValue when they start. In this
+          way you can say: "animators: size: toFrom: w: 0" and whatever the current height is
+          will persist.
+          Also note, that you can only pass in a baseCalue if you use "preprocessProperty."
+          The normal setter will not pass through any baseValue you include.
+          The normal setter is designed to fully replace the current value in a pure-functional way.
       THIS: not set
       OUT: normalized value to actually set
 
+    # keyword: validator
     validate: (rawValue) -> boolean
       IN: raw value
       THIS: not set
@@ -152,6 +180,7 @@ module.exports = class EpochedObject extends BaseObject
 
       THIS: the Element
       IN:
+        preprocessedNewValue: the new value that has been validated and preprocssed
         rawNewValue: the value passed in by the client
         preprocessAndValidate: your custom preprocessor and validator are merged into a single function you can use
           as part of your custom setter if desired. A no-op function is provided by default, so this is always a valid function.
@@ -212,23 +241,25 @@ module.exports = class EpochedObject extends BaseObject
     defaultValue = options.default
 
     preprocessor = if customPreprocessor && customValidator
-      if customPreprocessor.length > 1 || customValidator.length > 1
-        (v, oldValue) ->
-          v = defaultValue unless v?
-          throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
-          customPreprocessor v, oldValue
-      else
+      # DEPRICATED: no longer passing in oldValues; setting a value should always fully replace the previous value
+      # if customPreprocessor.length > 1 || customValidator.length > 1
+      #   (v, oldValue) ->
+      #     v = defaultValue unless v?
+      #     throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
+      #     customPreprocessor v, oldValue
+      # else
         (v) ->
           v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v
           customPreprocessor v
     else if customValidator
-      if customValidator.length > 1
-        (v, oldValue) ->
-          v = defaultValue unless v?
-          throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
-          v
-      else
+      # DEPRICATED: no longer passing in oldValues; setting a value should always fully replace the previous value
+      # if customValidator.length > 1
+      #   (v, oldValue) ->
+      #     v = defaultValue unless v?
+      #     throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v, oldValue
+      #     v
+      # else
         (v) ->
           v = defaultValue unless v?
           throw new Error "invalid value for #{externalName}: #{inspect v}" unless customValidator v
@@ -268,7 +299,7 @@ module.exports = class EpochedObject extends BaseObject
             oldValue = @_pendingState[internalName]
             newValue = @_pendingState[internalName] = customSetter.call(
               @
-              preprocessor rawNewValue, oldValue
+              preprocessor rawNewValue
               oldValue
               rawNewValue
               preprocessor
@@ -279,10 +310,10 @@ module.exports = class EpochedObject extends BaseObject
         else
           (rawNewValue) ->
             oldValue = @_pendingState[internalName]
-            newValue = preprocessor rawNewValue, oldValue
+            newValue = preprocessor rawNewValue
             newValue = @_pendingState[internalName] = customSetter.call(
               @
-              preprocessor rawNewValue, oldValue
+              preprocessor rawNewValue
               oldValue
               rawNewValue
               preprocessor
@@ -292,14 +323,14 @@ module.exports = class EpochedObject extends BaseObject
       else if postSetter
         (rawNewValue) ->
           oldValue = @_pendingState[internalName]
-          newValue = @_pendingState[internalName] = preprocessor rawNewValue, oldValue
+          newValue = @_pendingState[internalName] = preprocessor rawNewValue
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           postSetter.call @, newValue, oldValue
           newValue
       else if preprocessor.length > 1
         (rawNewValue) ->
           oldValue = @_pendingState[internalName]
-          newValue = @_pendingState[internalName] = preprocessor rawNewValue, oldValue
+          newValue = @_pendingState[internalName] = preprocessor rawNewValue
           @_elementChanged layoutProperty, drawProperty, drawAreaProperty
           newValue
       else
@@ -388,9 +419,9 @@ module.exports = class EpochedObject extends BaseObject
     if mp = @metaProperties[property]
       @[mp.setterName]? value
 
-  preprocessProperty: (property, value) ->
+  preprocessProperty: (property, value, baseValue) ->
     if mp = @metaProperties[property]
-      mp.preprocessor value
+      mp.preprocessor value, baseValue
 
   ###
   EFFECT: reset one property to its default
@@ -667,12 +698,28 @@ module.exports = class EpochedObject extends BaseObject
 
         pendingValue = @_pendingState[prop]
 
-        currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
-          animator.getPreprocessedFromVoid @
-        else if @__stateEpochCount == 0
+        baseValue = if @__stateEpochCount == 0
           pendingValue
         else
           @[prop]
+
+        currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
+          @_animatingFromVoid = true
+          if prop == "_size"
+            log _animatingFromVoid: {
+              prop
+              baseValue
+              preprocessed: animator.getPreprocessedFromVoid @, baseValue
+            }
+          animator.getPreprocessedFromVoid @, baseValue
+        else baseValue
+
+        # currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
+        #   animator.getPreprocessedFromVoid @
+        # else if @__stateEpochCount == 0
+        #   pendingValue
+        # else
+        #   @[prop]
 
         newValue = if active || !propsEq currentValue, pendingValue
           animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond

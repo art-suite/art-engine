@@ -101,18 +101,6 @@ suite "Art.Engine.Core.EpochedObject.concreteProperty.validate", ->
     new EpochedObjectPropertyTester foo: null
     .onNextReady (el) => assert.eq el.foo, 123
 
-  test "two-arg form", ->
-    class EpochedObjectPropertyTester extends TestableEpochedObject
-      @concreteProperty
-        foo:
-          default: 123
-          validate: (v, oldV) -> isNumber(v) && !oldV? || v >= oldV
-
-    assert.throws ->
-      new EpochedObjectPropertyTester foo: 122
-
-    new EpochedObjectPropertyTester foo: 124
-    .onNextReady (el) => assert.eq el.foo, 124
 
 suite "Art.Engine.Core.EpochedObject.concreteProperty.preprocess", ->
 
@@ -125,14 +113,16 @@ suite "Art.Engine.Core.EpochedObject.concreteProperty.preprocess", ->
     new EpochedObjectPropertyTester foo: 123
     .onNextReady (el) => assert.eq el.foo, 124
 
-  test "preprocessor with two args", ->
+  test "preprocessor with two args only applies when explicitly using preprocessProperty", ->
     class EpochedObjectPropertyTester extends TestableEpochedObject
       @concreteProperty
         foo:
-          default: 123
-          preprocess: (v, oldV) -> if oldV? then oldV + v else v
-    new EpochedObjectPropertyTester foo: 123
-    .onNextReady (el) => assert.eq el.foo, 246
+          default: 2
+          preprocess: (v, oldV) -> if oldV? then oldV * v else v
+    new EpochedObjectPropertyTester foo: 3
+    .onNextReady (el) =>
+      assert.eq el.foo, 3
+      assert.eq 35, el.preprocessProperty "foo", 5, 7
 
 suite "Art.Engine.Core.EpochedObject.concreteProperty.validate and preprocess", ->
   class EpochedObjectPropertyTester extends TestableEpochedObject
