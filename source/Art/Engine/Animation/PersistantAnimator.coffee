@@ -403,8 +403,6 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
       @on done: resolve
 
   getPreprocessedFromVoid: (@_element, baseValue) ->
-    if @_prop == "size"
-      log getPreprocessedFromVoid: {@_prop, @fromVoid, baseValue}
     @_element.preprocessProperty @_prop, @fromVoid, baseValue
 
   animate: ->

@@ -705,12 +705,6 @@ module.exports = class EpochedObject extends BaseObject
 
         currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
           @_animatingFromVoid = true
-          if prop == "_size"
-            log _animatingFromVoid: {
-              prop
-              baseValue
-              preprocessed: animator.getPreprocessedFromVoid @, baseValue
-            }
           animator.getPreprocessedFromVoid @, baseValue
         else baseValue
 
