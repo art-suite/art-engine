@@ -242,4 +242,10 @@ module.exports = class FlexLayout
 
     element.postFlexLayout mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset
 
+    if mainChildrenSize > m = mainElementSizeForChildren
+      element._on?.childrenDontFit && element.queueEvent "childrenDontFit", {mainChildrenSize, mainSize:m}
+    else
+      element._on?.childrenFit && element.queueEvent "childrenFit", {mainChildrenSize, mainSize:m}
+
+
     null
