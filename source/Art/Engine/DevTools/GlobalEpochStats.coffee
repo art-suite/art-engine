@@ -162,7 +162,7 @@ defineModule module, ->
     log: ->
       return unless @stats.length > 0
 
-      !Neptune.Art.DevTools.DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
+      !Neptune.Art.Foundation.DevTools.DomConsole?.enabled && ce = GlobalEpochCycle.activeCanvasElements[0]
 
       bitmap = new Canvas.Bitmap size = if ce then ce.canvasBitmap.size else point 1000, 600
       {w, h} = size
