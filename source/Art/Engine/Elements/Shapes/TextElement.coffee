@@ -33,6 +33,7 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
     align:        default: 0,         preprocess: (v) -> point v
     layoutMode:   default: "textualBaseline",  validate: (v) -> isString v
     leading:      default: 1.25,      validate: (v) -> isNumber v
+    paragraphLeading: default: null, validate: (v) -> v == null || isNumber v
     maxLines:     default: null,      validate: (v) -> !v? || isNumber v
     overflow:     default: "ellipsis",  validate: (v) -> isString v
 
@@ -55,10 +56,11 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
         fontWeight:   _fontWeight
     format:
       getter: (pending) ->
-        {_align, _layoutMode, _leading, _maxLines, _overflow} = @getState pending
+        {_align, _layoutMode, _paragraphLeading, _leading, _maxLines, _overflow} = @getState pending
         align:        _align
         layoutMode:   _layoutMode
         leading:      _leading
+        paragraphLeading: _paragraphLeading
         maxLines:     _maxLines
         overflow:     _overflow
 
