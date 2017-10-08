@@ -12,21 +12,21 @@ import &StandardImport
 ps = point 100, 200
 cs = point 30, 40
 
-testLayout = (shouldBeX, shouldBeY, params) ->
+testLayout = (shouldBeX, shouldBeY, params, previousLayout) ->
   shouldBe = point shouldBeX, shouldBeY
   # preprocessedParams = deepMap params, (v) -> if isFunction v then v.toString() else v
   test (formattedInspect params), ->
-    pointLayout = new PointLayout params
+    pointLayout = new PointLayout params, previousLayout && new PointLayout previousLayout
     assert.eq
       shouldBe
       pointLayout.layout(ps, cs)
       """
         testLayout:
           layout:         #{formattedInspect pointLayout.initializer}
-          ps:             #{inspect ps}
-          cs:             #{inspect cs}
-          outputWas:      #{inspect pointLayout.layout(ps, cs)}
-          outputShouldBe: #{inspect shouldBe}
+          ps:             #{formattedInspect ps}
+          cs:             #{formattedInspect cs}
+          outputWas:      #{formattedInspect pointLayout.layout(ps, cs)}
+          outputShouldBe: #{formattedInspect shouldBe}
     assert.eq shouldBe.x, pointLayout.layoutX(ps, cs), "testing X of PointLayout #{formattedInspect pointLayout.initializer}"
     assert.eq shouldBe.y, pointLayout.layoutY(ps, cs), "testing X of PointLayout #{formattedInspect pointLayout.initializer}"
 
@@ -54,6 +54,7 @@ suite:
     testLayout 100, 200,    'bottomRight'
 
   layout.functions: ->
+    testLayout 123, 123,    -> 123
     testLayout 100, 200,    (ps) -> ps
     testLayout 130, 240,    (ps, cs) -> ps.add cs
 
@@ -132,10 +133,7 @@ suite:
         assert.eq pl.childrenRelative, false
 
       test "new PointLayout (ps, cs) -> ps - only parent relative" ->
-        log "a"
         pl = new PointLayout (ps, cs) -> ps
-        log "b"
-        # assert.eq pl.parentRelative, true
         assert.eq pl.childrenRelative, false
 
       test "new PointLayout (ps, cs) -> cs - only children relative" ->
@@ -149,10 +147,7 @@ suite:
         assert.eq pl.childrenRelative, true
 
       test "new PointLayout x: (ps) -> ps.x - parent width relative" ->
-        log "!!!!!!!!!!!!"
         pl = new PointLayout x: (ps) -> ps.x
-        log pointLayout: pl, layoutX:pl.layoutX(point 100), layoutXLength: pl.layoutX.length, layoutX: pl.layoutX.toString()
-
         assert.eq pl.parentRelative,      true,  "parentRelative"
         assert.eq pl.childrenRelative,    false, "childrenRelative"
         assert.eq pl.xRelativeToParentW,  true,  "xRelativeToParentW"
@@ -200,10 +195,10 @@ suite:
 
       test "regression with inf parent size" ->
         pl = new PointLayout ww:1, hch:1
-        ps = point 100, 1.0000000000000002e+100
-        cs = point 100, 30
-        assert.eq 100, pl.layoutX ps, cs
-        assert.eq 30, pl.layoutY ps, cs
+        ps2 = point 100, 1.0000000000000002e+100
+        cs2 = point 100, 30
+        assert.eq 100, pl.layoutX ps2, cs2
+        assert.eq 30, pl.layoutY ps2, cs2
 
       test "new PointLayout x:1, y:2 - not relative" ->
         pl = new PointLayout x:1, y:2
@@ -291,3 +286,7 @@ suite:
     test "regression" ->
       l = new PointLayout w:30, h: (ps) -> max 60, ps.y
       log l.layout point(100)
+
+  previousLayoutTestLayout: ->
+    testLayout 5, 7, {x: 5}, {x: 3, y: 7}
+    testLayout 50, 200, {wpw: .5}, ps: 1
