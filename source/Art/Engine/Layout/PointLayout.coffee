@@ -1,47 +1,24 @@
-Atomic = require 'art-atomic'
-Foundation = require 'art-foundation'
-PointLayoutBase = require './PointLayoutBase'
-
-{point, Point} = Atomic
+{point, Point} = require 'art-atomic'
 {point0} = Point
-{BaseObject, defineModule, log, inspect, inspectLean, isFunction, isNumber, isString, isPlainObject, min, max} = Foundation
+{
+  defineModule, log, inspect, inspectLean, isFunction, isNumber, isString, isPlainObject, min, max
+} = require 'art-standard-lib'
 
 # a singleton to help make initializing from component-options fast
 class Components
 
-  returnZero = -> 0
-
   @setupPointLayout: (newPointLayout, options, previousLayout) ->
-    maxLayout = if options.max then new PointLayout options.max
-    @_reset()
+    maxLayout = newPointLayout.maxLayout = if options.max then new PointLayout options.max
     for k, v of options
       applyFunction = applyComponentsFunctions[k]
       throw new Error "invalid PointLayout component: #{inspect k} in #{inspect options}" unless applyFunction
       applyFunction v, newPointLayout
 
-    newPointLayout.layoutX = if newPointLayout._hasXLayout
-      layoutX = @_buildXLayoutFromComponents maxLayout
-      newPointLayout._detectXRelativity layoutX if @needToDetectXRelativity
-      layoutX
-    else if previousLayout?._hasXLayout
-      newPointLayout._inheritedXLayout = previousLayout
-      newPointLayout._hasXLayout = true
-      newPointLayout._copyXRelativity previousLayout
-      previousLayout.layoutX
-    else
-      returnZero
+    if !newPointLayout._hasXLayout && previousLayout?._hasXLayout
+      newPointLayout.copyXLayout previousLayout
 
-    newPointLayout.layoutY = if newPointLayout._hasYLayout
-      layoutY = @_buildYLayoutFromComponents maxLayout
-      newPointLayout._detectYRelativity layoutY if @needToDetectYRelativity
-      layoutY
-    else if previousLayout?._hasYLayout
-      newPointLayout._inheritedYLayout = previousLayout
-      newPointLayout._hasYLayout = true
-      newPointLayout._copyYRelativity previousLayout
-      previousLayout.layoutY
-    else
-      returnZero
+    if !newPointLayout._hasYLayout && previousLayout?._hasYLayout
+      newPointLayout.copyYLayout previousLayout
 
     newPointLayout.mergeInLayoutRelativity maxLayout if maxLayout
     newPointLayout
@@ -50,49 +27,6 @@ class Components
   ###################
   # private
   ###################
-  @_buildXLayoutFromComponents: (maxLayout) ->
-    # copy all members we use into this closure
-    # do not access anything on '@' inside the functions created velow
-    {x, xpw, xph, xcw, layoutX} = @
-
-    layoutX ||= if xcw == 0
-          (ps)     -> x + xpw * ps.x + xph * ps.y
-    else  (ps, cs) -> x + xpw * ps.x + xph * ps.y + xcw * cs.x
-
-    if maxLayout?.getHasXLayout()
-      (ps, cs) -> min maxLayout.layoutX(ps), layoutX ps, cs
-    else
-      layoutX
-
-  @_buildYLayoutFromComponents: (maxLayout) ->
-    {y, yph, ypw, ych, layoutY} = @   # copy all members we use into this closure
-
-    layoutY ||= if ych == 0
-          (ps)     -> y + yph * ps.y + ypw * ps.x
-    else  (ps, cs) -> y + yph * ps.y + ypw * ps.x + ych * cs.y
-
-    if maxLayout?.getHasYLayout()
-      (ps, cs) -> min maxLayout.layoutY(ps), layoutY ps, cs
-    else
-      layoutY
-
-
-
-  @_reset: ->
-    @needToDetectXRelativity = false
-    @needToDetectYRelativity = false
-    @layoutX = null
-    @layoutY = null
-    @x   =
-    @xpw =
-    @xph =
-    @xcw =
-    @y   =
-    @yph =
-    @ypw =
-    @ych = 0.0
-
-  @_reset()
 
   preprocessValue = (value, pointLayout) ->
     value ||= 0
@@ -114,26 +48,24 @@ class Components
       value = preprocess2dValue value, pointLayout
       pointLayout._hasXLayout =
       pointLayout._hasYLayout = true
-      Components.x += value.x
-      Components.y += value.y
+      pointLayout.x += value.x
+      pointLayout.y += value.y
 
     x: x = (value, pointLayout) ->
       pointLayout._hasXLayout = true
       if isFunction value
-        Components.layoutX = value
-        Components.needToDetectXRelativity = true
+        pointLayout.customLayoutX = value
       else
         value = preprocessValue value, pointLayout
-        Components.x += value
+        pointLayout.x += value
 
     y: y = (value, pointLayout) ->
       pointLayout._hasYLayout = true
       if isFunction value
-        Components.layoutY = value
-        Components.needToDetectYRelativity = true
+        pointLayout.customLayoutY = value
       else
         value = preprocessValue value, pointLayout
-        Components.y += value
+        pointLayout.y += value
 
     # parent-relative components
     ps: (value, pointLayout) ->
@@ -142,32 +74,32 @@ class Components
       pointLayout._hasYLayout =
       pointLayout._xRelativeToParentW =
       pointLayout._yRelativeToParentH = true
-      Components.xpw += value.x
-      Components.yph += value.y
+      pointLayout.xpw += value.x
+      pointLayout.yph += value.y
 
     xpw: xpw = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasXLayout =
       pointLayout._xRelativeToParentW = true
-      Components.xpw += value
+      pointLayout.xpw += value
 
     yph: yph = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasYLayout =
       pointLayout._yRelativeToParentH = true
-      Components.yph += value
+      pointLayout.yph += value
 
     xph: xph = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasXLayout =
       pointLayout._xRelativeToParentH = true
-      Components.xph += value
+      pointLayout.xph += value
 
     ypw: ypw = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasYLayout =
       pointLayout._yRelativeToParentW = true
-      Components.ypw += value
+      pointLayout.ypw += value
 
     # children-relative components
     cs: (value, pointLayout) ->
@@ -176,20 +108,20 @@ class Components
       pointLayout._hasYLayout =
       pointLayout._xRelativeToChildrenW =
       pointLayout._yRelativeToChildrenH = true
-      Components.xcw += value.x
-      Components.ych += value.y
+      pointLayout.xcw += value.x
+      pointLayout.ych += value.y
 
     xcw: xcw = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasXLayout =
       pointLayout._xRelativeToChildrenW = true
-      Components.xcw += value
+      pointLayout.xcw += value
 
     ych: ych = (value, pointLayout) ->
       value = preprocessValue value, pointLayout
       pointLayout._hasYLayout =
       pointLayout._yRelativeToChildrenH = true
-      Components.ych += value
+      pointLayout.ych += value
 
     # Aliases
     plus:                     pts
@@ -224,7 +156,7 @@ class Components
     xParentWidth:             xpw
     yParentHeight:            yph
 
-defineModule module, class PointLayout extends PointLayoutBase
+defineModule module, class PointLayout extends require './PointLayoutBase'
   ###
   constructor inputs: (initializer, previousLayout)
 
@@ -304,6 +236,8 @@ defineModule module, class PointLayout extends PointLayoutBase
   ###
   constructor: (@initializer = point0, previousLayout)->
     super
+    @_reset()
+
     if isFunction @initializer
       @_setupFromFunction @initializer
     else if isPlainObject @initializer
@@ -311,6 +245,20 @@ defineModule module, class PointLayout extends PointLayoutBase
     else
       # Points, numbers, strings or arrays all get passed to point() and used as @initializer constant layout
       @_setupFromPoint @initializer
+
+  _reset: ->
+    @maxLayout = null
+    @customLayout = null
+    @customLayoutX = null
+    @customLayoutY = null
+    @x   =
+    @xpw =
+    @xph =
+    @xcw =
+    @y   =
+    @yph =
+    @ypw =
+    @ych = 0.0
 
   toString: ->
     "PointLayout(#{@toStringLean()})"
@@ -341,44 +289,97 @@ defineModule module, class PointLayout extends PointLayoutBase
       else
         @initializer
 
+  layoutX: (ps, cs) ->
+    # copy all members we use into this closure
+    # do not access anything on '@' inside the functions created velow
+    {x, xpw, xph, xcw, customLayout, customLayoutX, maxLayout} = @
+
+    if customLayout       then customLayout(ps, cs).x
+    else if customLayoutX then customLayoutX ps, cs
+    else
+      out = x
+      out += xpw * ps.x + xph * ps.y if ps?
+      out += xcw * cs.x if cs?
+
+      if maxLayout?.getHasXLayout()
+        min out, maxLayout.layoutX ps
+      else
+        out
+
+  layoutY: (ps, cs) ->
+    {y, yph, ypw, ych, customLayout, customLayoutY, maxLayout} = @   # copy all members we use into this closure
+
+    if customLayout       then customLayout(ps, cs).y
+    else if customLayoutY then customLayoutY ps, cs
+    else
+      out = y
+      out += yph * ps.y + ypw * ps.x if ps?
+      out += ych * cs.y if cs?
+
+      if maxLayout?.getHasYLayout()
+        min out, maxLayout.layoutY ps
+      else
+        out
+
+  copyXLayout: (pointLayout) ->
+    @_hasXLayout = true
+    if pointLayout.maxLayout || pointLayout.customLayout
+      @customLayoutY = fastBind pointLayout.layoutX, pointLayout
+    else
+      {
+        @x
+        @xpw
+        @xph
+        @xcw
+        @customLayoutX
+      } = pointLayout
+
+    @_copyXRelativity pointLayout
+
+  copyYLayout: (pointLayout) ->
+    @_hasYLayout = true
+    if pointLayout.maxLayout || pointLayout.customLayout
+      @customLayoutY = fastBind pointLayout.layoutY, pointLayout
+    else
+      {
+        @y
+        @yph
+        @ypw
+        @ych
+        @customLayoutY
+      } = pointLayout
+
+    @_copyYRelativity pointLayout
+
   #############
   # PRIVATE
   #############
 
   _setupFromPoint: (val) ->
     @_hasXLayout = @_hasYLayout = true
-    {x, y} = p = point val
-    if isString val
-      @layoutX = (ps) -> ps.x * x
-      @layoutY = (ps) -> ps.y * y
-      @layout  = (ps) -> ps.mul p
+    if isNumber val
+      @x = @y = val
     else
-      @layoutX = (ps) -> x
-      @layoutY = (ps) -> y
-      @layout  = (ps) -> p
-    @initializer = p
+      {x, y} = @initializer = point val
+      if isString val
+        # if using a named point (like 'topCenter'), we take it as parent-relative
+        @xpw = x
+        @yph = y
+      else
+        @x = x
+        @y = y
 
   _setupFromFunction: (layoutFunction) ->
     @_hasXLayout = @_hasYLayout = true
-    if layoutFunction.length == 1
-      if isNumber layoutFunction point0
-        @layout = (ps) -> point layoutFunction ps
-        @layoutX = layoutFunction
-        @layoutY = layoutFunction
-      else
-        @layout = layoutFunction
-        @layoutX = (ps) -> layoutFunction(ps).x
-        @layoutY = (ps) -> layoutFunction(ps).y
+    if isNumber layoutFunction point0, point0
+      @customLayoutX = layoutFunction
+      @customLayoutY = layoutFunction
     else
-      if isNumber layoutFunction point0, point0
-        @layout = (ps, cs) -> point layoutFunction ps, cs
-        @layoutX = layoutFunction
-        @layoutY = layoutFunction
-      else
-        @layout = layoutFunction
-        @layoutX = (ps, cs) -> layoutFunction(ps, cs).x
-        @layoutY = (ps, cs) -> layoutFunction(ps, cs).y
+      @layout = @customLayout = layoutFunction
+
     @_detectRelativity()
 
   _setupFromOptions: (options, previousLayout) ->
     Components.setupPointLayout @, options, previousLayout
+    @_detectXRelativity() if @customLayoutX
+    @_detectYRelativity() if @customLayoutY
