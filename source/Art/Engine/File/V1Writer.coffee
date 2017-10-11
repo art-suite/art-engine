@@ -5,7 +5,7 @@ Xbd = require 'art-xbd'
 Core = require '../Core'
 Elements = require '../Elements'
 
-{BaseObject, log, createObjectTreeFactories, createWithPostCreate, floatEq} = Foundation
+{BaseObject, log, createObjectTreeFactories, createWithPostCreate, floatEq, Promise} = Foundation
 {point} = Atomic
 {XbdTag, createTagFactories} = Xbd
 {propsEq} = Core.EpochedObject

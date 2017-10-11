@@ -1,16 +1,16 @@
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-Canvas = require 'art-canvas'
-ShadowableElement = require '../ShadowableElement'
-
 {ceil, round} = Math
-{defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, BaseObject, isPlainArray, timeout} = Foundation
-{point, rect, Matrix, point0, point1} = Atomic
-{isImage} = Canvas
+{
+  defineModule, inspect, min, max, bound, log, createWithPostCreate, isString, isNumber, isPlainArray, timeout
+  Promise
+} = require 'art-standard-lib'
+{BaseClass} = require 'art-class-system'
+{point, rect, Matrix, point0, point1} = require 'art-atomic'
+{isImage, Bitmap, BitmapBase} = require 'art-canvas'
+ShadowableElement = require '../ShadowableElement'
 
 defineModule module, class BitmapElement extends ShadowableElement
 
-  class BitmapElement.SourceToBitmapCache extends BaseObject
+  class BitmapElement.SourceToBitmapCache extends BaseClass
     @singletonClass()
 
     constructor: ->
@@ -20,9 +20,9 @@ defineModule module, class BitmapElement extends ShadowableElement
 
     # OUT: promise.then (bitmap) ->
     get: (url, initializerPromise) ->
-      return Canvas.Bitmap.get url unless isString url # non-string sources are not cached
+      return Bitmap.get url unless isString url # non-string sources are not cached
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
-      out = @_cache[url] ||= initializerPromise || Canvas.Bitmap.get url
+      out = @_cache[url] ||= initializerPromise || Bitmap.get url
       out.then (bitmap) => @_loaded[url] = bitmap
       out
 
@@ -77,7 +77,7 @@ defineModule module, class BitmapElement extends ShadowableElement
     aspectRatio:  default: null,      validate:   (v) -> !v? || isNumber v
 
   @drawLayoutProperty
-    bitmap:       default: null,      validate:   (v) -> !v || v instanceof Canvas.BitmapBase
+    bitmap:       default: null,      validate:   (v) -> !v || v instanceof BitmapBase
 
   @virtualProperty
     mode: setter: (mode) ->

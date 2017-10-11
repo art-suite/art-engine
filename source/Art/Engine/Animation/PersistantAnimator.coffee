@@ -11,6 +11,7 @@ Events = require 'art-events'
   rubyOr
   isNumber
   rubyTrue
+  Promise
 } = require 'art-standard-lib'
 {BaseObject} = require 'art-class-system'
 {EventedMixin} = Events
