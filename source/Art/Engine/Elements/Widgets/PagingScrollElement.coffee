@@ -732,7 +732,6 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
       geometry: @currentGeometry
 
   gestureRecognize: ({delta}) ->
-    # log gestureRecognize: delta: delta
     if @_scroll == "vertical"
       1 > delta.absoluteAspectRatio
     else
