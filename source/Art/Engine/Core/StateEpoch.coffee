@@ -216,10 +216,10 @@ defineModule module, class StateEpoch extends Epoch
     elementToAbsMatrixChangedElementsDepthAscending = @getElementToAbsMatrixChangedElementsDepthAscending changingElements
     drawChangedElements = @getDrawChangedElements changingElements
 
-    @resetParentToElementMatricies elementToAbsMatrixChangedElementsDepthAscending
-
     # do first pass of drawDirtyArea computation
     @informAncestorsElementNeedsRedrawing el for el in drawChangedElements
+
+    @resetParentToElementMatricies elementToAbsMatrixChangedElementsDepthAscending
 
     @updateElementParentChangingElements changingElements
 

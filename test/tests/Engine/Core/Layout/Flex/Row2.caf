@@ -1,0 +1,71 @@
+import &StandardImport
+
+module.exports = suite:
+
+  regressions: ->
+
+    drawAndTestElement "matrix updates when row layout moves child", ->
+      element: Element
+        size: w: 60, h: 10
+        childrenLayout: "row"
+        RectangleElement color: #eee
+        Element
+          key: :testParent
+          clip: true
+          childrenLayout: "row"
+          size: wcw: 1
+          Element
+            size:     10
+            RectangleElement radius: 10
+
+          Element
+            size:     10
+            opacity:  .5
+            RectangleElement radius: 10
+
+      test: (element) ->
+        [tp] = element.find :testParent
+        e2p = tp.elementToParentMatrix
+        p2e = tp.parentToElementMatrix
+        log {el: tp.inspectedName, e2p, p2e}
+        tp.children = tp.children.slice 0, 1
+
+        element.toBitmapBasic pixelsPerPoint: 2
+        .then (bitmap) ->
+          log bitmap
+          e2p = tp.elementToParentMatrix
+          p2e = tp.parentToElementMatrix
+          log {e2p, p2e}
+          assert.eq e2p, p2e.invert()
+
+    # drawAndTestElement "color", ->
+    #   element: Element
+    #     size: w: 60, h: 10
+    #     childrenLayout: "row"
+    #     RectangleElement color: #eee
+    #     Element
+    #       key: :testParent
+    #       clip: true
+    #       childrenLayout: "row"
+    #       size: wcw: 1
+    #       Element
+    #         size:     10
+    #         opacity:  .5
+    #         RectangleElement radius: 10
+
+    #       Element
+    #         size:     10
+    #         # opacity:  .5
+    #         RectangleElement radius: 10
+
+    #   test: (element) ->
+    #     [tp] = element.find :testParent
+    #     tp.children[0].children[0].color = "red"
+
+    #     element.toBitmapBasic pixelsPerPoint: 2
+    #     .then (bitmap) ->
+    #       log bitmap
+    #       e2p = tp.elementToParentMatrix
+    #       p2e = tp.parentToElementMatrix
+    #       log {e2p, p2e}
+    #       assert.eq e2p, p2e.invert()

@@ -12,3 +12,4 @@ module.exports
   Overconstrained:      require './Overconstrained'     
   Regressions:          require './Regressions'         
   Row:                  require './Row'                 
+  Row2:                 require './Row2'                
