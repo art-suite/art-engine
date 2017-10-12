@@ -860,7 +860,7 @@ defineModule module, class Element extends ElementBase
 
   @drawProperty
     # is an array of keys and one 'null' entry.
-    # null indicates 'all other children'
+    # null or 'children' indicates 'all other children'
     # Keys are keys for elements to draw, if a matching child is found
     drawOrder:
       default: null
@@ -876,7 +876,7 @@ defineModule module, class Element extends ElementBase
     {children} = @
     if customDrawOrder = @getDrawOrder()
       for drawKey in customDrawOrder
-        if drawKey?
+        if drawKey? && drawKey != "children"
           for child in children when drawKey == child.key
             child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
         else
