@@ -2,11 +2,8 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Pointer = require './Pointer'
 
-{defineModule, inspect, merge, clone, peek, first, BaseObject, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
+{log, defineModule, inspect, merge, clone, peek, first, BaseObject, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
 {point, rect, matrix} = Atomic
-
-pointerDeadZone = Pointer.pointerDeadZone
-pointerDeadZoneSquared = pointerDeadZone * pointerDeadZone
 
 defineModule module, class GestureRecognizer extends BaseObject
   @createGestureRecognizer: (o)->
@@ -57,6 +54,7 @@ defineModule module, class GestureRecognizer extends BaseObject
     @_activeGesture = null
     @_lastActiveGesture = null
     @_startEvent = null
+    @_capturedEvents = false
     super
 
     @setupDefaultRecognizers()
@@ -73,15 +71,19 @@ defineModule module, class GestureRecognizer extends BaseObject
     pointerHandlers: ->
       merge @_nonGestureHandlers,
         pointerDown:  (e) =>
+          @_capturedEvents = false
           @_nonGestureHandlers.pointerDown? e
           @_startEvent = if e.newEvent then e.newEvent() else clone e
           @_resumeGesture e if @_lastActiveGesture?.resume? e
 
         pointerMove:  (e) =>
           if ag = @_activeGesture
+            if !@_capturedEvents && !e.pointer.stayedWithinDeadzone && @_activeGesture.recognize? e
+              e.target?.capturePointerEvents?()
+              @_capturedEvents = true
             ag.move? e
           else
-            if @_startEvent && !e.pointer.stayedWithinDeadzone
+            if @_startEvent
               @_startGesture e
               @_nonGestureHandlers.pointerCancel? e
             else
@@ -113,6 +115,5 @@ defineModule module, class GestureRecognizer extends BaseObject
       break
 
     if @_activeGesture
-      e.target?.capturePointerEvents?()
       @_activeGesture.begin? @_startEvent
       @_activeGesture.move? e
