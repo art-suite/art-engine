@@ -59,7 +59,8 @@ class CoreHelper
       [expecting, a || {}]
 
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
-    log "#{message}": bitmap.clone()
+    log "#{message}": bitmap.clone(), size: bitmap.size
+    assert.lte expecting.length, bitmap.size.area
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
     assert.within
       downsampled

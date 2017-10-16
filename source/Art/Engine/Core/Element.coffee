@@ -12,11 +12,13 @@ DrawCacheManager = require './DrawCacheManager'
 
 {isInfiniteResult} = require './EpochLayout/Infinity'
 
-{point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
+{rgbColor, point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
 {floor, ceil} = Math
 {globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
 {PointLayout, PointLayoutBase} = Layout
+
+ElementDrawMixin = require './ElementDrawMixin'
 
 {addDirtyDrawArea} = require './DrawAreaHelpers'
 
@@ -66,7 +68,7 @@ defaultSize = point 100
 
 nonStatePropertyKeyTest = ElementBase.nonStatePropertyKeyTest
 
-defineModule module, class Element extends ElementBase
+defineModule module, class Element extends ElementDrawMixin ElementBase
 
   @registerWithElementFactory: -> true
   @stats: stats
@@ -141,37 +143,6 @@ defineModule module, class Element extends ElementBase
     @_absToElementMatrix = null
     @_parentToElementMatrix = null
 
-
-  ############################
-  # Layout and Draw Property Definers
-  ############################
-
-  @layoutProperty: (map)->
-    for prop, options of map
-      options.layoutProperty = true
-      @_defineElementProperty prop, options
-
-  @drawProperty: (map)->
-    for prop, options of map
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  @drawLayoutProperty: (map)->
-    for prop, options of map
-      options.layoutProperty = true
-      options.drawAreaProperty = true
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  @drawAreaProperty: (map)->
-    for prop, options of map
-      options.drawAreaProperty = true
-      options.drawProperty = true
-      @_defineElementProperty prop, options
-
-  _layoutPropertyChanged:   -> @_elementChanged true
-  _drawPropertyChanged:     -> @_elementChanged false, true, false
-  _drawAreaPropertyChanged: -> @_elementChanged false, true, true
 
   ############################
   ############################
@@ -548,17 +519,17 @@ defineModule module, class Element extends ElementBase
 
   @getter
     logicalArea: ->
-      p = @getCurrentPadding()
-      size = @_currentSize
-      new Rectangle -p.left, -p.top, size.x, size.y
+      {left, top} = @getCurrentPadding()
+      {x, y} = @_currentSize
+      new Rectangle -left, -top, x, y
 
     paddedWidth:  -> @_currentSize.x - @getCurrentPadding().getWidth()
     paddedHeight: -> @_currentSize.y - @getCurrentPadding().getHeight()
 
     paddedSize: ->
       p = @getCurrentPadding()
-      size = @_currentSize
-      point size.x - p.getWidth(), size.y - p.getHeight()
+      {x, y} = @_currentSize
+      point x - p.getWidth(), y - p.getHeight()
 
     # element-space rectangle covering element's area with padding
     paddedArea: ->
@@ -762,15 +733,6 @@ defineModule module, class Element extends ElementBase
     layoutMovesChildren: (pending) ->
       !!(@getState pending)._childrenLayout
 
-    preFilteredBaseDrawArea: (pending) ->
-      {_currentPadding, _currentSize} = @getState pending
-      {x, y} = _currentSize
-      {w, h} = _currentPadding
-      rect 0, 0, max(0, x - w), max(0, y - h)
-
-    baseDrawArea: (pending) ->
-      @getPreFilteredBaseDrawArea pending
-
   @getter
     allChildrenAreUpLayout: -> false
 
@@ -857,35 +819,6 @@ defineModule module, class Element extends ElementBase
   ##########################
   # DRAW
   ##########################
-
-  @drawProperty
-    # is an array of keys and one 'null' entry.
-    # null or 'children' indicates 'all other children'
-    # Keys are keys for elements to draw, if a matching child is found
-    drawOrder:
-      default: null
-      validate: (v) -> !v? || isArray v
-      # example: [null, "titleBar"] # always draw titleBar last
-  ###
-
-    # in _drawChildren
-      normal drawChildren
-  ###
-
-  _drawChildren: (target, elementToTargetMatrix) ->
-    {children} = @
-    if customDrawOrder = @getDrawOrder()
-      for drawKey in customDrawOrder
-        if drawKey? && drawKey != "children"
-          for child in children when drawKey == child.key
-            child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
-        else
-          for child in children when !(key = child.key)? || !(key in customDrawOrder)
-            child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
-    else
-      for child in children when child.visible
-        child.draw target, child.getElementToTargetMatrix elementToTargetMatrix
-    children # without this, coffeescript returns a new array
 
   # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
@@ -1055,7 +988,6 @@ defineModule module, class Element extends ElementBase
       throw new Error "expected both or neither: @_drawCacheToElementMatrix, @_drawCacheBitmap"
 
     return unless @_drawCacheBitmap
-
     target.drawBitmap(
       @_drawCacheToElementMatrix.mul elementToTargetMatrix
       @_drawCacheBitmap
@@ -1531,48 +1463,6 @@ defineModule module, class Element extends ElementBase
       drawArea
 
   # overridden by some children (Ex: Filter)
-
-  # currently drawAreas are only superSets of the pixels changed
-  # We may want drawAreas to be "tight" - the smallest rectangle that includes all pixels changed.
-  # The main reason for this is if we enable Layouts based on child drawAreas. This is useful sometimes.
-  #   Ex: KimiEditor fonts effects.
-  # returns computed elementSpaceDrawArea
-  _computeElementSpaceDrawArea: (upToChild)->
-
-    if (children = @getPendingChildren()).length > 0 && !@getPendingClip()
-      elementSpaceDrawArea = rect()
-      for child in children
-        break if child == upToChild
-        elementSpaceChildDrawArea = child.getParentSpaceDrawArea()
-        switch child.compositeMode
-          when "alphaMask"
-            # technically this is more accurate:
-            #   elementSpaceDrawArea.intersection elementSpaceChildDrawArea
-            # However, usually if there is a mask, it is "full", which makes "intersection" a no-op.
-            # Further, we'd rather this value be more "stable" so changes in drawAreas don't
-            # propgate any higher than they need to.
-            # This way, if only children below a mask change, there is no need to propogate up.
-            elementSpaceChildDrawArea.intersectInto elementSpaceDrawArea
-
-          when "sourceIn", "targetAlphaMask", "inverseAlphaMask"
-            null # doesn't change drawArea
-
-          when "normal", "add", "replace", "destOver"
-            elementSpaceChildDrawArea.unionInto elementSpaceDrawArea
-
-          else throw new Error "unknown compositeMode:#{child.compositeMode}"
-      elementSpaceDrawArea
-    else
-      ###
-      TODO: should we find out if we even actually need "pending"?
-
-      Someday parent layout will have the option to be relative to children's draw area.
-      Probably also the case that children could be relative to parent's draw area.
-
-      USE-CASE: Imikimi's Font effects - fills need to, say, cover all of an outline
-        which requires them to cover the outline's drawArea
-      ###
-      @getPendingBaseDrawArea()
 
   _drawAreaChanged: ->
     if @_elementSpaceDrawArea

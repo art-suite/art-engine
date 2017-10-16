@@ -28,15 +28,6 @@ module.exports = createWithPostCreate class ShapeElement extends ShadowableEleme
 
       validate: (f) -> isFunction f
 
-  @getter
-    curriedPathFunction: ->
-      pathFunction = @getPath()
-      if @_lastPathFunction != pathFunction
-        @_lastPathFunction = pathFunction
-        @_curriedPathFunction = (context) => pathFunction context, @currentSize
-      else
-        @_curriedPathFunction
-
   drawBasic: (target, elementToTargetMatrix, compositeMode, opacity) ->
     @_prepareDrawOptions @_drawOptions, compositeMode, opacity
     @fillShape target, elementToTargetMatrix, @_drawOptions
@@ -45,9 +36,9 @@ module.exports = createWithPostCreate class ShapeElement extends ShadowableEleme
   fillShape: (target, elementToTargetMatrix, options) ->
     options.color ||= @_color
     options.fillRule = @_fillRule
-    target.fillShape elementToTargetMatrix, options, @getCurriedPathFunction()
+    target.fillShape elementToTargetMatrix, options, @_path, @paddedSize
 
   # override so Outline child can draw the outline
   strokeShape: (target, elementToTargetMatrix, options) ->
     options.color ||= @_color
-    target.strokeShape elementToTargetMatrix, options, @getCurriedPathFunction()
+    target.strokeShape elementToTargetMatrix, options, @_path, paddedSize

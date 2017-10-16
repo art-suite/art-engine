@@ -67,6 +67,37 @@ module.exports = class ElementBase extends EventedEpochedObject
       setter: (v) -> @setKey v
 
   ############################
+  # Layout and Draw Property Definers
+  ############################
+
+  @layoutProperty: (map)->
+    for prop, options of map
+      options.layoutProperty = true
+      @_defineElementProperty prop, options
+
+  @drawProperty: (map)->
+    for prop, options of map
+      options.drawProperty = true
+      @_defineElementProperty prop, options
+
+  @drawLayoutProperty: (map)->
+    for prop, options of map
+      options.layoutProperty = true
+      options.drawAreaProperty = true
+      options.drawProperty = true
+      @_defineElementProperty prop, options
+
+  @drawAreaProperty: (map)->
+    for prop, options of map
+      options.drawAreaProperty = true
+      options.drawProperty = true
+      @_defineElementProperty prop, options
+
+  _layoutPropertyChanged:   -> @_elementChanged true
+  _drawPropertyChanged:     -> @_elementChanged false, true, false
+  _drawAreaPropertyChanged: -> @_elementChanged false, true, true
+
+  ############################
   # keyboard stuff
   ############################
 

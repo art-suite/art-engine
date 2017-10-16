@@ -59,6 +59,12 @@ defineModule module, class AtomElement extends Element
     # numbers are multiplied by: @currentSize.min()
     gradientRadius: default: null
 
+  _computeElementSpaceDrawArea: (upToChild)->
+    if @_children?.length > 0
+      super
+    else
+      @baseDrawArea
+
   #############
   # OVERRIDES
   #############

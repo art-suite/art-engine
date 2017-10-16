@@ -175,8 +175,6 @@ suite:
           b = new RectangleElement
             size:   40  shadow: true
             new FillElement
-          #   new OutlineElement lineWidth: 2 color: :white
-          #   new OutlineElement lineWidth: 1 color: #0002
 
         .onNextReady ->
           assert.eq a.elementSpaceDrawArea, b.elementSpaceDrawArea

@@ -6,6 +6,7 @@ module.exports
 .addModules
   Basics:        require './Basics'       
   Clipping:      require './Clipping'     
+  DrawOrder:     require './DrawOrder'    
   PartialRedraw: require './PartialRedraw'
   Retina:        require './Retina'       
   ToBitmap:      require './toBitmap'     

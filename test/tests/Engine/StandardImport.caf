@@ -2,6 +2,6 @@
   &ArtStandardLib
   &ArtAtomic
   &ArtCanvas
-  &ArtEngine
+  &source/Art/Engine
   &TestHelper
   test: (args...) -> global.test args...

@@ -157,6 +157,14 @@ class Components
     yParentHeight:            yph
 
 defineModule module, class PointLayout extends require './PointLayoutBase'
+
+  @pointLayout: (init, previousLayout) ->
+    if init?
+      if init.constructor == PointLayout
+        init
+      else
+        new PointLayout init, previousLayout
+
   ###
   constructor inputs: (initializer, previousLayout)
 
