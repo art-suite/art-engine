@@ -40,7 +40,7 @@ defineModule module, ->
       @clippingArea = null
 
     @getter
-      drawArea: -> @totalDrawArea?.roundOut() || rect()
+      drawArea: -> @totalDrawArea || rect()
 
     addDrawArea: (drawArea) ->
       if @clippingArea

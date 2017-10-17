@@ -320,7 +320,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
             new RectangleElement color: "green", shadow: standardShadowProps
             needsStagingElement = new Element
               clip: true
-              new TextElement m standardTextProps, text: "hi there!"
+              new TextElement m standardTextProps, text: "hi!"
 
         initialStagingBitmapsCreated = Element.stats.stagingBitmapsCreated
         e.toBitmapWithInfo()

@@ -243,7 +243,7 @@ suite:
       render: -> Element
         size: 100
         drawOrder: outline: "red"
-      test: (e) -> assert.eq e.drawArea, rect -1, -1, 102, 102
+      test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
     renderTest
       "lineWidth"
@@ -268,8 +268,9 @@ suite:
       render: -> Element
         size: 100
         drawOrder:
-          outline: color: "red", radius: 10
-      test: (e) -> assert.eq e.drawArea, rect -1, -1, 102, 102
+          rectangle: radius: 10
+          outline: color: "red"
+      test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
   shadow: ->
 

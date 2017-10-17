@@ -20,10 +20,12 @@ DrawCacheManager = require './DrawCacheManager'
 
 ElementDrawMixin = require './ElementDrawMixin'
 
+colorPrecision = 1/256
+
 {addDirtyDrawArea} = require './DrawAreaHelpers'
 
 truncateLayoutCoordinate = (v) ->
-  floor v + 1/256
+  floor v + colorPrecision
 
 {
   each
@@ -834,7 +836,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     stats.elementsDrawn++
 
     try
-      return if @opacity < 1/256
+      return if @opacity < colorPrecision
       @_currentDrawTarget = target
       @_currentToTargetMatrix = elementToTargetMatrix
 
@@ -1009,23 +1011,23 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
 
   # TODO - use new filterSource stuff and accountForOverdraw
   _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
-
-    elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut()
-    return if elementSpaceDrawArea.getArea() <= 0
     pixelsPerPoint = @getDevicePixelsPerPoint()
+    snapTo = 1/pixelsPerPoint
+
+    elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut snapTo, colorPrecision
+    return if elementSpaceDrawArea.getArea() <= 0
 
     cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale =
       pixelsPerPoint *
         if @getCacheDraw() then 1 else elementToTargetMatrix.getExactScaler()
 
-    cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut()
+    cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut snapTo, colorPrecision
     # don't cache if too big
     # TODO: this doesn't work; it causes errors to abort caching at this point
     # return if cacheSpaceDrawArea.size.area >= 2048 * 1536 && !@getNeedsStagingBitmap()
 
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
-    # log {d2eMatrix, @_drawCacheToElementMatrix, cacheSpaceDrawArea, size: @_drawCacheBitmap?.size}
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
       drawCacheManager.useDrawCache @
       return unless @_dirtyDrawAreas || @_redrawAll
@@ -1041,7 +1043,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     @_drawCacheToElementMatrix = d2eMatrix
     @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-    clippedElementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut().intersection elementSpaceDrawArea
+    clippedElementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut(snapTo, colorPrecision).intersection elementSpaceDrawArea
 
     remainingDirtyAreas = null
     dirtyAreasToDraw = @_dirtyDrawAreas
