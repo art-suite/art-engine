@@ -185,6 +185,22 @@ suite:
           outline: lineWidth: 10 lineJoin: :round
       test: (e) -> assert.eq e.drawArea, rect -5, -5, 110, 110
 
+    renderTest
+      "custom with area"
+      render: -> Element
+        size: 100
+        drawOrder:
+          shape:
+            area: rect 20, 10, 20, 80
+            path: (context, area) ->
+              {top, left, right, bottom, vCenter, hCenter} = area
+              context.moveTo  hCenter, top
+              context.lineTo  right, bottom
+              context.lineTo  left, bottom
+              context.closePath()
+          fill: :orange
+      test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+
   fill: ->
     renderTest
       "basic"

@@ -257,16 +257,15 @@ defineModule module, ->
                     target.closeClipping lastClippingInfo
                     lastClippingInfo = null
 
-              if shape
-                currentPath = shape
-                currentPathOptions = null
-              else if newShapeOptions = rectangle ? circle
+              if newShapeOptions = rectangle ? circle ? shape
 
                 currentPathOptions = if isPlainObject newShapeOptions
-                  {area} = newShapeOptions
+                  {area, path} = newShapeOptions
                   newShapeOptions
-                else
+                else if isRect newShapeOptions
                   area = newShapeOptions
+                  null
+                else
                   null
 
                 currentDrawArea = if isFunction area
@@ -276,7 +275,7 @@ defineModule module, ->
                 else
                   currentDrawArea
 
-                currentPath = if rectangle then rectanglePath else circlePath
+                currentPath = path ? shape ? if rectangle then rectanglePath else circlePath
 
               if fill?
                 target.fillShape drawMatrix,

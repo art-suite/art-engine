@@ -902,8 +902,8 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
       @_addDescendantsDirtyDrawArea descendant
 
     # @_clearDrawCache()
-    if @getPendingVisible() && @getPendingOpacity() > 1/512
-      @getPendingParent()?._needsRedrawing descendant
+    if @getVisible() && @getOpacity() > 1/512
+      @getParent()?._needsRedrawing descendant
 
   _addDescendantsDirtyDrawArea: (descendant) ->
     if descendant && !@_redrawAll
