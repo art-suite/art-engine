@@ -22,6 +22,38 @@ suite:
       ->
         assert.eq o.elementSpaceDrawArea, rect()
 
+  rotation: ->
+    stateEpochTest "basic parentSpaceDrawArea", ->
+      standardTextProps = textProps =
+        fontSize: 16
+        fontFamily: "sans-serif"
+        color: "#fffc"
+        align: .5
+        size: ps: 1
+        padding: 10
+
+      standardShadowProps =
+        color:    "#0007"
+        blur:     20
+        offset:   y: 5
+
+      e = new Element
+        size: 100
+        clip: true
+        o = new Element
+          size: 100
+          axis: .5
+          location: ps: .5
+          angle: (Math.PI/180) * -10
+          new RectangleElement color: "green", shadow: standardShadowProps
+          needsStagingElement = new Element
+            clip: true
+            new TextElement m standardTextProps, text: "hi!"
+
+      ->
+        assert.eq o.elementSpaceDrawArea, rect -20, -15, 140, 140
+        assert.eq needsStagingElement.elementSpaceDrawArea.roundOut(), rect 33, 36, 34, 32
+
   children: ->
     stateEpochTest "with no mask and children", ->
       o = new Element
@@ -148,3 +180,34 @@ suite:
             new Element drawOrder: :red
         .onNextReady (parent) ->
           assert.eq parent.elementSpaceDrawArea, rect -10, -10, 70, 70
+
+    regressions: ->
+      test "drawing, caching and drawArea", ->
+        parent = new Element
+          key: :parent
+          size: 4
+          clip: true
+          new RectangleElement color: #480
+          child = new Element
+            key: :child
+            cacheDraw: true
+            location: x: 2
+            new RectangleElement color: #8ff
+        parent.toBitmapBasic()
+        .then (bitmap)->
+          assert.eq child.elementSpaceDrawArea, rect 0, 0, 4, 4
+          child.location = x: 1
+          parent.toBitmapBasic()
+        .then (bitmap)->
+          assert.eq child.elementSpaceDrawArea, rect 0, 0, 4, 4
+
+      test "over padding should not have negative clipping", ->
+        new Element
+          size: 2
+          location: 1
+          padding: right: 3
+          clip: true
+          new RectangleElement color: #fff, location: -1, size: 4
+        .onNextReady (e) ->
+          assert.eq e.paddedArea, rect(0, 0, 0, 2), "paddedArea"
+          assert.eq e.elementSpaceDrawArea, rect 0, 0, 0, 2

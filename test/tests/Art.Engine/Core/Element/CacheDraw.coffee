@@ -169,14 +169,15 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           new RectangleElement color: "#8ff"
       parent.toBitmapBasic()
       .then (bitmap)->
-        log {bitmap}
+        log initial: {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
 
-        el._drawCacheBitmap.clear("black")
+        el._drawCacheBitmap.clear "black"
+        log drawArea: el.drawArea, size: el.currentSize
         el.location = x: 1
         parent.toBitmapBasic()
       .then (bitmap)->
-        log {bitmap}
+        log incremental: {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
 
   partialUpdate: ->
@@ -319,7 +320,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
             new RectangleElement color: "green", shadow: standardShadowProps
             needsStagingElement = new Element
               clip: true
-              new TextElement m standardTextProps, text: "hi!"
+              new TextElement m standardTextProps, text: "hi there!"
 
         initialStagingBitmapsCreated = Element.stats.stagingBitmapsCreated
         e.toBitmapWithInfo()
@@ -329,9 +330,9 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           e.toBitmapWithInfo()
         .then ({bitmap}) ->
           log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
-          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1
+          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1, "test 1"
           parent.angle = (Math.PI/180) * -10
           e.toBitmapWithInfo()
         .then ({bitmap}) ->
           log clone {bitmap, stagingBitmapsCreated: Element.stats.stagingBitmapsCreated}
-          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1
+          assert.eq Element.stats.stagingBitmapsCreated, initialStagingBitmapsCreated + 1, "test 2"

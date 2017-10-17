@@ -535,7 +535,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     paddedArea: ->
       p = @getCurrentPadding()
       size = @_currentSize
-      new Rectangle 0, 0, size.x - p.getWidth(), size.y - p.getHeight()
+      new Rectangle 0, 0, max(0, size.x - p.getWidth()), max(0, size.y - p.getHeight())
 
   @drawAreaProperty         clip: default: false, preprocess: (v) -> !!v
 
@@ -1025,6 +1025,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
 
     # re-use existing bitmap, if possible
     d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
+    # log {d2eMatrix, @_drawCacheToElementMatrix, cacheSpaceDrawArea, size: @_drawCacheBitmap?.size}
     if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
       drawCacheManager.useDrawCache @
       return unless @_dirtyDrawAreas || @_redrawAll
@@ -1452,7 +1453,9 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     clippedDrawArea: (stopAtParent)->
       parent = @
       requiredParentFound = false
-      drawArea = @drawAreaInElement stopAtParent
+
+      # we are going to mutate drawArea - so clone it
+      drawArea = clone @drawAreaInElement stopAtParent
 
       while parent = parent.getParent()
         parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
