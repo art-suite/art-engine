@@ -40,7 +40,6 @@ suite:
           padding: 10
           Element drawOrder: :red
       test: (e) ->
-        log {e}
         assert.eq e.drawArea, rect 30
 
     renderTest

@@ -167,15 +167,15 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           cacheDraw: true
           location: x: 2
           new RectangleElement color: "#8ff"
-      parent.toBitmapWithInfo {}
-      .then ({bitmap})->
+      parent.toBitmapBasic()
+      .then (bitmap)->
         log {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
 
         el._drawCacheBitmap.clear("black")
         el.location = x: 1
-        parent.toBitmapWithInfo {}
-      .then ({bitmap})->
+        parent.toBitmapBasic()
+      .then (bitmap)->
         log {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
 
