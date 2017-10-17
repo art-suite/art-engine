@@ -124,7 +124,7 @@ module.exports = suite:
 
 
     stateEpochTest "clipping && padding should excluded padding area", ->
-      ao = new Element size:100, padding:10, clip:true
+      ao = new Element size:100, padding:10, clip:true, drawOrder: fill: "red"
       ->
         assert.eq ao.elementSpaceDrawArea, rect 0, 0, 80, 80
 

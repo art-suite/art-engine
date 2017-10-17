@@ -1,5 +1,5 @@
 {defineModule, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
-{identityMatrix, Color, rect, rgbColor, isRect, isColor} = require 'art-atomic'
+{identityMatrix, Color, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
 {rectanglePath, ellipsePath, circlePath} = (require 'art-canvas').Paths
@@ -7,7 +7,20 @@
 defaultMiterLimit = 3
 defaultLineWidth = 1
 
+legalDrawCommands =
+  circle:     true
+  rectangle:  true
+  clip:       true
+  children:   true
+
 defineModule module, ->
+
+  looksLikeColor = (v) ->
+    return v unless v?
+    if isString v
+      !legalDrawCommands[v]
+    else
+      isColor(v) || isArray(v) || (v[0]? && v[1]?)
 
   expandDrawAreaByShadow = (area, {shadow:normalizedShadow}) ->
     return area unless normalizedShadow
@@ -37,7 +50,7 @@ defineModule module, ->
   class DrawAreaCollector extends BaseClass
     @singletonClass()
 
-    constructor: ->
+    constructor: (@padding)->
       @reset()
 
     reset: ->
@@ -74,6 +87,10 @@ defineModule module, ->
 
     draw: (child, elementToTargetMatrix) ->
       targetSpaceChildDrawArea = elementToTargetMatrix.transformBoundingRect child.getElementSpaceDrawArea()
+      # {left, top} = @padding
+      # if left != 0 || top != 0
+      #   targetSpaceChildDrawArea = @padding.translate targetSpaceChildDrawArea
+
       switch child.compositeMode
         when "alphaMask"
           # technically this is more accurate:
@@ -169,7 +186,7 @@ defineModule module, ->
 
     normalizeDrawProps = (drawProps) ->
       return drawProps unless drawProps?
-      if isString(drawProps) || isColor(drawProps) || isArray drawProps
+      if looksLikeColor drawProps
         drawProps = color: drawProps
       {shadow, color, colors, to, from} = drawProps
       if color? && color.constructor != Color
@@ -202,13 +219,18 @@ defineModule module, ->
       else
         drawProps
 
-
     normalizeDrawStep = (step) ->
+      if looksLikeColor step
+        return fill: normalizeDrawProps color: step
       return step unless isPlainObject step
 
-      {fill, outline} = step
+      {fill, outline, color, colors} = step
+      if color || colors
+        return fill: normalizeDrawProps step
+
       fill = normalizeDrawProps fill
       outline = normalizeDrawProps outline
+
       if fill != step.fill || outline != step.outline
         merge step, {fill, outline}
       else
@@ -220,14 +242,16 @@ defineModule module, ->
       # Keys are keys for elements to draw, if a matching child is found
       drawOrder:
         default: null
-        validate: (v) -> !v? || isArray(v) || isPlainObject(v) || isString(v)
+        validate: (v) -> !v? || isArray(v) || isPlainObject(v) || isString(v) || isColor v
         preprocess: (drawOrder) ->
           if drawOrder?
             drawOrder = [drawOrder] unless isArray drawOrder
             needsNormalizing = false
-            for draw in drawOrder when draw?.fill || draw?.outline
-              needsNormalizing = true
-              break
+            for step in drawOrder
+              {fill, outline, color, colors} = step
+              if fill || outline || color || colors || looksLikeColor step
+                needsNormalizing = true
+                break
             if needsNormalizing
               normalizeDrawStep draw for draw in drawOrder
             else drawOrder
@@ -331,10 +355,12 @@ defineModule module, ->
                   area = newShapeOptions
                   null
 
-                if isFunction area
-                  currentDrawArea = area @_currentSize
+                currentDrawArea = if isFunction area
+                  area @_currentSize
                 else if isRect area
-                  currentDrawArea = area
+                  area
+                else
+                  currentDrawArea
 
                 currentPath = if rectangle then rectanglePath else circlePath
 
@@ -382,7 +408,7 @@ defineModule module, ->
     #   Ex: KimiEditor fonts effects.
     # returns computed elementSpaceDrawArea
     _computeElementSpaceDrawArea: (upToChild)->
-      drawAreaCollector = new DrawAreaCollector
+      drawAreaCollector = new DrawAreaCollector @currentPadding
       if @getClip()
         drawAreaCollector.openClipping null, identityMatrix, @paddedArea
       @_drawChildren drawAreaCollector, identityMatrix, false, upToChild

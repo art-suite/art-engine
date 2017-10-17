@@ -315,7 +315,6 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           clip: true
           parent = new Element
             axis: .5
-            # size: 50
             location: ps: .5
             new RectangleElement color: "green", shadow: standardShadowProps
             needsStagingElement = new Element

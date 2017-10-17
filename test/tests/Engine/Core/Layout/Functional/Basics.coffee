@@ -260,6 +260,7 @@ module.exports = suite:
       ->
         assert.eq b.currentSize, point 100, 0
 
+  regressions: ->
     stateEpochTest "regression 2a - more than one nesting of an element which is both parent and child relative breaks", ->
       ###
       TODO
@@ -337,12 +338,12 @@ module.exports = suite:
             new Element
               key: "gamma"
               size: testNestedSizeLayout
-              new Element size: 25
+              new Element size: 25, drawOrder: fill: "red"
 
             new Element
               key: "delta"
               size: testNestedSizeLayout
-              new Element size: 30
+              new Element size: 30, drawOrder: fill: "red"
 
       test: (a) ->
         [b] = a.find 'beta'
