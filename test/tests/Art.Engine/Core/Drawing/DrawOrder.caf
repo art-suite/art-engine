@@ -201,6 +201,24 @@ suite:
           fill: :orange
       test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
 
+
+    renderTest
+      "custom with params"
+      render: -> Element
+        size: 100
+        drawOrder:
+          shape:
+            area: rect 20, 10, 20, 80
+            foo: 35
+            path: (context, area, {foo}) ->
+              {top, left, right, bottom, vCenter, hCenter} = area
+              context.moveTo  hCenter, top
+              context.lineTo  right, foo
+              context.lineTo  left, bottom
+              context.closePath()
+          fill: :orange
+      test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+
   fill: ->
     renderTest
       "basic"
