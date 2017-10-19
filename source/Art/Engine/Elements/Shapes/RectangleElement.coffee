@@ -4,7 +4,7 @@ Text = require 'art-text'
 ShadowableElement = require '../ShadowableElement'
 {Paths} = require 'art-canvas'
 {pureMerge, floatEq, AtomElement, createWithPostCreate, isPlainObject, isNumber} = Foundation
-{curriedRoundedRectangle, roundedRectangle} = Paths
+{rectanglePath} = Paths
 
 module.exports = createWithPostCreate class RectangleElement extends ShadowableElement
 
@@ -34,7 +34,7 @@ module.exports = createWithPostCreate class RectangleElement extends ShadowableE
     if floatEq @_radius, 0
       super
     else
-      lastClippingInfo = target.openClipping roundedRectangle, elementToTargetMatrix, target.pixelSnapRectangle(elementToTargetMatrix, @getPaddedArea()), @_radius
+      lastClippingInfo = target.openClipping rectanglePath, elementToTargetMatrix, target.pixelSnapRectangle(elementToTargetMatrix, @getPaddedArea()), @_radius
       @_drawChildren target, elementToTargetMatrix
       target.closeClipping lastClippingInfo
 
