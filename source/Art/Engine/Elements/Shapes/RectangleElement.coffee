@@ -1,12 +1,11 @@
-Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Text = require 'art-text'
 ShadowableElement = require '../ShadowableElement'
 {Paths} = require 'art-canvas'
-{pureMerge, floatEq, AtomElement, createWithPostCreate, isPlainObject, isNumber} = Foundation
+{pureMerge, floatEq, log, AtomElement, defineModule, isPlainObject, isNumber} = require 'art-standard-lib'
 {rectanglePath} = Paths
 
-module.exports = createWithPostCreate class RectangleElement extends ShadowableElement
+defineModule module, class RectangleElement extends ShadowableElement
 
   @drawProperty
     radius:
@@ -30,11 +29,13 @@ module.exports = createWithPostCreate class RectangleElement extends ShadowableE
   # Custom Clipping
   # override to support rounded-rectangle clipping
   #####################
+  clipOptions = radius: 0
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
     if floatEq @_radius, 0
       super
     else
-      lastClippingInfo = target.openClipping rectanglePath, elementToTargetMatrix, target.pixelSnapRectangle(elementToTargetMatrix, @getPaddedArea()), @_radius
+      clipOptions.radius = @_radius
+      lastClippingInfo = target.openClipping rectanglePath, elementToTargetMatrix, @paddedArea, clipOptions
       @_drawChildren target, elementToTargetMatrix
       target.closeClipping lastClippingInfo
 
