@@ -211,3 +211,15 @@ suite:
       .onNextReady (e) ->
         assert.eq e.paddedArea, rect(0, 0, 0, 2), "paddedArea"
         assert.eq e.elementSpaceDrawArea, rect 0, 0, 0, 2
+
+    test "huh", ->
+      new RectangleElement
+        radius: 10
+        clip: true
+        size: w: 389.5, h: 232.75
+        childrenLayout: "column"
+        new RectangleElement size: h: 38
+        new RectangleElement()
+      .onNextReady (e) ->
+        assert.eq e.drawArea.size, e.currentSize
+        # assert.eq e.elementSpaceDrawArea, rect 0, 0, 0, 2

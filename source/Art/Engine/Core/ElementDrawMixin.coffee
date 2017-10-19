@@ -1,5 +1,5 @@
-{defineModule, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
-{identityMatrix, Color, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
+{defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
+{Matrix, identityMatrix, Color, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
 {rectanglePath, ellipsePath, circlePath} = (require 'art-canvas').Paths
@@ -150,13 +150,14 @@ defineModule module, ->
       else
         step
 
-    @drawProperty
+    @drawLayoutProperty
+
       # is an array of keys and one 'null' entry.
       # null or 'children' indicates 'all other children'
       # Keys are keys for elements to draw, if a matching child is found
       drawOrder:
         default: null
-        validate: (v) -> !v? || isArray(v) || isPlainObject(v) || isString(v) || isColor v
+        validate: (v) -> !v? || isRect(v) || isFunction(v) || isArray(v) || isPlainObject(v) || isString(v) || isColor v
         preprocess: (drawOrder) ->
           if drawOrder?
             drawOrder = [drawOrder] unless isArray drawOrder
@@ -191,10 +192,10 @@ defineModule module, ->
         # start with non-padded matrix
         # NOTE: children ignore drawMatrix since they were layed out with elementToTargetMatrix
         drawMatrix = if @_currentPadding.needsTranslation
-          elementToTargetMatrix.translateXY(
+          Matrix.translateXY(
             -@_currentPadding.left
             -@_currentPadding.top
-          )
+          ).mul elementToTargetMatrix
         else
           elementToTargetMatrix
 
@@ -214,7 +215,14 @@ defineModule module, ->
               childrenByKey[key] = child
 
           for drawStep in customDrawOrder
-            if isString instruction = drawStep
+            if isFunction drawStep
+              drawStep target, elementToTargetMatrix, @, currentDrawArea, currentPath
+            else if isRect drawStep
+              currentPath = rectanglePath
+              currentDrawArea = drawStep
+              currentPathOptions = null
+
+            else if isString instruction = drawStep
               switch instruction
                 when "circle"
                   currentPath = circlePath
@@ -247,6 +255,29 @@ defineModule module, ->
             else if isPlainObject draw = drawStep
               {fill, clip, outline, shape, rectangle, child, circle} = draw
 
+              if newShapeOptions = rectangle ? circle ? shape
+
+                currentPathOptions = if isPlainObject newShapeOptions
+                  {area, path} = newShapeOptions
+                  newShapeOptions
+                else if isRect newShapeOptions
+                  area = newShapeOptions
+                  null
+                else if (rectangle ? circle) ? isRect newShapeOptions
+                  area = newShapeOptions
+                  null
+                else
+                  null
+
+                currentDrawArea = if isFunction area
+                  area @_currentSize, currentPathOptions
+                else if isRect area
+                  area
+                else
+                  currentDrawArea
+
+                currentPath = path ? shape ? if rectangle then rectanglePath else circlePath
+
               if clip?
                 if clip
                   if lastClippingInfo
@@ -256,26 +287,6 @@ defineModule module, ->
                   if lastClippingInfo?
                     target.closeClipping lastClippingInfo
                     lastClippingInfo = null
-
-              if newShapeOptions = rectangle ? circle ? shape
-
-                currentPathOptions = if isPlainObject newShapeOptions
-                  {area, path} = newShapeOptions
-                  newShapeOptions
-                else if isRect newShapeOptions
-                  area = newShapeOptions
-                  null
-                else
-                  null
-
-                currentDrawArea = if isFunction area
-                  area @_currentSize
-                else if isRect area
-                  area
-                else
-                  currentDrawArea
-
-                currentPath = path ? shape ? if rectangle then rectanglePath else circlePath
 
               if fill?
                 target.fillShape drawMatrix,
@@ -308,12 +319,67 @@ defineModule module, ->
         if lastClippingInfo
           target.closeClipping lastClippingInfo
 
+        # if target.drawArea
+        #   log target.drawArea
+
       else
         for child in children
           break if child == upToChild
           child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
       children # without this, coffeescript returns a new array
 
+    ########################
+    # DRAW AREAS
+    ########################
+
+    @getter
+      parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
+      elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
+      drawArea: -> @elementSpaceDrawArea
+    #   drawAreas are computed once and only updated as needed
+    #   drawAreas are kept in elementSpace
+
+    # drawAreaIn should become:
+    # drawAreaOverlapsTarget: (target, elementToTargetMatrix) ->
+    #   elementToTargetMatrix.rectanglesOverlap @_elementSpaceDrawArea, target.size
+    # This avoids creating a rectangle object by adding a method to Matrix:
+    #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
+    drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
+    drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
+
+    @getter
+      clippedDrawArea: (stopAtParent)->
+        parent = @
+        requiredParentFound = false
+
+        # we are going to mutate drawArea - so clone it
+        drawArea = clone @drawAreaInElement stopAtParent
+
+        while parent = parent.getParent()
+          parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
+          if parent == stopAtParent
+            requiredParentFound = true
+            break
+        return rect() if stopAtParent && !requiredParentFound
+        drawArea
+
+    # overridden by some children (Ex: Filter)
+
+    _drawAreaChanged: ->
+      if @_elementSpaceDrawArea
+        @_elementSpaceDrawArea = null
+        if p = @getPendingParent()
+          p._childsDrawAreaChanged()
+
+    # 10-2017-TODO: optimization opportunity:
+    #   we could say all elements with clipping have their
+    #   draw-area FIXED at their clip-area. Then, we don't
+    #   need to update all draw-areas above a clipped child.
+    #   BUT: is this a win or a loss?
+    #   NOTE: before this month, this is what we were doing -
+    #     there was no opportunity for smaller-than-clipped-area draw-areas.
+    _childsDrawAreaChanged: ->
+      @_drawAreaChanged() # 10-2017 IDEA: unless @getClip()
 
     # currently drawAreas are only superSets of the pixels changed
     # We may want drawAreas to be "tight" - the smallest rectangle that includes all pixels changed.

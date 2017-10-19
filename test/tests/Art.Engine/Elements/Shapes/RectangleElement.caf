@@ -199,7 +199,7 @@ suite:
             lineWidth: 10
 
         test: (root) ->
-          assert.eq root.drawArea.toArray(), [-50, -50, 200, 200]
+          assert.eq root.drawArea.toArray(), [-15, -15, 130, 130]
 
       drawAndTestElement "lineJoin: bevel", ->
         element: new RectangleElement
@@ -248,4 +248,4 @@ suite:
           new OutlineElement lineWidth: 1
 
         .onNextReady (a)->
-          assert.eq a.elementSpaceDrawArea, rect -5, -5, 50, 50
+          assert.eq a.elementSpaceDrawArea, rect -1.5, -1.5, 43, 43

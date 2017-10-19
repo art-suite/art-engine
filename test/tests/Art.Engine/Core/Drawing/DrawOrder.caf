@@ -8,6 +8,7 @@ suite:
         Element
           padding: 10
           drawOrder: :red
+          RectangleElement()
       test: (e) ->
         assert.eq e.drawArea, rect -10, -10, 100, 100
 
@@ -20,6 +21,26 @@ suite:
             drawOrder: :red
       test: (e) ->
         assert.eq e.drawArea, rect 80
+
+    test "pixelsPerPoint: 2", ->
+      e =
+        Element
+          drawOrder: :grey
+          size: 100
+
+          Element
+            size: 30
+            drawOrder: #aaa
+            padding: 10
+            RectangleElement()
+
+          Element
+            location: 30
+            size: 30
+            drawOrder: :orange
+      e.toBitmapBasic pixelsPerPoint: 2
+      .then (bitmap) ->
+        log {bitmap}
 
   nestingElements: ->
     renderTest
@@ -64,6 +85,17 @@ suite:
       test: (e) ->
         assert.eq e.drawArea, rect 30
 
+    renderTest
+      "deep nesting"
+      render: ->
+        Element
+          size: h: 50, wcw:1
+          childrenLayout: "column"
+          Element drawOrder: :red, size: 100
+          Element drawOrder: :orange, size: 10
+      test: (e) ->
+        assert.eq e.drawArea, rect 100, 110
+
   shapes: ->
     renderTest
       "circle"
@@ -73,6 +105,19 @@ suite:
           "circle"
           fill: color: "red"
       test: (e) -> assert.eq e.drawArea, rect 100
+
+    renderTest
+      "rectangle: area function with params"
+      render: -> Element
+        size: 100
+        drawOrder:
+          "grey"
+          rectangle:
+            pos: 10
+            area: ({w,h}, {pos}) -> rect pos, 0, w, h
+          "orange"
+      test: (e) -> assert.eq e.drawArea, rect 110, 100
+
 
     renderTest
       "rectangle: radius: 10"
@@ -97,35 +142,47 @@ suite:
       render: -> Element
         size: 100
         drawOrder:
-          fill: color: "orange"
-          {}
-            rectangle: ({size}) -> rect size.div(4), size.div 2
-            fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
-
-    renderTest
-      "rectangle: rect()"
-      render: -> Element
-        size: 100
-        drawOrder:
-          fill: color: "orange"
-          {}
-            rectangle: rect 5, 5, 40, 40
-            fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+          rectangle: ({size}) -> rect size.x / 2, size.y / 4
+          fill: color: "red"
+      test: (e) -> assert.eq e.drawArea, rect 50, 25
 
     renderTest
       "rectangle: area: ->"
       render: -> Element
         size: 100
         drawOrder:
-          fill: color: "orange"
-          {}
-            rectangle:
-              area: ({size}) -> rect size.div(4), size.div 2
-              radius: 10
-            fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+          rectangle: area: ({size}) -> rect size.x / 2, size.y / 4
+          fill: color: "red"
+      test: (e) -> assert.eq e.drawArea, rect 50, 25
+
+    renderTest
+      "rectangle: rect()"
+      render: -> Element
+        size: 100
+        drawOrder:
+          rectangle: rect 5, 5, 40, 40
+          fill: color: "red"
+      test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
+
+    renderTest
+      "rect()"
+      render: -> Element
+        size: 100
+        drawOrder:
+          rect 5, 5, 40, 40
+          "red"
+      test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
+
+    renderTest
+      "rectangle: area: ->"
+      render: -> Element
+        size: 100
+        drawOrder:
+          rectangle:
+            area: ({size}) -> rect size.div(4), size.div 2
+            radius: 10
+          fill: color: "red"
+      test: (e) -> assert.eq e.drawArea, rect 25, 25, 50, 50
 
     renderTest
       "rectangle: rect()"
@@ -378,6 +435,37 @@ suite:
             clip: false
             outline: color: #ff0a lineWidth: 20 compositeMode: :add
 
+    renderTest
+      "clip applies after shape"
+      render: -> Element
+        size: 100
+        drawOrder:
+          clip:     true
+          rectangle: ({w, h}) -> rect -20, 0, w + 40, h
+          "orange"
+        RectangleElement color: "red"
+
+      test: (e) ->
+        assert.eq e.drawArea, rect -20, 0, 140, 100
+
+    renderTest
+      "drawOrder: clip: clips children"
+      render: -> Element
+        size: 100
+        drawOrder:
+          clip:       true
+          rectangle:  ({w, h}) -> rect -20, 0, w + 40, h
+          "orange"
+        RectangleElement color: "red"
+        RectangleElement
+          location: 50
+          size: 1000
+          color: "blue"
+
+      test: (e) ->
+        assert.eq e.drawArea, rect -20, 0, 140, 100
+
+
   children: ->
     renderTest
       "custom order"
@@ -417,7 +505,7 @@ suite:
           fill: color: :white shadow: offset: 10 blur 10
           :clip
           {}
-            rectangle: ({size:{x,y}}) -> rect 0, 0, x, y / 2
+            rectangle: ({w,h}) -> rect 0, 0, w, h / 2
             fill:     :red
             outline:  color: :black lineWidth: 6
 
@@ -426,12 +514,183 @@ suite:
           outline: color: :black lineWidth: 6
 
           {}
-            circle: ({size:{x,y}}) -> rect x * .35, y * .35, x * .30, y * .30
+            circle: ({w, h}) -> rect w * .35, h * .35, w * .30, h * .30
             fill:     :white
             outline:  color: :black lineWidth: 6
 
           {}
-            circle: ({size:{x,y}}) -> rect x * .40, y * .40, x * .20, y * .20
+            circle: ({w, h}) -> rect w * .40, h * .40, w * .20, h * .20
             outline:  color: :black lineWidth: .5
 
       test: (e) -> assert.eq e.drawArea, rect -3, -3, 218, 218
+
+  regressions: ->
+    renderTest
+      "custom area"
+      render: -> Element
+        size: 100
+        drawOrder:
+          "grey"
+          shape:
+            path: Paths.rectanglePath
+            area: ({w, h}) ->
+              u = 10
+              rect -u, 0, w + 2 * u, u
+          "orange"
+      test: (e) -> assert.eq e.drawArea, rect -10, 0, 120, 100
+
+    wedge = (context, size) ->
+      {x, y, w, h} = size
+      context.moveTo x + 0, y + h
+      context.lineTo x + w, y + h
+      context.lineTo x + w, y + 0
+      context.closePath()
+
+    triangleUp = (context, size) ->
+      {x, y, w, h} = size
+      context.moveTo x + w / 2, y + 0
+      context.lineTo x + w,     y + h
+      context.lineTo x + 0,     y + h
+      context.closePath()
+
+    wedgeArea = ({w, h}) -> rect 0, h / 3, w, h / 3
+    cursorArea = ({w, h}, {pos}) ->
+      unit = h / 4
+      rect pos * w - unit, h - unit, 2 * unit, unit
+
+    renderTest
+      "wedge and cursor left"
+      render: ->
+        Element
+          size: w: 200, h: 60
+          drawOrder:
+            shape:
+              path: wedge
+              area: wedgeArea
+            "grey"
+            shape:
+              pos: 0
+              area: cursorArea
+              path: triangleUp
+            "orange"
+
+      test: (e) -> assert.eq e.drawArea, rect -15, 20, 215, 40
+
+    renderTest
+      "wedge and cursor middle"
+      render: ->
+        Element
+          size: w: 200, h: 60
+          drawOrder:
+            shape:
+              path: wedge
+              area: wedgeArea
+            "grey"
+            shape:
+              pos: .5
+              area: cursorArea
+              path: triangleUp
+            "orange"
+
+      test: (e) -> assert.eq e.drawArea, rect 0, 20, 200, 40
+
+
+    renderTest
+      "wedge and cursor right"
+      render: ->
+        Element
+          size: w: 200, h: 60
+          drawOrder:
+            shape:
+              path: wedge
+              area: wedgeArea
+            "grey"
+            shape:
+              pos: 1
+              area: cursorArea
+              path: triangleUp
+            "orange"
+
+      test: (e) -> assert.eq e.drawArea, rect 0, 20, 215, 40
+
+    renderTest
+      "add drawOrder updates drawArea"
+      render: -> Element
+        size: w: 200, h: 100
+        Element
+          size: ps: 1
+          Element
+            size: 50
+            axis: .5
+            location: ps: .5
+            drawOrder: #0f0
+      test: (e) ->
+        [c] = e.children
+        assert.eq e.drawArea, rect 75, 25, 50, 50
+        assert.eq c.drawArea, rect 75, 25, 50, 50
+        c.drawOrder = "red"
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.drawArea, rect 0, 0, 200, 100
+          assert.eq c.drawArea, rect 0, 0, 200, 100
+
+    renderTest
+      "clip drawArea with textElement child"
+      render: ->
+        Element
+          size: w: 50, h: 25
+          key: :drawAreaElement
+          clip: true
+          TextElement
+            key: :changeChild
+            size: ps: 1
+            text: "hi"
+            color: #0ff
+      test: (e) ->
+        [dac] = e.find :drawAreaElement
+        [cc] = e.find :changeChild
+        assert.eq dac.drawArea, rect 20, 24
+        cc.align = :topRight
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq
+            dac.drawArea.roundOut()
+            rect 29, 0, 21, 24
+            "" should update drawArea
+          assert.ok
+            find el from bitmap.getImageDataArray :green
+              el > 0
+            "" expected text to draw somewhere
+
+    renderTest
+      "clip drawArea with drawOrder child"
+      render: ->
+        Element
+          size: w: 50, h: 25
+          key: :drawAreaElement
+          clip: true
+          Element
+            key: :changeChild
+            drawOrder:
+              rect 20
+              #0ff
+      test: (e) ->
+        [dac] = e.find :drawAreaElement
+        [cc] = e.find :changeChild
+        assert.eq dac.drawArea, rect 20
+        cc.drawOrder =
+          rectangle: rect 30, 0, 20, 20
+          #0ff
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq
+            dac.drawArea
+            rect 30, 0, 20, 20
+            "" should update drawArea
+          assert.ok
+            find el from bitmap.getImageDataArray :green
+              el > 0
+            "" expected child to draw somewhere

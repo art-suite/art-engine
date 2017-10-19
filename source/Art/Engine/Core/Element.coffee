@@ -33,7 +33,7 @@ truncateLayoutCoordinate = (v) ->
   arrayWithout
   neq
   inspect, inspectLean
-  clone, time, Map, plainObjectsDeepEq, shallowEq, Unique,
+  clone, time, plainObjectsDeepEq, shallowEq, Unique,
   compact
   compactFlatten, keepIfRubyTrue, log, insert, remove, merge, max, min,
   arrayWithoutValue, minimumOrderedOverlappingMerge
@@ -56,7 +56,8 @@ truncateLayoutCoordinate = (v) ->
   inspectedObjectLiteral
   defineModule
   isArray
-} = Foundation
+  formattedInspect
+} = require 'art-standard-lib'
 
 stats = clone zeroedStats =
   stagingBitmapsCreated: 0
@@ -153,9 +154,6 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     parentToElementMatrix: -> @_parentToElementMatrix ||= @_elementToParentMatrix.inv
     elementToDocumentMatrix: -> @getElementToAbsMatrix().mul @getCanvasElement()._absToDocumentMatrix
     documentToElementMatrix: -> @getCanvasElement()._documentToAbsMatrix.mul @getAbsToElementMatrix()
-    parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
-    elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
-    drawArea: -> @elementSpaceDrawArea
 
     absOpacity: ->
       opacity = if @getVisible() then @getOpacity() else 0
@@ -907,7 +905,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
 
   _addDescendantsDirtyDrawArea: (descendant) ->
     if descendant && !@_redrawAll
-      @_addDirtyDrawArea descendant.getClippedDrawArea @
+      @_addDirtyDrawArea dirtyArea = descendant.getClippedDrawArea @
     else
       @_dirtyDrawAreas = null
       @_redrawAll = true
@@ -1437,46 +1435,6 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
     return child for child in @_children by -1 when child.pointInside pointInElementSpace
     false
 
-  ########################
-  # DRAW AREAS
-  ########################
-  #   drawAreas are computed once and only updated as needed
-  #   drawAreas are kept in elementSpace
-
-  # drawAreaIn should become:
-  # drawAreaOverlapsTarget: (target, elementToTargetMatrix) ->
-  #   elementToTargetMatrix.rectanglesOverlap @_elementSpaceDrawArea, target.size
-  # This avoids creating a rectangle object by adding a method to Matrix:
-  #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
-  drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
-  drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
-
-  @getter
-    clippedDrawArea: (stopAtParent)->
-      parent = @
-      requiredParentFound = false
-
-      # we are going to mutate drawArea - so clone it
-      drawArea = clone @drawAreaInElement stopAtParent
-
-      while parent = parent.getParent()
-        parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
-        if parent == stopAtParent
-          requiredParentFound = true
-          break
-      return rect() if stopAtParent && !requiredParentFound
-      drawArea
-
-  # overridden by some children (Ex: Filter)
-
-  _drawAreaChanged: ->
-    if @_elementSpaceDrawArea
-      @_elementSpaceDrawArea = null
-      if p = @getPendingParent()
-        p._childsDrawAreaChanged()
-
-  _childsDrawAreaChanged: ->
-    @_drawAreaChanged() unless @getPendingClip()
 
   ##########################
   # CHILDREN INFO

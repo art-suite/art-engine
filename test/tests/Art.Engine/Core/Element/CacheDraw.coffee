@@ -64,14 +64,46 @@ propChangeTest = (resetsCache, propName, propValue, cacheMode = true)->
 module.exports = Engine.Config.config.drawCacheEnabled && suite:
   true: ->
     test "cacheDraw: true caches on next draw-cycle", ->
+      drawCount = 0
       el = new Element
         cacheDraw: true
         size: point 100, 50
+        drawOrder: rectangle: ->
+          drawCount++
+          rect()
+
         new RectangleElement color:"red"
 
       el.toBitmapWithInfo()
       .then (rendered) ->
+        firstCached = el._drawCacheBitmap
         assert.eq true, !!result = el._drawCacheBitmap
+        assert.eq drawCount, 2
+        el.toBitmapBasic()
+        .then -> el.toBitmapBasic()
+        .then ->
+          assert.eq el._drawCacheBitmap, firstCached
+          assert.eq drawCount, 2
+
+    test "regression", ->
+      drawCount = 0
+      e = new Element
+        size: ps: 1
+        cacheDraw: true
+        new Element
+          drawOrder: [
+            "blue"
+            (target, elementToTargetMatrix, currentDrawArea, currentPath, element) ->
+              drawCount++
+          ]
+          size: 50
+      e.toBitmapBasic()
+      .then (bitmap) ->
+        log {bitmap}
+        assert.eq drawCount, 2
+        e.toBitmapBasic()
+      .then ->
+        assert.eq drawCount, 2
 
     do ->
       test testName = "cacheDraw: true, no change, then setting cacheDraw = false resets cache", ->

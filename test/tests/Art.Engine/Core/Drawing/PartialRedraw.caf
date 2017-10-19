@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtAtomic, &ArtEngine
+import &ArtStandardLib, &ArtAtomic, &ArtCanvas, &ArtEngine
 HtmlCanvas = &ArtFoundation.Browser.DomElementFactories.Canvas
 
 {compareDownsampledRedChannel} = &CoreHelper
@@ -341,3 +341,83 @@ suite: ->
         0 8 8 8 8 0
         0 8 8 8 8 0
         0 0 0 0 0 0
+
+
+  test "change drawOrder", ->
+    cursorArea = ({w, h}, {pos}) ->
+      rect pos * w - h / 2, 0, h, h
+
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 1
+      size: unitSize = 4
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: #27f
+        e = new Element
+          location: 1
+          size: 2
+          drawOrder:
+            #8f0
+            shape:
+              pos: 1
+              area: cursorArea
+              path: Paths.rectanglePath
+            #40f
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - initialDraw", canvasElement, compactFlatten []
+        2 2 2 2
+        2 8 4 4
+        2 8 4 4
+        2 2 2 2
+
+      canvasElement.canvasBitmap.clear :black
+      e.drawOrder =
+        #8f0
+        shape:
+          pos: .5
+          area: cursorArea
+          path: Paths.rectanglePath
+        #40f
+
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - partialDraw", canvasElement, compactFlatten []
+        0 0 0 0
+        0 4 4 2
+        0 4 4 2
+        0 0 0 0
+
+
+  test "drawOrder with padding", ->
+    cursorArea = ({w, h}, {pos}) ->
+      rect pos * w - h / 2, 0, h, h
+
+    canvasElement = new CanvasElement
+      pixelsPerPoint: 1
+      size: w: 10, h: 4
+      canvas: HtmlCanvas()
+      []
+        new RectangleElement color: #27f
+        e = new Element
+          size: 4
+          padding: h: 1
+          drawOrder:
+            #8f0
+          new RectangleElement color: #400
+
+    canvasElement.onNextReady()
+    .then -> canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - initialDraw", canvasElement, compactFlatten []
+        8 4 4 8 2 2 2 2 2 2
+
+      canvasElement.canvasBitmap.clear :black
+      e.location = x: 6
+
+      canvasElement.onNextReady()
+    .then ->
+      compareDownsampledRedChannel "change axis - partialDraw", canvasElement, compactFlatten []
+        2 2 2 2 0 0 8 4 4 8
