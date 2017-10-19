@@ -2,7 +2,7 @@
 
 
 {defineModule, log, merge, select, inspect, wordsArray, timeout} = require 'art-standard-lib'
-{rgbColor} = require 'art-atomic'
+{rgbColor, point} = require 'art-atomic'
 
 Foundation = require 'art-foundation'
 {createElementFromHtml} = Foundation.Browser.Dom
@@ -84,6 +84,9 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
     @lastValue = @value
 
+  # returns childrenSize
+  nonChildrenLayoutFirstPass: ->
+    point @domElement.scrollWidth, @domElement.scrollHeight
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
@@ -94,6 +97,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         @domElement.blur()  if     @domElementFocused
         handlerMap.blur? event
       keyPress: (e) =>
+
         handlerMap.keyPress? e
         {props} = e
         @handleEvent "enter", value:@value if props.key == "Enter"
@@ -105,6 +109,8 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
   checkIfValueChanged: ->
     if @lastValue != @value
+      if @size.childrenRelative
+        @_layoutPropertyChanged()
       @lastValue = @value
       @queueEvent "valueChanged",
         value: @value

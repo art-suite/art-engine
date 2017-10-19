@@ -111,3 +111,5 @@ module.exports = class SynchronizedDomOverlay extends Element
       @_shouldAttachDomElement = true
       @_updateDomLayout()
       @_queueUpdate()
+
+    @_layoutPropertyChanged()
