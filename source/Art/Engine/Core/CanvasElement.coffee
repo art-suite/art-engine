@@ -23,15 +23,19 @@ EngineStat= require './EngineStat'
   timeout
   durationString
   timeStampToPerformanceSecond
-  first, Browser
-  createWithPostCreate
+  first
   wordsArray
   select
   merge
   objectDiff
   isPlainObject
   clone
-} = Foundation
+  getEnv
+} = require 'art-standard-lib'
+{createWithPostCreate} = require 'art-class-system'
+{Browser} = require 'art-foundation'
+
+{showPartialDrawAreas} = getEnv()
 
 {isMobileBrowser} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
@@ -567,13 +571,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     if @canvasBitmap
       if config.partialRedrawEnabled && @_dirtyDrawAreas
         for dirtyDrawArea in @_dirtyDrawAreas
-          @canvasBitmap.clippedTo dirtyDrawArea.mul(@_devicePixelsPerPoint), =>
-            super @canvasBitmap, @elementToParentMatrix
+          lastClippingInfo = @canvasBitmap.openClipping dirtyDrawArea.mul @_devicePixelsPerPoint
+          super @canvasBitmap, @elementToParentMatrix
+          @canvasBitmap.closeClipping lastClippingInfo
       else
         super @canvasBitmap, @elementToParentMatrix
 
-    # for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
-    #   @canvasBitmap?.drawBorder null, dirtyDrawArea, color: "red"
+    if showPartialDrawAreas
+      for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
+        @canvasBitmap?.drawBorder null, (dirtyDrawArea.mul @_devicePixelsPerPoint), color: "red"
 
     frameEndTime = currentSecond()
     @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
