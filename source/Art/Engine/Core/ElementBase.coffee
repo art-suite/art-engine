@@ -1,5 +1,4 @@
 Atomic = require 'art-atomic'
-Foundation = require 'art-foundation'
 {elementFactory} = require "./ElementFactory"
 EventedEpochedObject = require './EventedEpochedObject'
 
@@ -12,7 +11,10 @@ EventedEpochedObject = require './EventedEpochedObject'
   inspectLean
   compact
   isObject
-} = Foundation
+  object
+  w
+} = require 'art-standard-lib'
+{Bitmap} = require 'art-canvas'
 
 ###
 ElementBase adds:
@@ -191,8 +193,16 @@ module.exports = class ElementBase extends EventedEpochedObject
 
     inspectedString: -> @inspectedName
 
-  inspectedPropsNotToInclude = ["children", "name", "on"]
-  inspectedPropsFirst = ["key", "instanceId", "location", "size", "currentLocation", "currentSize"]
+  inspectedPropsNotToInclude = w rawDNI = "pages children name on parent"
+  inspectedPropsFirst = w "key instanceId location size currentLocation currentSize"
+  exportedPropsFirst = w "key location size"
+  dontExportProps = w "#{rawDNI} currentLocation currentSize currentPadding elementToParentMatrix"
+  exportProp = (value) ->
+    if value.constructor == Bitmap
+      ["Bitmap", value.size.exportedValue]
+    else
+      value && value.initializer ? value.exportedValue ? value.plainObjects ? value
+
   @getter
     inspectedPropsMaps: ->
       props = {}
@@ -200,19 +210,37 @@ module.exports = class ElementBase extends EventedEpochedObject
         props[k] = value
 
       for k, {internalName, virtual, defaultValue} of @metaProperties when !virtual and
-          k not in inspectedPropsNotToInclude and
-          !EpochedObject.propsEq defaultValue, value = @[internalName]
-        props[k] = value
+          !(k in inspectedPropsNotToInclude) and
+          (!ElementBase.propsEq defaultValue, value = @[internalName]) and
+          k != "parent"
+
+        props[k] = exportProp value
 
       props
 
-    debugStructure: ->
+    exportedProps: ->
+      out = object @metaProperties,
+        into: object exportedPropsFirst,
+          when: (v, k) => present @[k]
+          with: (v, k) => exportProp @[k]
+
+        when: ({internalName, virtual, defaultValue}, k) =>
+          !virtual and
+          !(k in dontExportProps) and
+          !ElementBase.propsEq defaultValue, @[internalName]
+
+        with: ({internalName}) => exportProp @[internalName]
+      unless @parent
+        out.size ||= exportProp @currentSize
+      out
+
+    exportedStructure: ->
       result = [
-        @shortNamespacePath
-        @inspectedPropsMaps
+        @class.getName()
+        @exportedProps
       ]
       if @hasChildren
-        result = result.concat (child.debugStructure for child in @children)
+        result = result.concat (child.exportedStructure for child in @children)
       result
 
     plainObjectProps: ->
