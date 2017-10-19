@@ -465,6 +465,28 @@ suite:
       test: (e) ->
         assert.eq e.drawArea, rect -20, 0, 140, 100
 
+    renderTest
+      "non-zero-location"
+      render: -> Element
+        size: 100
+        drawOrder: color: :red
+        Element
+          location: 60
+          size: 25
+
+        RectangleElement
+          location: 60
+          size: 25
+          clip: true
+          radius: 1000
+          FillElement color: :white
+
+      test: (e, __, bitmap) ->
+        assert.ok
+          find el from bitmap.getImageDataArray :green
+            el > 0
+          "" expected child to draw somewhere
+
 
   children: ->
     renderTest

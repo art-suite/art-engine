@@ -822,7 +822,6 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
 
   # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
-    throw new Error "bad matrix" unless elementToTargetMatrix.getIsTranslateAndScaleOnly()
     lastClippingInfo = target.openClipping clipArea
     @_drawChildren target, elementToTargetMatrix
     target.closeClipping lastClippingInfo
