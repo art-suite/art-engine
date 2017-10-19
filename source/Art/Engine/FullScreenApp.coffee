@@ -1,8 +1,8 @@
-Foundation = require 'art-foundation'
-
-{merge, Promise, parseQuery, log, ConfigRegistry, isPlainObject} = Foundation
-{Meta, Link} = Foundation.Browser.DomElementFactories
-{getDomReadyPromise} = Foundation.Browser
+{merge, Promise, getEnv, log, isPlainObject} = require 'art-standard-lib'
+{ConfigRegistry} = require 'art-config'
+{Browser} = require 'art-foundation'
+{Meta, Link} = Browser.DomElementFactories
+{getDomReadyPromise} = Browser
 {FontLoader} = require 'art-canvas'
 {rgbColor} = require 'art-atomic'
 
@@ -10,7 +10,7 @@ module.exports = class FullScreenApp
 
   @_domReady: ->
     Engine = require 'art-engine'
-    query = parseQuery()
+    query = getEnv()
     log """
       Art.Engine.FullScreenApp options:
         ?dev=true
@@ -19,7 +19,7 @@ module.exports = class FullScreenApp
           show performance graphs
       """
 
-    if query.dev == "true" || query.perfGraphs == "true"
+    if query.dev? || query.perfGraphs?
 
       ###
       TODO:
