@@ -13,9 +13,9 @@ module.exports = createWithPostCreate class OutlineElement extends ShadowableEle
     lineWidth:  default: 1,         validate: (v) -> typeof v is "number"
     lineJoin:   default: "miter",   validate: (v) -> v in validLineJoins
     miterLimit:
-      default: 10,
+      default: 3,
       validate: (v) -> !v || typeof v is "number"
-      preprocess: (v) -> if v? then v else 10
+      preprocess: (v) -> if v? then v else 3
 
   @drawProperty
     lineCap:    default: "butt",    validate: (v) -> v in validLineCaps
