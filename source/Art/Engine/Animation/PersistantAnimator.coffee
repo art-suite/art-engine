@@ -295,12 +295,12 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
       startValue.interpolate toValue, pos
 
     else if startValue.constructor != toValue.constructor
-      log cantIterpolate_differentTypes:
-        pos: pos
-        fromClass: startValue.constructor.getName()
-        toClass: toValue.constructor.getName()
-        from: startValue
-        to: toValue
+      # log cantIterpolate_differentTypes:
+      #   pos: pos
+      #   fromClass: startValue.constructor.getName()
+      #   toClass: toValue.constructor.getName()
+      #   from: startValue
+      #   to: toValue
       toValue
 
     else if isNumber startValue

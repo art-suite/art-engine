@@ -13,6 +13,17 @@ suite:
         assert.eq e.drawArea, rect -10, -10, 100, 100
 
     renderTest
+      "drawOrder padding"
+      render: ->
+        Element
+          drawOrder:
+            :circle
+            padding: 10
+            :red
+      test: (e) ->
+        assert.eq e.drawArea, rect 10, 10, 80, 80
+
+    renderTest
       "via paddedDrawArea"
       render: ->
         Element

@@ -1,4 +1,4 @@
-{objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
+{compactFlatten, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
@@ -182,10 +182,11 @@ defineModule module, ->
         preprocess: (drawOrder) ->
           if drawOrder?
             drawOrder = [drawOrder] unless isArray drawOrder
+            drawOrder = compactFlatten drawOrder
             needsNormalizing = false
             for step in drawOrder
-              {fill, outline, color, colors} = step
-              if fill || outline || color || colors || looksLikeColor step
+              {fill, outline, color, colors, padding, shadow, to, from} = step
+              if fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step
                 needsNormalizing = true
                 break
             if needsNormalizing
