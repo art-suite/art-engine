@@ -1,5 +1,5 @@
 {objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
-{Matrix, identityMatrix, Color, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
+{Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
 {GradientFillStyle, Paths} = require 'art-canvas'
@@ -51,7 +51,16 @@ defineModule module, ->
       o.offsetY = offset.layoutY size
       o
 
-    prepareDrawOptions = (drawOptions, size, isOutline) ->
+    layoutToFrom = (toFromLayout, drawArea) ->
+      if isRect drawArea
+        {size, x, y} = drawArea
+        x += toFromLayout.layoutX size
+        y += toFromLayout.layoutY size
+        point x, y
+      else
+        toFromLayout.layout drawArea
+
+    prepareDrawOptions = (drawOptions, drawArea, isOutline) ->
       o = sharedDrawOptions
 
       {
@@ -83,8 +92,8 @@ defineModule module, ->
       o.compositeMode = compositeMode
       o.opacity       = opacity
       o.shadow        = prepareShadow shadow
-      o.to            = colors && if to? then to.layout size else size.bottomRight
-      o.from          = colors && if from? then from.layout size else size.topLeft
+      o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomRight
+      o.from          = colors && if from? then layoutToFrom from, drawArea else drawArea.topLeft
       o.radius        = radius
       o
 
@@ -301,7 +310,7 @@ defineModule module, ->
                   null
 
                 currentDrawArea = if isFunction area
-                  area @_currentSize, currentPathOptions
+                  area @_currentSize, currentPathOptions, @
                 else if isRect area
                   area
                 else

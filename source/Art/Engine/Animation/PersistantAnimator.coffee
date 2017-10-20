@@ -288,11 +288,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
     else if pos == 1
       toValue
 
-    else unless rubyTrue(startValue) && rubyTrue(toValue)
-      log cantIterpolate_notBothTrue:
-        pos: pos
-        from: startValue
-        to: toValue
+    else unless startValue? && toValue?
       startValue || toValue
 
     else if isFunction startValue.interpolate
@@ -320,11 +316,11 @@ module.exports = class PersistantAnimator extends EventedMixin BaseObject
         interpolate v, toValue[i], pos, false for v, i in startValue
 
       else
-        log cantIterpolate:
-          pos: pos
-          fromClass: startValue.constructor.getName()
-          from: startValue
-          to: toValue
+        # log cantIterpolate:
+        #   pos: pos
+        #   fromClass: startValue.constructor.getName()
+        #   from: startValue
+        #   to: toValue
         toValue
 
       # if root
