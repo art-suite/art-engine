@@ -13,12 +13,23 @@ suite:
         assert.eq e.drawArea, rect -10, -10, 100, 100
 
     renderTest
+      "via paddedArea"
+      render: ->
+        Element
+          padding: 10
+          drawOrder:
+            :paddedArea
+            color: :red :yellow :green
+      test: (e) ->
+        assert.eq e.drawArea, rect 80
+
+    renderTest
       "and children drawArea"
       render: ->
         Element
           padding: 10
           Element
-            drawOrder: :red
+            drawOrder: color: :red :yellow :green
       test: (e) ->
         assert.eq e.drawArea, rect 80
 
@@ -96,185 +107,277 @@ suite:
       test: (e) ->
         assert.eq e.drawArea, rect 100, 110
 
-  shapes: ->
-    renderTest
-      "circle"
-      render: -> Element
-        size: 100
-        drawOrder:
-          "circle"
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+  shapes:
 
-    renderTest
-      "rectangle: area function with params"
-      render: -> Element
-        size: 100
-        drawOrder:
-          "grey"
-          rectangle:
-            pos: 10
-            area: ({w,h}, {pos}) -> rect pos, 0, w, h
-          "orange"
-      test: (e) -> assert.eq e.drawArea, rect 110, 100
+    circle: ->
+
+      renderTest
+        "circle"
+        render: -> Element
+          size: 100
+          drawOrder:
+            "circle"
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 100
+
+    drawArea: ->
+
+      renderTest
+        "rect()"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rect 5, 5, 40, 40
+            "red"
+        test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
+
+      renderTest
+        "padding: 10"
+        render: -> Element
+          size: 100
+          drawOrder:
+            padding: 10
+            "red"
+        test: (e) -> assert.eq e.drawArea, rect 10, 10, 80, 80
+
+      renderTest
+        "padding: top bottom"
+        render: -> Element
+          size: 100
+          drawOrder:
+            padding: top: 5, bottom: 10
+            "red"
+        test: (e) -> assert.eq e.drawArea, rect 0, 5, 100, 85
+
+    rectangle: ->
+      renderTest
+        "rectangle: area function with params"
+        render: -> Element
+          size: 100
+          drawOrder:
+            "grey"
+            rectangle:
+              pos: 10
+              area: ({w,h}, {pos}) -> rect pos, 0, w, h
+            "orange"
+        test: (e) -> assert.eq e.drawArea, rect 110, 100
 
 
-    renderTest
-      "rectangle: radius: 10"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle: radius: 10
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+      renderTest
+        "rectangle: radius: 10"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle: radius: 10
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 100
 
-    renderTest
-      "rectangle: radius: tl:20"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle: radius: tl: 20
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+      renderTest
+        "rectangle: radius: tl:20"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle: radius: tl: 20
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 100
 
-    renderTest
-      "rectangle: ->"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle: ({size}) -> rect size.x / 2, size.y / 4
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 50, 25
+      renderTest
+        "rectangle: ->"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle: ({size}) -> rect size.x / 2, size.y / 4
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 50, 25
 
-    renderTest
-      "rectangle: area: ->"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle: area: ({size}) -> rect size.x / 2, size.y / 4
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 50, 25
+      renderTest
+        "rectangle: area: ->"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle: area: ({size}) -> rect size.x / 2, size.y / 4
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 50, 25
 
-    renderTest
-      "rectangle: rect()"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle: rect 5, 5, 40, 40
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
+      renderTest
+        "rectangle: rect()"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle: rect 5, 5, 40, 40
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
 
-    renderTest
-      "rect()"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rect 5, 5, 40, 40
-          "red"
-      test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
+      renderTest
+        "rectangle: area: ->"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle:
+              area: ({size}) -> rect size.div(4), size.div 2
+              radius: 10
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 25, 25, 50, 50
 
-    renderTest
-      "rectangle: area: ->"
-      render: -> Element
-        size: 100
-        drawOrder:
-          rectangle:
-            area: ({size}) -> rect size.div(4), size.div 2
-            radius: 10
-          fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 25, 25, 50, 50
-
-    renderTest
-      "rectangle: rect()"
-      render: -> Element
-        size: 100
-        drawOrder:
-          fill: color: "orange"
-          {}
+      renderTest
+        "rectangle: rect()"
+        render: -> Element
+          size: 100
+          drawOrder:
             rectangle:
               area: rect 5, 5, 40, 40
               radius: 10
             fill: color: "red"
-      test: (e) -> assert.eq e.drawArea, rect 100
+        test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
 
-    renderTest
-      "custom with miter"
-      render: -> Element
-        size: 100
-        drawOrder:
-          shape: (context, area) ->
-            {top, left, right, bottom, vCenter, hCenter} = area
-            context.moveTo  hCenter, top
-            context.lineTo  right, bottom
-            context.lineTo  left, bottom
-            context.closePath()
-          fill: color: "orange"
-          outline: lineWidth: 10
-      test: (e) -> assert.eq e.drawArea, rect -15, -15, 130, 130
+      renderTest
+        "rectangle: padding: 10"
+        render: -> Element
+          size: 100
+          drawOrder:
+            rectangle:
+              padding: 10
+              radius: 10
+            fill: color: "red"
+        test: (e) -> assert.eq e.drawArea, rect 10, 10, 80, 80
 
-    renderTest
-      "custom with miterLimit"
-      render: -> Element
-        size: 100
-        drawOrder:
-          shape: (context, area) ->
-            {top, left, right, bottom, vCenter, hCenter} = area
-            context.moveTo  hCenter, top
-            context.lineTo  right, bottom
-            context.lineTo  left, bottom
-            context.closePath()
-          fill: color: "orange"
-          outline: lineWidth: 10 miterLimit: 2
-      test: (e) -> assert.eq e.drawArea, rect -10, -10, 120, 120
-
-    renderTest
-      "custom with round"
-      render: -> Element
-        size: 100
-        drawOrder:
-          shape: (context, area) ->
-            {top, left, right, bottom, vCenter, hCenter} = area
-            context.moveTo  hCenter, top
-            context.lineTo  right, bottom
-            context.lineTo  left, bottom
-            context.closePath()
-          fill: color: "orange"
-          outline: lineWidth: 10 lineJoin: :round
-      test: (e) -> assert.eq e.drawArea, rect -5, -5, 110, 110
-
-    renderTest
-      "custom with area"
-      render: -> Element
-        size: 100
-        drawOrder:
-          shape:
-            area: rect 20, 10, 20, 80
-            path: (context, area) ->
+    custom: ->
+      renderTest
+        "custom with miter"
+        render: -> Element
+          size: 100
+          drawOrder:
+            shape: (context, area) ->
               {top, left, right, bottom, vCenter, hCenter} = area
               context.moveTo  hCenter, top
               context.lineTo  right, bottom
               context.lineTo  left, bottom
               context.closePath()
-          fill: :orange
-      test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+            fill: color: "orange"
+            outline: lineWidth: 10
+        test: (e) -> assert.eq e.drawArea, rect -15, -15, 130, 130
 
+      renderTest
+        "custom with miterLimit"
+        render: -> Element
+          size: 100
+          drawOrder:
+            shape: (context, area) ->
+              {top, left, right, bottom, vCenter, hCenter} = area
+              context.moveTo  hCenter, top
+              context.lineTo  right, bottom
+              context.lineTo  left, bottom
+              context.closePath()
+            fill: color: "orange"
+            outline: lineWidth: 10 miterLimit: 2
+        test: (e) -> assert.eq e.drawArea, rect -10, -10, 120, 120
+
+      renderTest
+        "custom with round"
+        render: -> Element
+          size: 100
+          drawOrder:
+            shape: (context, area) ->
+              {top, left, right, bottom, vCenter, hCenter} = area
+              context.moveTo  hCenter, top
+              context.lineTo  right, bottom
+              context.lineTo  left, bottom
+              context.closePath()
+            fill: color: "orange"
+            outline: lineWidth: 10 lineJoin: :round
+        test: (e) -> assert.eq e.drawArea, rect -5, -5, 110, 110
+
+      renderTest
+        "custom with area"
+        render: -> Element
+          size: 100
+          drawOrder:
+            shape:
+              area: rect 20, 10, 20, 80
+              path: (context, area) ->
+                {top, left, right, bottom, vCenter, hCenter} = area
+                context.moveTo  hCenter, top
+                context.lineTo  right, bottom
+                context.lineTo  left, bottom
+                context.closePath()
+            fill: :orange
+        test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+
+
+      renderTest
+        "custom with params"
+        render: -> Element
+          size: 100
+          drawOrder:
+            shape:
+              area: rect 20, 10, 20, 80
+              foo: 35
+              path: (context, area, {foo}) ->
+                {top, left, right, bottom, vCenter, hCenter} = area
+                context.moveTo  hCenter, top
+                context.lineTo  right, foo
+                context.lineTo  left, bottom
+                context.closePath()
+            fill: :orange
+        test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+
+  reset: ->
 
     renderTest
-      "custom with params"
+      "'reset' resets everything"
       render: -> Element
         size: 100
         drawOrder:
-          shape:
-            area: rect 20, 10, 20, 80
-            foo: 35
-            path: (context, area, {foo}) ->
-              {top, left, right, bottom, vCenter, hCenter} = area
-              context.moveTo  hCenter, top
-              context.lineTo  right, foo
-              context.lineTo  left, bottom
-              context.closePath()
-          fill: :orange
-      test: (e) -> assert.eq e.drawArea, rect 20, 10, 20, 80
+          circle:
+            padding: 10
+            radius: 10
+          fill: color: "red"
+          "reset"
+          "clip"
+          outline: color: :red lineWidth: 10
+      test: (e) -> assert.eq e.drawArea, rect 100
+
+    renderTest
+      "'resetDrawArea' only resets drawArea"
+      render: -> Element
+        size: 100
+        drawOrder:
+          circle:
+            padding: 10
+            radius: 10
+          fill: color: "red"
+          "resetDrawArea"
+          "clip"
+          outline: color: :red lineWidth: 10
+      test: (e) -> assert.eq e.drawArea, rect 100
+
+    renderTest
+      "'resetShape' only resets shape"
+      render: -> Element
+        size: 100
+        drawOrder:
+          circle:
+            padding: 10
+            radius: 10
+          fill: color: "red"
+          "resetShape"
+          "clip"
+          outline: color: :red lineWidth: 10
+      test: (e) -> assert.eq e.drawArea, rect 10, 10, 80, 80
+
+    renderTest
+      "rectangle: {} does not reset drawArea"
+      render: -> Element
+        size: 100
+        drawOrder:
+          rectangle:
+            padding: 10
+            radius: 10
+          fill: color: "red"
+          {} rectangle: {}
+          "clip"
+          outline: color: :red lineWidth: 10
+      test: (e) -> assert.eq e.drawArea, rect 10, 10, 80, 80
 
   fill: ->
     renderTest

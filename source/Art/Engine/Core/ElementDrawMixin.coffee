@@ -9,10 +9,16 @@ defaultMiterLimit = 3
 defaultLineWidth = 1
 
 legalDrawCommands =
-  circle:     true
-  rectangle:  true
-  clip:       true
-  children:   true
+  circle:         true  # currentPath = circlePath; currentPathOptions = null
+  rectangle:      true  # currentPath = rectanglePath; currentPathOptions = null
+  clip:           true  # start clipping using: currentPath, currentPathOptions and currentDrawArea
+  children:       true  # draw all remaining children
+  reset:          true  # same as 'resetShape' PLUS 'resetDrawArea'
+  resetShape:     true  # same as 'rectangle'
+  resetDrawArea:  true  # same as 'logicalArea'
+  logicalArea:    true  # currentDrawArea = logicalArea
+  paddedArea:     true  # currentDrawArea = paddedArea
+  resetClip:      true  # same as: clip: false
 
 defineModule module, ->
 
@@ -76,8 +82,8 @@ defineModule module, ->
       o.compositeMode = compositeMode
       o.opacity       = opacity
       o.shadow        = prepareShadow shadow
-      o.to            = to?.layout size
-      o.from          = from?.layout size
+      o.to            = colors && if to? then to.layout size else size.bottomRight
+      o.from          = colors && if from? then from.layout size else size.topLeft
       o.radius        = radius
       o
 
@@ -138,15 +144,18 @@ defineModule module, ->
         return fill: normalizeDrawProps color: step
       return step unless isPlainObject step
 
-      {fill, outline, color, colors} = step
+      {fill, outline, color, colors, padding, rectangle, circle, shape} = step
       if color || colors
         return fill: normalizeDrawProps step
 
+      padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
+
+      padding = padding && perimeter padding
       fill = normalizeDrawProps fill
       outline = normalizeDrawProps outline
 
-      if fill != step.fill || outline != step.outline
-        merge step, {fill, outline}
+      if padding != step.padding || fill != step.fill || outline != step.outline
+        merge step, {fill, outline, padding}
       else
         step
 
@@ -224,19 +233,38 @@ defineModule module, ->
 
             else if isString instruction = drawStep
               switch instruction
-                when "circle"
-                  currentPath = circlePath
-                  currentDrawArea = @currentSize
-                  currentPathOptions = null
-
-                when "rectangle"
+                when "reset"
                   currentPath = rectanglePath
                   currentDrawArea = @currentSize
                   currentPathOptions = null
 
-                when "clip"
+                when "resetClip"
                   if lastClippingInfo
                     target.closeClipping lastClippingInfo
+                    lastClippingInfo = null
+
+                when "resetDrawArea", "logicalArea"
+                  currentDrawArea = @currentSize
+
+                when "paddedArea"
+                  currentDrawArea = @currentPadding.pad @currentSize
+
+                when "resetShape"
+                  currentPath = rectanglePath
+                  currentPathOptions = null
+
+                when "circle"
+                  currentPath = circlePath
+                  # currentDrawArea = @currentSize
+                  currentPathOptions = null
+
+                when "rectangle"
+                  currentPath = rectanglePath
+                  # currentDrawArea = @currentSize
+                  currentPathOptions = null
+
+                when "clip"
+                  target.closeClipping lastClippingInfo if lastClippingInfo
                   lastClippingInfo = target.openClipping currentPath, drawMatrix, currentDrawArea, currentPathOptions
 
                 when "children"
@@ -253,7 +281,7 @@ defineModule module, ->
               break if upToChild == "done"
 
             else if isPlainObject draw = drawStep
-              {fill, clip, outline, shape, rectangle, child, circle} = draw
+              {padding, fill, clip, outline, shape, rectangle, child, circle} = draw
 
               if newShapeOptions = rectangle ? circle ? shape
 
@@ -277,6 +305,9 @@ defineModule module, ->
                   currentDrawArea
 
                 currentPath = path ? shape ? if rectangle then rectanglePath else circlePath
+
+              if padding
+                currentDrawArea = padding.pad currentDrawArea
 
               if clip?
                 if clip
