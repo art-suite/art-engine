@@ -1,8 +1,9 @@
-{defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
+{objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
-{rectanglePath, ellipsePath, circlePath} = (require 'art-canvas').Paths
+{GradientFillStyle, Paths} = require 'art-canvas'
+{rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
 DrawAreaCollector = require './DrawAreaCollector'
 defaultMiterLimit = 3
@@ -15,9 +16,9 @@ legalDrawCommands =
   children:       true  # draw all remaining children
   reset:          true  # same as 'resetShape' PLUS 'resetDrawArea'
   resetShape:     true  # same as 'rectangle'
-  resetDrawArea:  true  # same as 'logicalArea'
-  logicalArea:    true  # currentDrawArea = logicalArea
-  paddedArea:     true  # currentDrawArea = paddedArea
+  resetDrawArea:  true  # same as 'logicalDrawArea'
+  logicalDrawArea:    true  # currentDrawArea = logicalArea
+  paddedDrawArea:     true  # currentDrawArea = paddedArea
   resetClip:      true  # same as: clip: false
 
 defineModule module, ->
@@ -119,8 +120,9 @@ defineModule module, ->
           )
           colors = color
 
+        if colors
+          colors = GradientFillStyle.normalizeColors colors
         color = if colors? then undefined else rgbColor color
-        color = undefined if colors?
 
       to = pointLayout to
       from = pointLayout from
@@ -144,9 +146,10 @@ defineModule module, ->
         return fill: normalizeDrawProps color: step
       return step unless isPlainObject step
 
-      {fill, outline, color, colors, padding, rectangle, circle, shape} = step
-      if color || colors
-        return fill: normalizeDrawProps step
+      {fill, to, from, shadow, outline, color, colors, padding, rectangle, circle, shape} = step
+      if color ? colors ? to ? from ? shadow
+        fill = merge normalizeDrawProps {to, from, color, colors, shadow}
+        step = objectWithout step, "color", "colors", "to", "from", "shadow"
 
       padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
 
@@ -243,10 +246,10 @@ defineModule module, ->
                     target.closeClipping lastClippingInfo
                     lastClippingInfo = null
 
-                when "resetDrawArea", "logicalArea"
+                when "resetDrawArea", "logicalDrawArea"
                   currentDrawArea = @currentSize
 
-                when "paddedArea"
+                when "paddedDrawArea"
                   currentDrawArea = @currentPadding.pad @currentSize
 
                 when "resetShape"

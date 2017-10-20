@@ -12,6 +12,7 @@ Events = require 'art-events'
   isNumber
   rubyTrue
   Promise
+  isArray
 } = require 'art-standard-lib'
 {BaseObject} = require 'art-class-system'
 {EventedMixin} = Events
@@ -280,23 +281,61 @@ Options: (events)
 
 module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
-  @interpolate: interpolate = (startValue, toValue, pos) ->
+  @interpolate: interpolate = (startValue, toValue, pos, root = true) ->
     if pos == 0
       startValue
+
     else if pos == 1
       toValue
+
     else unless rubyTrue(startValue) && rubyTrue(toValue)
+      log cantIterpolate_notBothTrue:
+        pos: pos
+        from: startValue
+        to: toValue
       startValue || toValue
+
     else if isFunction startValue.interpolate
       startValue.interpolate toValue, pos
-    else if isPlainObject startValue
-      out = {}
-      out[k] = interpolate v, toValue[k], pos for k, v of startValue
-      out
+
+    else if startValue.constructor != toValue.constructor
+      log cantIterpolate_differentTypes:
+        pos: pos
+        fromClass: startValue.constructor.getName()
+        toClass: toValue.constructor.getName()
+        from: startValue
+        to: toValue
+      toValue
+
     else if isNumber startValue
       startValue + (toValue - startValue) * pos
+
     else
-      toValue
+      out = if isPlainObject startValue
+        out = {}
+        out[k] = interpolate v, toValue[k], pos, false for k, v of startValue
+        out
+
+      else if isArray(startValue) && startValue.length == toValue.length
+        interpolate v, toValue[i], pos, false for v, i in startValue
+
+      else
+        log cantIterpolate:
+          pos: pos
+          fromClass: startValue.constructor.getName()
+          from: startValue
+          to: toValue
+        toValue
+
+      # if root
+      #   log interpolate:
+      #     pos: pos
+      #     fromClass: startValue.constructor.getName()
+      #     from: startValue
+      #     to: toValue
+      #     out: out
+      out
+
 
   @getter "options prop element startValue currentValue toValue continuous voidValue currentSecond startSecond"
   @getter

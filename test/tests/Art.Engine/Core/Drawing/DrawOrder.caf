@@ -13,12 +13,12 @@ suite:
         assert.eq e.drawArea, rect -10, -10, 100, 100
 
     renderTest
-      "via paddedArea"
+      "via paddedDrawArea"
       render: ->
         Element
           padding: 10
           drawOrder:
-            :paddedArea
+            :paddedDrawArea
             color: :red :yellow :green
       test: (e) ->
         assert.eq e.drawArea, rect 80
@@ -634,6 +634,7 @@ suite:
             fill:     :red
             outline:  color: :black lineWidth: 6
 
+          :reset
           :circle
           clip: false
           outline: color: :black lineWidth: 6
@@ -663,6 +664,15 @@ suite:
               rect -u, 0, w + 2 * u, u
           "orange"
       test: (e) -> assert.eq e.drawArea, rect -10, 0, 120, 100
+
+    renderTest
+      "color same as fill: color (should have rounded corners)"
+      render: -> Element
+        size: 100
+        drawOrder:
+          rectangle: radius: 10
+          color: "red"
+      # test: (e) -> assert.eq e.drawArea, rect -10, 0, 120, 100
 
     wedge = (context, size) ->
       {x, y, w, h} = size
