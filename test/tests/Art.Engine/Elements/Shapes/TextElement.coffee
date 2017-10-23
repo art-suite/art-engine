@@ -117,7 +117,7 @@ defineModule module, suite:
           new FillElement()
 
     drawTest3 "compositeMode",
-      stagingBitmapsCreateShouldBe: 0
+      stagingBitmapsCreateShouldBe: 1
       element: ->
         new Element {},
           new RectangleElement size: {w: 40, h: 60}, color:"red"

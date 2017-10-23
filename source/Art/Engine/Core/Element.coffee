@@ -760,11 +760,7 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
         ret[prop] = @[prop]
       ret
 
-    requiresParentStagingBitmap: ->
-      switch @_compositeMode
-        when "alphaMask", "targetAlphaMask", "destOver", "sourceIn", "inverseAlphaMask" then true
-        when "add", "normal" then false
-        else throw new Error "unknown compositeMode: #{@_compositeMode}"
+    requiresParentStagingBitmap: -> @_compositeMode != "normal"
 
     firstChildRequiringParentStagingBitmap: -> return child for child in @_children when child.getRequiresParentStagingBitmap()
     childRequiresParentStagingBitmap: -> !!@getFirstChildRequiringParentStagingBitmap()
@@ -964,12 +960,27 @@ defineModule module, class Element extends ElementDrawMixin ElementBase
       @getCacheDraw()
     )
 
+  @getter
+    drawOrderRequiresStaging: ->
+      return false unless drawOrder = @drawOrder
+      for {fill, outline} in drawOrder
+        if fill
+          {compositeMode} = fill
+          return true if compositeMode? && compositeMode != "normal"
+        if outline
+          {compositeMode} = outline
+          return true if compositeMode? && compositeMode != "normal"
+
+
   getNeedsStagingBitmap: (elementToTargetMatrix) ->
+    return stage if (stage = @stage)?
+    {drawOrder} = @
     !!(
       @getIsMask() ||
-      (@getHasChildren() && !@getCompositingIsBasic()) ||
+      ((@getHasChildren() || drawOrder?) && !@getCompositingIsBasic()) ||
       (@_clip && elementToTargetMatrix?.getHasSkew()) ||
-      @getChildRequiresParentStagingBitmap()
+      @getChildRequiresParentStagingBitmap() ||
+      @drawOrderRequiresStaging
     )
 
   @getter

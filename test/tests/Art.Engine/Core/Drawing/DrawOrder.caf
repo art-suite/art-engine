@@ -840,3 +840,121 @@ suite:
             find el from bitmap.getImageDataArray :green
               el > 0
             "" expected child to draw somewhere
+
+  compositeMode: ->
+    renderTest
+      "compositeMode on second draw-step"
+      render: ->
+        Element
+          drawOrder:
+            :circle
+            fill: :red
+            :rectangle
+            outline:
+              color: "orange"
+              lineWidth: 20
+              compositeMode: "sourceIn"
+
+    renderTest
+      "child Element's compositeMode"
+      render: ->
+        Element
+          drawOrder: "circle", "red"
+          Element
+            compositeMode: "sourceIn"
+            drawOrder:
+              outline:
+                color: "orange"
+                lineWidth: 20
+      test: (e) ->
+        [child] = e.children
+        assert.eq true, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
+    renderTest
+      "child Element's compositeMode with stage override"
+      render: ->
+        Element
+          drawOrder: "circle", "red"
+          Element
+            compositeMode: "sourceIn"
+            stage: false
+            drawOrder:
+              outline:
+                color: "orange"
+                lineWidth: 20
+      test: (e) ->
+        [child] = e.children
+        assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
+    renderTest
+      "child Element's compositeMode and drawOrder compositeMode"
+      render: ->
+        Element
+          drawOrder: "black"
+          Element
+            drawOrder: "circle", "red"
+            Element
+              compositeMode: "sourceIn"
+              drawOrder:
+                {}
+                  fill: "#00f"
+                  padding: bottom: 50
+                "reset"
+                outline:
+                  color: "#0f0"
+                  compositeMode: "add"
+                  lineWidth: 20
+      test: (e) ->
+        [child] = e.children[0].children
+        assert.eq true, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
+    renderTest
+      "child Element's only drawOrder compositeMode"
+      render: ->
+        Element
+          drawOrder: "circle", "red"
+          Element
+            drawOrder:
+              outline:
+                color: "orange"
+                lineWidth: 20
+                compositeMode: "sourceIn"
+      test: (e) ->
+        [child] = e.children
+        assert.eq true, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
+    renderTest
+      "child Element's only drawOrder compositeMode with stage override"
+      render: ->
+        Element
+          drawOrder: "circle", "red"
+          Element
+            stage: false
+            drawOrder:
+              outline:
+                color: "orange"
+                lineWidth: 20
+                compositeMode: "sourceIn"
+      test: (e) ->
+        [child] = e.children
+        assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
+    renderTest
+      "no compositeMode"
+      render: ->
+        Element
+          drawOrder: "circle", "red"
+          Element
+            drawOrder:
+              outline:
+                color: "orange"
+                lineWidth: 20
+      test: (e) ->
+        [child] = e.children
+        assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
+        assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"

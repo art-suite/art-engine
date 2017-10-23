@@ -171,6 +171,11 @@ defineModule module, ->
       else
         step
 
+    @drawProperty
+      stage:
+        default: null
+        validate: (v) -> v == null || v == false || v == true
+
     @drawLayoutProperty
 
       # is an array of keys and one 'null' entry.
@@ -346,9 +351,7 @@ defineModule module, ->
                   currentDrawArea
                   currentPathOptions
 
-              if child?
-                childElement = childrenByKey[child]
-                throw new Error "could not find child with key: #{child}" unless childElement
+              if child? && childElement = childrenByKey[child]
                 break if upToChild == child
                 target.draw childElement, childElement.getElementToTargetMatrix elementToTargetMatrix
 
