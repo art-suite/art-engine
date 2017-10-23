@@ -5,171 +5,22 @@
 {GradientFillStyle, Paths} = require 'art-canvas'
 {rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
-DrawAreaCollector = require './DrawAreaCollector'
 defaultMiterLimit = 3
 defaultLineWidth = 1
 
-legalDrawCommands =
-  circle:         true  # currentPath = circlePath; currentPathOptions = null
-  rectangle:      true  # currentPath = rectanglePath; currentPathOptions = null
-  clip:           true  # start clipping using: currentPath, currentPathOptions and currentDrawArea
-  children:       true  # draw all remaining children
-  reset:          true  # same as 'resetShape' PLUS 'resetDrawArea'
-  resetShape:     true  # same as 'rectangle'
-  resetDrawArea:  true  # same as 'logicalDrawArea'
-  logicalDrawArea:    true  # currentDrawArea = logicalArea
-  paddedDrawArea:     true  # currentDrawArea = paddedArea
-  resetClip:      true  # same as: clip: false
+{
+  normalizeDrawStep
+  prepareDrawOptions
+  looksLikeColor
+  legalDrawCommands
+} = require './ElementDrawLib'
 
 defineModule module, ->
-
-  looksLikeColor = (v) ->
-    return v unless v?
-    if isString v
-      !legalDrawCommands[v]
-    else
-      isColor(v) || isArray(v) || (v[0]? && v[1]?)
 
   (superClass) -> class ElementDrawMixin extends superClass
 
     sharedDrawOptions = {}
     sharedShadowOptions = {}
-
-    # TODO:
-    # drawOptions.gradientRadius
-    # drawOptions.gradientRadius1
-    # drawOptions.gradientRadius2
-
-    prepareShadow = (shadow, size) ->
-      return shadow unless shadow?
-      {blur, color, offset} = shadow
-
-      o = sharedShadowOptions
-      o.blur = blur
-      o.color = color
-      o.offsetX = offset.layoutX size
-      o.offsetY = offset.layoutY size
-      o
-
-    layoutToFrom = (toFromLayout, drawArea) ->
-      if isRect drawArea
-        {size, x, y} = drawArea
-        x += toFromLayout.layoutX size
-        y += toFromLayout.layoutY size
-        point x, y
-      else
-        toFromLayout.layout drawArea
-
-    prepareDrawOptions = (drawOptions, drawArea, isOutline) ->
-      o = sharedDrawOptions
-
-      {
-        color
-        colors
-        compositeMode
-        opacity
-        shadow
-        to
-        from
-        radius
-      } = drawOptions
-
-      if isOutline
-        {
-          lineWidth = defaultLineWidth
-          miterLimit = defaultMiterLimit
-          lineJoin
-          linCap
-        } = drawOptions
-
-        o.lineWidth = lineWidth
-        o.miterLimit = miterLimit
-        o.lineJoin = lineJoin
-        o.linCap = linCap
-
-      o.color         = color
-      o.colors        = colors
-      o.compositeMode = compositeMode
-      o.opacity       = opacity
-      o.shadow        = prepareShadow shadow
-      o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomRight
-      o.from          = colors && if from? then layoutToFrom from, drawArea else drawArea.topLeft
-      o.radius        = radius
-      o
-
-    defaultOffset = pointLayout y: 2
-
-    normalizeShadow = (shadow) ->
-      return shadow unless shadow
-      {color, offset, blur} = shadow
-      color ?= rgbColor color || "#0007"
-      if color.a < 1/255
-        null
-      else
-        color:  color
-        blur:   blur ? 4
-        offset:
-          if offset?
-            pointLayout offset
-          else
-            defaultOffset
-
-    normalizeDrawProps = (drawProps) ->
-      return drawProps unless drawProps?
-      if looksLikeColor drawProps
-        drawProps = color: drawProps
-      {shadow, color, colors, to, from} = drawProps
-      if color? && color.constructor != Color
-        # is 'colors':
-        #   if Array with a non-number
-        #   if Object without r, g, b, or a
-        if (
-            (isArray(color) && !isNumber(color[0])) ||
-            (isPlainObject(color) && !(color.r ? color.g ? color.b ? color.a)? )
-          )
-          colors = color
-
-        if colors
-          colors = GradientFillStyle.normalizeColors colors
-        color = if colors? then undefined else rgbColor color
-
-      to = pointLayout to
-      from = pointLayout from
-
-      if shadow
-        shadow = normalizeShadow shadow
-
-      if shadow || color != drawProps.color || colors != drawProps.colors || to != drawProps.to || from != drawProps.from
-        drawProps = merge drawProps # shallow clone
-        drawProps.shadow  = shadow
-        drawProps.color   = color
-        drawProps.colors  = colors
-        drawProps.to      = to
-        drawProps.from    = from
-        drawProps
-      else
-        drawProps
-
-    normalizeDrawStep = (step) ->
-      if looksLikeColor step
-        return fill: normalizeDrawProps color: step
-      return step unless isPlainObject step
-
-      {fill, to, from, shadow, outline, color, colors, padding, rectangle, circle, shape} = step
-      if color ? colors ? to ? from ? shadow
-        fill = merge normalizeDrawProps {to, from, color, colors, shadow}
-        step = objectWithout step, "color", "colors", "to", "from", "shadow"
-
-      padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
-
-      padding = padding && perimeter padding
-      fill = normalizeDrawProps fill
-      outline = normalizeDrawProps outline
-
-      if padding != step.padding || fill != step.fill || outline != step.outline
-        merge step, {fill, outline, padding}
-      else
-        step
 
     @drawProperty
       stage:
@@ -198,17 +49,6 @@ defineModule module, ->
               normalizeDrawStep draw for draw in drawOrder
             else drawOrder
           else null
-
-    @virtualProperty
-
-      preFilteredBaseDrawArea: (pending) ->
-        {_currentPadding, _currentSize} = @getState pending
-        {x, y} = _currentSize
-        {w, h} = _currentPadding
-        rect 0, 0, max(0, x - w), max(0, y - h)
-
-      baseDrawArea: (pending) ->
-        @getPreFilteredBaseDrawArea pending
 
     _drawChildren: (target, elementToTargetMatrix, usingStagedBitmap, upToChild) ->
       {children} = @
@@ -374,68 +214,3 @@ defineModule module, ->
           break if child == upToChild
           child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
       children # without this, coffeescript returns a new array
-
-    ########################
-    # DRAW AREAS
-    ########################
-
-    @getter
-      parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
-      elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
-      drawArea: -> @elementSpaceDrawArea
-    #   drawAreas are computed once and only updated as needed
-    #   drawAreas are kept in elementSpace
-
-    # drawAreaIn should become:
-    # drawAreaOverlapsTarget: (target, elementToTargetMatrix) ->
-    #   elementToTargetMatrix.rectanglesOverlap @_elementSpaceDrawArea, target.size
-    # This avoids creating a rectangle object by adding a method to Matrix:
-    #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
-    drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
-    drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
-
-    @getter
-      clippedDrawArea: (stopAtParent)->
-        parent = @
-        requiredParentFound = false
-
-        # we are going to mutate drawArea - so clone it
-        drawArea = clone @drawAreaInElement stopAtParent
-
-        while parent = parent.getParent()
-          parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
-          if parent == stopAtParent
-            requiredParentFound = true
-            break
-        return rect() if stopAtParent && !requiredParentFound
-        drawArea
-
-    # overridden by some children (Ex: Filter)
-
-    _drawAreaChanged: ->
-      if @_elementSpaceDrawArea
-        @_elementSpaceDrawArea = null
-        if p = @getPendingParent()
-          p._childsDrawAreaChanged()
-
-    # 10-2017-TODO: optimization opportunity:
-    #   we could say all elements with clipping have their
-    #   draw-area FIXED at their clip-area. Then, we don't
-    #   need to update all draw-areas above a clipped child.
-    #   BUT: is this a win or a loss?
-    #   NOTE: before this month, this is what we were doing -
-    #     there was no opportunity for smaller-than-clipped-area draw-areas.
-    _childsDrawAreaChanged: ->
-      @_drawAreaChanged() # 10-2017 IDEA: unless @getClip()
-
-    # currently drawAreas are only superSets of the pixels changed
-    # We may want drawAreas to be "tight" - the smallest rectangle that includes all pixels changed.
-    # The main reason for this is if we enable Layouts based on child drawAreas. This is useful sometimes.
-    #   Ex: KimiEditor fonts effects.
-    # returns computed elementSpaceDrawArea
-    _computeElementSpaceDrawArea: (upToChild)->
-      drawAreaCollector = new DrawAreaCollector @currentPadding
-      if @getClip()
-        drawAreaCollector.openClipping null, identityMatrix, @paddedArea
-      @_drawChildren drawAreaCollector, identityMatrix, false, upToChild
-      drawAreaCollector.drawArea

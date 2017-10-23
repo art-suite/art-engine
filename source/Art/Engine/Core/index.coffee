@@ -12,6 +12,8 @@ module.exports
   DrawEpoch:            require './DrawEpoch'           
   Element:              require './Element'             
   ElementBase:          require './ElementBase'         
+  ElementDrawAreaMixin: require './ElementDrawAreaMixin'
+  ElementDrawLib:       require './ElementDrawLib'      
   ElementDrawMixin:     require './ElementDrawMixin'    
   ElementFactory:       require './ElementFactory'      
   EngineStat:           require './EngineStat'          

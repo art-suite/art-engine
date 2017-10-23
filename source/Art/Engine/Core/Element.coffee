@@ -19,6 +19,7 @@ DrawCacheManager = require './DrawCacheManager'
 {PointLayout, PointLayoutBase} = Layout
 
 ElementDrawMixin = require './ElementDrawMixin'
+ElementDrawAreaMixin = require './ElementDrawAreaMixin'
 
 colorPrecision = 1/256
 
@@ -71,7 +72,7 @@ defaultSize = point 100
 
 nonStatePropertyKeyTest = ElementBase.nonStatePropertyKeyTest
 
-defineModule module, class Element extends ElementDrawMixin ElementBase
+defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin ElementBase
 
   @registerWithElementFactory: -> true
   @stats: stats
