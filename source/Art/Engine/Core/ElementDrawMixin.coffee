@@ -76,6 +76,26 @@ defineModule module, ->
             else drawOrder
           else null
 
+    draw: (target, elementToTargetMatrix)->
+
+      try
+        return if @opacity < colorPrecision
+        @_currentDrawTarget = target
+        @_currentToTargetMatrix = elementToTargetMatrix
+
+        targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
+        return unless targetSpaceDrawArea.area > 0
+
+        if @getCacheDrawRequired elementToTargetMatrix
+          @_drawWithCaching targetSpaceDrawArea, target, elementToTargetMatrix
+        else
+          @_clearDrawCache()
+          if @_clip then  @_drawWithClipping targetSpaceDrawArea, target, elementToTargetMatrix
+          else            @_drawChildren target, elementToTargetMatrix
+
+      finally
+        @_currentDrawTarget = @_currentToTargetMatrix = null
+
     _drawChildren: (target, elementToTargetMatrix, usingStagedBitmap, upToChild) ->
       {children} = @
       if customDrawOrder = @getDrawOrder()
@@ -242,36 +262,11 @@ defineModule module, ->
       children # without this, coffeescript returns a new array
 
 
-    ##########################
-    # DRAW
-    ##########################
-
     # OVERRIDE _drawWithClipping AND hasCustomClipping for custom clipping (RectangleElement, for example)
     _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
       lastClippingInfo = target.openClipping clipArea
       @_drawChildren target, elementToTargetMatrix
       target.closeClipping lastClippingInfo
-
-
-    draw: (target, elementToTargetMatrix)->
-
-      try
-        return if @opacity < colorPrecision
-        @_currentDrawTarget = target
-        @_currentToTargetMatrix = elementToTargetMatrix
-
-        targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
-        return unless targetSpaceDrawArea.area > 0
-
-        if @getCacheDrawRequired elementToTargetMatrix
-          @_drawWithCaching targetSpaceDrawArea, target, elementToTargetMatrix
-        else
-          @_clearDrawCache()
-          if @_clip then  @_drawWithClipping targetSpaceDrawArea, target, elementToTargetMatrix
-          else            @_drawChildren target, elementToTargetMatrix
-
-      finally
-        @_currentDrawTarget = @_currentToTargetMatrix = null
 
     #################
     # Draw Caching
