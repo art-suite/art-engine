@@ -201,12 +201,26 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
   defaultSizeLayout = new PointLayout ps: 1
   defaultLocationLayout = new PointLayout 0
-  @layoutProperty
+
+  # TODO: size only is a draw/drawArea property IF drawOrder is set.
+  #   NOTES:
+  #   we could check a set-time if drawOrder is set and mark draw/drawArea changed.
+  #   Note, it's OK to ignore drawOrder's pending value - since if it has a different
+  #   pending-value, drawOrder will have already marked draw/drawArea changed.
+  #   This could be done with a postSetter. But postSetter uses f.call(@, ...)
+  #   And, at least on Chrome right now, that/s 75% slower than a normal function call.
+  #   Chrome: 61.0.3163.100
+  #   performance test: https://jsperf.com/function-calls-direct-vs-apply-vs-call-vs-bind/6
+  #   ACTION: refactor postSetter to not use call.
+  #   ACTION: convert size back to just @layoutProperty
+  #   ACTION: add a postSetter which checks if @_drawOrder is set, and if so, THEN marks draw/drawArea changed
+  @drawLayoutProperty
     size:
       default: ps:1
       preprocess: (v, previousValue) ->
         if v instanceof PointLayoutBase then v else new PointLayout v, previousValue || defaultSizeLayout
 
+  @layoutProperty
     ###
     TODO: Update StateEpochLayout to use: childrenSizePreprocessor
 
@@ -897,7 +911,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     mode ||= "fit"
 
     size = point(size || drawArea.size).mul(pixelsPerPoint).ceil()
-    ratio = size.div drawArea.size
+    ratio = size.div drawArea.size.max point1
     if mode == "zoom"
       scale = ratio.max()
     else
@@ -915,7 +929,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     oldBitmapFactory = @_bitmapFactory
     @_bitmapFactory = bitmapFactory || @bitmapFactory
 
-    bitmap = @bitmapFactory.newBitmap size
+    bitmap = @bitmapFactory.newBitmap size.max point1
     bitmap.pixelsPerPoint = pixelsPerPoint
     bitmap.clear backgroundColor if backgroundColor
     @draw bitmap, elementToBitmapMatrix

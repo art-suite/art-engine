@@ -841,6 +841,30 @@ suite:
               el > 0
             "" expected child to draw somewhere
 
+    renderTest
+      "size change updates drawArea with drawOrder-clip and children"
+      render: ->
+
+        Element
+          key: "parent"
+          size: w:100, h: 5
+
+          drawOrder:
+            clip: true
+            "blue"
+
+          Element
+            key: "child"
+            size: ww:1, h:20
+
+      test: (e) ->
+        assert.eq e.drawArea.h, 5, "should be 5"
+        e.size = w: 100, h: 20
+        e.toBitmapBasic()
+        .then (bitmap)->
+          log shouldBeVisibleNow: {bitmap, e.drawArea}
+          assert.eq e.drawArea.h, 20, "should be 20"
+
   compositeMode: ->
     renderTest
       "compositeMode on second draw-step"
@@ -958,3 +982,4 @@ suite:
         [child] = e.children
         assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
         assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+

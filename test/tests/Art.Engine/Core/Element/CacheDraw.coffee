@@ -191,6 +191,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
   incrementalCaching: ->
     test "clipping limits dirty redraw", ->
+      log "incrementalCaching 1"
       parent = new Element
         size: 4
         clip: true
@@ -199,16 +200,22 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           cacheDraw: true
           location: x: 2
           new RectangleElement color: "#8ff"
+      log "incrementalCaching 2"
       parent.toBitmapBasic()
       .then (bitmap)->
-        log initial: {bitmap}
+        log "incrementalCaching 3"
+
+        log initial: {bitmap, _drawCacheBitmap: el._drawCacheBitmap.clone()}
         compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
 
         el._drawCacheBitmap.clear "black"
         log drawArea: el.drawArea, size: el.currentSize
+        log "incrementalCaching 4"
         el.location = x: 1
+        log "incrementalCaching 5"
         parent.toBitmapBasic()
       .then (bitmap)->
+        log "incrementalCaching 6"
         log incremental: {bitmap}
         compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
 
