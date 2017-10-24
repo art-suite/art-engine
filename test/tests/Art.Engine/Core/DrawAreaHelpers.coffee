@@ -1,5 +1,5 @@
 {log, compactFlatten, formattedInspect , find, each} = require 'art-standard-lib'
-{addDirtyDrawArea, validateDrawAreas} = Neptune.Art.Engine.DrawAreaHelpers
+{addDirtyDrawArea, validateDrawAreas} = Neptune.Art.Engine.ElementDrawLib
 {rect} = Neptune.Art.Atomic
 
 validateDrawAreas = (newDrawAreas, oldDrawAreas, addedDrawArea) ->

@@ -1,3 +1,4 @@
+'use strict';
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 DrawCacheManager = require './DrawCacheManager'

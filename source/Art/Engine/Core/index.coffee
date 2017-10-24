@@ -7,7 +7,6 @@ module.exports
 .addModules
   CanvasElement:        require './CanvasElement'       
   DrawAreaCollector:    require './DrawAreaCollector'   
-  DrawAreaHelpers:      require './DrawAreaHelpers'     
   DrawCacheManager:     require './DrawCacheManager'    
   DrawEpoch:            require './DrawEpoch'           
   Element:              require './Element'             

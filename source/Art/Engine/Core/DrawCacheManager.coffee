@@ -1,3 +1,4 @@
+'use strict';
 ArtEngineCore = require './namespace'
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'

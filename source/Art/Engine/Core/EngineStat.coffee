@@ -1,3 +1,4 @@
+'use strict';
 Foundation= require 'art-foundation'
 {defineModule, log, miniInspect, currentSecond, arrayWithout, BaseObject, Stat} = Foundation
 

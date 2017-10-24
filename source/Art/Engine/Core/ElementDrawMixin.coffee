@@ -1,3 +1,4 @@
+'use strict';
 {
 
   compactFlatten, objectWithout, defineModule, formattedInspect, clone, max,

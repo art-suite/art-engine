@@ -1,3 +1,4 @@
+'use strict';
 Atomic = require 'art-atomic'
 {elementFactory} = require "./ElementFactory"
 EventedEpochedObject = require './EventedEpochedObject'

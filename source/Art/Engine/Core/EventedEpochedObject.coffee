@@ -1,3 +1,4 @@
+'use strict';
 Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./StateEpoch"

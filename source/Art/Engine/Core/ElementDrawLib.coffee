@@ -1,4 +1,5 @@
-{compactFlatten, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
+'use strict';
+{compactFlatten, arrayWithout, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
 {pointLayout} = PointLayout
@@ -10,7 +11,7 @@ defaultMiterLimit = 3
 defaultLineWidth = 1
 defaultOffset = pointLayout y: 2
 
-defineModule module,class ElementDrawLib
+defineModule module, class ElementDrawLib
   @legalDrawCommands: legalDrawCommands =
     circle:         true  # currentPath = circlePath; currentPathOptions = null
     rectangle:      true  # currentPath = rectanglePath; currentPathOptions = null
@@ -166,3 +167,34 @@ defineModule module,class ElementDrawLib
       merge step, {fill, outline, padding}
     else
       step
+
+  @validateDrawAreas: (newDrawAreas, oldDrawAreas, addedDrawArea) ->
+    areasToTest = compactFlatten [oldDrawAreas, addedDrawArea]
+    each areasToTest, (area) ->
+      unless (find newDrawAreas, (newDrawArea) -> newDrawArea.contains area)
+        throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
+
+  @findFirstOverlappingAreaIndex: (areas, testArea) ->
+    for area, i in areas when area.overlaps testArea
+      return i
+
+  @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea) =>
+
+    if dirtyArea.area > 0
+
+      dirtyArea = dirtyArea.roundOut()
+
+      if dirtyDrawAreas
+
+        while (overlapIndex = @findFirstOverlappingAreaIndex dirtyDrawAreas, dirtyArea)?
+          dirtyArea = dirtyArea.union dirtyDrawAreas[overlapIndex]
+          dirtyDrawAreas = arrayWithout dirtyDrawAreas, overlapIndex
+
+        dirtyDrawAreas.push dirtyArea
+
+      else
+        dirtyDrawAreas = [dirtyArea]
+
+      # @validateDrawAreas dirtyDrawAreas, dirtyArea
+
+    dirtyDrawAreas

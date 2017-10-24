@@ -1,3 +1,4 @@
+'use strict';
 {defineModule, log, min, max} = require 'art-standard-lib'
 {BaseClass} = require 'art-class-system'
 {rect} = require 'art-atomic'

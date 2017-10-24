@@ -1,3 +1,4 @@
+'use strict';
 Atomic = require 'art-atomic'
 Foundation = require 'art-foundation'
 Canvas = require 'art-canvas'
@@ -20,13 +21,6 @@ DrawCacheManager = require './DrawCacheManager'
 
 ElementDrawMixin = require './ElementDrawMixin'
 ElementDrawAreaMixin = require './ElementDrawAreaMixin'
-
-colorPrecision = 1/256
-
-{addDirtyDrawArea} = require './DrawAreaHelpers'
-
-truncateLayoutCoordinate = (v) ->
-  floor v + colorPrecision
 
 {
   each

@@ -1,3 +1,4 @@
+'use strict';
 {compactFlatten, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../Layout'
@@ -7,7 +8,7 @@
 {BaseClass} = require 'art-class-system'
 DrawAreaCollector = require './DrawAreaCollector'
 
-{addDirtyDrawArea} = require './DrawAreaHelpers'
+{addDirtyDrawArea} = require './ElementDrawLib'
 
 defineModule module, ->
 
