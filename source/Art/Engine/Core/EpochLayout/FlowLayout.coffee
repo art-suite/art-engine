@@ -1,3 +1,4 @@
+'use strict';
 {
   defineModule, floatEq, max
 } = require 'art-standard-lib'

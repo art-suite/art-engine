@@ -1,3 +1,4 @@
+'use strict';
 # This page has a potentially BETTER solution to detecting resizes:
 # http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/
 require "javascript-detect-element-resize"
@@ -72,7 +73,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   constructor: (options = {}) ->
     super
 
-    @canvasElement = @
     @_focusedElement = null
     @_wasFocusedElement = null
     @_devicePixelsPerPoint = options.pixelsPerPoint ? if options.disableRetina
