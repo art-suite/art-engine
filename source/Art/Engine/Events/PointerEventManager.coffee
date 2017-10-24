@@ -468,6 +468,12 @@ module.exports = class PointerEventManager extends BaseClass
 
   # pointerUp - user activity cased this
   pointerUp: (id, timeStampInPerformanceSeconds) ->
+
+    # If there were other events queued for the current cycle, their handlers
+    # may very will choose to lock cursor focus. BUT, if this happens AFTER
+    # the steps in this method, then the cursor will get stuck in a focus-locked
+    # state! So, we flush any pending events first.
+    eventEpoch.flushEpochNow()
     eventEpoch.logEvent "pointerUp", id
 
     unless pointer = @activePointers[id]
