@@ -281,47 +281,47 @@ Options: (events)
 
 module.exports = class PersistantAnimator extends EventedMixin BaseObject
 
-  @interpolate: interpolate = (startValue, toValue, pos, root = true) ->
+  @interpolate: interpolate = (fromValue, toValue, pos, root = true) ->
     if pos == 0
-      startValue
+      fromValue
 
     else if pos == 1
       toValue
 
-    else unless startValue? && toValue?
-      startValue || toValue
+    else unless fromValue? && toValue?
+      fromValue || toValue
 
-    else if isFunction startValue.interpolate
-      startValue.interpolate toValue, pos
+    else if isFunction fromValue.interpolate
+      fromValue.interpolate toValue, pos
 
-    else if startValue.constructor != toValue.constructor
+    else if fromValue.constructor != toValue.constructor
       # log cantIterpolate_differentTypes:
       #   pos: pos
-      #   fromClass: startValue.constructor.getName()
+      #   fromClass: fromValue.constructor.getName()
       #   toClass: toValue.constructor.getName()
-      #   from: startValue
+      #   from: fromValue
       #   to: toValue
       toValue
 
-    else if isNumber startValue
-      startValue + (toValue - startValue) * pos
+    else if isNumber fromValue
+      fromValue + (toValue - fromValue) * pos
 
     else
-      out = if isPlainObject startValue
+      out = if isPlainObject fromValue
         out = {}
-        out[k] = interpolate v, toValue[k], pos, false for k, v of startValue
+        out[k] = interpolate v, toValue[k], pos, false for k, v of fromValue
         out
 
-      else if isArray(startValue) && startValue.length == toValue.length
-        interpolate v, toValue[i], pos, false for v, i in startValue
+      else if isArray(fromValue) && fromValue.length == toValue.length
+        interpolate v, toValue[i], pos, false for v, i in fromValue
 
       else
         # log cantIterpolate:
         #   pos: pos
-        #   fromClass: startValue.constructor.getName()
-        #   from: startValue
+        #   fromClass: fromValue.constructor.getName()
+        #   from: fromValue
         #   to: toValue
-        toValue
+        toValue || fromValue
 
       # if root
       #   log interpolate:
