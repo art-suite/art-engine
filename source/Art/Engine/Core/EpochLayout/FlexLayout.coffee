@@ -5,6 +5,7 @@
   select, peek, inspect,
   floatEq
 } = require 'art-standard-lib'
+{isInfiniteResult, isFiniteResult} = require './Infinity'
 
 {point, Point, perimeter} = require 'art-atomic'
 
@@ -56,7 +57,6 @@ module.exports = class FlexLayout
       nextMargin = "right"
       mainAxisRelativeTestFunction = "getXRelativeToParentW"
       crossRelativeTestFunction = "getYRelativeToParentH"
-      mainElementSizeIsChildRelative = element.getPendingSize().getXRelativeToChildrenW()
     else
       mainCoordinate = "y"
       crossCoordinate = "x"
@@ -64,7 +64,6 @@ module.exports = class FlexLayout
       nextMargin = "bottom"
       mainAxisRelativeTestFunction = "getYRelativeToParentH"
       crossRelativeTestFunction = "getXRelativeToParentW"
-      mainElementSizeIsChildRelative = element.getPendingSize().getYRelativeToChildrenH()
 
     mainElementSizeForChildren = elementSizeForChildren[mainCoordinate]
     crossElementSizeForChildren = elementSizeForChildren[crossCoordinate]
@@ -199,11 +198,12 @@ module.exports = class FlexLayout
     crossAlignment    = childrenAlignment[crossCoordinate]
     hasCrossAlignment = !floatEq 0, crossAlignment
 
+    mainLayoutIsFinite = (isFiniteResult mainElementSizeForChildren) && isFiniteResult mainChildrenSize
     # compute main alignment
-    mainChildrenOffset = mainPos = if mainElementSizeIsChildRelative
-      0
-    else
+    mainChildrenOffset = mainPos = if mainLayoutIsFinite
       (mainElementSizeForChildren - mainChildrenSize) * childrenAlignment[mainCoordinate]
+    else
+      0
 
     # compute cross-alignment per element and apply all alignment
     for child, i in inFlowChildren
@@ -216,7 +216,9 @@ module.exports = class FlexLayout
 
       currentSize = child.getPendingCurrentSize()
 
-      mainSize = if !mainElementSizeIsChildRelative && i == inFlowChildren.length - 1
+      isLastChild = i == inFlowChildren.length - 1
+      # last/only child should have its location layout inside the remaining padded space
+      mainSize = if isLastChild && isFiniteResult mainElementSizeForChildren
         mainElementSizeForChildren - mainPos
       else
         currentSize[mainCoordinate]

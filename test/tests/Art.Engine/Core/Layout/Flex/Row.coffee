@@ -32,7 +32,7 @@ module.exports = suite:
           size: 100
           padding: 10
           childrenLayout: "row"
-          new RectangleElement color: "#0707", inFlow: false
+          drawOrder: "#0707"
           centeredChild = new RectangleElement
             size: hh:1, w:50
             location: ps: .5

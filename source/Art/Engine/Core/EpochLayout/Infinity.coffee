@@ -19,4 +19,5 @@ module.exports =
   nearInfinityResult:  nearInfinityResult
   nearInfinitePoint:   nearInfinitePoint = point nearInfinity
   nearInfiniteSize:    nearInfinitePoint
-  isInfiniteResult:    (x) -> abs(x) >= nearInfinityResult
+  isInfiniteResult:     (x) -> abs(x) >= nearInfinityResult
+  isFiniteResult:       (x) -> abs(x) < nearInfinityResult

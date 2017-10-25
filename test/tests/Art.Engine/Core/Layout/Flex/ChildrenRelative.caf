@@ -31,3 +31,49 @@ suite: ->
     test: (root) ->
       [e] = root.find :testElement
       assert.eq e.currentSize, point 40, 30
+
+  renderTest
+    "childrenAlignment with h: min parentSize, childrenSize - under"
+    render: ->
+      Element
+        size: w:100, h: 50
+        Element
+          size: w:100, h: (ps, cs) ->
+            max ps.h, cs.h
+          childrenLayout: "column"
+          childrenAlignment: 1
+          drawOrder: "blue"
+          Element
+            key: :testElement
+            size: ww:1, h: 10
+            drawOrder: "red"
+
+    test: (root) ->
+      [child] = root.find :testElement
+      {parent} = child
+      assert.eq child.currentSize, point 100, 10
+      assert.eq parent.currentSize, point 100, 50
+      assert.eq child.currentLocation, point 0, 40
+
+  renderTest
+    "childrenAlignment with h: min parentSize, childrenSize - over"
+    render: ->
+      Element
+        size: w:100, h: 50
+        Element
+          size: w:100, h: (ps, cs) ->
+            max ps.h, cs.h
+          childrenLayout: "column"
+          childrenAlignment: 1
+          drawOrder: "blue"
+          Element
+            key: :testElement
+            size: ww:1, h: 70
+            drawOrder: "red"
+
+    test: (root) ->
+      [child] = root.find :testElement
+      {parent} = child
+      assert.eq child.currentSize,      point(100, 70), "" child.currentSize
+      assert.eq parent.currentSize,     point(100, 70), "" parent.currentSize
+      assert.eq child.currentLocation,  point(0, 0),    "" child.currentLocation
