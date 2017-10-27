@@ -36,8 +36,7 @@ TODO:
   isInfiniteResult
 } = LayoutTools = require './LayoutTools'
 
-getGlobalEpochCycle = ->
-  ArtEngineCore.GlobalEpochCycle.globalEpochCycle
+globalEpochCycle = null
 
 module.exports = class StateEpochLayout extends BaseObject
 
@@ -55,11 +54,12 @@ module.exports = class StateEpochLayout extends BaseObject
       markParentLayoutPropertiesChanged element
 
   @updateLayouts: (layoutChangedElements) =>
+    globalEpochCycle ?= ArtEngineCore.GlobalEpochCycle.globalEpochCycle
 
-    # TODO: add back getGlobalEpochCycle(), but don't use timePerformance; closures cost too much
-
+    start = globalEpochCycle.startTimePerformance()
     for element in layoutChangedElements when element.__layoutPropertiesChanged
       layoutElement element, element.getPendingParentSizeForChildren()
+    globalEpochCycle.endTimePerformance "aimLayout", start
 
     null
 
