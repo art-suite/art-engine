@@ -1,5 +1,5 @@
 {merge, Promise, getEnv, log, isPlainObject} = require 'art-standard-lib'
-{ConfigRegistry} = require 'art-config'
+{configure} = require 'art-config'
 {Browser} = require 'art-foundation'
 {Meta, Link} = Browser.DomElementFactories
 {getDomReadyPromise} = Browser
@@ -67,7 +67,7 @@ module.exports = class FullScreenApp
 
   ###
   @init: (config = {})=>
-    ConfigRegistry.configure config
+    configure config
     {fonts} = config
 
     @writeDom config
