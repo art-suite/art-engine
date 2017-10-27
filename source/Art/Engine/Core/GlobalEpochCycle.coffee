@@ -78,6 +78,19 @@ module.exports = class GlobalEpochCycle extends Epoch
 
     @addPerformanceSample name, timeResult - subTimeTotal
 
+  startTimePerformance: ->
+    start = currentSecond()
+    timerStack.push 0
+    start
+
+  endTimePerformance: (name, start) ->
+    subTimeTotal = timerStack.pop()
+    timeResult = currentSecond() - start
+    if (tsl = timerStack.length) > 0
+      timerStack[tsl-1] += timeResult
+
+    @addPerformanceSample name, timeResult - subTimeTotal
+
   @getter
     numActivePointers: ->
       count = 0
@@ -119,12 +132,35 @@ module.exports = class GlobalEpochCycle extends Epoch
   attachCanvasElement: (toAddCe) ->
     @activeCanvasElements.push toAddCe
 
-  processFluxEpoch:  -> @timePerformance "flux"  , => fluxEpoch.processEpoch()
-  processIdleEpoch:  -> @timePerformance "idle"  , => idleEpoch?.processEpoch()
-  processEventEpoch: -> @timePerformance "event" , => eventEpoch.processEpoch()
-  processReactEpoch: -> @timePerformance "react" , => reactEpoch.processEpoch()
-  processStateEpoch: -> @timePerformance "aim"   , => stateEpoch.processEpoch()
-  processDrawEpoch:  -> @timePerformance "draw"  , => drawEpoch.processEpoch()
+  processFluxEpoch:  ->
+    start = @startTimePerformance()
+    fluxEpoch.processEpoch()
+    @endTimePerformance "flux", start
+
+  processIdleEpoch:  ->
+    start = @startTimePerformance()
+    idleEpoch?.processEpoch()
+    @endTimePerformance "idle", start
+
+  processEventEpoch: ->
+    start = @startTimePerformance()
+    eventEpoch.processEpoch()
+    @endTimePerformance "event", start
+
+  processReactEpoch: ->
+    start = @startTimePerformance()
+    reactEpoch.processEpoch()
+    @endTimePerformance "react", start
+
+  processStateEpoch: ->
+    start = @startTimePerformance()
+    stateEpoch.processEpoch()
+    @endTimePerformance "aim", start
+
+  processDrawEpoch:  ->
+    start = @startTimePerformance()
+    drawEpoch.processEpoch()
+    @endTimePerformance "draw", start
 
   flushEpochNow: ->
     return if @processingCycle
