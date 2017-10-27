@@ -86,7 +86,6 @@ defineModule module, ->
       @_drawChildren drawAreaCollector, identityMatrix, false, upToChild
       drawAreaCollector.drawArea
 
-
     _addDescendantsDirtyDrawArea: (descendant) ->
       if descendant && !@_redrawAll
         @_addDirtyDrawArea dirtyArea = descendant.getClippedDrawArea @
@@ -95,30 +94,8 @@ defineModule module, ->
         @_redrawAll = true
 
     _addDirtyDrawArea: (dirtyArea = @drawArea) ->
-      # return unless dirtyArea.area > 0
+      pixelsPerPoint = @getDevicePixelsPerPoint()
+      snapTo = 1/pixelsPerPoint
 
-      # dirtyArea = dirtyArea.roundOut()
-
-      # initialDirtyDrawAreas = @_dirtyDrawAreas
-      # dirtyDrawAreas = @_dirtyDrawAreas
-
-      # try
-      #   if dirtyDrawAreas
-      #     foundOverlap = true
-      #     dirtyArea = clone dirtyArea
-      #     while foundOverlap
-      #       foundOverlap = false
-      #       for area, i in dirtyDrawAreas when area.overlaps dirtyArea
-      #         foundOverlap = true
-      #         area.unionInto dirtyArea
-      #         dirtyDrawAreas = arrayWithout dirtyDrawAreas, i
-      #     dirtyDrawAreas.push dirtyArea
-      #   else
-      #     dirtyDrawAreas = [dirtyArea]
-      # catch e
-      #   log.error {initialDirtyDrawAreas, dirtyArea}
-      #   throw e
-
-      # @_dirtyDrawAreas = dirtyDrawAreas
-      @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea
+      @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea, snapTo
 

@@ -7,11 +7,15 @@
 {rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
 
+{getDevicePixelRatio} = (require 'art-foundation').Browser.Dom
+
 defaultMiterLimit = 3
 defaultLineWidth = 1
 defaultOffset = pointLayout y: 2
 
 defineModule module, class ElementDrawLib
+  @colorPrecision:  colorPrecision = 1/256
+
   @legalDrawCommands: legalDrawCommands =
     circle:         true  # currentPath = circlePath; currentPathOptions = null
     rectangle:      true  # currentPath = rectanglePath; currentPathOptions = null
@@ -178,17 +182,35 @@ defineModule module, class ElementDrawLib
     for area, i in areas when area.overlaps testArea
       return i
 
-  @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea) =>
+  @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea, snapTo) =>
 
     if dirtyArea.area > 0
 
-      dirtyArea = dirtyArea.roundOut()
+      da0 = dirtyArea = dirtyArea.roundOut snapTo, colorPrecision
+      dda0 = dirtyDrawAreas
 
       if dirtyDrawAreas
+        # optimized: creates 1 rect and 1 array if there is overlap, otherwise, creates nothing
 
-        while (overlapIndex = @findFirstOverlappingAreaIndex dirtyDrawAreas, dirtyArea)?
-          dirtyArea = dirtyArea.union dirtyDrawAreas[overlapIndex]
-          dirtyDrawAreas = arrayWithout dirtyDrawAreas, overlapIndex
+        da = dirtyArea
+        foundNewOverlap = true
+        # union all overlaps into dirtyArea
+        while foundNewOverlap
+          foundNewOverlap = false
+          for area in dirtyDrawAreas
+            return dirtyDrawAreas if area.contains dirtyArea
+
+            if area.overlaps dirtyArea
+              # ensure safe to mutate
+              da2 = dirtyArea
+              dirtyArea = dirtyArea.clone() if da == dirtyArea
+              area.unionInto dirtyArea
+              foundNewOverlap = da2 != dirtyArea
+
+        if da != dirtyArea
+          # get new array, with all overlaps removed - they are now represented by dirtyArea
+          dirtyDrawAreas = for area in dirtyDrawAreas when !area.overlaps dirtyArea
+            area
 
         dirtyDrawAreas.push dirtyArea
 
@@ -198,3 +220,16 @@ defineModule module, class ElementDrawLib
       # @validateDrawAreas dirtyDrawAreas, dirtyArea
 
     dirtyDrawAreas
+
+  @partitionAreasByInteresection: (partitioningArea, areas) ->
+    insideAreas = null
+    outsideAreas = null
+    for area in areas
+      if area.overlaps partitioningArea
+        (insideAreas?=[]).push area.intersection partitioningArea
+        for cutArea in area.cutout partitioningArea
+          (outsideAreas?=[]).push cutArea
+      else
+        (outsideAreas?=[]).push area
+
+    {insideAreas, outsideAreas}

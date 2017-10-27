@@ -26,9 +26,9 @@ defaultLineWidth = 1
   prepareDrawOptions
   looksLikeColor
   legalDrawCommands
+  partitionAreasByInteresection
+  colorPrecision
 } = require './ElementDrawLib'
-
-colorPrecision = 1/256
 
 truncateLayoutCoordinate = (v) ->
   floor v + colorPrecision
@@ -391,19 +391,6 @@ defineModule module, ->
         {@opacity, @compositeMode}
       )
 
-    _partitionAreasByInteresection: (partitioningArea, areas) ->
-      insideAreas = []
-      outsideAreas = []
-      for area in areas
-        if area.overlaps partitioningArea
-          insideAreas.push area.intersection partitioningArea
-          for cutArea in area.cutout partitioningArea
-            outsideAreas.push cutArea
-        else
-          outsideAreas.push area
-
-      {insideAreas, outsideAreas}
-
     # TODO - use new filterSource stuff and accountForOverdraw
     _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
       pixelsPerPoint = @getDevicePixelsPerPoint()
@@ -444,7 +431,7 @@ defineModule module, ->
       dirtyAreasToDraw = @_dirtyDrawAreas
 
       if clippedElementSpaceDrawArea && neq elementSpaceDrawArea, clippedElementSpaceDrawArea
-        {insideAreas, outsideAreas}  = @_partitionAreasByInteresection clippedElementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceDrawArea]
+        {insideAreas, outsideAreas}  = partitionAreasByInteresection clippedElementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceDrawArea]
         dirtyAreasToDraw = insideAreas
         remainingDirtyAreas = outsideAreas
 
@@ -460,6 +447,7 @@ defineModule module, ->
         @class._cachingDraws++
 
         if config.partialRedrawEnabled && dirtyAreasToDraw && @_filterChildren.length == 0
+          # @_cacheDraw && log "#{@key} #{formattedInspect dirtyAreasToDraw}"
           for dirtyDrawArea in dirtyAreasToDraw
             drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
             lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
@@ -471,7 +459,10 @@ defineModule module, ->
 
       finally
         @_redrawAll = false
-        @_dirtyDrawAreas = remainingDirtyAreas
+        @_dirtyDrawAreas = if remainingDirtyAreas?.length > 0
+          remainingDirtyAreas
+        else
+          null
         @class._cachingDraws--
 
     _drawCachedBitmapInternal: ->

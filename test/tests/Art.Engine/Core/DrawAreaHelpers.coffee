@@ -41,6 +41,16 @@ module.exports = suite:
       ]
       assert.eq a.length, 1
 
+    test "second overlap triggers first overlap", ->
+      assert.eq(
+        addAndValidateAll [
+          rect 20
+          rect x:20,  y: 1,  w: 1,  h: 38
+          rect x:1,   y: 20, w: 37, h: 1
+        ]
+        [rect 0, 0, 38, 39]
+      )
+
     test "add second barely overlapping", ->
       a = addAndValidateAll [
         rect 40
