@@ -73,9 +73,10 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
   nonChildrenLayoutFirstPass: (constrainedSize, unconstrainedSize) ->
     # log TextElement: nonChildrenLayoutFirstPass: {@inspectedName,constrainedSize, unconstrainedSize}
     ret = null
-    globalEpochCycle.timePerformance "aimTL", =>
-      @_textLayout = new Text.Layout @getPendingText(), @getPendingFont(), @getPendingFormat(), unconstrainedSize.x, unconstrainedSize.y
-      ret = @_textLayout.getSize()
+    start = globalEpochCycle.startTimePerformance()
+    @_textLayout = new Text.Layout @getPendingText(), @getPendingFont(), @getPendingFormat(), unconstrainedSize.x, unconstrainedSize.y
+    ret = @_textLayout.getSize()
+    globalEpochCycle.endTimePerformance start, "aimTL"
     ret
 
   nonChildrenLayoutFinalPass: (size) ->
