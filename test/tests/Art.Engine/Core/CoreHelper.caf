@@ -57,20 +57,32 @@ class CoreHelper
       [a, b || {}]
     else
       [expecting, a || {}]
+    expecting = compactFlatten expecting
+    expecting2 = compactFlatten expecting2
 
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
-    log "#{message}": bitmap.clone(), size: bitmap.size
     assert.lte expecting.length, bitmap.size.area
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
-    assert.within
-      downsampled
-      expecting
-      expecting2
-      compareDownsampledRedChannel:
-        downsampled: downsampled
-        '>=': expecting
-        '<=': expecting2
-        message: message
+    log {} "#{message}": bitmap.clone(), size: bitmap.size
+    if eq expecting, expecting2
+      assert.eq
+        downsampled
+        expecting
+        compareDownsampledRedChannel:
+          actual: downsampled
+          expecting: expecting
+          message: message
+          options: options
+    else
+      assert.within
+        downsampled
+        expecting
+        expecting2
+        compareDownsampledRedChannel:
+          downsampled: downsampled
+          '>=': expecting
+          '<=': expecting2
+          message: message
 
   compareProcessedRedChannelUsingFunction = (process, message, bitmap, expecting, expecting2) ->
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
@@ -91,7 +103,7 @@ class CoreHelper
     if element instanceof CanvasElement
       element.onNextReady (e) -> e.canvasBitmap
     else if element instanceof Bitmap
-      element
+      Promise.resolve element
     else if element instanceof Element
       element.toBitmapBasic()
     else throw new Error "expecting Element, CanvasElement or Bitmap"

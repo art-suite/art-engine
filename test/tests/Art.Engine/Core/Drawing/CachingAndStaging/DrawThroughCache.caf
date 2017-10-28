@@ -1,0 +1,54 @@
+import &StandardImport
+
+suite: ->
+  test "cache through - if contents change, don't use cache bitmap, later, contents not changed, update bitmap and use", ->
+    drawCount = 0
+    el = Element
+      cacheDraw: true
+      size: w: 4, h: 1
+      drawOrder: [
+        -> drawCount++
+        color: "#f00"
+      ]
+
+      el2 = Element
+        size: 1
+        drawOrder: "#700"
+
+    el.toBitmapBasic()
+    .then (bitmap) ->
+      {_drawCacheBitmap} = el
+      log {bitmap, _drawCacheBitmap}
+      assert.eq drawCount, 2
+      assert.eq [0x77, 0xff, 0xff, 0xff], _drawCacheBitmap.getImageDataArray "red"
+
+      # change child draw area
+      el2.size = w:2
+
+      # draw with changed child uses DRAW-THROUGH (ignore caching when we are doing updates)
+      el.toBitmapBasic()
+    .then (bitmap) ->
+      {_drawCacheBitmap} = el
+      log {bitmap, _drawCacheBitmap}
+      assert.eq drawCount, 4
+      assert.eq [0x77, 0x77, 0xff, 0xff], bitmap.getImageDataArray "red"
+      assert.eq [0x77, 0xff, 0xff, 0xff], _drawCacheBitmap.getImageDataArray("red"), "_drawCacheBitmap should NOT be updated"
+
+      # draw without changed child but still dirty-rects updates and uses cache
+      el.toBitmapBasic()
+    .then (bitmap) ->
+      {_drawCacheBitmap} = el
+      log {bitmap, _drawCacheBitmap}
+      assert.eq drawCount, 5
+      assert.eq [0x77, 0x77, 0xff, 0xff], bitmap.getImageDataArray "red"
+      assert.eq [0x77, 0x77, 0xff, 0xff], _drawCacheBitmap.getImageDataArray "red"
+      _drawCacheBitmap.clear "#300"
+
+      # draw with existing cache triggers no internal draw
+      el.toBitmapBasic()
+    .then (bitmap) ->
+      {_drawCacheBitmap} = el
+      log {bitmap, _drawCacheBitmap}
+      assert.eq drawCount, 5 # <-- doesn't change!
+      assert.eq [0x33, 0x33, 0x33, 0x33], bitmap.getImageDataArray "red"
+      assert.eq [0x33, 0x33, 0x33, 0x33], _drawCacheBitmap.getImageDataArray "red"

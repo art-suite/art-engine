@@ -2,4 +2,5 @@
 # file: Art/Engine/Core/namespace.coffee
 
 module.exports = (require '../namespace').addNamespace('Core', class Core extends Neptune.PackageNamespace)
+require './Drawing/namespace';
 require './EpochLayout/namespace'

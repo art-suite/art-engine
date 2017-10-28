@@ -9,17 +9,14 @@
 
 } = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
-{PointLayout} = require '../Layout'
-{pointLayout} = PointLayout
 {GradientFillStyle, Paths} = require 'art-canvas'
 {rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
 defaultMiterLimit = 3
 defaultLineWidth = 1
-{config} = require '../Config'
+{config} = require '../../Config'
 {drawCacheManager} = require './DrawCacheManager'
-{globalEpochCycle} = require './GlobalEpochCycle'
-
+{globalEpochCycle} = require '../GlobalEpochCycle'
 
 {
   normalizeDrawStep
@@ -78,6 +75,7 @@ defineModule module, ->
           else null
 
     draw: (target, elementToTargetMatrix)->
+      # log _draw: {@key, elementToTargetMatrix}
 
       try
         return if @opacity < colorPrecision
@@ -87,15 +85,24 @@ defineModule module, ->
         targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
         return unless targetSpaceDrawArea.area > 0
 
-        if @getCacheDrawRequired elementToTargetMatrix
+        cacheDrawRequested = @getCacheDrawRequested elementToTargetMatrix
+        needsStagingBitmap = @getNeedsStagingBitmap elementToTargetMatrix
+        if needsStagingBitmap || (cacheDrawRequested && !(@_dirtyDrawAreasChanged || @_dirtyDrawAreasChangedWasTrue))
           @_drawWithCaching targetSpaceDrawArea, target, elementToTargetMatrix
         else
-          @_clearDrawCache()
+          unless cacheDrawRequested
+            @_clearDrawCache()
+          # else log "draw-through"
           if @_clip then  @_drawWithClipping targetSpaceDrawArea, target, elementToTargetMatrix
           else            @_drawChildren target, elementToTargetMatrix
 
+        if @_dirtyDrawAreasChanged
+          @_dirtyDrawAreasChangedWasTrue = true
+          @setDirtyDrawAreasChanged false
+
       finally
         @_currentDrawTarget = @_currentToTargetMatrix = null
+
 
     _drawChildren: (target, elementToTargetMatrix, usingStagedBitmap, upToChild) ->
       {children} = @
@@ -253,9 +260,6 @@ defineModule module, ->
         if lastClippingInfo
           target.closeClipping lastClippingInfo
 
-        # if target.drawArea
-        #   log target.drawArea
-
       else
         for child in children
           break if child == upToChild
@@ -301,14 +305,15 @@ defineModule module, ->
     ###
 
     _resetDrawCache: ->
+      @_dirtyDrawAreasChangedWasTrue = false
+      @_dirtyDrawAreasChanged = false
       @_redrawAll = false
       @_drawCacheBitmap =
       @_drawCacheToElementMatrix =
-      @_dirtyDrawAreas =
+      @_dirtyDrawAreas = null
       @_elementToDrawCacheMatrix = null
 
     _drawPropertiesChanged: ->
-      # log _drawPropertiesChanged: @inspectedName
       @_clearDrawCache()
 
     _needsRedrawing: (descendant = @) ->
@@ -316,13 +321,12 @@ defineModule module, ->
         @_addDescendantsDirtyDrawArea descendant
 
       # @_clearDrawCache()
-      if @getVisible() && @getOpacity() > 1/512
+      if @getVisible() && @getOpacity() > colorPrecision
         @getParent()?._needsRedrawing descendant
 
     # Whenever the drawCacheManager evicts a cache entry, it calls this
     # on the appropriate element:
     __clearDrawCacheCallbackFromDrawCacheManager: ->
-      # log.error "RELEASING SHIT! #{@inspectedName}"
       @_resetDrawCache()
 
     _clearDrawCache: ->
@@ -335,17 +339,13 @@ defineModule module, ->
       count += child._releaseAllCacheBitmaps() for child in @_children
       count
 
-    @_cachingDraws: 0
+    @_activeCacheDrawDepth: 0
 
-    getCacheDrawRequired: (elementToTargetMatrix) ->
-
-      @getNeedsStagingBitmap(elementToTargetMatrix) ||
-      (
-        config.drawCacheEnabled &&
-        @class._cachingDraws == 0 &&
-        @getCacheable() &&
-        @getCacheDraw()
-      )
+    getCacheDrawRequested: (elementToTargetMatrix) ->
+      config.drawCacheEnabled &&
+      @class._activeCacheDrawDepth == 0 &&
+      @getCacheable() &&
+      @getCacheDraw()
 
     @getter
       drawOrderRequiresStaging: ->
@@ -377,22 +377,24 @@ defineModule module, ->
       # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
       cacheable: -> true
 
+    drawWithCachingOptions = {opacity: 1, compositeMode: null}
     _drawWithCaching: (targetSpaceDrawArea, target, elementToTargetMatrix) ->
-
-      @_generateDrawCache targetSpaceDrawArea, elementToTargetMatrix
+      @_updateDrawCache targetSpaceDrawArea, elementToTargetMatrix
 
       if !!@_drawCacheBitmap != !!@_drawCacheToElementMatrix
         throw new Error "expected both or neither: @_drawCacheToElementMatrix, @_drawCacheBitmap"
 
-      return unless @_drawCacheBitmap
-      target.drawBitmap(
-        @_drawCacheToElementMatrix.mul elementToTargetMatrix
-        @_drawCacheBitmap
-        {@opacity, @compositeMode}
-      )
+      if @_drawCacheBitmap
+        drawWithCachingOptions.opacity = @opacity
+        drawWithCachingOptions.compositeMode = @compositeMode
+        target.drawBitmap(
+          @_drawCacheToElementMatrix.mul elementToTargetMatrix
+          @_drawCacheBitmap
+          drawWithCachingOptions
+        )
 
     # TODO - use new filterSource stuff and accountForOverdraw
-    _generateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
+    _updateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
       pixelsPerPoint = @getDevicePixelsPerPoint()
       snapTo = 1/pixelsPerPoint
 
@@ -401,7 +403,7 @@ defineModule module, ->
 
       cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale =
         pixelsPerPoint *
-          if @getCacheDraw() then 1 else elementToTargetMatrix.getExactScaler()
+          if @getCacheDraw() || @getStage() then 1 else elementToTargetMatrix.getExactScaler()
 
       cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut snapTo, colorPrecision
       # don't cache if too big
@@ -425,47 +427,62 @@ defineModule module, ->
       @_drawCacheToElementMatrix = d2eMatrix
       @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-      clippedElementSpaceDrawArea = elementToTargetMatrix?.inv.transformBoundingRect(targetSpaceDrawArea).roundOut(snapTo, colorPrecision).intersection elementSpaceDrawArea
+      thrwo new Error "why no elementToTargetMatrix?" unless elementToTargetMatrix
+      clippedElementSpaceDrawArea = elementToTargetMatrix.inv.transformBoundingRect(targetSpaceDrawArea).roundOut(snapTo, colorPrecision).intersection elementSpaceDrawArea
 
       remainingDirtyAreas = null
       dirtyAreasToDraw = @_dirtyDrawAreas
 
-      if clippedElementSpaceDrawArea && neq elementSpaceDrawArea, clippedElementSpaceDrawArea
+      unless clippedElementSpaceDrawArea.contains elementSpaceDrawArea
         {insideAreas, outsideAreas}  = partitionAreasByInteresection clippedElementSpaceDrawArea, dirtyAreasToDraw || [elementSpaceDrawArea]
+        # log {clippedElementSpaceDrawArea, insideAreas, outsideAreas, dirtyAreas: dirtyAreasToDraw || [elementSpaceDrawArea]}
         dirtyAreasToDraw = insideAreas
         remainingDirtyAreas = outsideAreas
+      # else
+      #   log redrawAll: {
+      #     @key
+      #     clippedElementSpaceDrawArea, elementSpaceDrawArea, targetSpaceDrawArea,
+      #     elementToTargetMatrix
+      #     @elementToParentMatrix
+      #     @currentLocation
+      #   }
+
 
       @class.stats.stagingBitmapsCreated++
       @class.stats.lastStagingBitmapSize = @_drawCacheBitmap.size
-      globalEpochCycle.logEvent "generateDrawCache", @uniqueId
 
       @_currentDrawTarget = @_drawCacheBitmap
       @_currentToTargetMatrix = @_elementToDrawCacheMatrix
 
       try
         # disable draw-caching for children
-        @class._cachingDraws++
 
-        if config.partialRedrawEnabled && dirtyAreasToDraw && @_filterChildren.length == 0
-          # @_cacheDraw && log "#{@key} #{formattedInspect dirtyAreasToDraw}"
-          for dirtyDrawArea in dirtyAreasToDraw
-            drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
-            lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
-            @_drawCachedBitmapInternal()
-            @_drawCacheBitmap.closeClipping lastClippingInfo
+        @class._activeCacheDrawDepth++
+        if config.partialRedrawEnabled && (@_filterChildren.length == 0) && (dirtyAreasToDraw || remainingDirtyAreas)
+          # log _updateDrawCache: {dirtyAreasToDraw, @key}
+          if dirtyAreasToDraw
+            for dirtyDrawArea in dirtyAreasToDraw
+              drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
+
+              lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
+              @_updateCurrentDrawCacheClippedArea()
+              @_drawCacheBitmap.closeClipping lastClippingInfo
 
         else
-          @_drawCachedBitmapInternal()
+          # log "there"
+          globalEpochCycle.logEvent "fullDrawCache", @uniqueId
+          @_updateCurrentDrawCacheClippedArea()
 
       finally
         @_redrawAll = false
         @_dirtyDrawAreas = if remainingDirtyAreas?.length > 0
+          # log {@key, remainingDirtyAreas}
           remainingDirtyAreas
         else
           null
-        @class._cachingDraws--
+        @class._activeCacheDrawDepth--
 
-    _drawCachedBitmapInternal: ->
+    _updateCurrentDrawCacheClippedArea: ->
       @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
       if @_clip && @getHasCustomClipping()
         @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix

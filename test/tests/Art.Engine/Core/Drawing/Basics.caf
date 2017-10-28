@@ -31,12 +31,13 @@ suite: ->
     "aligned rectangle mask drawing"
     new Element
       size: 2
+      key: :parent
       location: 1
-      new RectangleElement size: 2,   color:  #700
-      new RectangleElement size: 10,  color:  #f00, location: 1
-      new RectangleElement size: 2,   isMask: true
+      new RectangleElement key: "armd1", size: 2,   color:  #700
+      new RectangleElement key: "armd2", size: 10,  color:  #f00, location: 1
+      new RectangleElement key: "armd3", size: 2,   isMask: true
 
-    compactFlatten []
+    []
       3 3
       3 7
 

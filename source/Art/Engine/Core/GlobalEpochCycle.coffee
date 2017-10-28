@@ -2,9 +2,8 @@
 Foundation = require 'art-foundation'
 {EventEpoch} = require 'art-events'
 StateEpoch = require './StateEpoch'
-DrawEpoch = require './DrawEpoch'
+DrawEpoch = require './Drawing/DrawEpoch'
 IdleEpoch = require './IdleEpoch'
-DrawCacheManager = require './DrawCacheManager'
 
 {
   log, requestAnimationFrame, miniInspect, time, arrayWithout, currentSecond, Epoch
@@ -19,7 +18,6 @@ toMs = (s) -> (s*1000).toFixed(1) + "ms"
 {drawEpoch} = DrawEpoch
 {stateEpoch} = StateEpoch
 {idleEpoch} = IdleEpoch
-{drawCacheManager} = DrawCacheManager
 
 class DummyEpoch extends Epoch
   @singletonClass()

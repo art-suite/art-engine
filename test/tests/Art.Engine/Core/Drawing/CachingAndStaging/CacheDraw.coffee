@@ -2,8 +2,8 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 Engine = require 'art-engine'
-StateEpochTestHelper = require '../StateEpochTestHelper'
-{compareDownsampledRedChannel} = require "../CoreHelper"
+StateEpochTestHelper = require '../../StateEpochTestHelper'
+{compareDownsampledRedChannel} = require "../../CoreHelper"
 
 {point, matrix, Matrix, rect} = Atomic
 {m, clone,inspect, nextTick, eq, log, isFunction} = Foundation
@@ -30,12 +30,10 @@ doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement) -
       firstImageData = firstCache.getImageData()
       assert.eq true, !!firstCache
       propChangeFunction testElement
-      wrapperElement.toBitmapWithInfo {}
-      .then (rendered) ->
-        log
-          result: rendered
-          test: testName
+      wrapperElement.toBitmapBasic {}
+      .then (bitmap) ->
         secondCache = testElement._drawCacheBitmap
+        log {bitmap, testName, firstCache, secondCache}
         secondImageData = secondCache.getImageData()
         assert.eq resetsCache, !imageDataEqual firstImageData, secondImageData
 
@@ -45,7 +43,7 @@ newPropChangeTestElements = (cacheMode = true)->
     new RectangleElement colors: ["#000", "#fff", "#000"]
     new Element
       key: "testElement"
-      cacheDraw: cacheMode
+      stage: cacheMode
       new RectangleElement color: "#f00"
       new RectangleElement key: "testChild", color: "#ff0", padding: 10
 
@@ -107,7 +105,16 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
     do ->
       test testName = "cacheDraw: true, no change, then setting cacheDraw = false resets cache", ->
-        wrapperElement = newPropChangeTestElements true
+        wrapperElement =
+          new Element
+            size: point 100, 50
+            new RectangleElement colors: ["#000", "#fff", "#000"]
+            new Element
+              key: "testElement"
+              cacheDraw: true
+              new RectangleElement color: "#f00"
+              new RectangleElement key: "testChild", color: "#ff0", padding: 10
+
         wrapperElement.toBitmapWithInfo {}
         .then (rendered) ->
           testElement = wrapperElement.find("testElement")[0]
@@ -144,31 +151,6 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           8, 4, 4, 4, 4, 8
         ]
 
-  nonCachables: ->
-    test "rectangle does not cache", ->
-      el = new RectangleElement
-        cacheDraw: true
-        size: point 100, 50
-
-      el.toBitmapWithInfo {}
-      .then (rendered) ->
-        assert.eq false, !!el._drawCacheBitmap
-        el.toBitmapWithInfo {}
-      .then (rendered) ->
-        assert.eq false, !!result = el._drawCacheBitmap
-
-    test "bitmap does not cache", ->
-      el = new BitmapElement
-        cacheDraw: true
-        bitmap: new Canvas.Bitmap point 50
-
-      el.toBitmapWithInfo {}
-      .then (rendered) ->
-        assert.eq false, !!el._drawCacheBitmap
-        el.toBitmapWithInfo {}
-      .then (rendered) ->
-        assert.eq false, !!result = el._drawCacheBitmap
-
   partialInitialDraw: ->
     test "move Element doesn't redraw whole screen", ->
       el = new Element
@@ -189,41 +171,11 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         ]
         assert.eq cachedEl._dirtyDrawAreas, [rect(2, 0, 2, 4), rect 0, 2, 2, 2]
 
-  incrementalCaching: ->
-    test "clipping limits dirty redraw", ->
-      log "incrementalCaching 1"
-      parent = new Element
-        size: 4
-        clip: true
-        new RectangleElement color: "#480"
-        el = new Element
-          cacheDraw: true
-          location: x: 2
-          new RectangleElement color: "#8ff"
-      log "incrementalCaching 2"
-      parent.toBitmapBasic()
-      .then (bitmap)->
-        log "incrementalCaching 3"
-
-        log initial: {bitmap, _drawCacheBitmap: el._drawCacheBitmap.clone()}
-        compareDownsampledRedChannel "partialRedraw clipping", el, [8, 8, 0, 0]
-
-        el._drawCacheBitmap.clear "black"
-        log drawArea: el.drawArea, size: el.currentSize
-        log "incrementalCaching 4"
-        el.location = x: 1
-        log "incrementalCaching 5"
-        parent.toBitmapBasic()
-      .then (bitmap)->
-        log "incrementalCaching 6"
-        log incremental: {bitmap}
-        compareDownsampledRedChannel "partialRedraw clipping", el, [0, 0, 8, 0]
-
   partialUpdate: ->
     test "move Element doesn't redraw whole screen", ->
       el = new Element
         size: 4
-        cacheDraw: true
+        stage: true
         new RectangleElement color: "#480"
         e = new RectangleElement
           size: 1
@@ -253,7 +205,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
     test "clipping limits dirty redraw", ->
       el = new Element
         size: 4
-        cacheDraw: true
+        stage: true
         new RectangleElement color: "#480"
         new Element
           location: x: 1
@@ -272,7 +224,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
 
     test "TextElement alignment redraws both before and after areas", ->
       el = new Element
-        cacheDraw: true
+        stage: true
         clip: true
         size: w: 6, h: 2
         new RectangleElement color: "#480"

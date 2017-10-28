@@ -1,7 +1,7 @@
 'use strict';
 {compactFlatten, arrayWithout, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
-{PointLayout} = require '../Layout'
+{PointLayout} = require '../../Layout'
 {pointLayout} = PointLayout
 {GradientFillStyle, Paths} = require 'art-canvas'
 {rectanglePath, ellipsePath, circlePath} = Paths
@@ -17,13 +17,13 @@ defineModule module, class ElementDrawLib
   @colorPrecision:  colorPrecision = 1/256
 
   @legalDrawCommands: legalDrawCommands =
-    circle:         true  # currentPath = circlePath; currentPathOptions = null
-    rectangle:      true  # currentPath = rectanglePath; currentPathOptions = null
-    clip:           true  # start clipping using: currentPath, currentPathOptions and currentDrawArea
-    children:       true  # draw all remaining children
-    reset:          true  # same as 'resetShape' PLUS 'resetDrawArea'
-    resetShape:     true  # same as 'rectangle'
-    resetDrawArea:  true  # same as 'logicalDrawArea'
+    circle:             true  # currentPath = circlePath; currentPathOptions = null
+    rectangle:          true  # currentPath = rectanglePath; currentPathOptions = null
+    clip:               true  # start clipping using: currentPath, currentPathOptions and currentDrawArea
+    children:           true  # draw all remaining children
+    reset:              true  # same as 'resetShape' PLUS 'resetDrawArea'
+    resetShape:         true  # same as 'rectangle'
+    resetDrawArea:      true  # same as 'logicalDrawArea'
     logicalDrawArea:    true  # currentDrawArea = logicalArea
     paddedDrawArea:     true  # currentDrawArea = paddedArea
     resetClip:      true  # same as: clip: false

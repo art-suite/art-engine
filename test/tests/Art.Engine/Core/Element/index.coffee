@@ -4,5 +4,4 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  Basics:    require './Basics'   
-  CacheDraw: require './CacheDraw'
+  Basics: require './Basics'

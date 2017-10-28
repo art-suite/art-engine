@@ -7,8 +7,9 @@ Canvas = require 'art-canvas'
 {inspect, BaseObject, Map, timeout, remove, log, defineModule} = Foundation
 {Bitmap} = Canvas
 
+globalEpochCycle = null
 getGlobalEpochCycle = ->
-  ArtEngineCore.GlobalEpochCycle.globalEpochCycle
+  globalEpochCycle ||= (require '../GlobalEpochCycle').globalEpochCycle
 
 mapRemove = (map, key) ->
   out = map.get key

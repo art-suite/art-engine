@@ -1,8 +1,6 @@
 'use strict';
 {compactFlatten, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
-{PointLayout} = require '../Layout'
-{pointLayout} = PointLayout
 {GradientFillStyle, Paths} = require 'art-canvas'
 {rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
@@ -13,6 +11,15 @@ DrawAreaCollector = require './DrawAreaCollector'
 defineModule module, ->
 
   (superClass) -> class ElementDrawAreaMixin extends superClass
+
+    @setter
+      dirtyDrawAreasChanged: (v) ->
+        # log.error "dirtyDrawAreasChanged #{v} #{@key}"
+        if v
+          @_dirtyDrawAreasChangedWasTrue = v
+        else if @_dirtyDrawAreasChangedWasTrue
+          @onNextReady => @_dirtyDrawAreasChangedWasTrue = false
+        @_dirtyDrawAreasChanged = v
 
     @virtualProperty
 
@@ -88,14 +95,16 @@ defineModule module, ->
 
     _addDescendantsDirtyDrawArea: (descendant) ->
       if descendant && !@_redrawAll
-        @_addDirtyDrawArea dirtyArea = descendant.getClippedDrawArea @
+        if descendant != @
+          @_addDirtyDrawArea (dirtyArea = descendant.getClippedDrawArea @), true
       else
         @_dirtyDrawAreas = null
         @_redrawAll = true
 
-    _addDirtyDrawArea: (dirtyArea = @drawArea) ->
+    _addDirtyDrawArea: (dirtyArea = @drawArea, triggeredByChild) ->
       pixelsPerPoint = @getDevicePixelsPerPoint()
       snapTo = 1/pixelsPerPoint
 
+      @setDirtyDrawAreasChanged true if triggeredByChild
       @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea, snapTo
 

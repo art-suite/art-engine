@@ -6,9 +6,9 @@ Animator = require "../Animation/Animator"
 Layout = require "../Layout"
 ElementBase = require './ElementBase'
 StateEpoch = require "./StateEpoch"
-DrawEpoch = require "./DrawEpoch"
 GlobalEpochCycle = require './GlobalEpochCycle'
-DrawCacheManager = require './DrawCacheManager'
+
+{ElementDrawMixin, DrawCacheManager, ElementDrawAreaMixin} = require './Drawing'
 {config} = require '../Config'
 
 {isInfiniteResult} = require './EpochLayout/Infinity'
@@ -19,8 +19,6 @@ DrawCacheManager = require './DrawCacheManager'
 {drawCacheManager} = DrawCacheManager
 {PointLayout, PointLayoutBase} = Layout
 
-ElementDrawMixin = require './ElementDrawMixin'
-ElementDrawAreaMixin = require './ElementDrawAreaMixin'
 
 {
   each
@@ -62,7 +60,6 @@ stats = clone zeroedStats =
 defaultSize = point 100
 
 {stateEpoch} = StateEpoch
-{drawEpoch} = DrawEpoch
 
 nonStatePropertyKeyTest = ElementBase.nonStatePropertyKeyTest
 
@@ -875,8 +872,10 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     log.error "DEPRICATED: ArtEngine.Element.toBitmap use toBitmapBasic of toBitmapWithInfo"
     @toBitmapWithInfo options
 
-  # OUT: promise.then -> (bitmpa) ->
+  # OUT: promise.then -> (bitmap) ->
   toBitmapBasic: (options) ->
+    if @key == "child"
+      throw new Error "GOTCHA!"
     @toBitmapWithInfo options
     .then ({bitmap}) -> bitmap
 

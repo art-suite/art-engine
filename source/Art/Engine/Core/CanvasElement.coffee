@@ -12,7 +12,7 @@ Canvas = require 'art-canvas'
 ArtEngineEvents = require '../Events'
 Element = require './Element'
 GlobalEpochCycle = require './GlobalEpochCycle'
-DrawEpoch = require './DrawEpoch'
+{DrawEpoch} = require './Drawing'
 EngineStat= require './EngineStat'
 {config} = require '../Config'
 

@@ -10,3 +10,4 @@ module.exports
   PartialRedraw: require './PartialRedraw'
   Retina:        require './Retina'       
   ToBitmap:      require './toBitmap'     
+require './CachingAndStaging'
