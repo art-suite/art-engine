@@ -451,6 +451,39 @@ suite:
       test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
     renderTest
+      "basic scaled"
+      render: ->
+        Element
+          size: cs: 1
+          padding: 10
+          drawOrder: #fee
+          Element
+            size: 10
+            scale: 10
+            drawOrder: outline: "red"
+      # test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
+
+    test "scaled 2" ->
+      Element
+        size: cs: 1
+        TextElement
+          size: cs: 1
+          layoutMode: "tight"
+          fontSize: 200
+          fontFamily: "Arial Unicode MS"
+          text: "◼︎"
+
+          OutlineElement
+            type: "outline"
+            color: 'red'
+            lineWidth: 6
+            miterLimit: 10
+
+      .toBitmapBasic size: 1024
+      .then (bitmap) ->
+        log {bitmap}
+
+    renderTest
       "lineWidth"
       render: -> Element
         size: 100
@@ -634,30 +667,31 @@ suite:
 
     renderTest
       "shadow not clipped, children clipped"
-      render: -> Element
-        size: 200
-        drawOrder:
-          :circle
-          fill: color: :white shadow: offset: 10 blur 10
-          :clip
-          {}
-            rectangle: ({w,h}) -> rect 0, 0, w, h / 2
-            fill:     :red
-            outline:  color: :black lineWidth: 6
+      render: ->
+        Element
+          size: 200
+          stage: true
+          drawOrder:
+            :circle
+            fill: color: :white shadow: offset: 10 blur 10
+            :clip
+            {}
+              rectangle: ({w,h}) -> rect 0, 0, w, h / 2
+              fill:     :red
+              outline:  color: :black lineWidth: 6
 
-          :reset
-          :circle
-          clip: false
-          outline: color: :black lineWidth: 6
+            :reset
+            :circle
+            outline: color: :black lineWidth: 6
 
-          {}
-            circle: ({w, h}) -> rect w * .35, h * .35, w * .30, h * .30
-            fill:     :white
-            outline:  color: :black lineWidth: 6
+            {}
+              circle: ({w, h}) -> rect w * .35, h * .35, w * .30, h * .30
+              fill:     :white
+              outline:  color: :black lineWidth: 6
 
-          {}
-            circle: ({w, h}) -> rect w * .40, h * .40, w * .20, h * .20
-            outline:  color: :black lineWidth: .5
+            {}
+              circle: ({w, h}) -> rect w * .40, h * .40, w * .20, h * .20
+              outline:  color: :black lineWidth: .5
 
       test: (e) -> assert.eq e.drawArea, rect -3, -3, 218, 218
 

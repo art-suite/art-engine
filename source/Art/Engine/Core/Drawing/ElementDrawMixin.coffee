@@ -169,8 +169,12 @@ defineModule module, ->
                   currentDrawArea = @currentSize
                   currentPathOptions = null
 
+                  if lastClippingInfo?
+                    target.closeClipping lastClippingInfo
+                    lastClippingInfo = null
+
                 when "resetClip"
-                  if lastClippingInfo
+                  if lastClippingInfo?
                     target.closeClipping lastClippingInfo
                     lastClippingInfo = null
 
@@ -242,7 +246,7 @@ defineModule module, ->
 
               if clip?
                 if clip
-                  if lastClippingInfo
+                  if lastClippingInfo?
                     target.closeClipping lastClippingInfo
                   lastClippingInfo = target.openClipping currentPath, drawMatrix, currentDrawArea, currentPathOptions
                 else
@@ -276,7 +280,7 @@ defineModule module, ->
              child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
 
         # close clipping if we have any
-        if lastClippingInfo
+        if lastClippingInfo?
           target.closeClipping lastClippingInfo
 
       else
