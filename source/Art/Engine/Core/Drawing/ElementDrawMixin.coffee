@@ -41,15 +41,31 @@ defineModule module, ->
       stage:
         default: null
         validate: (v) -> v == null || v == false || v == true
+        description:
+          """
+          true:   always stage
+          false:  never stage
+          null:   stage as needed
+          """
 
-    @concreteProperty
+      # cacheThrough causes drawing to use the same geometry as-if we draw to a cached bitmap
+      # and then drew that cached bitmap to target. The latter step is pixel-snapped, hence the problem.
+      # cacheThrough, when true, disables using the cached bitmap - we always draw-through.
+      #   However, it can be used without cacheDraw: true to force the same draw-geometry.
+      # NOTE: because of the nature of anti-aliasing, cacheThrough and cacheDraw won't
+      #   always be pixel-exactly-the-same, but with the geometry correction, they should be VERY close.
+      # this is only used for testing right now
+      cacheThrough:
+        default: false
+        validate: (v) -> v == false || v == true
+
       cacheDraw:
         default: false
-        validate: (v) -> v == false || v == true # || v == "locked" || v == "always" || v == "auto"
+        validate: (v) -> v == false || v == true
         # preprocess: (v) -> if v == true then "auto" else v
 
         description:
-          "true - always caches; false - only caches if _useStagingBitmap() is true"
+          "true => stage always unless cacheThrough or it's not needed AND it's faster w/o"
 
     @drawLayoutProperty
 
@@ -87,12 +103,15 @@ defineModule module, ->
 
         cacheDrawRequested = @getCacheDrawRequested elementToTargetMatrix
         needsStagingBitmap = @getNeedsStagingBitmap elementToTargetMatrix
-        if needsStagingBitmap || (cacheDrawRequested && !(@_dirtyDrawAreasChanged || @_dirtyDrawAreasChangedWasTrue))
+        if needsStagingBitmap || (cacheDrawRequested && !@_cacheThrough && !(@_dirtyDrawAreasChanged || @_dirtyDrawAreasChangedWasTrue))
           @_drawWithCaching targetSpaceDrawArea, target, elementToTargetMatrix
         else
           unless cacheDrawRequested
             @_clearDrawCache()
-          # else log "draw-through"
+          if cacheDrawRequested || @_cacheThrough
+            if target.shouldPixelSnap elementToTargetMatrix
+              elementToTargetMatrix = target.pixelSnapMatrix elementToTargetMatrix
+
           if @_clip then  @_drawWithClipping targetSpaceDrawArea, target, elementToTargetMatrix
           else            @_drawChildren target, elementToTargetMatrix
 

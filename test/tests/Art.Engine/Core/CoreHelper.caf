@@ -135,6 +135,37 @@ class CoreHelper
         expecting
         expecting2
 
+  preprocessExpecting = (expecting) ->
+    if isString expecting
+      array hexit in expecting.match /[0-9a-z]/gi
+        parseInt hexit, 16
+        * 16
+    else
+      compactFlatten expecting
+
+  outputPixelData = (bitmap, redChannel) ->
+    array v in redChannel with (v >> 4).toString(16)
+    .join ''
+    .replace
+      ///g (.{#{bitmap.size.x}})(?=.)
+      "$1-"
+
+  assert.redChannelWithin = (message, element, expecting, range = 16) =>
+    expecting = preprocessExpecting expecting
+    getBitmap element
+    .then (bitmap) ->
+      redChannel = bitmap.getImageDataArray "red"
+      redChannel = redChannel.slice 0, expecting.length
+      log {}
+        bitmap
+        bitmap.size
+        expecting:  outputPixelData bitmap, expecting
+        actual---:  outputPixelData bitmap, redChannel
+        message
+      each v, i in expecting
+        actual = redChannel[i]
+        assert.within actual, v - range, v + range, "value: #{v} index: #{i} range: #{range}"
+
   @testDownsampledRedChannelEq: (message, element, expecting) =>
     global.test message, ->
       Promise.then -> element
