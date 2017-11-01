@@ -23,6 +23,13 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   #   autoComplete
   #   autoCorrect
   # TODO: these need to become ElementProperties that update the DOMElement when changed.
+  @concreteProperty
+    placeholder:  postSetter: (v) -> @domElement?.placeholder = v ? ""
+    maxLength:    postSetter: (v) -> @domElement?.maxLength   = v ? null
+    fontFamily:   postSetter: (v) -> @domElement?.fontFamily  = v ? "sans-serif"
+    fontSize:     postSetter: (v) -> @domElement?.fontSize    = "#{v || 16}px"
+    color:        postSetter: (v) -> @domElement?.color       = rgbColor(v || "black").toString()
+
   constructor: (options = {}) ->
     props =
       placeholder:    options.placeholder || ""
