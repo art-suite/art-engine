@@ -36,8 +36,6 @@ EngineStat= require './EngineStat'
 {createWithPostCreate} = require 'art-class-system'
 {Browser} = require 'art-foundation'
 
-{showPartialDrawAreas} = getEnv()
-
 {isMobileBrowser} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
@@ -577,7 +575,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       else
         super @canvasBitmap, @elementToParentMatrix
 
-    if showPartialDrawAreas
+    if config.showPartialDrawAreas
       for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
         @canvasBitmap?.drawBorder null, (dirtyDrawArea.mul @_devicePixelsPerPoint), color: "red"
 
