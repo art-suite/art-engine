@@ -101,6 +101,7 @@ defineModule module, class ScrollElement2 extends Element
     @_lastOnScreenChildIndex = -1
     @_focusedChildIndex = -1
     @_initGestureProps()
+    @_gestureScrollPosition = 0
     @onNextReady =>
       # @jumpToEnd() if @startAtEnd
       @_scrollPositionChanged()
@@ -118,11 +119,9 @@ defineModule module, class ScrollElement2 extends Element
 
     # start using the perferred tracking if children stop fitting in the view
     if wasntTracking && !contentFits && "end" == @_pendingState._tracking = @_pendingState._track
-      # log "start end tracking"
       @_spMinusTp -= mainElementSizeForChildren
 
     else if windowSizeChanged && @_pendingState._tracking == "end"
-      # log "window size changed"
       @_spMinusTp += @_windowSize - mainElementSizeForChildren
 
     @_windowSize      = mainElementSizeForChildren
@@ -133,8 +132,6 @@ defineModule module, class ScrollElement2 extends Element
       @firstElementPosition
     else
       @firstElementPosition - mainChildrenAlignedOffset
-
-    # log {offsetDelta, contentFits, mainChildrenAlignedOffset, @firstElementPosition}
 
     # apply offsetDelta
     if 0 != offsetDelta
@@ -156,6 +153,7 @@ defineModule module, class ScrollElement2 extends Element
 
     contentFits       = mainChildrenSize <= mainElementSizeForChildren
     wasntTracking     = !_tracking
+    wasTracking       = !wasntTracking
     scrolledPastEnd   = mainChildrenOffset + mainChildrenSize <= mainElementSizeForChildren
     scrolledPastStart = mainChildrenOffset >= 0
     scrolled          = @_scrollPosition != _scrollPosition
@@ -182,11 +180,13 @@ defineModule module, class ScrollElement2 extends Element
     else
       @_pendingState._focusedChild = null
 
-    unless contentFits
-      # update _spMinusTp
+    # update _spMinusTp
+    if contentFits
+      if wasTracking
+        @_pendingState._spMinusTp = _scrollPosition
+    else
       @_pendingState._spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
 
-    # log _updateTracking: {wasntTracking, contentFits, scrolled, scrolledPastEnd, scrolledPastStart, tracking: @_pendingState._tracking}
     @_updateOnScreenInfo()
 
   _updateOnScreenInfo: ->
@@ -347,7 +347,12 @@ defineModule module, class ScrollElement2 extends Element
   ###################
   ###################
   animateToValidScrollPosition: ->
-    @scrollPosition   = @boundedScrollPosition
+    {boundedScrollPosition, scrollPosition} = @
+    if boundedScrollPosition != scrollPosition
+      @animators = merge originialAnimators = @animators,
+        scrollPosition: on: done: => @animators = originialAnimators
+
+      @scrollPosition   = boundedScrollPosition
 
   _scrollPositionChanged: ->
     unless @_activelyScrolling
@@ -410,12 +415,17 @@ defineModule module, class ScrollElement2 extends Element
       pnt.x
 
   gestureRecognize: ({delta}) ->
-    if @isHorizontal
+    if @isVertical
       1 > delta.absoluteAspectRatio
     else
       1 < delta.absoluteAspectRatio
 
-  gestureBegin:   (e) ->
+  gestureBegin:   (e) -> @_gestureScrollPosition = @getPendingScrollPosition()
   gestureResume:  (e) ->
-  gestureMove:    (e) -> @scrollPosition = @getScrollPosition(true)  + @getMainCoordinate e.delta
+  gestureMove:    (e) ->
+    scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
+    @scrollPosition = if scrollPosition != boundedSp = @boundSp scrollPosition
+      boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
+    else scrollPosition
+
   gestureEnd:     (e) -> @animateToValidScrollPosition()

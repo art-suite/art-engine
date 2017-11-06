@@ -266,3 +266,34 @@ suite:
           assert.eq e.trackingPosition,       100
           assert.eq e._spMinusTp,             -100
           assert.eq e.firstElementPosition,   -30
+
+    renderTest
+      "" element downSize, track: bottom, size: w: 100, hch: 1, max: h: 100
+      render: ->
+        ScrollElement2
+          size: w: 100, hch: 1, max: h: 100
+          track: :bottom
+          drawOrder: #700
+          Element drawOrder: :red size: w: 40 h: 100
+          Element drawOrder: :red size: 30
+
+      test: (e) ->
+        assert.eq e.tracking,               "end"
+        assert.eq e.trackingPosition,       100
+        assert.eq e.scrollPosition,         0
+        assert.eq e._spMinusTp,             -100
+        assert.eq e.firstElementPosition,   -30
+        e.children[0].size = w: 40 h: 70
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               null
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       0     :trackingPosition
+          assert.eq e._spMinusTp,             0
+          assert.eq e._childrenSize,          100   :_childrenSize
+          assert.eq e.firstElementPosition,   0     :firstElementPosition
+          e.children[0].size = w: 40 h: 60
+          e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
