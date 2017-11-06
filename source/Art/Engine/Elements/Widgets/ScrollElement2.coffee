@@ -46,21 +46,6 @@ events:
   scrollingActive:
   scrollUpdate:
 
-TODO:
-  scrollPosition should be "absolute" instead of "relative to 'tracking'".
-    Starts out at 0 (or viewHeight-childrenHeight if track = end).
-    Absolute means it tracks the total distance scrolled over all time.
-    Why? Animation!
-
-  However, 'tracking' still needs to do everything it does.
-  Which means we need another value - spMinusTp
-  The tracking-line is placed on-screen relative to parent at:
-    spMinusTp + scrollPosition
-
-  If elements are only added and existing elements never change height, then
-  scrollPosition is always the start of the scroll area and spMinusTp
-  is the distance from start to the tracking-line.
-
 ###
 
 defineModule module, class ScrollElement2 extends Element

@@ -268,7 +268,7 @@ suite:
           assert.eq e.firstElementPosition,   -30
 
     renderTest
-      "" element downSize, track: bottom, size: w: 100, hch: 1, max: h: 100
+      "" element downSize, track: bottom, size: w: 100, hch: 1, max: h: 100 (regression)
       render: ->
         ScrollElement2
           size: w: 100, hch: 1, max: h: 100
@@ -297,3 +297,9 @@ suite:
           e.toBitmapBasic()
         .then (bitmap) ->
           log {bitmap}
+          assert.eq e.tracking,               null
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       0     :trackingPosition
+          assert.eq e._spMinusTp,             0
+          assert.eq e._childrenSize,          90    :_childrenSize
+          assert.eq e.firstElementPosition,   0     :firstElementPosition
