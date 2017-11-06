@@ -1,0 +1,268 @@
+import &StandardImport
+
+suite:
+  alignment: ->
+    renderTest
+      :doesFit
+      render: ->
+        ScrollElement2
+          size: 100
+          drawOrder: #700
+          childrenAlignment: .5
+          Element size: 40 drawOrder: :red
+          Element size: 30 drawOrder: :red
+
+      test: (e) ->
+        assert.eq
+          array child in e.children with child.currentLocation.plainObjects
+          []
+            x: 30, y: 15
+            x: 35, y: 55
+
+    renderTest
+      :doesntFit
+      render: ->
+        ScrollElement2
+          size: 100
+          drawOrder: #700
+          childrenAlignment: .5
+          Element size: 70 drawOrder: :red
+          Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq
+          array child in e.children with child.currentLocation.plainObjects
+          []
+            x: 15, y: 0
+            x: 20, y: 70
+
+  static: ->
+    renderTest
+      :basic
+      render: ->
+        ScrollElement2
+          size: 100
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.scrollPosition, 0
+        assert.eq e.tracking,       :start
+        assert.eq e.focusedChild,   null,   "" no focusedChild unless tracking :child
+
+    renderTest
+      :scrollPositionTest
+      render: ->
+        ScrollElement2
+          size: 100
+          scrollPosition: -25
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking,               :child
+        assert.eq e.focusedChild,           e.children[1]
+        assert.eq e.scrollPosition,         -25
+        assert.eq e.trackingPosition,       45
+        assert.eq e.firstElementPosition,   -25
+
+    renderTest
+      "" scrollPosition after first element removed
+      render: ->
+        ScrollElement2
+          size: 100
+          scrollPosition: -25
+          drawOrder:
+            padding: right: -10
+            color: #700
+          Element drawOrder: #f00 size: h: 10
+          Element drawOrder: #d00 size: h: 60
+          Element drawOrder: #b00 size: 60
+
+      test: (e) ->
+        assert.eq e.scrollPosition,         -25
+        assert.eq e.trackingPosition,       45
+        assert.eq e.firstElementPosition,   -25
+        assert.eq e.tracking,               :child
+        assert.eq e.focusedChild,           focusedChild = e.children[2]
+        e.children = e.children.slice 1, 10
+        e.toBitmapBasic()
+        .then (bitmap)->
+          log {bitmap}
+          assert.eq e.scrollPosition,         -25
+          assert.eq e.trackingPosition,       45
+          assert.eq e.firstElementPosition,   -15
+          assert.eq e.tracking,               :child
+          assert.eq e.focusedChild,           focusedChild
+
+
+
+  dynamic: ->
+    renderTest
+      "" scroll up twice
+      render: ->
+        ScrollElement2
+          size: 100
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        e.scrollPosition = -25
+        e.onNextReady()
+        .then ->
+          assert.eq e.tracking,               :child
+          assert.eq e.focusedChild,           e.children[1]
+          assert.eq e.scrollPosition,         -25
+          assert.eq e.trackingPosition,       45
+          assert.eq e.firstElementPosition,   -25
+          e.scrollPosition -= 25
+          e.onNextReady()
+        .then ->
+          assert.eq e.tracking,               :end
+          assert.eq e.focusedChild,           null
+          assert.eq e.scrollPosition,         -50
+          assert.eq e.trackingPosition,       80
+          assert.eq e.firstElementPosition,   -50
+          e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+
+    renderTest
+      "" tracking: end, window grows
+      render: ->
+        ScrollElement2
+          size: 100
+          scrollPosition: -30
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking, :end
+        assert.eq e.focusedChild,           null
+        assert.eq e.trackingPosition,       100
+        assert.eq e.scrollPosition,         -30
+        assert.eq e._spMinusTp,             -130
+        assert.eq e.firstElementPosition,   -30
+        e.size = w: 100, h: 120
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               :end
+          assert.eq e.scrollPosition,         -30
+          assert.eq e.trackingPosition,       120
+          assert.eq e._spMinusTp,             -150
+          assert.eq e.firstElementPosition,   -10
+
+
+    renderTest
+      "" add element, track: bottom
+      render: ->
+        ScrollElement2
+          size: 100
+          track: :bottom
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          # Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking,               null
+        assert.eq e.focusedChild,           null
+        assert.eq e.trackingPosition,       0
+        assert.eq e.scrollPosition,         0
+        assert.eq e._spMinusTp,             0
+        assert.eq e.firstElementPosition,   0
+        e.addChild Element size: 60 drawOrder: :red
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               :end
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       100
+          assert.eq e._spMinusTp,             -100
+          assert.eq e.firstElementPosition,   -30
+
+    renderTest
+      "" add element, track: top
+      render: ->
+        ScrollElement2
+          size: 100
+          track: :top
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          # Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking,               null
+        assert.eq e.focusedChild,           null
+        assert.eq e.trackingPosition,       0
+        assert.eq e.scrollPosition,         0
+        assert.eq e._spMinusTp,             0
+        assert.eq e.firstElementPosition,   0
+        e.addChild Element size: 60 drawOrder: :red
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               :start
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       0
+          assert.eq e._spMinusTp,             0
+          assert.eq e.firstElementPosition,   0
+
+    renderTest
+      "" add element, track: bottom, childrenAlignment: .5
+      render: ->
+        ScrollElement2
+          size: 100
+          track: :bottom
+          childrenAlignment: .5
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          # Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking,               null
+        assert.eq e.focusedChild,           null
+        assert.eq e.trackingPosition,       0
+        assert.eq e.scrollPosition,         0
+        assert.eq e._spMinusTp,             0
+        assert.eq e.firstElementPosition,   0
+        e.addChild Element size: 60 drawOrder: :red
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               :end
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       100
+          assert.eq e._spMinusTp,             -100
+          assert.eq e.firstElementPosition,   -30
+
+    renderTest
+      "" add element, track: bottom, size: w: 100, hch: 1, max: h: 100
+      render: ->
+        ScrollElement2
+          size: w: 100, hch: 1, max: h: 100
+          track: :bottom
+          drawOrder: #700
+          Element size: 70 drawOrder: :red
+          # Element size: 60 drawOrder: :red
+
+      test: (e) ->
+        assert.eq e.tracking,               null
+        assert.eq e.focusedChild,           null
+        assert.eq e.trackingPosition,       0
+        assert.eq e.scrollPosition,         0
+        assert.eq e._spMinusTp,             0
+        assert.eq e.firstElementPosition,   0
+        e.addChild Element size: 60 drawOrder: :red
+        e.toBitmapBasic()
+        .then (bitmap) ->
+          log {bitmap}
+          assert.eq e.tracking,               :end
+          assert.eq e.scrollPosition,         0
+          assert.eq e.trackingPosition,       100
+          assert.eq e._spMinusTp,             -100
+          assert.eq e.firstElementPosition,   -30
