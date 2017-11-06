@@ -501,34 +501,42 @@ module.exports = class EpochedObject extends BaseObject
   ######################
   # ANIMATORS for PROPS
   ######################
+  processedAnimators = null
+  _addAnimator = (prop, options) =>
+    processedAnimators ||= {}
+    if match = prop.match /^_(.*)/
+      internalName = prop
+      [__, prop] = match
+    else
+      internalName = "_#{prop}"
+
+    processedAnimators[internalName] = if options instanceof PersistantAnimator
+      options
+    else if isFunction options
+      new PersistantAnimator prop, animate: options
+    else if isNumber options?.period
+      new PeriodicPersistantAnimator prop, merge options, continuous: true
+    else if options?.animate
+      new PersistantAnimator prop, options
+    else
+      new EasingPersistantAnimator prop, options
+
+  _addAnimators = (v) ->
+    return unless v
+    if isString v
+      _addAnimator prop for prop in v.match /[a-z]+/gi
+    else if isPlainArray v
+      _addAnimators el for el in v
+    else
+      _addAnimator prop, options for prop, options of v
+
   @concreteProperty
     animators:
       default: null
       preprocess: (v) ->
         processedAnimators = null
-        addProp = (prop, options) =>
-          processedAnimators ||= {}
-          processedAnimators["_" + prop] = if options instanceof PersistantAnimator
-            options
-          else if isFunction options
-            new PersistantAnimator prop, animate: options
-          else if isNumber options?.period
-            new PeriodicPersistantAnimator prop, merge options, continuous: true
-          else if options?.animate
-            new PersistantAnimator prop, options
-          else
-            new EasingPersistantAnimator prop, options
 
-        addProps = (v) ->
-          return unless v
-          if isString v
-            addProp prop for prop in v.match /[a-z]+/gi
-          else if isPlainArray v
-            addProps el for el in v
-          else
-            addProp prop, options for prop, options of v
-
-        addProps v
+        _addAnimators v
 
         processedAnimators
 
