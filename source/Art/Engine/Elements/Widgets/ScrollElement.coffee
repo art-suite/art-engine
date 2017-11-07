@@ -27,14 +27,6 @@ GestureRecognizer = require '../../Events/GestureRecognizer'
 {eventEpoch} = EventEpoch
 {createGestureRecognizer} = GestureRecognizer
 
-scrollProperties =
-  vertical: "y"
-  horizontal: "x"
-
-crossScrollProperties =
-  vertical: "x"
-  horizontal: "y"
-
 brakingFactor = 3
 minimumFlickVelocity = 300  # pixels per second
 animatorSpringConstant = 300
@@ -53,21 +45,6 @@ events:
   scrollingUpdate:
   scrollingActive:
   scrollUpdate:
-
-TODO:
-  scrollPosition should be "absolute" instead of "relative to 'tracking'".
-    Starts out at 0 (or viewHeight-childrenHeight if track = end).
-    Absolute means it tracks the total distance scrolled over all time.
-    Why? Animation!
-
-  However, 'tracking' still needs to do everything it does.
-  Which means we need another value - trackedReferencePosition
-  The tracking-line is placed on-screen relative to parent at:
-    trackedReferencePosition + scrollPosition
-
-  If elements are only added and existing elements never change height, then
-  scrollPosition is always the start of the scroll area and trackedReferncePoisition
-  is the distance from start to the tracking-line.
 
 ###
 
@@ -99,6 +76,9 @@ defineModule module, class ScrollElement extends Element
 
   constructor: ->
     super
+    @_spMinusTp = 0
+
+    @_inFlowChildren = null
     @_childrenOffset = 0
     @_childrenSize = 0
     @_windowSize = 0
@@ -106,88 +86,93 @@ defineModule module, class ScrollElement extends Element
     @_lastOnScreenChildIndex = -1
     @_focusedChildIndex = -1
     @_initGestureProps()
-    @_preventOverScrollForOneFrame = false
+    @_gestureScrollPosition = 0
     @onNextReady =>
       # @jumpToEnd() if @startAtEnd
       @_scrollPositionChanged()
 
-  @getter "firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize"
+  @getter "firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize inFlowChildren"
 
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
     Math.atan(scrollPosition / maxBeyond ) * (2 / Math.PI) * maxBeyond
 
   postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset) ->
-    {_focusedChild, _focusedChildAxis, _scrollPos, _scrollPosition, _tracking} = @getState true
-    @_windowSize = mainElementSizeForChildren
-    @_childrenSize = mainChildrenSize
+    contentFits       = mainChildrenSize <= mainElementSizeForChildren
+    windowSizeChanged = @_windowSize != mainElementSizeForChildren
+    wasntTracking     = !@_pendingState._tracking
 
-    offsetDelta = if mainChildrenSize <= mainElementSizeForChildren
-      overScrollTransformation _scrollPosition, @windowSize
-    else switch _tracking
-      when "start", null then overScrollTransformation(_scrollPosition, @windowSize) - mainChildrenAlignedOffset
-      when "end"         then overScrollTransformation(_scrollPosition, @windowSize) + mainElementSizeForChildren - mainChildrenSize - mainChildrenAlignedOffset
-      when "child"
-        _scrollPosition - if mainCoordinate == "x"
-          _focusedChild.getCurrentLocationX true, point0
-        else
-          _focusedChild.getCurrentLocationY true, point0
-      else throw new Error "bad tracking: #{_tracking}"
+    # start using the perferred tracking if children stop fitting in the view
+    if wasntTracking && !contentFits && "end" == @_pendingState._tracking = @_pendingState._track
+      @_spMinusTp -= mainElementSizeForChildren
 
-    if @_preventOverScrollForOneFrame
-      @_preventOverScrollForOneFrame = false
-      offset = if mainChildrenSize <= mainElementSizeForChildren
-        0
-      else
-        bound(
-          mainElementSizeForChildren - mainChildrenSize
-          offsetDelta + mainChildrenAlignedOffset
-          0
-        )
-      @_pendingState._scrollPosition = 0 if offset - mainChildrenAlignedOffset != offsetDelta
-      offsetDelta = offset - mainChildrenAlignedOffset
+    else if windowSizeChanged && @_pendingState._tracking == "end"
+      @_spMinusTp += @_windowSize - mainElementSizeForChildren
 
+    @_windowSize      = mainElementSizeForChildren
+    @_childrenSize    = mainChildrenSize
+    @_inFlowChildren  = inFlowChildren
+
+    offsetDelta = if contentFits
+      @firstElementPosition
+    else
+      @firstElementPosition - mainChildrenAlignedOffset
+
+    # apply offsetDelta
     if 0 != offsetDelta
-      if mainCoordinate == "x"
+      if @isHorizontal
         child._translateLocationXY offsetDelta, 0 for child in inFlowChildren
       else
         child._translateLocationXY 0, offsetDelta for child in inFlowChildren
 
     @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, @_childrenOffset = mainChildrenAlignedOffset + offsetDelta
 
+  ###
+  given the pending geometry:
+
+    update: _tracking, _spMinusTp, and _focusedChild
+    not changed: _scrollPosition
+  ###
   _updateTracking: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
     {_scrollPosition, _tracking, _track} = @getPendingState()
 
-    contentFits = mainChildrenSize <= mainElementSizeForChildren
-    wasntTracking = !_tracking
+    contentFits       = mainChildrenSize <= mainElementSizeForChildren
+    wasntTracking     = !_tracking
+    wasTracking       = !wasntTracking
     scrolledPastEnd   = mainChildrenOffset + mainChildrenSize <= mainElementSizeForChildren
     scrolledPastStart = mainChildrenOffset >= 0
+    scrolled          = @_scrollPosition != _scrollPosition
 
-    maintainTracking = _tracking != "child" && _scrollPosition == 0
-    scrolled = @_scrollPosition != _scrollPosition
+    # update _tracking
+    @_pendingState._tracking = _tracking =
+      if contentFits                      then null
+      else if wasntTracking && !scrolled  then _track
+      else if scrolledPastEnd             then "end"
+      else if scrolledPastStart           then "start"
+      else                                "child"
+    ###
+    NOTE - the "!scrolled" in the "wasntTracking && !scrolled" test is mostly for testing.
+    It is for the case when we scroll AND the size of the children went from contentFits to !contentFits.
+    This probably never happens EXCEPT if we init scrollPosition to a non-0 value AND we init with
+    children - which is what we are doing in testing.
 
-    @_pendingState._tracking = _tracking = switch
-      when contentFits       then null
-      when wasntTracking     then _track        # if we switched from !contentFits to contentFits, use the specified tracking.
-      when maintainTracking  then _tracking     # maintain current tracking if scrollPosition didn't change
-      when scrolledPastEnd   then "end"
-      when scrolledPastStart then "start"
-      else "child"
+    But, it's good to test that odd case, since it is theoretically possible in the wild.
+    ###
 
-    @_scrollPositionManuallySet = false
-
-    if @_tracking != _tracking || _tracking == "child"
-      @_pendingState._scrollPosition = switch _tracking
-        when null, "start" then (if !scrolled then 0 else mainChildrenOffset)
-        when "end"         then (if !scrolled then 0 else mainChildrenOffset - mainElementSizeForChildren + mainChildrenSize)
-        when "child"       then @_findFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
-
-    if _tracking != "child"
+    # update _focusedChild
+    if _tracking == "child"
+      @_updateFocusedChild mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren
+    else
       @_pendingState._focusedChild = null
 
-    @_updateOnScreenInfo()
+    # update _spMinusTp
+    if contentFits
+      if wasTracking
+        @_pendingState._spMinusTp = _scrollPosition
+    else
+      @_pendingState._spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
 
-    # log "tracking: #{@_pendingState._tracking} #{_scrollPosition}"
+    @_updateOnScreenInfo()
 
   _updateOnScreenInfo: ->
     {isVertical, windowSize} = @
@@ -240,11 +225,11 @@ defineModule module, class ScrollElement extends Element
     null
 
   # OUT: child's position relative to this, it's parent
-  _findFocusedChild: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren) ->
+  _updateFocusedChild: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren) ->
     focusLine = mainElementSizeForChildren / 2
     focusedChild = null
     focusedChildPos = 0
-    if mainCoordinate == "x"
+    if @isHorizontal
       for child in inFlowChildren
         if (focusLine > childPos = child.getCurrentLocationX true, point0) || !focusedChild
           focusedChild = child
@@ -258,66 +243,101 @@ defineModule module, class ScrollElement extends Element
     @_pendingState._focusedChild = focusedChild
     focusedChildPos
 
+  ####################
+  # internal getters
+  ####################
+  # internal getters all use PENDING STATE
+  @getter
+    focusedChildFromPendingGeometry: ->
+      focusedChild = @getPendingFocusedChild()
+      if focusedChild && focusedChild.getPendingParent() != @
+        @getPendingStart()._focusedChild = @_inFlowChildren[min @_inFlowChildren.length - 1, @_focusedChildIndex]
+      else
+        focusedChild
+
+    firstChildPositionFromPendingGeometry:    -> @getChildPosition @inFlowChildren[0]
+    lastChildPositionFromPendingGeometry:     -> @_childrenOffset + @_childrenSize
+    focusedChildPositionFromPendingGeometry:  -> @getChildPosition @focusedChildFromPendingGeometry
+    focusedChildOffsetFromPendingGeometry:    -> @focusedChildPositionFromPendingGeometry - @firstChildPositionFromPendingGeometry
+    trackingPositionFromPendingGeometry:      -> @fp2tp @firstChildPositionFromPendingGeometry
+
+    trackingPosition:                         -> @sp2tp @getPendingScrollPosition()
+    firstElementPosition:                     -> @sp2fp @getPendingScrollPosition()
+    boundedScrollPosition:                    -> @boundSp @getPendingScrollPosition()
+
+    isHorizontal:                             -> @getPendingChildrenLayout() != "column"
+    isVertical:                               -> @getPendingChildrenLayout() == "column"
+
+  getChildPosition: (child) ->
+    if @isVertical
+      child.getCurrentLocationY true, point0
+    else
+      child.getCurrentLocationX true, point0
+
+  ###
+  This part is confusing - end-tracking is rather different than start/child tracking:
+
+    tracking:
+      start/null: the start of firstChild   is pinned relative to the start of ScrollElement
+      child:      the start of focusedChild is pinned relative to the start of ScrollElement
+      end:        the end   of lastChild    is pinned relative to the end   of ScrollElement
+
+    startPosition: top/left
+    endPosition: bottom/right
+
+  trackingPosition: (tp)
+    position in element-space of the tracking-line
+    trackingPosition = switch tracking
+      when start, null then firstChild.startPosition
+      when child       then focusedChild.startPosition
+      when end         then windowSize - lastChild.endPosition
+
+  firstElementPosition: (fp)
+    position in element-space of the first element
+
+  scrollPosition: (sp)
+    @_spMinusTp + trackingPosition
+  ###
+
+  # scrollPosition <=> trackingPosition
+  sp2tp: (sp) -> sp - @_spMinusTp
+  tp2sp: (tp) -> @_spMinusTp + tp
+
+  # scrollPosition <=> firstElementPosition
+  sp2fp: (sp) -> @tp2fp @sp2tp sp
+  fp2sp: (fp) -> @tp2sp @fp2tp fp
+
+  # trackingPosition <=> firstElementPosition
+  # uses current geometry
+  tp2fp: (tp) ->
+    switch @getPendingTracking()
+      when "end"    then tp - @_childrenSize
+      when "child"  then tp - @focusedChildOffsetFromPendingGeometry
+      else tp # start and null
+
+  fp2tp: (fp) ->
+    switch @getPendingTracking()
+      when "end"    then fp + @_childrenSize
+      when "child"  then fp + @focusedChildOffsetFromPendingGeometry
+      else fp # start and null
+
+  boundFp: (fp) ->
+    if 0 < offscreenChildrenSize = @childrenSize - @windowSize
+      bound -offscreenChildrenSize, fp, 0
+    else 0
+
+  boundSp: (sp) ->
+    @fp2sp @boundFp @sp2fp sp
+
+  ###################
+  ###################
   animateToValidScrollPosition: ->
-    pendingScrollPosition = @getScrollPosition true
+    {boundedScrollPosition, scrollPosition} = @
+    if boundedScrollPosition != scrollPosition
+      @animators = merge originialAnimators = @animators,
+        scrollPosition: on: done: => @animators = originialAnimators
 
-    {childrenSize, windowSize} = @
-
-    offscreenChildrenSize = childrenSize - windowSize
-
-    pendingTracking = @getTracking true
-    pendingTracking = null if childrenSize <= windowSize
-
-    @scrollPosition = switch pendingTracking
-      when "start"  then bound -offscreenChildrenSize, pendingScrollPosition, 0
-      when "end"    then bound 0, pendingScrollPosition, offscreenChildrenSize
-      when null     then 0
-      when "child"  then pendingScrollPosition
-
-  preprocessEventHandlers: (handlerMap) ->
-    merge @_externalHandlerMap = handlerMap,
-      mouseWheel: (event) =>
-        @_mostRecentMouseWheelEvent = event
-        {windowSize, tracking} = @
-
-        scrollValue = if @isVertical
-          event.props.deltaY || 0
-        else
-          event.props.deltaX || 0
-
-        switch event.props.deltaMode
-          when "line" then scrollValue *= 16
-          when "page" then scrollValue *= windowSize * .75
-
-        # unless @getActiveScrollAnimator()
-        #   @startScrollAnimatorTracking()
-
-        @scrollPosition = @getScrollPosition(true) + bound -windowSize, -scrollValue, windowSize
-        @_preventOverScrollForOneFrame = true
-
-        # position = @getScrollAnimator().desiredScrollPosition + scrollValue
-        # @getScrollAnimator().desiredScrollPosition = bound(
-        #   @getScrollAnimator().minScrollPosition
-        #   position
-        #   @getScrollAnimator().maxScrollPosition
-        # )
-
-        timeout 100
-        .then =>
-          return unless @_mostRecentMouseWheelEvent == event
-          @animateToValidScrollPosition()
-
-      # animatorDone: ({props}) =>
-      #   {animator} = props
-      #   if animator == @_scrollAnimator
-      #     @_scrollAnimator = null
-      createGestureRecognizer
-        custom:
-          resume:     @gestureResume.bind @
-          recognize:  @gestureRecognize.bind @
-          begin:      @gestureBegin.bind @
-          move:       @gestureMove.bind @
-          end:        @gestureEnd.bind @
+      @scrollPosition   = boundedScrollPosition
 
   _scrollPositionChanged: ->
     unless @_activelyScrolling
@@ -330,114 +350,67 @@ defineModule module, class ScrollElement extends Element
         @_activelyScrolling = false
         @queueEvent "scrollingIdle"
 
-  @getter
-    isVertical:                -> @_childrenLayout == "column"
+  ###################
+  # Gestures & Event Handlers
+  ###################
+  # attach scrolling event handlers on init and whenever handlers change
+  preprocessEventHandlers: (handlerMap) ->
+    merge @_externalHandlerMap = handlerMap,
+      mouseWheel:     @mouseWheelEvent.bind @
 
-    numChildrenOnScreen: ->
-      {isVertical, windowSize} = @
-      numChildrenOnScreen = 0
+      createGestureRecognizer
+        custom:
+          resume:     @gestureResume.bind @
+          recognize:  @gestureRecognize.bind @
+          begin:      @gestureBegin.bind @
+          move:       @gestureMove.bind @
+          end:        @gestureEnd.bind @
 
-      for child in @children when child.inFlow
-        if isVertical
-          pos = child.getCurrentLocationY false, point0
-          size = child.getCurrentSize().y
-        else
-          pos = child.getCurrentLocationX false, point0
-          size = child.getCurrentSize().x
-        numChildrenOnScreen++ if pos < windowSize && pos + size > 0
+  mouseWheelEvent: (event) =>
+    @_mostRecentMouseWheelEvent = event
+    {windowSize, tracking} = @
 
-      numChildrenOnScreen
+    scrollValue = if @isVertical
+      event.props.deltaY || 0
+    else
+      event.props.deltaX || 0
 
+    switch event.props.deltaMode
+      when "line" then scrollValue *= 16
+      when "page" then scrollValue *= windowSize * .75
 
-  # ###################
-  # # Gestures
-  # ###################
+    @scrollPosition = @boundSp @getScrollPosition(true) + bound -windowSize, -scrollValue, windowSize
+
+    timeout 100
+    .then =>
+      return unless @_mostRecentMouseWheelEvent == event
+      @animateToValidScrollPosition()
+
   _initGestureProps: ->
     @_flicked = false
     @_pointerStartPosition = 0
     @_pointerReferenceFrame = null
     @_lastPointerEventTime = null
     @_flickSpeed = 0
-    @_gestureActive = false # TODO: do we really need this? Right now it is needed to make tap-while-momenum-scrolling behave reasonably.
-  #   @_scrollAnimator = null
-
-  # @getter
-  #   activeScrollAnimator: -> @_scrollAnimator
-  #   scrollAnimator: ->
-  #     # maximumVelocity is one full window-length per frame at 60fps
-  #     # I'm dividing by two to make sure we don't move so fast that we attempt to show pages that aren't ready yet
-  #     maximumVelocity = @getWindowSize() * 60 / 2
-  #     @_scrollAnimator ||= @startAnimator new ScrollAnimator @, maximumVelocity
-
-  #   debugState: ->
-  #     {referenceFrame} = @
-  #     referenceFrame:
-  #       page: referenceFrame.page?.inspectedName
-  #       atEndEdge: referenceFrame.atEndEdge
-  #     pagesBefore: (child.inspectedName + " " + ((@getMainCoordinate child.currentSize) | 0) for child in @_pagesBeforeBaselineWrapper.children)
-  #     pagesAfter: (child.inspectedName + " " + ((@getMainCoordinate child.currentSize) | 0)  for child in @_pagesAfterBaselineWrapper.children)
-  #     geometry: @currentGeometry
 
   getMainCoordinate: (pnt) ->
-    if @_childrenLayout == "row"
-      pnt.x
-    else
+    if @isVertical
       pnt.y
+    else
+      pnt.x
 
   gestureRecognize: ({delta}) ->
-    # log gestureRecognize: delta: delta
-    if @_childrenLayout == "column"
+    if @isVertical
       1 > delta.absoluteAspectRatio
     else
       1 < delta.absoluteAspectRatio
 
-  gestureBegin: (e) ->
-    {location, timeStamp} = e
-    log "gestureBegin"
-    # @_flickSpeed = 0
-    # @_gestureActive = true
+  gestureBegin:   (e) -> @_gestureScrollPosition = @getPendingScrollPosition()
+  gestureResume:  (e) ->
+  gestureMove:    (e) ->
+    scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
+    @scrollPosition = if scrollPosition != boundedSp = @boundSp scrollPosition
+      boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
+    else scrollPosition
 
-    # @_pointerReferenceFrame = @_referenceFrame
-    # @_lastPointerEventTime = timeStamp
-
-    # if @getActiveScrollAnimator()
-    #   @_flicked = false
-    #   timeout 60, =>
-    #     if !@_flicked && @_gestureActive
-
-    #       @_pointerReferenceFrame = @_referenceFrame
-    #       scrollPosition = @getPendingScrollPosition()
-    #       referenceFrame = @getPendingReferenceFrame()
-    #       @_pointerStartPosition = location - scrollPosition
-    #       @getScrollAnimator().startTracking scrollPosition, referenceFrame
-    # else
-    #   @startScrollAnimatorTracking()
-
-  gestureResume: (e) ->
-    # !!@getActiveScrollAnimator()
-
-  gestureMove: (e) ->
-    {timeStamp, delta, location} = e
-
-    @scrollPosition = @getScrollPosition(true) + @getMainCoordinate delta
-    # scrollAnimator = @getScrollAnimator()
-
-    # if timeStamp > @_lastPointerEventTime
-    #   @_flickSpeed = deltaV.getMagnitude() / (timeStamp - @_lastPointerEventTime)
-    #   @_flickDirection = (delta / abs delta) || 1
-    #   @_lastPointerEventTime = timeStamp
-
-    # scrollAnimator.setDesiredScrollPosition location - @_pointerStartPosition
-
-  gestureEnd: (e)->
-    log
-      gestureEnd: @getMainCoordinate e.location
-
-    @animateToValidScrollPosition()
-    # @_gestureActive = false
-    # if absGt @_flickSpeed, minimumFlickVelocity
-    #   scrollAnimator = @getScrollAnimator()
-    #   scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
-    #   @_flicked = true
-    # else
-    #   @endScrollAnimatorTracking()
+  gestureEnd:     (e) -> @animateToValidScrollPosition()

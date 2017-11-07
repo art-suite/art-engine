@@ -5,7 +5,7 @@ suite:
     renderTest
       :doesFit
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           drawOrder: #700
           childrenAlignment: .5
@@ -22,7 +22,7 @@ suite:
     renderTest
       :doesntFit
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           drawOrder: #700
           childrenAlignment: .5
@@ -40,7 +40,7 @@ suite:
     renderTest
       :basic
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           drawOrder: #700
           Element size: 70 drawOrder: :red
@@ -54,7 +54,7 @@ suite:
     renderTest
       :scrollPositionTest
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           scrollPosition: -25
           drawOrder: #700
@@ -71,7 +71,7 @@ suite:
     renderTest
       "" scrollPosition after first element removed
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           scrollPosition: -25
           drawOrder:
@@ -103,7 +103,7 @@ suite:
     renderTest
       "" scroll up twice
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           drawOrder: #700
           Element size: 70 drawOrder: :red
@@ -133,7 +133,7 @@ suite:
     renderTest
       "" tracking: end, window grows
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           scrollPosition: -30
           drawOrder: #700
@@ -161,7 +161,7 @@ suite:
     renderTest
       "" add element, track: bottom
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           track: :bottom
           drawOrder: #700
@@ -188,7 +188,7 @@ suite:
     renderTest
       "" add element, track: top
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           track: :top
           drawOrder: #700
@@ -215,7 +215,7 @@ suite:
     renderTest
       "" add element, track: bottom, childrenAlignment: .5
       render: ->
-        ScrollElement2
+        ScrollElement
           size: 100
           track: :bottom
           childrenAlignment: .5
@@ -243,7 +243,7 @@ suite:
     renderTest
       "" add element, track: bottom, size: w: 100, hch: 1, max: h: 100
       render: ->
-        ScrollElement2
+        ScrollElement
           size: w: 100, hch: 1, max: h: 100
           track: :bottom
           drawOrder: #700
@@ -270,7 +270,7 @@ suite:
     renderTest
       "" element downSize, track: bottom, size: w: 100, hch: 1, max: h: 100 (regression)
       render: ->
-        ScrollElement2
+        ScrollElement
           size: w: 100, hch: 1, max: h: 100
           track: :bottom
           drawOrder: #700

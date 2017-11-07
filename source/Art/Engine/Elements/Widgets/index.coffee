@@ -6,4 +6,3 @@ module.exports
 .addModules
   PagingScrollElement: require './PagingScrollElement'
   ScrollElement:       require './ScrollElement'      
-  ScrollElement2:      require './ScrollElement2'     

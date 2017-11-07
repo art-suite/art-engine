@@ -5,4 +5,4 @@ module.exports = require './namespace'
 module.exports
 .addModules
   PagingScrollElement: require './PagingScrollElement'
-  ScrollElement2:      require './ScrollElement2'     
+  ScrollElement:       require './ScrollElement'      
