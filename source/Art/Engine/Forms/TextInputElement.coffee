@@ -1,7 +1,7 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
 
 
-{defineModule, log, merge, select, inspect, wordsArray, timeout} = require 'art-standard-lib'
+{defineModule, log, merge, select, inspect, wordsArray, timeout, max} = require 'art-standard-lib'
 {rgbColor, point} = require 'art-atomic'
 
 Foundation = require 'art-foundation'
@@ -23,11 +23,15 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   #   autoComplete
   #   autoCorrect
   # TODO: these need to become ElementProperties that update the DOMElement when changed.
+  defaultFontSize = 16
   @concreteProperty
     placeholder:  postSetter: (v) -> @domElement?.placeholder = v ? ""
     maxLength:    postSetter: (v) -> @domElement?.maxLength   = v ? null
-    fontFamily:   postSetter: (v) -> @domElement?.fontFamily  = v ? "sans-serif"
-    fontSize:     postSetter: (v) -> @domElement?.fontSize    = "#{v || 16}px"
+    fontFamily:   "sans-serif", postSetter: (v) -> @domElement?.fontFamily  = v ? "sans-serif"
+    fontSize:
+      validate: (v) -> v > 0
+      default: defaultFontSize
+      postSetter: (v) -> @domElement?.fontSize    = "#{v || defaultFontSize}px"
     color:        postSetter: (v) -> @domElement?.color       = rgbColor(v || "black").toString()
 
   constructor: (options = {}) ->
@@ -58,7 +62,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         border:           '0px'
         color:            rgbColor(options.color || "black").toString()
         fontFamily:       options.fontFamily || "Arial"
-        fontSize:         "#{options.fontSize || 16}px"
+        fontSize:         "#{options.fontSize || defaultFontSize}px"
         margin:           "0"
         outline:          "0"
         padding:          "0"
@@ -93,7 +97,8 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
   # returns childrenSize
   nonChildrenLayoutFirstPass: ->
-    point @domElement.scrollWidth, @domElement.scrollHeight
+    point @domElement.scrollWidth,
+      max @getPendingFontSize() * 1.25, @domElement.scrollHeight
 
   preprocessEventHandlers: (handlerMap) ->
     merge super,
