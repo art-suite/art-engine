@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtAtomic, &ArtEngine, &TestHelper
+import &ArtStandardLib, &ArtAtomic, &source/Art/Engine, &TestHelper
 test = (args...) -> global.test args...
 
 suite:

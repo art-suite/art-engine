@@ -1,5 +1,5 @@
 import &ArtStandardLib
-{stats} = &ArtEngine.Element
+{stats} = &source/Art/Engine.Element
 
 test = (args...) -> global.test args...
 

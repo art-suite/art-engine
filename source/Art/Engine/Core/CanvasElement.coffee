@@ -247,7 +247,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @_drawEpochPreprocessing = []
       f() for f in pp
 
-    @draw()
+    @drawOnBitmap()
 
   @setter
     cssCursor: (cursor) ->
@@ -555,7 +555,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # DRAWING and DRAW STATS
   ###############################################
 
-  draw: ->
+  drawOnBitmap: ->
 
     Element.resetStats()
     frameStartTime = currentSecond()

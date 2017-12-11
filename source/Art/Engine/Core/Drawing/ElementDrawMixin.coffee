@@ -90,7 +90,7 @@ defineModule module, ->
             else drawOrder
           else null
 
-    draw: (target, elementToTargetMatrix)->
+    drawOnBitmap: (target, elementToTargetMatrix)->
       # log _draw: {@key, elementToTargetMatrix}
 
       try
@@ -207,7 +207,7 @@ defineModule module, ->
                     if upToChild == child
                       upToChild = "done"
                       break
-                    child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
+                    child.visible && target.drawDrawable child, child.getElementToTargetMatrix elementToTargetMatrix
                   drewChildren = true
 
                 else
@@ -270,14 +270,14 @@ defineModule module, ->
 
               if child? && childElement = childrenByKey[child]
                 break if upToChild == child
-                target.draw childElement, childElement.getElementToTargetMatrix elementToTargetMatrix
+                target.drawDrawable childElement, childElement.getElementToTargetMatrix elementToTargetMatrix
 
         catch error
           log.error ElementDrawMixin: drawChildren: {error}
         unless drewChildren
           for child in children when !((key = child._key)? && explicitlyDrawnChildrenByKey?[key])
              break if upToChild == child
-             child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
+             child.visible && target.drawDrawable child, child.getElementToTargetMatrix elementToTargetMatrix
 
         # close clipping if we have any
         if lastClippingInfo?
@@ -286,7 +286,7 @@ defineModule module, ->
       else
         for child in children
           break if child == upToChild
-          child.visible && target.draw child, child.getElementToTargetMatrix elementToTargetMatrix
+          child.visible && target.drawDrawable child, child.getElementToTargetMatrix elementToTargetMatrix
       children # without this, coffeescript returns a new array
 
 

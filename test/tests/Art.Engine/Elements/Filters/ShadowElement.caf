@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtAtomic, &ArtEngine, &Helper
+import &ArtStandardLib, &ArtAtomic, &source/Art/Engine, &Helper
 testSize = point 80 60
 
 suite:

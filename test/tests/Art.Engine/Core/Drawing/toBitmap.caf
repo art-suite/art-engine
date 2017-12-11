@@ -1,4 +1,4 @@
-# import &ArtStandardLib, &ArtAtomic, &ArtEngine
+# import &ArtStandardLib, &ArtAtomic, &source/Art/Engine
 import &StandardImport
 
 testArtStructure = ->
@@ -138,10 +138,10 @@ suite: ->
 
     element.toBitmapBasic elementToDrawAreaMatrix: Matrix.scale 1
     .then (bitmap1) ->
-      bitmap1StagingStats = merge &ArtEngine.Element.stats
+      bitmap1StagingStats = merge &source/Art/Engine.Element.stats
       element.toBitmapBasic elementToDrawAreaMatrix: Matrix.scale 5
       .then (bitmap2) ->
-        bitmap2StagingStats = merge &ArtEngine.Element.stats
+        bitmap2StagingStats = merge &source/Art/Engine.Element.stats
         log {bitmap1, bitmap2, bitmap1StagingStats}
         assert.eq 1, bitmap2StagingStats.stagingBitmapsCreated - bitmap1StagingStats.stagingBitmapsCreated
         assert.eq point(5), bitmap2StagingStats.lastStagingBitmapSize.div bitmap1StagingStats.lastStagingBitmapSize

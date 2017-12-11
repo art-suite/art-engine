@@ -925,7 +925,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     bitmap = @bitmapFactory.newBitmap size.max point1
     bitmap.pixelsPerPoint = pixelsPerPoint
     bitmap.clear backgroundColor if backgroundColor
-    @draw bitmap, elementToBitmapMatrix
+    @drawOnBitmap bitmap, elementToBitmapMatrix
 
     @_bitmapFactory = oldBitmapFactory
 

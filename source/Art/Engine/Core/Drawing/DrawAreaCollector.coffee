@@ -71,7 +71,7 @@ defineModule module, ->
     closeClipping: (oldClipArea) ->
       @clippingArea = oldClipArea
 
-    draw: (child, elementToTargetMatrix) ->
+    drawDrawable: (child, elementToTargetMatrix) ->
 
       targetSpaceChildDrawArea = elementToTargetMatrix.transformBoundingRect child.elementSpaceDrawArea
       # {left, top} = @padding

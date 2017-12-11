@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtEngine, &ArtCanvas
+import &ArtStandardLib, &source/Art/Engine, &ArtCanvas
 
 class CoreHelper
   @getRedImageData: getRedImageData = (bitmap) ->

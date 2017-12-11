@@ -20,7 +20,7 @@ define [
         m = element.elementToParentMatrix.mul Matrix.translate 10
 
         options.beforeDraw?()
-        element.draw b, m
+        element.drawOnBitmap b, m
         options.afterDraw?()
         log b, text:"#{text}"
         options.done?()
