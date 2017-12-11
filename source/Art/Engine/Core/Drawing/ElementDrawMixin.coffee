@@ -86,9 +86,15 @@ defineModule module, ->
                 needsNormalizing = true
                 break
             if needsNormalizing
-              normalizeDrawStep draw for draw in drawOrder
+              normalizeDrawStep drawStep for drawStep in drawOrder
             else drawOrder
           else null
+
+    @virtualProperty
+      # drawOrder Alias
+      draw:
+        getter: (pending) -> @getState(pending)._drawOrder
+        setter: (v) -> @setDrawOrder v
 
     drawOnBitmap: (target, elementToTargetMatrix)->
       # log _draw: {@key, elementToTargetMatrix}
@@ -215,8 +221,8 @@ defineModule module, ->
 
               break if upToChild == "done"
 
-            else if isPlainObject draw = drawStep
-              {padding, fill, clip, outline, shape, rectangle, child, circle} = draw
+            else if isPlainObject drawStep
+              {padding, fill, clip, outline, shape, rectangle, child, circle} = drawStep
 
               if newShapeOptions = rectangle ? circle ? shape
 
