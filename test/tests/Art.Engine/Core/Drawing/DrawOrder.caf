@@ -3,20 +3,20 @@ import &StandardImport
 suite:
   padding: ->
     renderTest
-      "and drawOrder drawArea"
+      "and draw drawArea"
       render: ->
         Element
           padding: 10
-          drawOrder: :red
+          draw: :red
           RectangleElement()
       test: (e) ->
         assert.eq e.drawArea, rect -10, -10, 100, 100
 
     renderTest
-      "drawOrder padding"
+      "draw padding"
       render: ->
         Element
-          drawOrder:
+          draw:
             :circle
             padding: 10
             :red
@@ -28,8 +28,19 @@ suite:
       render: ->
         Element
           padding: 10
-          drawOrder:
+          draw:
             :paddedDrawArea
+            color: :red :yellow :green
+      test: (e) ->
+        assert.eq e.drawArea, rect 80
+
+    renderTest
+      "via padded"
+      render: ->
+        Element
+          padding: 10
+          draw:
+            :padded
             color: :red :yellow :green
       test: (e) ->
         assert.eq e.drawArea, rect 80
@@ -40,26 +51,26 @@ suite:
         Element
           padding: 10
           Element
-            drawOrder: color: :red :yellow :green
+            draw: color: :red :yellow :green
       test: (e) ->
         assert.eq e.drawArea, rect 80
 
     test "pixelsPerPoint: 2", ->
       e =
         Element
-          drawOrder: :grey
+          draw: :grey
           size: 100
 
           Element
             size: 30
-            drawOrder: #aaa
+            draw: #aaa
             padding: 10
             RectangleElement()
 
           Element
             location: 30
             size: 30
-            drawOrder: :orange
+            draw: :orange
       e.toBitmapBasic pixelsPerPoint: 2
       .then (bitmap) ->
         log {bitmap}
@@ -71,7 +82,7 @@ suite:
         Element
           size: 50
           name: :parent
-          Element drawOrder: :red, name: :child
+          Element draw: :red, name: :child
       test: (e) ->
         assert.eq e.drawArea, rect 50
 
@@ -81,7 +92,7 @@ suite:
         Element
           size: 50
           padding: 10
-          Element drawOrder: :red
+          Element draw: :red
       test: (e) ->
         assert.eq e.drawArea, rect 30
 
@@ -91,7 +102,7 @@ suite:
         Element
           size: 50
           padding: -10
-          Element drawOrder: :red
+          Element draw: :red
       test: (e) ->
         assert.eq e.drawArea, rect 70
 
@@ -102,8 +113,8 @@ suite:
           size: 50
           padding: 10
           clip: true
-          Element drawOrder: :red, size: 100
-          Element drawOrder: :orange, size: 10
+          Element draw: :red, size: 100
+          Element draw: :orange, size: 10
       test: (e) ->
         assert.eq e.drawArea, rect 30
 
@@ -113,8 +124,8 @@ suite:
         Element
           size: h: 50, wcw:1
           childrenLayout: "column"
-          Element drawOrder: :red, size: 100
-          Element drawOrder: :orange, size: 10
+          Element draw: :red, size: 100
+          Element draw: :orange, size: 10
       test: (e) ->
         assert.eq e.drawArea, rect 100, 110
 
@@ -126,7 +137,7 @@ suite:
         "circle"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             "circle"
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 100
@@ -137,7 +148,7 @@ suite:
         "rect()"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rect 5, 5, 40, 40
             "red"
         test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
@@ -146,7 +157,7 @@ suite:
         "padding: 10"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             padding: 10
             "red"
         test: (e) -> assert.eq e.drawArea, rect 10, 10, 80, 80
@@ -155,7 +166,7 @@ suite:
         "padding: top bottom"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             padding: top: 5, bottom: 10
             "red"
         test: (e) -> assert.eq e.drawArea, rect 0, 5, 100, 85
@@ -165,7 +176,7 @@ suite:
         "rectangle: area function with params"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             "grey"
             rectangle:
               pos: 10
@@ -178,7 +189,7 @@ suite:
         "rectangle: radius: 10"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle: radius: 10
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 100
@@ -187,7 +198,7 @@ suite:
         "rectangle: radius: tl:20"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle: radius: tl: 20
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 100
@@ -196,7 +207,7 @@ suite:
         "rectangle: ->"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle: ({size}) -> rect size.x / 2, size.y / 4
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 50, 25
@@ -205,7 +216,7 @@ suite:
         "rectangle: area: ->"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle: area: ({size}) -> rect size.x / 2, size.y / 4
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 50, 25
@@ -214,7 +225,7 @@ suite:
         "rectangle: rect()"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle: rect 5, 5, 40, 40
             fill: color: "red"
         test: (e) -> assert.eq e.drawArea, rect 5, 5, 40, 40
@@ -223,7 +234,7 @@ suite:
         "rectangle: area: ->"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle:
               area: ({size}) -> rect size.div(4), size.div 2
               radius: 10
@@ -234,7 +245,7 @@ suite:
         "rectangle: rect()"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle:
               area: rect 5, 5, 40, 40
               radius: 10
@@ -245,7 +256,7 @@ suite:
         "rectangle: padding: 10"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             rectangle:
               padding: 10
               radius: 10
@@ -257,7 +268,7 @@ suite:
         "custom with miter"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             shape: (context, area) ->
               {top, left, right, bottom, vCenter, hCenter} = area
               context.moveTo  hCenter, top
@@ -272,7 +283,7 @@ suite:
         "custom with miterLimit"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             shape: (context, area) ->
               {top, left, right, bottom, vCenter, hCenter} = area
               context.moveTo  hCenter, top
@@ -287,7 +298,7 @@ suite:
         "custom with round"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             shape: (context, area) ->
               {top, left, right, bottom, vCenter, hCenter} = area
               context.moveTo  hCenter, top
@@ -302,7 +313,7 @@ suite:
         "custom with area"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             shape:
               area: rect 20, 10, 20, 80
               path: (context, area) ->
@@ -319,7 +330,7 @@ suite:
         "custom with params"
         render: -> Element
           size: 100
-          drawOrder:
+          draw:
             shape:
               area: rect 20, 10, 20, 80
               foo: 35
@@ -338,7 +349,7 @@ suite:
       "'reset' resets everything"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           circle:
             padding: 10
             radius: 10
@@ -352,7 +363,7 @@ suite:
       "'resetDrawArea' only resets drawArea"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           circle:
             padding: 10
             radius: 10
@@ -366,7 +377,7 @@ suite:
       "'resetShape' only resets shape"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           circle:
             padding: 10
             radius: 10
@@ -380,7 +391,7 @@ suite:
       "rectangle: {} does not reset drawArea"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           rectangle:
             padding: 10
             radius: 10
@@ -395,13 +406,13 @@ suite:
       "basic"
       render: -> Element
         size: 100
-        drawOrder: "red"
+        draw: "red"
 
     renderTest
       "rounded"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           rectangle: radius: 10
           color: "red"
 
@@ -412,7 +423,7 @@ suite:
       "double gradient is that easy"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           #f00 #f000
           #0f00 #0f0
 
@@ -420,13 +431,13 @@ suite:
       "gradient basic"
       render: -> Element
         size: 100
-        drawOrder: color: :red :yellow
+        draw: color: :red :yellow
 
     renderTest
       "gradient to"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           color: :red :yellow
           to:   yh: 1
           from: xw: 1
@@ -435,7 +446,7 @@ suite:
       "gradient segments"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           0:  #f00
           .4: #ff0
           .5: #0f0
@@ -447,7 +458,7 @@ suite:
       "basic"
       render: -> Element
         size: 100
-        drawOrder: outline: "red"
+        draw: outline: "red"
       test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
     renderTest
@@ -456,11 +467,11 @@ suite:
         Element
           size: cs: 1
           padding: 10
-          drawOrder: #fee
+          draw: #fee
           Element
             size: 10
             scale: 10
-            drawOrder: outline: "red"
+            draw: outline: "red"
       # test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
     test "scaled 2" ->
@@ -487,7 +498,7 @@ suite:
       "lineWidth"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           outline: color: "red", lineWidth: 10
       test: (e) -> assert.eq e.drawArea, rect -5, -5, 110, 110
 
@@ -495,7 +506,7 @@ suite:
       "clipped"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           rectangle: radius: 10
           "clip"
           outline: color: "red", lineWidth: 10
@@ -505,7 +516,7 @@ suite:
       "rounded"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           rectangle: radius: 10
           outline: color: "red"
       test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
@@ -516,7 +527,7 @@ suite:
       "fill drawArea"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           fill:
             color: "red"
             shadow: offset: 10
@@ -528,7 +539,7 @@ suite:
       render: -> Element
         size: 100
         padding: 10
-        drawOrder:
+        draw:
           fill:
             color: "red"
           {}
@@ -541,7 +552,7 @@ suite:
       "outline drawArea"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           outline: color: "red", lineWidth: 10, shadow: blur: 0, offset: 5
       test: (e) ->
         assert.eq e.drawArea, rect -5, -5, 116, 116
@@ -551,7 +562,7 @@ suite:
       "clip"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           outline: color: #0f0 lineWidth: 30
           "clip"
           outline: color: :red lineWidth: 10
@@ -560,7 +571,7 @@ suite:
       "clip children"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           "circle"
           "clip"
           "children"
@@ -573,7 +584,7 @@ suite:
       "clip: true/false"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           outline: color: #0f0 lineWidth: 30
           {}
             clip: true
@@ -586,7 +597,7 @@ suite:
       "clip applies after shape"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           clip:     true
           rectangle: ({w, h}) -> rect -20, 0, w + 40, h
           "orange"
@@ -596,10 +607,10 @@ suite:
         assert.eq e.drawArea, rect -20, 0, 140, 100
 
     renderTest
-      "drawOrder: clip: clips children"
+      "draw: clip: clips children"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           clip:       true
           rectangle:  ({w, h}) -> rect -20, 0, w + 40, h
           "orange"
@@ -616,7 +627,7 @@ suite:
       "non-zero-location"
       render: -> Element
         size: 100
-        drawOrder: color: :red
+        draw: color: :red
         Element
           location: 60
           size: 25
@@ -640,23 +651,35 @@ suite:
       "custom order"
       render: -> Element
         size: 100
-        drawOrder: child: :a
-        TextElement align: .5 padding: 5 text: "hidden without drawOrder" size: ps: 1
-        RectangleElement key: :a color: #ff7
+        draw:
+          child: :meFirst
+        TextElement key: :meLast  align:  .5 padding: 5 text: "hidden without draw" size: ps: 1
+        Element     key: :meFirst draw:   #ff7
+
+    renderTest
+      "custom order with :children"
+      render: -> Element
+        size: 100
+        clip: true
+        draw:
+          :children
+          child: :meLast
+        TextElement key: :meLast  align: .5 padding: 5 text: "hidden without draw" size: ps: 1
+        Element     key: :meFirst draw:  #ff7
 
     renderTest
       "fill first"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           fill: :#ff7
-        TextElement align: .5 padding: 5 text: "no background without drawOrder" size: ps: 1
+        TextElement align: .5 padding: 5 text: "no background without draw" size: ps: 1
 
     renderTest
       "mixed"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           fill: #ff7
           :children
           :clip
@@ -671,7 +694,7 @@ suite:
         Element
           size: 200
           stage: true
-          drawOrder:
+          draw:
             :circle
             fill: color: :white shadow: offset: 10 blur 10
             :clip
@@ -700,7 +723,7 @@ suite:
       "custom area"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           "grey"
           shape:
             path: Paths.rectanglePath
@@ -714,7 +737,7 @@ suite:
       "color same as fill: color (should have rounded corners)"
       render: -> Element
         size: 100
-        drawOrder:
+        draw:
           rectangle: radius: 10
           color: "red"
       # test: (e) -> assert.eq e.drawArea, rect -10, 0, 120, 100
@@ -743,7 +766,7 @@ suite:
       render: ->
         Element
           size: w: 200, h: 60
-          drawOrder:
+          draw:
             shape:
               path: wedge
               area: wedgeArea
@@ -761,7 +784,7 @@ suite:
       render: ->
         Element
           size: w: 200, h: 60
-          drawOrder:
+          draw:
             shape:
               path: wedge
               area: wedgeArea
@@ -780,7 +803,7 @@ suite:
       render: ->
         Element
           size: w: 200, h: 60
-          drawOrder:
+          draw:
             shape:
               path: wedge
               area: wedgeArea
@@ -794,7 +817,7 @@ suite:
       test: (e) -> assert.eq e.drawArea, rect 0, 20, 215, 40
 
     renderTest
-      "add drawOrder updates drawArea"
+      "add draw updates drawArea"
       render: -> Element
         size: w: 200, h: 100
         Element
@@ -803,12 +826,12 @@ suite:
             size: 50
             axis: .5
             location: ps: .5
-            drawOrder: #0f0
+            draw: #0f0
       test: (e) ->
         [c] = e.children
         assert.eq e.drawArea, rect 75, 25, 50, 50
         assert.eq c.drawArea, rect 75, 25, 50, 50
-        c.drawOrder = "red"
+        c.draw = "red"
         e.toBitmapBasic()
         .then (bitmap) ->
           log {bitmap}
@@ -845,7 +868,7 @@ suite:
             "" expected text to draw somewhere
 
     renderTest
-      "clip drawArea with drawOrder child"
+      "clip drawArea with draw child"
       render: ->
         Element
           size: w: 50, h: 25
@@ -853,14 +876,14 @@ suite:
           clip: true
           Element
             key: :changeChild
-            drawOrder:
+            draw:
               rect 20
               #0ff
       test: (e) ->
         [dac] = e.find :drawAreaElement
         [cc] = e.find :changeChild
         assert.eq dac.drawArea, rect 20
-        cc.drawOrder =
+        cc.draw =
           rectangle: rect 30, 0, 20, 20
           #0ff
         e.toBitmapBasic()
@@ -876,14 +899,14 @@ suite:
             "" expected child to draw somewhere
 
     renderTest
-      "size change updates drawArea with drawOrder-clip and children"
+      "size change updates drawArea with draw-clip and children"
       render: ->
 
         Element
           key: "parent"
           size: w:100, h: 5
 
-          drawOrder:
+          draw:
             clip: true
             "blue"
 
@@ -904,7 +927,7 @@ suite:
       "compositeMode on second draw-step"
       render: ->
         Element
-          drawOrder:
+          draw:
             :circle
             fill: :red
             :rectangle
@@ -917,10 +940,10 @@ suite:
       "child Element's compositeMode"
       render: ->
         Element
-          drawOrder: "circle", "red"
+          draw: "circle", "red"
           Element
             compositeMode: "sourceIn"
-            drawOrder:
+            draw:
               outline:
                 color: "orange"
                 lineWidth: 20
@@ -933,11 +956,11 @@ suite:
       "child Element's compositeMode with stage override"
       render: ->
         Element
-          drawOrder: "circle", "red"
+          draw: "circle", "red"
           Element
             compositeMode: "sourceIn"
             stage: false
-            drawOrder:
+            draw:
               outline:
                 color: "orange"
                 lineWidth: 20
@@ -947,15 +970,15 @@ suite:
         assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's compositeMode and drawOrder compositeMode"
+      "child Element's compositeMode and draw compositeMode"
       render: ->
         Element
-          drawOrder: "black"
+          draw: "black"
           Element
-            drawOrder: "circle", "red"
+            draw: "circle", "red"
             Element
               compositeMode: "sourceIn"
-              drawOrder:
+              draw:
                 {}
                   fill: "#00f"
                   padding: bottom: 50
@@ -970,12 +993,12 @@ suite:
         assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's only drawOrder compositeMode"
+      "child Element's only draw compositeMode"
       render: ->
         Element
-          drawOrder: "circle", "red"
+          draw: "circle", "red"
           Element
-            drawOrder:
+            draw:
               outline:
                 color: "orange"
                 lineWidth: 20
@@ -986,13 +1009,13 @@ suite:
         assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's only drawOrder compositeMode with stage override"
+      "child Element's only draw compositeMode with stage override"
       render: ->
         Element
-          drawOrder: "circle", "red"
+          draw: "circle", "red"
           Element
             stage: false
-            drawOrder:
+            draw:
               outline:
                 color: "orange"
                 lineWidth: 20
@@ -1006,9 +1029,9 @@ suite:
       "no compositeMode"
       render: ->
         Element
-          drawOrder: "circle", "red"
+          draw: "circle", "red"
           Element
-            drawOrder:
+            draw:
               outline:
                 color: "orange"
                 lineWidth: 20

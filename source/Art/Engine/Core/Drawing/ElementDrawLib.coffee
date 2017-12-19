@@ -26,7 +26,8 @@ defineModule module, class ElementDrawLib
     resetDrawArea:      true  # same as 'logicalDrawArea'
     logicalDrawArea:    true  # currentDrawArea = logicalArea
     paddedDrawArea:     true  # currentDrawArea = paddedArea
-    resetClip:      true  # same as: clip: false
+    padded:             true  # paddedDrawArea alias
+    resetClip:          true  # same as: clip: false
 
   @looksLikeColor: looksLikeColor = (v) ->
     return v unless v?

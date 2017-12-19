@@ -72,29 +72,29 @@ defineModule module, ->
       # is an array of keys and one 'null' entry.
       # null or 'children' indicates 'all other children'
       # Keys are keys for elements to draw, if a matching child is found
-      drawOrder:
+      draw:
         default: null
         validate: (v) -> !v? || isRect(v) || isFunction(v) || isArray(v) || isPlainObject(v) || isString(v) || isColor v
-        preprocess: (drawOrder) ->
-          if drawOrder?
-            drawOrder = [drawOrder] unless isArray drawOrder
-            drawOrder = compactFlatten drawOrder
+        preprocess: (drawSteps) ->
+          if drawSteps?
+            drawSteps = [drawSteps] unless isArray drawSteps
+            drawSteps = compactFlatten drawSteps
             needsNormalizing = false
-            for step in drawOrder
+            for step in drawSteps
               {fill, outline, color, colors, padding, shadow, to, from} = step
               if fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step
                 needsNormalizing = true
                 break
             if needsNormalizing
-              normalizeDrawStep drawStep for drawStep in drawOrder
-            else drawOrder
+              normalizeDrawStep drawStep for drawStep in drawSteps
+            else drawSteps
           else null
 
     @virtualProperty
       # drawOrder Alias
-      draw:
-        getter: (pending) -> @getState(pending)._drawOrder
-        setter: (v) -> @setDrawOrder v
+      drawOrder:
+        getter: (pending) -> @getState(pending)._draw
+        setter: (v) -> @setDraw v
 
     drawOnBitmap: (target, elementToTargetMatrix)->
       # log _draw: {@key, elementToTargetMatrix}
@@ -187,7 +187,7 @@ defineModule module, ->
                 when "resetDrawArea", "logicalDrawArea"
                   currentDrawArea = @currentSize
 
-                when "paddedDrawArea"
+                when "padded", "paddedDrawArea"
                   currentDrawArea = @currentPadding.pad @currentSize
 
                 when "resetShape"
@@ -217,7 +217,7 @@ defineModule module, ->
                   drewChildren = true
 
                 else
-                  console.warn "Art.Engine.Element: invalid drawOrder instruction: #{instruction}"
+                  console.warn "Art.Engine.Element: invalid draw instruction: #{instruction}"
 
               break if upToChild == "done"
 
@@ -378,8 +378,8 @@ defineModule module, ->
 
     @getter
       drawOrderRequiresStaging: ->
-        return false unless drawOrder = @drawOrder
-        for {fill, outline} in drawOrder
+        return false unless draw = @draw
+        for {fill, outline} in draw
           if fill
             {compositeMode} = fill
             return true if compositeMode? && compositeMode != "normal"
@@ -390,10 +390,10 @@ defineModule module, ->
 
     getNeedsStagingBitmap: (elementToTargetMatrix) ->
       return stage if (stage = @stage)?
-      {drawOrder} = @
+      {draw} = @
       !!(
         @getIsMask() ||
-        ((@getHasChildren() || drawOrder?) && !@getCompositingIsBasic()) ||
+        ((@getHasChildren() || draw?) && !@getCompositingIsBasic()) ||
         (@_clip && elementToTargetMatrix?.getHasSkew()) ||
         @getChildRequiresParentStagingBitmap() ||
         @drawOrderRequiresStaging
