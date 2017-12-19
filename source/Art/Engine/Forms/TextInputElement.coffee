@@ -112,8 +112,8 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
         handlerMap.keyPress? e
         {props} = e
-        @handleEvent "enter", value:@value if props.key == "Enter"
-        @handleEvent "escape", value:@value if props.key == "Escape"
+        @handleEvent "enter",  value: @value if props.key == "Enter"
+        @handleEvent "escape", value: @value if props.key == "Escape"
 
   _unregister: ->
     @_canvasElementToFocusOnBlur?.focusCanvas()
@@ -134,6 +134,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       setter: (v) ->
         v = if v? then "#{v}" else ""
         unless @domElement.value == v
+          @_elementChanged true
           @domElement.value = v
 
     color:
