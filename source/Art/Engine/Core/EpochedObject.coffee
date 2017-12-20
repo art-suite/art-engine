@@ -531,6 +531,10 @@ module.exports = class EpochedObject extends BaseObject
       _addAnimator prop, options for prop, options of v
 
   @concreteProperty
+    animateOnCreation:
+      default: false
+      validate: (v) -> !v || v == true
+
     animators:
       default: null
       preprocess: (v) ->
@@ -693,7 +697,8 @@ module.exports = class EpochedObject extends BaseObject
     nextTick => @_elementChanged()
 
   getPendingCreatedAndAddedToExistingParent: ->
-    @__stateEpochCount == 0 && !(@_pendingState._parent?.__stateEpochCount == 0)
+    {_parent, _animateOnCreation} = @_pendingState
+    @__stateEpochCount == 0 && (_animateOnCreation || !(@_pendingState._parent?.__stateEpochCount == 0))
 
   _applyAnimators: ->
     if pendingAnimators = @_pendingState._animators
