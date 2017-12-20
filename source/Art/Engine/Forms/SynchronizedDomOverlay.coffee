@@ -77,6 +77,7 @@ module.exports = class SynchronizedDomOverlay extends Element
 
     # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
     @_domElement.style.opacity = opacity
+    @_domElement.style.display = if opacity == 0 then "none" else "block"
     @_domElement.style.left   = "#{r.x}px"
     @_domElement.style.top    = "#{r.y}px"
     @_domElement.style.width  = "#{r.w}px"
