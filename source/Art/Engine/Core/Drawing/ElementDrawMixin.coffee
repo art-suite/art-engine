@@ -18,6 +18,9 @@ defaultLineWidth = 1
 {drawCacheManager} = require './DrawCacheManager'
 {globalEpochCycle} = require '../GlobalEpochCycle'
 
+# iOS limitation:
+maxCanvasSize = 16777216
+
 {
   normalizeDrawStep
   prepareDrawOptions
@@ -430,9 +433,13 @@ defineModule module, ->
       elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut snapTo, colorPrecision
       return if elementSpaceDrawArea.getArea() <= 0
 
-      cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale =
+      cacheScale =
         pixelsPerPoint *
           if @getCacheDraw() || @getStage() then 1 else elementToTargetMatrix.getExactScaler()
+
+      cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale
+      while cacheSpaceDrawArea.area >= maxCanvasSize
+        cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale *= .75
 
       cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut snapTo, colorPrecision
       # don't cache if too big
