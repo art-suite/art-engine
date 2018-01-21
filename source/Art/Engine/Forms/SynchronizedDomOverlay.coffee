@@ -3,7 +3,7 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Element = require '../Core/Element'
-{log, merge, inspect, float32Eq} = Foundation
+{timeout, log, merge, inspect, float32Eq} = Foundation
 {rect, point1, point} = Atomic
 
 # TODO: add a clipping <div> so the domElement is propperly clipped if its Art-Element is clipped.
@@ -57,6 +57,10 @@ module.exports = class SynchronizedDomOverlay extends Element
   _updateDomLayout: ->
 
     if @_shouldAttachDomElement
+      unless canvasElement?.htmlCanvasElement?.parentElement
+        timeout 50, => @_updateDomLayout()
+        return null
+
       @_shouldAttachDomElement = false
       canvasElement.htmlCanvasElement.parentElement.appendChild @_domElement
       @queueEvent "domElementAttached"
