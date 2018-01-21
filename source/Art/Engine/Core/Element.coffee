@@ -936,13 +936,14 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     options.pixelsPerPoint ||= @devicePixelsPerPoint
     @toBitmapBasic options
     .then (bitmap) =>
-      @log
-        size: @currentSize
-        location: @currentLocation
-        size: @size
-        location: @location
-        elementToParentMatrix: @elementToParentMatrix
-        bitmap: bitmap
+      @log {
+        @currentSize
+        @currentLocation
+        @size
+        @location
+        @elementToParentMatrix
+        bitmap
+      }
 
   # override so Outline child can be "filled"
   fillShape: (target, elementToTargetMatrix, options={}) ->
@@ -1215,12 +1216,6 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     first
 
   @getter
-    elementPath: ->
-      if @parent
-        @parent.elementPath + " > " + @classPathNameAndId
-      else
-        @classPathNameAndId
-
     elementPathWithoutIds: ->
       if @parent
         @parent.elementPath + " > " + @classPathNameAndId
