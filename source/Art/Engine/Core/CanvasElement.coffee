@@ -33,6 +33,8 @@ EngineStat= require './EngineStat'
   clone
   getEnv
 } = require 'art-standard-lib'
+
+{showPartialDrawAreas} = getEnv()
 {createWithPostCreate} = require 'art-class-system'
 {Browser} = require 'art-foundation'
 
@@ -575,7 +577,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       else
         super @canvasBitmap, @elementToParentMatrix
 
-    if config.showPartialDrawAreas
+    if showPartialDrawAreas || config.showPartialDrawAreas
       for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
         @canvasBitmap?.drawBorder null, (dirtyDrawArea.mul @_devicePixelsPerPoint), color: "red"
 
