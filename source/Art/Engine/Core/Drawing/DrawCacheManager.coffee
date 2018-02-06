@@ -178,9 +178,14 @@ defineModule module, class DrawCacheManager extends BaseObject
     #   }
     #   throw new Error "bad _cacheByteSize"
 
-  canUseBitmap = (cachedBitmap, requestedSize) ->
-    {size} = cachedBitmap
-    size.area < requestedSize.area * 2 && size.gte requestedSize
+  canUseBitmap: canUseBitmap = (cachedBitmap, requestedSize) ->
+    if cachedBitmap?
+      {size} = cachedBitmap
+      if size.area < requestedSize.area * 2     # not too big
+        {w, h} = requestedSize
+        {x, y} = size
+        x >= w && y >= h                        # big enough
+
 
   # return a recycledCachedbitmap with the right size (removing it from @_unusedCacheBitmaps)
   # or null if there is no matching recycledCacheBitmap

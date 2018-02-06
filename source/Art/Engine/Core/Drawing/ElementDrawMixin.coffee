@@ -448,13 +448,14 @@ defineModule module, ->
 
       # re-use existing bitmap, if possible
       d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
-      if d2eMatrix.eq(@_drawCacheToElementMatrix) && cacheSpaceDrawArea.size.eq @_drawCacheBitmap?.size
+      if d2eMatrix.eq(@_drawCacheToElementMatrix) && drawCacheManager.canUseBitmap @_drawCacheBitmap, cacheSpaceDrawArea
         drawCacheManager.useDrawCache @
         return unless @_dirtyDrawAreas || @_redrawAll
       else
         {size} = cacheSpaceDrawArea.size
-        if (unioned = @_drawCacheBitmap?.size.max size) && unioned.area < size.area * 2
-          size = unioned
+        # 2018-February - I don't think there is any need for this anymore... DrawCacheManager takes care of reusing "big enough" cache bitmaps
+        # if (unioned = @_drawCacheBitmap?.size.max size) && unioned.area < size.area * 2
+        #   size = unioned
         @_clearDrawCache()
         @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, size
         @_dirtyDrawAreas = null
