@@ -1,10 +1,9 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
-
-
 {defineModule, log, merge, select, inspect, wordsArray, timeout, max} = require 'art-standard-lib'
 {rgbColor, point} = require 'art-atomic'
 
 Foundation = require 'art-foundation'
+{isIOS} = Foundation.Browser
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
 SynchronizedDomOverlay = require "./SynchronizedDomOverlay"
@@ -112,8 +111,8 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
         handlerMap.keyPress? e
         {props} = e
-        @handleEvent "enter",  value: @value if props.key == "Enter"
-        @handleEvent "escape", value: @value if props.key == "Escape"
+        @handleEvent "enter",  merge props, value: @value if props.key == "Enter"
+        @handleEvent "escape", merge props, value: @value if props.key == "Escape"
 
   _unregister: ->
     @_canvasElementToFocusOnBlur?.focusCanvas()
@@ -145,3 +144,53 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
   selectAll: ->
     @domElement.select()
+
+  copy: ->
+    el = @domElement
+
+    if isIOS()
+      {readOnly, contentEditable} = el
+
+      el.contentEditable  = true
+      el.readOnly         = false
+
+      range = document.createRange()
+      range.selectNodeContents el
+
+      sel = window.getSelection()
+
+      sel.removeAllRanges()
+      sel.addRange          range
+      el.setSelectionRange  0, 999999
+
+      result = document.execCommand 'copy'
+
+      el.contentEditable    = contentEditable
+      el.readOnly           = readOnly
+      sel.removeAllRanges()
+      el.blur()
+
+      result
+    else
+      el.select()
+      document.execCommand 'copy'
+
+  insertAtCursor: (insertValue) ->
+    log insertAtCursor: {insertValue}
+    # //IE support
+    # if (document.selection) {
+    #     @domElement.focus();
+    #     sel = document.selection.createRange();
+    #     sel.text = insertValue;
+    # }
+    # //MOZILLA and others
+    if @domElement.selectionStart || @domElement.selectionStart == '0'
+      {value, selectionStart, selectionEnd} = @domElement
+      log insertAtCursor: {value, selectionStart, selectionEnd,insertValue}
+      @domElement.value =
+        value.substring(0, selectionStart) + insertValue +
+        value.substring selectionEnd, value.length
+      @domElement.selectionEnd = @domElement.selectionStart = selectionStart + insertValue.length
+    else
+      @domElement.value += insertValue
+    @checkIfValueChanged()
