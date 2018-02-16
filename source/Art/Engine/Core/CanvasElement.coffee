@@ -38,7 +38,7 @@ EngineStat= require './EngineStat'
 {createWithPostCreate} = require 'art-class-system'
 {Browser} = require 'art-foundation'
 
-{isMobileBrowser, getOrientationAngle} = Browser
+{nativeAppDetect, iPadDetect, iOSDetect, isMobileBrowser, getOrientationAngle} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
 {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
@@ -140,23 +140,35 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     parentSize: (pending) ->
       if @_canvas
-        if @_parentHtmlElement
+        if @_parentHtmlElement && @_parentHtmlElement != global.document.body
+          # Even here, shouldn't we just use this inner*?
+          #  {innerWidth, innerHeight} = @_parentHtmlElement
           {clientWidth, clientHeight} = @_parentHtmlElement
 
         {innerWidth, innerHeight} = global
         {width, height} = global.screen
 
-        if innerWidth > 0 && innerHeight > 0
-          point innerWidth, innerHeight
+        # Screen sometimes (always?) doesn't take into account rotation.
+        # These seems to hold for iOS. How about android?
+        if Math.abs(getOrientationAngle()) == 90 && height > width
+          [width, height] = [height, width]
 
-        else if clientWidth > 0 && clientHeight > 0
-          point clientWidth, clientHeight
+        if clientWidth > 0 && clientHeight > 0
+          width = clientWidth
+          height = clientHeight
 
-        else
-          if Math.abs(getOrientationAngle()) == 90 && height > width
-            point height, width
-          else
-            point width, height
+        else if innerWidth > 0 && innerHeight > 0
+          # SUPER HACK - I think this is a bug with cordova-plugin-wkwebview-engine/
+          # randomly, mostly on load, innerHeight gets stuck at the wrong height.
+          # Rotate the iPad and it's fine.
+          if nativeAppDetect() && iOSDetect()
+            unless iPadDetect() && innerHeight != height - 20
+              innerHeight = height
+
+          width = innerWidth
+          height = innerHeight
+
+        point width, height
 
       else point 100
 
@@ -337,10 +349,18 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @_elementChanged()
 
 
-  _updateCanvasGeometry: ->
+  _updateCanvasGeometry: (retryCount = 3)->
     @_updateDocumentMatricies()
     @_layoutPropertyChanged()
     @_elementChanged()
+
+    # check again when dom is ready, just in case (iOS doesn't update innerHeight immediatly)
+    if retryCount > 0
+      retryMap =
+        1: 1000
+        2: 100
+        3: 10
+      timeout retryMap[retryCount], => @_updateCanvasGeometry retryCount - 1
 
   _updateDocumentMatricies: ->
     {left, top} = domElementOffset @_canvas
@@ -377,11 +397,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
       # NOTE: must process immediately to avoid showing a stretched canvas
       globalEpochCycle.processEpoch()
-
-      # check again when dom is ready, just in case (iOS doesn't update innerHeight immediatly)
-      timeout 10,   =>log "delay resize update", 10,   @_updateCanvasGeometry()
-      timeout 100,  =>log "delay resize update", 100,  @_updateCanvasGeometry()
-      timeout 1000, =>log "delay resize update", 1000, @_updateCanvasGeometry()
 
   _attachBlurFocusListeners: ->
     @_domListener @_canvas, "blur", (domEvent) => @_blur()
