@@ -6,6 +6,8 @@
 {FontLoader} = require 'art-canvas'
 {rgbColor} = require 'art-atomic'
 
+iOSNative = global.cordova
+
 module.exports = class FullScreenApp
 
   @_domReady: ->
@@ -46,7 +48,7 @@ module.exports = class FullScreenApp
       body.style.overflow = "hidden"
       body.style.fontSize = "0px"
       body.style.height = "100%"
-      documentElement.style.height = "100%"
+      documentElement.style.height = "100%" unless iOSNative
 
   ###
   IN:
@@ -79,7 +81,7 @@ module.exports = class FullScreenApp
         @_setBodyStyles config
     ]
 
-  @writeDom: ({title, styleSheets, scripts, meta, link, manifest, backgroundColor})->
+  @writeDom: ({noDocumentWrite, title, styleSheets, scripts, meta, link, manifest, backgroundColor})->
 
     document.title = title || "Art App"
     scripts ||= []
@@ -114,13 +116,11 @@ module.exports = class FullScreenApp
         rel: rel
         info
 
-    document.write """
+    !noDocumentWrite && document.write """
       <html #{if manifest then "manifest='#{manifest}'" else ""}>
 
         <style>
-          html {
-            height: 100%;
-          }
+          #{if iOSNative then '' else 'html {height: 100%;}'}
           body {
             padding: 0px;
             margin: 0px;

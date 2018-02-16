@@ -1,7 +1,7 @@
 'use strict';
 # This page has a potentially BETTER solution to detecting resizes:
 # http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/
-require "javascript-detect-element-resize"
+# require "javascript-detect-element-resize"
 
 # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/mousemove
 # http://stackoverflow.com/questions/1685326/responding-to-the-onmousemove-event-outside-of-the-browser-window-in-ie
@@ -38,7 +38,7 @@ EngineStat= require './EngineStat'
 {createWithPostCreate} = require 'art-class-system'
 {Browser} = require 'art-foundation'
 
-{isMobileBrowser} = Browser
+{isMobileBrowser, getOrientationAngle} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
 {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
@@ -140,10 +140,24 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     parentSize: (pending) ->
       if @_canvas
-        point(
-          @_parentHtmlElement?.clientWidth || global.screen.width
-          @_parentHtmlElement?.clientHeight || global.screen.height
-        )
+        if @_parentHtmlElement
+          {clientWidth, clientHeight} = @_parentHtmlElement
+
+        {innerWidth, innerHeight} = global
+        {width, height} = global.screen
+
+        if innerWidth > 0 && innerHeight > 0
+          point innerWidth, innerHeight
+
+        else if clientWidth > 0 && clientHeight > 0
+          point clientWidth, clientHeight
+
+        else
+          if Math.abs(getOrientationAngle()) == 90 && height > width
+            point height, width
+          else
+            point width, height
+
       else point 100
 
   _domListener: (target, type, listener)->
@@ -170,7 +184,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   _detachDomEventListeners: ->
     return unless @_eventListenersAttached
     @_eventListenersAttached = false
-    @_detachResizeListener()
     for listener in @_domEventListeners
       listener.target.removeEventListener listener.type, listener.listener
     @_domEventListeners = []
@@ -358,14 +371,8 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       domEvent.clientY + windowScrollOffset.y
     )
 
-  _detachResizeListener: ->
-    @_parentHtmlElement && removeResizeListener @_parentHtmlElement, @_resizeListener
-
   _attachResizeListener: ->
     @_domListener window, "resize", (domEvent)=>
-      @_updateDocumentMatricies()
-
-    @_parentHtmlElement && addResizeListener @_parentHtmlElement, @_resizeListener = =>
       @_updateCanvasGeometry()
 
       # NOTE: must process immediately to avoid showing a stretched canvas
