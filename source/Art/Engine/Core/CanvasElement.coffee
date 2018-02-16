@@ -378,6 +378,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       # NOTE: must process immediately to avoid showing a stretched canvas
       globalEpochCycle.processEpoch()
 
+      # check again when dom is ready, just in case (iOS doesn't update innerHeight immediatly)
+      timeout 10,   =>log "delay resize update", 10,   @_updateCanvasGeometry()
+      timeout 100,  =>log "delay resize update", 100,  @_updateCanvasGeometry()
+      timeout 1000, =>log "delay resize update", 1000, @_updateCanvasGeometry()
+
   _attachBlurFocusListeners: ->
     @_domListener @_canvas, "blur", (domEvent) => @_blur()
     @_domListener @_canvas, "focus", (domEvent) => @_restoreFocus()
