@@ -3,7 +3,7 @@
 {rgbColor, point} = require 'art-atomic'
 
 Foundation = require 'art-foundation'
-{isIOS} = Foundation.Browser
+{iOSDetect} = Foundation.Browser
 {createElementFromHtml} = Foundation.Browser.Dom
 {TextArea, Input} = Foundation.Browser.DomElementFactories
 SynchronizedDomOverlay = require "./SynchronizedDomOverlay"
@@ -145,10 +145,11 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   selectAll: ->
     @domElement.select()
 
+  # reference: https://stackoverflow.com/questions/34045777/copy-to-clipboard-using-javascript-in-ios
   copy: ->
     el = @domElement
 
-    if isIOS()
+    if iOSDetect()
       {readOnly, contentEditable} = el
 
       el.contentEditable  = true
