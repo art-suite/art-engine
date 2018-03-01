@@ -573,15 +573,6 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
     pointInsideTest: default: null, validate: (v) -> !v || isFunction v
 
-  @concreteProperty
-    cacheDraw:
-      default: false
-      validate: (v) -> v == false || v == true # || v == "locked" || v == "always" || v == "auto"
-      # preprocess: (v) -> if v == true then "auto" else v
-
-      description:
-        "true - always caches; false - only caches if _useStagingBitmap() is true"
-
   @virtualProperty
     invisible:
       getter: (pending) -> @getState(pending)._visible

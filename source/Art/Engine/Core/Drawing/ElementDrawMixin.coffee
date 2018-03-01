@@ -64,7 +64,7 @@ defineModule module, ->
 
       cacheDraw:
         default: false
-        validate: (v) -> v == false || v == true
+        validate: (v) -> v == false || v == true || isPlainObject v
         # preprocess: (v) -> if v == true then "auto" else v
 
         description:
@@ -427,7 +427,7 @@ defineModule module, ->
 
     # TODO - use new filterSource stuff and accountForOverdraw
     _updateDrawCache: (targetSpaceDrawArea, elementToTargetMatrix)->
-      pixelsPerPoint = @getDevicePixelsPerPoint()
+      pixelsPerPoint = @_cacheDraw?.pixelsPerPoint ? @getDevicePixelsPerPoint()
       snapTo = 1/pixelsPerPoint
 
       elementSpaceDrawArea = @getElementSpaceDrawArea().roundOut snapTo, colorPrecision
