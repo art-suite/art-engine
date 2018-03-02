@@ -110,6 +110,7 @@ defineModule module, class DrawCacheManager extends BaseObject
 
   # called every time a new element drawCache is created
   allocateCacheBitmap: (element, size) ->
+    # console.log "allocateCacheBitmap #{element.inspectedName} #{size}"
     @doneWithCacheBitmap element
 
     @_recycleUnusedCacheBitmap(element, size) ||
