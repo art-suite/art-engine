@@ -33,16 +33,20 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       postSetter: (v) -> @domElement?.fontSize    = "#{v || defaultFontSize}px"
     color:        postSetter: (v) -> @domElement?.color       = rgbColor(v || "black").toString()
 
+  normalizeAuto = (v) ->
+    if v?
+      v || "off"
+
   constructor: (options = {}) ->
-    props =
+    props = merge
       placeholder:    options.placeholder || ""
       type:           options.type
       # NOTE: moving towards using 100% lowerCamelCase in Art.Engine - even if HTML5's name is full-lower-case
       # SO, these full-lower-case options are depricated (e.g. don't use maxlength, use maxLength)
       maxlength:      options.maxLength       || options.maxlength
-      autocapitalize: options.autoCapitalize  || options.autocapitalize
-      autocomplete:   options.autoComplete    || options.autocomplete
-      autocorrect:    options.autoCorrect     || options.autocorrect
+      autocapitalize: normalizeAuto options.autoCapitalize  ? options.autocapitalize
+      autocomplete:   normalizeAuto options.autoComplete    ? options.autocomplete
+      autocorrect:    normalizeAuto options.autoCorrect     ? options.autocorrect
 
     Factory = if props.type == "textarea"
       delete props.type
