@@ -1,5 +1,5 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
-{defineModule, log, merge, select, inspect, wordsArray, timeout, max} = require 'art-standard-lib'
+{defineModule, log, object, merge, select, inspect, wordsArray, timeout, max} = require 'art-standard-lib'
 {rgbColor, point} = require 'art-atomic'
 
 Foundation = require 'art-foundation'
@@ -38,7 +38,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       v || "off"
 
   constructor: (options = {}) ->
-    props = merge
+    props = object
       placeholder:    options.placeholder || ""
       type:           options.type
       # NOTE: moving towards using 100% lowerCamelCase in Art.Engine - even if HTML5's name is full-lower-case
