@@ -101,6 +101,7 @@ module.exports = class V1Loader extends BaseObject
             throw new ErrorWithInfo "ArtEngine_V1Loader_decodeBitmapsTag - tainted bitmap detected",
               bitmap: bitmap.taintedInfo
               numBitmaps: bitmapsTag.tags.length
+          else log "ArtEngine_V1Loader bitmap #{i+1}/#{bitmapsTag.tags.length} is taint-free (#{bitmap.size})"
           bitmap
 
     Promise.all promises
