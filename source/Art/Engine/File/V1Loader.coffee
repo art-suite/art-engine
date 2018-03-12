@@ -5,7 +5,7 @@ Xbd = require 'art-xbd'
 Core = require '../Core'
 Elements = require '../Elements'
 
-{Binary, inspect, BaseObject, Promise, log, mergeInto, lowerCamelCase, merge} = Foundation
+{Binary, inspect, BaseObject, Promise, log, mergeInto, lowerCamelCase, merge, ErrorWithInfo} = Foundation
 {point, rect, matrix} = Atomic
 {EncodedImage} = Binary
 
@@ -90,12 +90,18 @@ module.exports = class V1Loader extends BaseObject
   decodeBitmapsTag: (bitmapsTag) ->
     return Promise.resolve() unless bitmapsTag
     @bitmaps = []
-    promises = for tag in bitmapsTag.tags
-      do (tag) =>
+    promises = for tag, i in bitmapsTag.tags
+      do (i, tag) =>
         EncodedImage.toImage tag.attrs.pixel_data
         .then (image) =>
           bitmapId = tag.attrs.bitmap_id | 0
-          @bitmaps[bitmapId] = @bitmapFactory.newBitmap image
+          @bitmaps[bitmapId] = bitmap = @bitmapFactory.newBitmap image
+          if bitmap.tainted
+            log ArtEngine_V1Loader_decodeBitmapsTag: {i, length: bitmapsTag.tags.length, bitmap: bitmap.taintedInfo}
+            throw new ErrorWithInfo "ArtEngine_V1Loader_decodeBitmapsTag - tainted bitmap detected",
+              bitmap: bitmap.taintedInfo
+              numBitmaps: bitmapsTag.tags.length
+          bitmap
 
     Promise.all promises
 
