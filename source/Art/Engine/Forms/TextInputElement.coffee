@@ -38,6 +38,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       v || "off"
 
   constructor: (options = {}) ->
+    @_focusEventsDisabled = false
     props = object
       placeholder:    options.placeholder || ""
       type:           options.type
@@ -78,17 +79,22 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         input:    (event) => @checkIfValueChanged()
         select:   (event) => @queueEvent "selectionChanged"
         focus:    (event) =>
-          @_canvasElementToFocusOnBlur = @getCanvasElement()
-          @_focus()
-        blur:     (event) =>
-          # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
-          if @_canvasElementToFocusOnBlur
-            # If we are switching focus to another TextInput, document.activeElement won't be updated
-            # until AFTER this event is processed. Wait and check in a bit to see if focus really reverted to 'body'.
-            timeout 0, =>
-              @_canvasElementToFocusOnBlur.focusCanvas() if document.body == document.activeElement
+          if @_safeToProcessFocusEvents()
 
-          @_blur()
+            @_canvasElementToFocusOnBlur = @getCanvasElement()
+            @_focus()
+
+        blur:     (event) =>
+          if @_safeToProcessFocusEvents()
+
+            # since the Input element is not a child of Canvas, blur won't restore focus to the Canvas
+            if @_canvasElementToFocusOnBlur
+              # If we are switching focus to another TextInput, document.activeElement won't be updated
+              # until AFTER this event is processed. Wait and check in a bit to see if focus really reverted to 'body'.
+              timeout 0, =>
+                @_canvasElementToFocusOnBlur.focusCanvas() if document.body == document.activeElement
+
+            @_blur()
 
     super
 
@@ -103,14 +109,26 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
     point @domElement.scrollWidth,
       max @getPendingFontSize() * 1.25, if @value.length > 0 then @domElement.scrollHeight else 0
 
+  _safeToProcessFocusEvents: ->
+    if @_focusEventsDisabled
+      false
+    else
+      @_focusEventsDisabled = true
+      timeout 100, => @_focusEventsDisabled = false
+      true
+
   preprocessEventHandlers: (handlerMap) ->
     merge super,
       focus: (event) =>
-        @domElement.focus() unless @domElementFocused
-        handlerMap.focus? event
+        if @_safeToProcessFocusEvents()
+          @domElement.focus() unless @domElementFocused
+          handlerMap.focus? event
+
       blur:  (event) =>
-        @domElement.blur()  if     @domElementFocused
-        handlerMap.blur? event
+        if @_safeToProcessFocusEvents()
+          @domElement.blur() if @domElementFocused
+          handlerMap.blur? event
+
       keyPress: (e) =>
 
         handlerMap.keyPress? e
