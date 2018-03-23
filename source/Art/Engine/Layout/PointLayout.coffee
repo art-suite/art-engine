@@ -159,11 +159,10 @@ class Components
 defineModule module, class PointLayout extends PointLayoutBase = require './PointLayoutBase'
 
   @pointLayout: (init, previousLayout) ->
-    if init?
-      if init instanceof PointLayoutBase
-        init
-      else
-        new PointLayout init, previousLayout
+    if init instanceof PointLayoutBase
+      init
+    else
+      new PointLayout init, previousLayout
 
   ###
   constructor inputs: (initializer, previousLayout)

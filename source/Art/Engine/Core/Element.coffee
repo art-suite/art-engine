@@ -17,7 +17,8 @@ GlobalEpochCycle = require './GlobalEpochCycle'
 {floor, ceil} = Math
 {globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
-{PointLayout, PointLayoutBase} = Layout
+{PointLayout} = Layout
+{pointLayout} = PointLayout
 
 
 {
@@ -209,7 +210,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     size:
       default: ps:1
       preprocess: (v, previousValue) ->
-        if v instanceof PointLayoutBase then v else new PointLayout v, previousValue || defaultSizeLayout
+        pointLayout v, previousValue || defaultSizeLayout
 
   @layoutProperty
     ###
@@ -240,8 +241,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
     location:
       default: 0
-      preprocess: (v, oldV) ->
-        if v instanceof PointLayoutBase then v else new PointLayout v, oldV || defaultLocationLayout
+      preprocess: (v, oldV) -> pointLayout v, oldV || defaultLocationLayout
       postSetter: -> @_locationLayoutDisabled = false
 
     scale:
