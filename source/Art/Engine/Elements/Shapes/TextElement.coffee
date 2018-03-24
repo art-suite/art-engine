@@ -16,7 +16,7 @@ propInternalName = BaseObject.propInternalName
 propSetterName = BaseObject._propSetterName
 module.exports = createWithPostCreate class TextElement extends ShadowableElement
 
-  defaultSize: cs:1
+  # defaultSize: cs:1
 
   constructor: ->
     super
