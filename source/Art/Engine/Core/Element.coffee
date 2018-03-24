@@ -208,7 +208,8 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
   namedSizeLayouts = object namedSizeLayoutsRaw, (v) -> pointLayout v
 
   @getSizePointLayout: getSizePointLayout = (v, previousValue) ->
-    if (isString(v) && l = namedSizeLayouts[v])
+    if isString v
+      throw new Error "invalid named size layout: #{v}" unless l = namedSizeLayouts[v]
       if previousValue
         pointLayout namedSizeLayoutsRaw[v], previousValue
       else l
@@ -224,7 +225,8 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
   namedLocationLayouts = object namedLocationLayoutsRaw, (v) -> pointLayout v
 
   @getLocationPointLayout: getLocationPointLayout = (v, previousValue) ->
-    if ((isNumber(v) || isString(v)) && l = namedLocationLayouts[v])
+    if v == 0 || isString v
+      throw new Error "invalid named location layout: #{v}" unless l = namedLocationLayouts[v]
       if previousValue
         pointLayout namedLocationLayoutsRaw[v], previousValue
       else l
