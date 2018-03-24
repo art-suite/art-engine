@@ -14,12 +14,12 @@ GlobalEpochCycle = require './GlobalEpochCycle'
 {isInfiniteResult} = require './EpochLayout/Infinity'
 
 {rgbColor, point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
+{namedPoints} = Point
 {floor, ceil} = Math
 {globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
 {PointLayout} = Layout
 {pointLayout} = PointLayout
-
 
 {
   each
@@ -51,6 +51,7 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   defineModule
   isArray
   formattedInspect
+  object
 } = require 'art-standard-lib'
 
 stats = clone zeroedStats =
@@ -194,6 +195,43 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
   defaultSizeLayout = new PointLayout ps: 1
   defaultLocationLayout = new PointLayout 0
 
+
+  namedSizeLayoutsRaw =
+    parentSize:                               ps:1
+    childrenSize:                             cs:1
+    parentHeightSquare:                       hh:1, wh:1
+    childrenSizeMaxParentWidth:               cs:1, max: ww: 1
+    parentHeightChildrenWidth:                hh:1, wcw:1
+    parentWidthChildrenHeight:                ww:1, hch:1
+    parentHeightChildrenWidthMaxParentWidth:  wcw:1, hh:1, max: ww:1
+
+  namedSizeLayouts = object namedSizeLayoutsRaw, (v) -> pointLayout v
+
+  @getSizePointLayout: getSizePointLayout = (v, previousValue) ->
+    if (isString(v) && l = namedSizeLayouts[v])
+      if previousValue
+        pointLayout namedSizeLayoutsRaw[v], previousValue
+      else l
+    else pointLayout v, previousValue || defaultSizeLayout
+
+  namedLocationLayoutsRaw = object namedPoints, (ps) -> {ps}
+  namedLocationLayoutsRaw[0] = 0
+  # NOTE! I am not supporting ".5" and "1" location layout values
+  #   - interpreted as ps: .5 and ps: 1 respectively
+  #   - because for size-layout, values of 1 should be x:1, y:1
+  #   - since we already have "centerCenteR" and "bottomRight" alternatives,
+  #   - I'm arguing for total consistency between size and location layouts
+  namedLocationLayouts = object namedLocationLayoutsRaw, (v) -> pointLayout v
+
+  @getLocationPointLayout: getLocationPointLayout = (v, previousValue) ->
+    if ((isNumber(v) || isString(v)) && l = namedLocationLayouts[v])
+      if previousValue
+        pointLayout namedLocationLayoutsRaw[v], previousValue
+      else l
+    else pointLayout v, previousValue || defaultLocationLayout
+
+    # wcw:1, hh:1, max: ww:1
+
   # TODO: size only is a draw/drawArea property IF drawOrder is set.
   #   NOTES:
   #   we could check a set-time if drawOrder is set and mark draw/drawArea changed.
@@ -208,9 +246,14 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
   #   ACTION: add a postSetter which checks if @_drawOrder is set, and if so, THEN marks draw/drawArea changed
   @drawLayoutProperty
     size:
-      default: ps:1
-      preprocess: (v, previousValue) ->
-        pointLayout v, previousValue || defaultSizeLayout
+      default: "parentSize"
+      validate: (v) ->
+        if isString v
+          !!namedSizeLayouts[v]
+        else
+          true
+
+      preprocess: getSizePointLayout
 
   @layoutProperty
     ###
@@ -241,7 +284,13 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
     location:
       default: 0
-      preprocess: (v, oldV) -> pointLayout v, oldV || defaultLocationLayout
+      validate: (v) ->
+        if isString v
+          !!namedLocationLayouts[v]
+        else
+          true
+
+      preprocess: getLocationPointLayout
       postSetter: -> @_locationLayoutDisabled = false
 
     scale:
