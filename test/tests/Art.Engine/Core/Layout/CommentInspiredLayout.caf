@@ -5,9 +5,9 @@ suite: ->
     render: -> Element
       size: cs:1
       childrenLayout: :column
-      TextElement text: :Hi
+      TextElement size: "childrenSize", text: :Hi
       RectangleElement color: #ccc size: wpw:1, h:10
-      TextElement text: "world."
+      TextElement size: "childrenSize", text: "world."
     test: (root) ->
       assert.eq (array c in root.children with c.currentSize.rounded), [point(16, 12), point(41, 10), point(41, 12)]
       assert.eq (array c in root.children with c.currentLocation    ), [point( 0,  0), point( 0, 12), point( 0, 22)]
@@ -18,9 +18,9 @@ suite: ->
       Element
         size: cs: 1, max: w: 100
         childrenLayout: "column"
-        TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "The quick brown fox...", size: cs: 1, max: ww: 1
         RectangleElement color: 'orange', size: wpw:1, h:10
-        TextElement text: "!", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "!", size: cs: 1, max: ww: 1
 
     test: (root) ->
       assert.eq root.currentSize.rounded, point 78, 54
@@ -35,7 +35,7 @@ suite: ->
         size: cs: 1, max: w: 100
         TextElement key:"wrappedText", text: "The quick brown fox...", size: cs: 1, max: ww: 1
         RectangleElement color: 'orange', size: wpw:1, h:10
-        TextElement text: "!", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "!", size: cs: 1, max: ww: 1
 
     test: (root) ->
       assert.eq root.currentSize.rounded, point 78, 32
@@ -51,7 +51,7 @@ suite: ->
         childrenAlignment: "right"
         TextElement align: "right", text: "The quick brown fox...", size: cs: 1, max: ww: 1
         RectangleElement color: 'orange', size: wpw:.75, h:10
-        TextElement text: "!", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "!", size: cs: 1, max: ww: 1
 
     test: (root)->
       assert.eq root.currentSize.rounded, point 78, 54
@@ -67,7 +67,7 @@ suite: ->
         childrenAlignment: "center"
         TextElement align: "center", text: "The quick brown fox...", size: cs: 1, max: ww: 1
         RectangleElement color: 'orange', size: wpw:.75, h:10
-        TextElement text: "!", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "!", size: cs: 1, max: ww: 1
 
     test: (root) ->
       assert.eq root.currentSize.rounded, point 78, 54
@@ -83,9 +83,9 @@ suite: ->
       Element
         size: cs: 1, max: w: 100
         childrenLayout: "flow"
-        TextElement text: "The quick brown fox...", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "The quick brown fox...", size: cs: 1, max: ww: 1
         RectangleElement color: '#ccc', size: wpw:1, h:10
-        TextElement text: "word", size: cs: 1, max: ww: 1
+        TextElement size: "childrenSize", text: "word", size: cs: 1, max: ww: 1
 
     test: (root) ->
       assert.eq root.currentSize.rounded, point 78, 54
@@ -114,8 +114,8 @@ suite: ->
       Element
         size: cs:1
         childrenLayout: "column"
-        TextElement text: "Hi"      , axis: "topCenter", location: xw: .5
-        TextElement text: "world."  , axis: "topCenter", location: xw: .5
+        TextElement size: "childrenSize", text: "Hi"      , axis: "topCenter", location: xw: .5
+        TextElement size: "childrenSize", text: "world."  , axis: "topCenter", location: xw: .5
     test: (root) ->
 
       assert.within

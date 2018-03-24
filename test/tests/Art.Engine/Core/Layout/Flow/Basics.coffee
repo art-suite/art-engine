@@ -71,9 +71,9 @@ module.exports = suite: ->
         w: (ps, cs) -> min 50, cs.x
         hch: 1
       childrenLayout: "flow"
-      c1 = new TextElement text: "Hi"
+      c1 = new TextElement size: "childrenSize", text: "Hi"
       c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
-      c3 = new TextElement text: "world."
+      c3 = new TextElement size: "childrenSize", text: "world."
 
     # test: ->
     #   assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(0, 20), point(0, 30)]
@@ -87,9 +87,9 @@ module.exports = suite: ->
         hch: 1
       childrenLayout: "flow"
       childrenAlignment: "right"
-      c1 = new TextElement text: "Hi"
+      c1 = new TextElement size: "childrenSize", text: "Hi"
       c2 = new RectangleElement color: '#ccc', size: wpw:1, h:10
-      c3 = new TextElement text: "world."
+      c3 = new TextElement size: "childrenSize", text: "world."
 
     test: ->
       assert.within c1.currentLocation, point(25,0), point(26,0)
@@ -106,8 +106,8 @@ module.exports = suite: ->
       childrenLayout: "flow"
       c1 = new RectangleElement color: '#ccc'  # has size:point0 for flow because it's size is parent-circular
       c2 = new RectangleElement color: '#ccc', inFlow: false
-      new TextElement text: "Hi"
-      new TextElement text: "world."
+      new TextElement size: "childrenSize", text: "Hi"
+      new TextElement size: "childrenSize", text: "world."
 
     root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
@@ -122,8 +122,8 @@ module.exports = suite: ->
       size: 50
       childrenLayout: "flow"
       c1 = new RectangleElement color: '#ccc', inFlow: false
-      new TextElement text: "Hi"
-      new TextElement text: "world."
+      new TextElement size: "childrenSize", text: "Hi"
+      new TextElement size: "childrenSize", text: "world."
 
     root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
@@ -136,8 +136,8 @@ module.exports = suite: ->
       size: 50
       childrenLayout: "flow"
       c1 = new RectangleElement color: '#ccc', size: ps:.5
-      new TextElement text: "Hi"
-      new TextElement text: "world."
+      new TextElement size: "childrenSize", text: "Hi"
+      new TextElement size: "childrenSize", text: "world."
 
     root.toBitmapBasic area: "logicalArea", elementToTargetMatrix:Matrix.scale(2)
     .then (bitmap) ->
@@ -183,9 +183,9 @@ module.exports = suite: ->
         padding: 10
         childrenLayout: "flow"
         c1 = new RectangleElement color: '#ccc'
-        new TextElement text: "Hi"
+        new TextElement size: "childrenSize", text: "Hi"
         c2 = new RectangleElement color: '#777', size: wpw:1, h:10
-        new TextElement text: "world."
+        new TextElement size: "childrenSize", text: "world."
 
     test: ->
       assert.eq (c.currentLocation for c in root.children), [point(), point(), point(0, 12), point(0, 22)]
@@ -200,9 +200,9 @@ module.exports = suite: ->
         childrenLayout: "flow"
         childrenAlignment: "right"
         c1 = new RectangleElement name:"inflowfalse", color: '#ccc', inFlow: false
-        new TextElement text: "Hi"
+        new TextElement size: "childrenSize", text: "Hi"
         c2 = new RectangleElement name:"h-line", color: '#777', size: wpw:1, h:10
-        new TextElement text: "world."
+        new TextElement size: "childrenSize", text: "world."
 
     test: ->
       assert.eq root.currentSize.sub(20), c1.currentSize

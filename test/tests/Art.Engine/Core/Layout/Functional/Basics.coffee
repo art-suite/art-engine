@@ -34,7 +34,7 @@ module.exports = suite:
 
       ->
         assert.eq child1.currentSize, point(123), "undefined"
-        assert.eq child2.currentSize, point(0), "null"
+        assert.eq child2.currentSize, point(123), "null"
         assert.eq child3.currentSize, point(0), "false"
         assert.eq child4.currentSize, point(0), "0"
 

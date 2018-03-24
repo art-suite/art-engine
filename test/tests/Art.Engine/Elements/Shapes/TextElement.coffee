@@ -49,7 +49,7 @@ layoutTester = (element, tests) ->
 defineModule module, suite:
   basics: ->
     stateEpochTest "Layout basic", ->
-      textElement = new TextElement text:"foo"
+      textElement = new TextElement size: "childrenSize", text:"foo"
       ->
         assert.eq textElement.currentSize.rounded, point 21, 12
         textElement.setText "foobar"
@@ -57,7 +57,7 @@ defineModule module, suite:
           assert.eq textElement.currentSize.rounded, point 42, 12
 
     stateEpochTest "Layout textualBaseline", ->
-      textElement = new TextElement text:"foo", layoutMode: "textualBaseline"
+      textElement = new TextElement size: "childrenSize", text:"foo", layoutMode: "textualBaseline"
       ->
         assert.eq textElement.currentSize.rounded, point 21, 12
         textElement.setText "foobar"
@@ -65,7 +65,7 @@ defineModule module, suite:
           assert.eq textElement.currentSize.rounded, point 42, 12
 
     stateEpochTest "Layout with axis: .5 (basic)", ->
-      textElement = new TextElement text:"foo", axis: .5, location: 123
+      textElement = new TextElement size: "childrenSize", text:"foo", axis: .5, location: 123
       ->
         assert.eq textElement.currentLocation, point 123, 123
         textElement.setText "foobar"
@@ -74,7 +74,7 @@ defineModule module, suite:
 
     stateEpochTest "Layout with axis: .5, location: ps:.5", ->
       new Element size: 246,
-        textElement = new TextElement text:"foo", axis: .5, location: ps:.5
+        textElement = new TextElement size: "childrenSize", text:"foo", axis: .5, location: ps:.5
       ->
         assert.eq textElement.currentLocation, point 123, 123
         assert.eq textElement.currentSize.rounded, point 21, 12
@@ -195,8 +195,8 @@ defineModule module, suite:
       e = new Element
         size: w:200, hch:1
         childrenLayout: "flow"
-        e1 = new TextElement color:"red", text:"This is going to be great, don't you think?", fontSize:32
-        e2 = new TextElement color:"red", text:"-------", fontSize:32
+        e1 = new TextElement color:"red", size:"childrenSize", text:"This is going to be great, don't you think?", fontSize:32
+        e2 = new TextElement color:"red", size:"childrenSize", text:"-------", fontSize:32
       e1.onNextReady()
       .then ->
         e.toBitmapBasic {}
@@ -205,7 +205,7 @@ defineModule module, suite:
         assert.neq e1.currentLocation, e2.currentLocation
 
     test "drawArea", ->
-      el = new TextElement text:"hi", fontSize:16, align: "center", size: w:300
+      el = new TextElement size: "childrenSize", text:"hi", fontSize:16, align: "center", size: w:300
       el.onNextReady ->
         assert.within el.elementSpaceDrawArea.right, 150, 300
 

@@ -9,7 +9,7 @@ test = (a, b) -> global.test a, b
 suite:
   drawArea: ->
     drawAndTestElement "basic", ->
-      element: new TextElement text: :M fontSize: 16
+      element: new TextElement size: "childrenSize", text: :M fontSize: 16
 
       test: (root) ->
         assert.ok root.drawArea.contains rect 16, 16  # 1em by 1em ;)
@@ -44,8 +44,8 @@ suite:
       element:
         new Element
           {}
-          a = new TextElement text: :M
-          b = new TextElement text: :M shadow: true
+          a = new TextElement size: "childrenSize", text: :M
+          b = new TextElement size: "childrenSize", text: :M shadow: true
 
       test: ->
         assert.neq a.drawArea, b.drawArea

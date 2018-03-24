@@ -4,7 +4,7 @@ suite:
   misc: ->
     renderTest
       "elementSpaceDrawArea should include descender"
-      render: -> TextElement text: "Descending", layoutMode: "textualBaseline", size: cs: 1
+      render: -> TextElement size: "childrenSize", text: "Descending", layoutMode: "textualBaseline", size: cs: 1
       test: (root) ->
         assert.within root.currentSize, point(75, 12), point(76, 12)
         assert.within
@@ -41,7 +41,7 @@ suite:
         Element
           size: cs:1
           RectangleElement color:"#ff7"
-          TextElement text:"test", layoutMode:"tight", fontSize:50
+          TextElement size: "childrenSize", text:"test", layoutMode:"tight", fontSize:50
 
       test: (element) ->
         assert.within
