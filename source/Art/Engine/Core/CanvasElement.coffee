@@ -201,7 +201,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_domEventListeners = []
 
   isFocused: (el) ->
-    (!@_canvas || (document.hasFocus() && document.activeElement == @_canvas)) && @pointerEventManager.isFocused el
+    (!@_canvas || (document.hasFocus() && (document.activeElement == @_canvas || document.activeElement == el?._domElement))) && @pointerEventManager.isFocused el
 
   _blur: ->
     @_focusedElement = null
