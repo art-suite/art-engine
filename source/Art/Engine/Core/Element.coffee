@@ -1466,10 +1466,10 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     return unless @focused
     @getCanvasElement()?.focusElement @parent
 
+  _focusDomElement: -> @getCanvasElement()?.focusCanvas()
+
   # focus this element and make sure the parent DOM Canvas is focused
-  focus: ->
-    @getCanvasElement()?.focusCanvas()
-    @_focus()
+  focus: -> @_focus()
 
   # blur this element; won't blur the DOM canvas unless called on the CanvasElement itself
   blur: -> @_blur()

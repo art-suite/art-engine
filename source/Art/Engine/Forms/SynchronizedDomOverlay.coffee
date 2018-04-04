@@ -92,6 +92,9 @@ module.exports = class SynchronizedDomOverlay extends Element
     else
       "none"
 
+  _focusDomElement: ->
+    @_domElement?.focus()
+
   _detachDomElement: ->
     return unless @_attachedToCanvasElement
     # TODO: fix documentMatriciesChanged

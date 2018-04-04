@@ -419,6 +419,7 @@ module.exports = class PointerEventManager extends BaseClass
     @currentFocusedPath
 
   focus: (pointer, element) ->
+    (element ? @canvasElement)?._focusDomElement()
     @updateFocusedPath pointer, element || @pointerElementPath pointer
 
   updateMousePath: ->
