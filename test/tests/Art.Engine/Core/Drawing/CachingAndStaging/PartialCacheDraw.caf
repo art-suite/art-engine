@@ -1,0 +1,161 @@
+import &StandardImport
+
+testPartialBeforeAfter = (name, options, moreTests...) ->
+  test name, ->
+    {color = #8ff, testBitmaps, clearColor = :black, initParent, backgroundColor = #480, init, before, after, change, changeParent} = options
+
+    cachedElement ?= new Element
+      size: h: before.length, w: before[0].length
+      stage: true
+      draw: backgroundColor
+      initParent
+      changingElement = new Element
+        draw: color
+        init
+
+    oldBitmap = newBitmap = null
+
+    cachedElement.toBitmapWithInfo {}
+    .then ({bitmap})->
+      compareDownsampledRedChannel
+        "#{name} initial draw"
+        oldBitmap = cachedElement._drawCacheBitmap
+        before
+
+      cachedElement._drawCacheBitmap.clear clearColor
+      object change into changingElement
+
+      object changeParent into cachedElement
+      cachedElement.toBitmapWithInfo {}
+    .then ({bitmap})->
+      newBitmap = cachedElement._drawCacheBitmap
+      testBitmaps? {} oldBitmap, newBitmap
+      compareDownsampledRedChannel
+        "#{name} partial draw"
+        newBitmap
+        after
+
+suite: ->
+  testPartialBeforeAfter
+    "location change"
+    init:
+      size: 1
+      location: 2
+    before:
+      4 4 4 4
+      4 4 4 4
+      4 4 8 4
+      4 4 4 4
+
+    change: location: 1
+    after:
+      0 0 0 0
+      0 8 0 0
+      0 0 4 0
+      0 0 0 0
+
+  testPartialBeforeAfter
+    "shrink"
+    init:
+      size: 2
+    before:
+      8 8
+      8 8
+
+    change: size: 1
+    after:
+      8 4
+      4 4
+
+  testPartialBeforeAfter
+    "grow"
+    init:
+      size: 1
+    before:
+      8 4 4
+      4 4 4
+      4 4 4
+
+    change: size: 2
+    after:
+      8 8 0
+      8 8 0
+      0 0 0
+
+  testPartialBeforeAfter
+    "shrink while transparent"
+    init:
+      size: 2
+      opacity: .5
+    before:
+      6 6 4
+      6 6 4
+      4 4 4
+
+    change: size: 1
+    after:
+      6 4 0
+      4 4 0
+      0 0 0
+
+  testPartialBeforeAfter
+    "shrink parent"
+    before:
+      8 8 8
+      8 8 8
+      8 8 8
+
+    changeParent: size: 2
+    after:
+      8 8
+      8 8
+
+  testPartialBeforeAfter
+    "shrink parent just enough to reuse previous cached bitmap"
+    # currently, DrawCacheManager reuses cache bitmaps iff: newArea >= .5 * oldArea ( and newSize within oldSize )
+    init: size: 5
+    initParent: size: w: 10, hch:1
+    before:
+      8 8 8 8 8  4 4 4 4 4
+      8 8 8 8 8  4 4 4 4 4
+      8 8 8 8 8  4 4 4 4 4
+      8 8 8 8 8  4 4 4 4 4
+      8 8 8 8 8  4 4 4 4 4
+
+    clearColor: #2f0
+    change: size: 3
+    after:
+      8 8 8 4 4  2 2 2 2 2
+      8 8 8 4 4  2 2 2 2 2
+      8 8 8 4 4  2 2 2 2 2
+      0 0 0 0 0  0 0 0 0 0
+      0 0 0 0 0  0 0 0 0 0
+
+    testBitmaps: ({oldBitmap, newBitmap}) ->
+      assert.eq oldBitmap, newBitmap
+
+  test "parent clipping limits cached child's dirty redraw", ->
+    parent = Element
+      key: :parent
+      size: w: 4, h: 1
+      clip: true
+      draw: #480
+      child = Element
+        key: :child
+        cacheDraw: true
+        location: x: 2
+        draw: #8ff
+
+    parent.toBitmapBasic()
+    .then (bitmap)->
+
+      compareDownsampledRedChannel "partialRedraw clipping", child._drawCacheBitmap, []
+        8 8 0 0
+
+      child._drawCacheBitmap.clear :black
+      child.location = x: 1
+      parent.toBitmapBasic()
+    .then (bitmap)->
+      compareDownsampledRedChannel "partialRedraw clipping", child._drawCacheBitmap, []
+        0 0 8 0
+

@@ -4,6 +4,7 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  CacheDraw:          require './CacheDraw'         
-  DrawThroughCache:   require './DrawThroughCache'  
-  IncrementalCaching: require './IncrementalCaching'
+  CacheDraw:        require './CacheDraw'       
+  CacheDraw2:       require './CacheDraw2'      
+  DrawThroughCache: require './DrawThroughCache'
+  PartialCacheDraw: require './PartialCacheDraw'

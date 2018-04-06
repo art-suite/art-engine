@@ -71,6 +71,42 @@ suite:
         0 0 4 0
         0 0 0 0
 
+
+    testPartialBeforeAfter
+      "change size"
+      init:
+        size: 2
+        location: 1
+      before:
+        4 4 4 4
+        4 8 8 4
+        4 8 8 4
+        4 4 4 4
+      change: size: 1
+      after:
+        0 0 0 0
+        0 8 4 0
+        0 4 4 0
+        0 0 0 0
+
+    testPartialBeforeAfter
+      "change size while transparent"
+      init:
+        opacity: .75
+        size: 2
+        location: 1
+      before:
+        4 4 4 4
+        4 7 7 4
+        4 7 7 4
+        4 4 4 4
+      change: size: 1
+      after:
+        0 0 0 0
+        0 7 4 0
+        0 4 4 0
+        0 0 0 0
+
     testPartialBeforeAfter
       "change axis"
       init:
@@ -172,12 +208,21 @@ suite:
 
       canvasElement.onNextReady()
       .then -> canvasElement.onNextReady()
-      .then -> compareDownsampledRedChannel "change axis - initialDraw",   canvasElement, [] 4, 4, 8, 8, 8, 8, 4, 4
+      .then -> compareDownsampledRedChannel "change axis - initialDraw",   canvasElement, []
+        4 4 8 8 8 8 4 4
+        4 4 8 8 8 8 4 4
+        4 4 8 8 8 8 4 4
+        4 4 8 8 8 8 4 4
+
       .then ->
         canvasElement.canvasBitmap.clear :black
         e.opacity = .5
         canvasElement.onNextReady()
-      .then -> compareDownsampledRedChannel  "change axis - partialDraw",  canvasElement, [] 0, 0, 6, 6, 6, 6, 0, 0
+      .then -> compareDownsampledRedChannel  "change axis - partialDraw",  canvasElement, []
+        0 0 6 6 6 6 0 0
+        0 0 6 6 6 6 0 0
+        0 0 6 6 6 6 0 0
+        0 0 6 6 6 6 0 0
 
     test "clipping limits dirty redraw", ->
       canvasElement = CanvasElement
@@ -197,13 +242,21 @@ suite:
       canvasElement.onNextReady()
       .then -> canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [4, 8, 4, 4]
+        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, []
+          4 8 4 4
+          4 4 4 4
+          4 4 4 4
+          4 4 4 4
 
         canvasElement.canvasBitmap.clear :black
         e.location = x: -1
         canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, [0, 8, 0, 0]
+        compareDownsampledRedChannel "partialRedraw clipping", canvasElement, []
+          0 8 0 0
+          0 0 0 0
+          0 0 0 0
+          0 0 0 0
 
     test "TextElement alignment redraws both before and after areas", ->
       canvasElement = CanvasElement
@@ -225,19 +278,25 @@ suite:
       canvasElement.onNextReady()
       .then -> canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "partialRedraw_initialDraw",         canvasElement, [] 4 4 4 4 4 4
+        compareDownsampledRedChannel "partialRedraw_initialDraw",         canvasElement, []
+          4 4 4 4 4 4
+          4 4 4 4 4 4
 
         canvasElement.canvasBitmap.clear :black
         e.align = "center"
         canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", canvasElement, [] 4 4 4 4 0 0
+        compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", canvasElement, []
+          4 4 4 4 0 0
+          4 4 4 4 0 0
 
         canvasElement.canvasBitmap.clear :black
         e.align = "bottomCenter"
         canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, [] 0 4 4 4 0 0
+        compareDownsampledRedChannel "partialRedraw_redrawCenter",        canvasElement, []
+          0 4 4 4 0 0
+          0 4 4 4 0 0
 
 
     test "change color with negative padding", ->
@@ -408,6 +467,9 @@ suite:
       .then ->
         compareDownsampledRedChannel "change axis - initialDraw", canvasElement, compactFlatten []
           8 4 4 8 2 2 2 2 2 2
+          8 4 4 8 2 2 2 2 2 2
+          8 4 4 8 2 2 2 2 2 2
+          8 4 4 8 2 2 2 2 2 2
 
         canvasElement.canvasBitmap.clear :black
         e.location = x: 6
@@ -415,6 +477,9 @@ suite:
         canvasElement.onNextReady()
       .then ->
         compareDownsampledRedChannel "change axis - partialDraw", canvasElement, compactFlatten []
+          2 2 2 2 0 0 8 4 4 8
+          2 2 2 2 0 0 8 4 4 8
+          2 2 2 2 0 0 8 4 4 8
           2 2 2 2 0 0 8 4 4 8
 
   aa: ->

@@ -91,7 +91,7 @@ defineModule module, class ScrollElement extends Element
       # @jumpToEnd() if @startAtEnd
       @_scrollPositionChanged()
 
-  @getter "firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize inFlowChildren"
+  @getter "childrenOffset firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize inFlowChildren"
 
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
@@ -125,7 +125,7 @@ defineModule module, class ScrollElement extends Element
       else
         child._translateLocationXY 0, offsetDelta for child in inFlowChildren
 
-    @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, @_childrenOffset = mainChildrenAlignedOffset + offsetDelta
+    @_updateTracking mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset + offsetDelta
 
   ###
   given the pending geometry:
@@ -134,6 +134,9 @@ defineModule module, class ScrollElement extends Element
     not changed: _scrollPosition
   ###
   _updateTracking: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenOffset) ->
+    oldChildrenOffset = @_childrenOffset
+    @_childrenOffset = mainChildrenOffset
+
     {_scrollPosition, _tracking, _track} = @getPendingState()
 
     contentFits       = mainChildrenSize <= mainElementSizeForChildren
@@ -172,9 +175,9 @@ defineModule module, class ScrollElement extends Element
     else
       @_pendingState._spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
 
-    @_updateOnScreenInfo()
+    @_updateOnScreenInfo oldChildrenOffset != @_childrenOffset
 
-  _updateOnScreenInfo: ->
+  _updateOnScreenInfo: (childrenOffsetChanged)->
     {isVertical, windowSize} = @
 
     focusedChild = @_pendingState._focusedChild
@@ -202,6 +205,7 @@ defineModule module, class ScrollElement extends Element
     firstOnScreenChildIndex = -1 if firstOnScreenChildIndex == children.length
 
     if (
+        childrenOffsetChanged ||
         firstOnScreenChildIndex != @_firstOnScreenChildIndex ||
         lastOnScreenChildIndex  != @_lastOnScreenChildIndex ||
         focusedChildIndex       != @_focusedChildIndex ||

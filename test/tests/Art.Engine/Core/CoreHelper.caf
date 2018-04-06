@@ -61,9 +61,9 @@ class CoreHelper
     expecting2 = compactFlatten expecting2
 
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
-    assert.lte expecting.length, bitmap.size.area
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
     log {} "#{message}": bitmap.clone(), size: bitmap.size
+    assert.eq expecting.length, bitmap.size.area, "#{message} - bitmap area (#{bitmap.size.area}) didn't match expecting-area (#{expecting.length})"
     if eq expecting, expecting2
       assert.eq
         downsampled

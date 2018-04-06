@@ -127,30 +127,6 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
               test: testName
             assert.eq false, !!testElement._drawCacheBitmap
 
-  overdraw: ->
-    test "overdraw", ->
-      el = new Element
-        cacheDraw: true
-        size: point 4, 2
-        new RectangleElement
-          color: "#800"
-          size: ps: 1, plus: 2
-          location: -1
-        new RectangleElement color:"#444"
-
-      el.toBitmapWithInfo {}
-      .then ({bitmap}) ->
-        log {bitmap, _drawCacheBitmap:el._drawCacheBitmap?.clone()}
-        result = el._drawCacheBitmap
-        assert.eq true, !!result
-        assert.eq result.size, point 6, 4
-        assert.eq el._drawCacheToElementMatrix, new Matrix 1, 1, 0, 0, -1, -1
-
-        compareDownsampledRedChannel "overdraw", result, [
-          8, 8, 8, 8, 8, 8
-          8, 4, 4, 4, 4, 8
-        ]
-
   partialInitialDraw: ->
     test "move Element doesn't redraw whole screen", ->
       el = new Element
@@ -170,86 +146,6 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           0, 0, 0, 0
         ]
         assert.eq cachedEl._dirtyDrawAreas, [rect(2, 0, 2, 4), rect 0, 2, 2, 2]
-
-  partialUpdate: ->
-    test "move Element doesn't redraw whole screen", ->
-      el = new Element
-        size: 4
-        stage: true
-        new RectangleElement color: "#480"
-        e = new RectangleElement
-          size: 1
-          location: 2
-          color: "#8ff"
-
-      el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_initialDraw", el._drawCacheBitmap, [
-          4, 4, 4, 4
-          4, 4, 4, 4
-          4, 4, 8, 4
-          4, 4, 4, 4
-        ]
-
-        el._drawCacheBitmap.clear("black")
-        e.location = 1
-        el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_partialDraw", el._drawCacheBitmap, [
-          0, 0, 0, 0
-          0, 8, 0, 0
-          0, 0, 4, 0
-          0, 0, 0, 0
-        ]
-
-    test "clipping limits dirty redraw", ->
-      el = new Element
-        size: 4
-        stage: true
-        new RectangleElement color: "#480"
-        new Element
-          location: x: 1
-          size: 1
-          clip: true
-          e = new RectangleElement size: 2, color: "#8ff"
-      el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw clipping", el, [4, 8, 4, 4]
-
-        el._drawCacheBitmap.clear("black")
-        e.location = x: -1
-        el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw clipping", el, [0, 8, 0, 0]
-
-    test "TextElement alignment redraws both before and after areas", ->
-      el = new Element
-        stage: true
-        clip: true
-        size: w: 6, h: 2
-        new RectangleElement color: "#480"
-        e = new TextElement
-          padding: 1
-          size: ps: 1
-          fontSize: 1
-          text: "."
-          align: "left"
-          color: "#8ff"
-      el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_initialDraw", el, [4, 4, 4, 4, 4, 4]
-
-        el._drawCacheBitmap.clear("black")
-        e.align = "center"
-        el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", el, [4, 4, 4, 4, 0, 0]
-
-        el._drawCacheBitmap.clear("black")
-        e.align = "bottomCenter"
-        el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawCenter", el, [0, 4, 4, 4, 0, 0]
 
   propChanges: ->
     propChangeTest false, "opacity",                .5
