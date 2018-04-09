@@ -109,6 +109,7 @@ defineModule module, class DrawCacheManager extends BaseObject
     @_cachedBitmaps.get(element)?.use @_currentFrameNumber
 
   # called every time a new element drawCache is created
+  # OUT: a clear bitmap (filled with pixel with color: #0000)
   allocateCacheBitmap: (element, size) ->
     # console.log "allocateCacheBitmap #{element.inspectedName} #{size}"
     @doneWithCacheBitmap element
@@ -134,6 +135,7 @@ defineModule module, class DrawCacheManager extends BaseObject
       getGlobalEpochCycle().logEvent "recycleUsedCacheBitmap", "recycleUsedCacheBitmap"
       return recyclableCacheBitmap.recycle element, @_currentFrameNumber
 
+  # OUT: a clear bitmap (filled with pixel with color: #0000)
   _recycleUnusedCacheBitmap: (element, size) ->
     if unusedCacheBitmap = @_getUnusedCacheBitmap size
       # log "found unusedCacheBitmap for #{size}"

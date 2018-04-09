@@ -448,6 +448,7 @@ defineModule module, ->
 
       # re-use existing bitmap, if possible
       d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
+      bitmapAlreadyClear = false
       if d2eMatrix.eq(@_drawCacheToElementMatrix) && drawCacheManager.canUseBitmap @_drawCacheBitmap, cacheSpaceDrawArea
         drawCacheManager.useDrawCache @
         # TODO:
@@ -459,6 +460,7 @@ defineModule module, ->
       else
         @_clearDrawCache()
         @_drawCacheBitmap = drawCacheManager.allocateCacheBitmap @, cacheSpaceDrawArea.size
+        bitmapAlreadyClear = true
         @_dirtyDrawAreas = null
         @_redrawAll = true
 
@@ -497,36 +499,33 @@ defineModule module, ->
 
         @class._activeCacheDrawDepth++
         if config.partialRedrawEnabled && (@_filterChildren.length == 0) && (dirtyAreasToDraw || remainingDirtyAreas)
-          # log _updateDrawCache: {dirtyAreasToDraw, @key}
           if dirtyAreasToDraw
             for dirtyDrawArea in dirtyAreasToDraw
               drawCacheSpaceDrawArea = @_elementToDrawCacheMatrix.transformBoundingRect dirtyDrawArea, true
 
               lastClippingInfo = @_drawCacheBitmap.openClipping drawCacheSpaceDrawArea
-              @_updateCurrentDrawCacheClippedArea()
+              @_updateCurrentDrawCacheClippedArea bitmapAlreadyClear, true
               @_drawCacheBitmap.closeClipping lastClippingInfo
 
         else
-          # log "there"
           globalEpochCycle.logEvent "fullDrawCache", @uniqueId
-          @_updateCurrentDrawCacheClippedArea()
+          @_updateCurrentDrawCacheClippedArea bitmapAlreadyClear
 
       finally
         @_redrawAll = false
         @_dirtyDrawAreas = if remainingDirtyAreas?.length > 0
-          # log {@key, remainingDirtyAreas}
           remainingDirtyAreas
         else
           null
         @class._activeCacheDrawDepth--
 
-    _updateCurrentDrawCacheClippedArea: ->
+    _updateCurrentDrawCacheClippedArea: (alreadyClear, alreadyClipped)->
       # 2018-04-09 - I don't think we need @_drawCacheBitmap.clear().
       #   drawCacheManager clears recycled bitmaps, and new bitmaps should be clear to start
       #   That second assumption I'm less sure about... is that true for all browsers?
-      # @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
-      if @_clip
-        unless @getHasCustomClipping()
+      @_drawCacheBitmap.clear() unless alreadyClear # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
+      if @_clip && (!alreadyClipped || hasCustomClipping = @getHasCustomClipping())
+        unless hasCustomClipping
           targetSpaceDrawArea = @drawAreaIn(@_elementToDrawCacheMatrix).intersection @_drawCacheBitmap.size
 
         @_drawWithClipping targetSpaceDrawArea, @_drawCacheBitmap, @_elementToDrawCacheMatrix
