@@ -57,6 +57,10 @@ class CoreHelper
       [a, b || {}]
     else
       [expecting, a || {}]
+
+    if isObject expecting
+      {gte: expecting, lte: expecting2} = expecting
+
     expecting = compactFlatten expecting
     expecting2 = compactFlatten expecting2
 

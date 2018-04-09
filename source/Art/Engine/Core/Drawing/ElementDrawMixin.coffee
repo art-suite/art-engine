@@ -521,7 +521,10 @@ defineModule module, ->
         @class._activeCacheDrawDepth--
 
     _updateCurrentDrawCacheClippedArea: ->
-      @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
+      # 2018-04-09 - I don't think we need @_drawCacheBitmap.clear().
+      #   drawCacheManager clears recycled bitmaps, and new bitmaps should be clear to start
+      #   That second assumption I'm less sure about... is that true for all browsers?
+      # @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
       if @_clip
         unless @getHasCustomClipping()
           targetSpaceDrawArea = @drawAreaIn(@_elementToDrawCacheMatrix).intersection @_drawCacheBitmap.size

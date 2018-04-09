@@ -30,7 +30,7 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
       object change into testElement
       canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "#{name}: after #{formattedInspect change}", canvasElement, compactFlatten after
+        compareDownsampledRedChannel "#{name}: after #{formattedInspect change}", canvasElement, after
         if moreTests?.length > 0
           [{change, after}, rest...] = moreAfterTests
           doAfterTest
@@ -58,7 +58,7 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
     canvasElement.onNextReady()
     .then ->
       [testElement] = canvasElement.find :testElement
-      before && compareDownsampledRedChannel "#{name}: before", canvasElement, compactFlatten before
+      before && compareDownsampledRedChannel "#{name}: before", canvasElement, before
       doAfterTest canvasElement, change, after, moreTests...
 
 suite:
@@ -153,10 +153,16 @@ suite:
         0 0  0  0
       change: angle: Math.PI/4
       after:
-        0 1  1  0
-        1 12 12 1
-        1 13 13 1
-        0 1  1  0
+        gte:
+          0 1  1  0
+          1 11 11 1
+          1 11 11 1
+          0 1  1  0
+        lte:
+          0 2  2  0
+          2 12 12 2
+          2 13 13 2
+          0 2  2  0
 
     test "change angle size 5", ->
       canvasElement = CanvasElement
