@@ -450,6 +450,10 @@ defineModule module, ->
       d2eMatrix = Matrix.translateXY(-elementSpaceDrawArea.x, -elementSpaceDrawArea.y).scale(cacheScale).inv
       if d2eMatrix.eq(@_drawCacheToElementMatrix) && drawCacheManager.canUseBitmap @_drawCacheBitmap, cacheSpaceDrawArea
         drawCacheManager.useDrawCache @
+        # TODO:
+        #   REMOVE: clearOutsideArea all; instead, ensure we are properly setting dirtyDrawAreas:
+        #   We should actually be setting a dirtyDrawArea when the Element shrinks to redraw
+        #   the area it previously covered...
         @_drawCacheBitmap.clearOutsideArea cacheSpaceDrawArea.size
         return unless @_dirtyDrawAreas || @_redrawAll
       else
