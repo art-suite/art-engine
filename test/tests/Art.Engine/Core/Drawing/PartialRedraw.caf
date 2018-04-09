@@ -9,9 +9,20 @@ D = 13
 E = 14
 F = 15
 
+defaultElementColor = #8ff
+defaultCanvasColor = #480
+
 testPartialBeforeAfter = (name, options, moreTests...) ->
   test name, ->
-    {canvasElement, canvasSize = 4, color = #8ff, canvasColor = #480, init, before, after, change} = options
+    {canvasElement,
+    children,
+    canvasSize = 4,
+    color = defaultElementColor,
+    canvasColor = defaultCanvasColor,
+    init,
+    before,
+    after,
+    change} = options
 
     doAfterTest = (canvasElement, change, after, moreAfterTests...) ->
 
@@ -37,7 +48,7 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
           width:  canvasSize
           height: canvasSize
         RectangleElement color: canvasColor
-        RectangleElement
+        children ? RectangleElement
           key: :testElement
           color: color
           init
@@ -613,3 +624,24 @@ suite:
           4 8 8 0
           4 8 8 0
           0 0 0 0
+
+  regressions: ->
+    testPartialBeforeAfter
+      "with stage and clip true"
+
+      canvasSize: 5 1
+
+      children:
+        Element
+          key: :testElement
+          size: 5 1
+          stage: true
+          clip: true
+
+          Element
+            size: 1000
+            draw: defaultElementColor
+
+      before: 8 8 8 8 8
+      change: size: 4 1
+      after:  8 8 8 8 4

@@ -518,8 +518,11 @@ defineModule module, ->
 
     _updateCurrentDrawCacheClippedArea: ->
       @_drawCacheBitmap.clear() # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
-      if @_clip && @getHasCustomClipping()
-        @_drawWithClipping null, @_drawCacheBitmap, @_elementToDrawCacheMatrix
+      if @_clip
+        unless @getHasCustomClipping()
+          targetSpaceDrawArea = @drawAreaIn(@_elementToDrawCacheMatrix).intersection @_drawCacheBitmap.size
+
+        @_drawWithClipping targetSpaceDrawArea, @_drawCacheBitmap, @_elementToDrawCacheMatrix
       else
         @_drawChildren @_drawCacheBitmap, @_elementToDrawCacheMatrix, true
 
