@@ -157,10 +157,19 @@ defineModule module, class ElementDrawLib
       return fill: normalizeDrawProps color: step
     return step unless isPlainObject step
 
-    {fill, to, from, shadow, outline, color, colors, padding, rectangle, circle, shape} = step
+    {fill, to, from, shadow, outline, radius, color, colors, padding, rectangle, circle, shape} = step
     if color ? colors ? to ? from ? shadow
       fill = merge normalizeDrawProps {to, from, color, colors, shadow}
       step = objectWithout step, "color", "colors", "to", "from", "shadow"
+
+    if radius?
+      rectangle = if isRect rectangle
+        {radius, area: rectangle}
+      else if isPlainObject rectangle
+        r = merge rectangle
+        r.radius = radius
+        r
+      else {radius}
 
     padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
 
@@ -168,8 +177,8 @@ defineModule module, class ElementDrawLib
     fill = normalizeDrawProps fill
     outline = normalizeDrawProps outline
 
-    if padding != step.padding || fill != step.fill || outline != step.outline
-      merge step, {fill, outline, padding}
+    if padding != step.padding || fill != step.fill || outline != step.outline || rectangle != step.rectangle
+      merge step, {fill, outline, padding, rectangle}
     else
       step
 

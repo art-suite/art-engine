@@ -200,6 +200,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     parentSize:                               ps:1
     childrenSize:                             cs:1
     parentHeightSquare:                       hh:1, wh:1
+    parentWidthSquare:                        hw:1, ww:1
     childrenSizeMaxParentWidth:               cs:1, max: ww: 1
     parentHeightChildrenWidth:                hh:1, wcw:1
     parentWidthChildrenHeight:                ww:1, hch:1

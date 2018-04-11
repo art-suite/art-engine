@@ -107,7 +107,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   # returns childrenSize
   nonChildrenLayoutFirstPass: ->
     point @domElement.scrollWidth,
-      max @getPendingFontSize() * 1.25, if @value.length > 0 then @domElement.scrollHeight else 0
+      max @getPendingFontSize() * 1.4, if @value.length > 0 then @domElement.scrollHeight else 0
 
   _safeToProcessFocusEvents: ->
     if @_focusEventsDisabled

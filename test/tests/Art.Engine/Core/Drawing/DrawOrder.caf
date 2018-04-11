@@ -171,6 +171,54 @@ suite:
             "red"
         test: (e) -> assert.eq e.drawArea, rect 0, 5, 100, 85
 
+    radiusImpliesRectangle: ->
+      renderTest
+        "radius: 10"
+        render: -> Element
+          size: 100
+          draw:
+            radius: 10
+            color: "orange"
+        test: (e) -> assert.eq e.drawArea, rect 100, 100
+
+      renderTest
+        "radius: tl: 10"
+        render: -> Element
+          size: 100
+          draw:
+            radius: tl: 10
+            color: "orange"
+        test: (e) -> assert.eq e.drawArea, rect 100, 100
+
+      renderTest
+        "radius resets shape"
+        render: -> Element
+          size: 100
+          draw:
+            "circle"
+            radius: 10
+            color: "orange"
+        test: (e) -> assert.eq e.drawArea, rect 100, 100
+
+      renderTest
+        "radius and outline"
+        render: -> Element
+          size: 100
+          draw:
+            radius: 10
+            outline: "orange"
+        test: (e) -> assert.eq e.drawArea.roundOut(), rect -1, -1, 102, 102
+
+      renderTest
+        "radius and rectangle"
+        render: -> Element
+          size: 100
+          draw:
+            radius: 10
+            rectangle: rect 100, 50
+            color: "orange"
+        test: (e) -> assert.eq e.drawArea, rect 100, 50
+
     rectangle: ->
       renderTest
         "rectangle: area function with params"
@@ -455,10 +503,10 @@ suite:
 
   outline: ->
     renderTest
-      "basic"
+      "outline: :red"
       render: -> Element
         size: 100
-        draw: outline: "red"
+        draw: outline: :red
       test: (e) -> assert.eq e.drawArea, rect -.5, -.5, 101, 101
 
     renderTest

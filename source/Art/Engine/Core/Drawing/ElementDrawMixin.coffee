@@ -230,15 +230,14 @@ defineModule module, ->
               if newShapeOptions = rectangle ? circle ? shape
 
                 currentPathOptions = if isPlainObject newShapeOptions
-                  {area, path} = newShapeOptions
+                  {area, path: customShapePath} = newShapeOptions
                   newShapeOptions
-                else if isRect newShapeOptions
-                  area = newShapeOptions
-                  null
-                else if (rectangle ? circle) ? isRect newShapeOptions
-                  area = newShapeOptions
-                  null
                 else
+                  if shape
+                    customShapePath = shape
+                  else
+                    area = newShapeOptions
+
                   null
 
                 currentDrawArea = if isFunction area
@@ -248,7 +247,10 @@ defineModule module, ->
                 else
                   currentDrawArea
 
-                currentPath = path ? shape ? if rectangle then rectanglePath else circlePath
+                currentPath = switch
+                  when circle     then circlePath
+                  when rectangle  then rectanglePath
+                  when shape      then customShapePath
 
               if padding
                 currentDrawArea = padding.pad currentDrawArea
