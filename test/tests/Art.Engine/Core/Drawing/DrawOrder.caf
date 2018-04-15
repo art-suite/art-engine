@@ -472,8 +472,20 @@ suite:
       render: -> Element
         size: 100
         draw:
-          #f00 #f000
-          #0f00 #0f0
+          {}
+            colors: [] #f00 #f000
+          {}
+            colors: [] #0f00 #0f0
+            to: "topRight"
+
+    renderTest
+      "GradientFillStyle"
+      render: -> Element
+        size: 100
+        draw: colors: new GradientFillStyle
+          "topLeft"
+          "bottomRight"
+          #f00 #ff0
 
     renderTest
       "gradient basic"

@@ -34,7 +34,7 @@ defineModule module, class ElementDrawLib
     if isString v
       !legalDrawCommands[v]
     else
-      isColor(v) || isArray(v) || (v[0]? && v[1]?)
+      isColor(v) || isArray(v) || (v[0]? && v[1]?) || v.constructor == GradientFillStyle
 
   sharedDrawOptions = {}
   sharedShadowOptions = {}
@@ -96,9 +96,13 @@ defineModule module, class ElementDrawLib
     o.compositeMode = compositeMode
     o.opacity       = opacity
     o.shadow        = prepareShadow shadow
-    o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomRight
     o.from          = colors && if from? then layoutToFrom from, drawArea else drawArea.topLeft
+    o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomLeft
     o.radius        = radius
+
+    if colors.constructor == GradientFillStyle
+      colors.to = o.to
+      colors.from = o.from
     o
 
   @normalizeShadow: normalizeShadow = (shadow) ->
@@ -122,21 +126,23 @@ defineModule module, class ElementDrawLib
       drawProps = color: drawProps
     {shadow, color, colors, to, from} = drawProps
     if color? && color.constructor != Color
-      # is 'colors':
-      #   if Array with a non-number
-      #   if Object without r, g, b, or a
-      if (
-          (isArray(color) && !isNumber(color[0])) ||
-          (isPlainObject(color) && !(color.r ? color.g ? color.b ? color.a)? )
-        )
+      if color.constructor == GradientFillStyle
         colors = color
+      else
+        if (
+            (isArray(color) && !isNumber(color[0])) ||
+            (isPlainObject(color) && !(color.r ? color.g ? color.b ? color.a)? )
+          )
+          colors = color
 
-      if colors
-        colors = GradientFillStyle.normalizeColors colors
+        if colors
+          colors = GradientFillStyle.normalizeColors colors
+
       color = if colors? then undefined else rgbColor color
 
-    to = pointLayout to
-    from = pointLayout from
+    if colors?
+      from  = from  && pointLayout from ? "topLeft"
+      to    = to    && pointLayout to   ? "bottomLeft"
 
     if shadow
       shadow = normalizeShadow shadow

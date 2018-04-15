@@ -77,7 +77,7 @@ defineModule module, ->
       # Keys are keys for elements to draw, if a matching child is found
       draw:
         default: null
-        validate: (v) -> !v? || isRect(v) || isFunction(v) || isArray(v) || isPlainObject(v) || isString(v) || isColor v
+        validate: (v) -> !v? || isRect(v) || isFunction(v) || isArray(v) || isPlainObject(v) || isString(v) || isColor(v) || v.constructor == GradientFillStyle
         preprocess: (drawSteps) ->
           if drawSteps?
             drawSteps = [drawSteps] unless isArray drawSteps
@@ -100,7 +100,6 @@ defineModule module, ->
         setter: (v) -> @setDraw v
 
     drawOnBitmap: (target, elementToTargetMatrix)->
-      # log _draw: {@key, elementToTargetMatrix}
 
       try
         return if @opacity < colorPrecision
