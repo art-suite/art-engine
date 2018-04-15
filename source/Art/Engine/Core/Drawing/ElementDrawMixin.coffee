@@ -84,8 +84,8 @@ defineModule module, ->
             drawSteps = compactFlatten drawSteps
             needsNormalizing = false
             for step in drawSteps
-              {fill, outline, color, colors, padding, shadow, to, from} = step
-              if fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step
+              {fill, outline, radius, color, colors, padding, shadow, to, from} = step
+              if radius ? fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step
                 needsNormalizing = true
                 break
             if needsNormalizing
@@ -134,7 +134,7 @@ defineModule module, ->
 
     _drawChildren: (target, elementToTargetMatrix, usingStagedBitmap, upToChild) ->
       {children} = @
-      if customDrawOrder = @getDrawOrder()
+      if drawSteps = @getDraw()
         currentPath = rectanglePath
         currentPathOptions = null
 
@@ -155,7 +155,7 @@ defineModule module, ->
         lastClippingInfo = null
         try
           explicitlyDrawnChildrenByKey = null
-          for drawStep in customDrawOrder when (childKey = drawStep.child)?
+          for drawStep in drawSteps when (childKey = drawStep.child)?
             (explicitlyDrawnChildrenByKey ||= {})[childKey] = true
 
           if explicitlyDrawnChildrenByKey
@@ -163,7 +163,7 @@ defineModule module, ->
             for child in children when (key = child._key)?
               childrenByKey[key] = child
 
-          for drawStep in customDrawOrder
+          for drawStep in drawSteps
             if isFunction drawStep
               drawStep target, elementToTargetMatrix, @, currentDrawArea, currentPath
             else if isRect drawStep

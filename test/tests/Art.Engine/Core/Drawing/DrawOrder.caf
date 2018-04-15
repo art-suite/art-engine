@@ -616,6 +616,16 @@ suite:
           outline: color: :red lineWidth: 10
 
     renderTest
+      "clips even if no drawing"
+      render: -> Element
+        size: 100
+        draw:
+          radius: 10
+          "clip"
+        Element
+          draw: "red"
+
+    renderTest
       "clip children"
       render: -> Element
         size: 100
