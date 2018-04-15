@@ -100,7 +100,7 @@ defineModule module, class ElementDrawLib
     o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomLeft
     o.radius        = radius
 
-    if colors.constructor == GradientFillStyle
+    if colors?.constructor == GradientFillStyle
       colors.to = o.to
       colors.from = o.from
     o
