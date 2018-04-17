@@ -1,8 +1,8 @@
 'use strict';
 Foundation = require 'art-foundation'
-{BaseObject, timeout, inspect} = Foundation
+{BaseClass, timeout, inspect} = Foundation
 
-module.exports = class ElementFactory extends BaseObject
+module.exports = class ElementFactory extends BaseClass
   @singletonClass()
 
   @newElement: (elementClassName, props, children) => @singleton.newElement elementClassName, props, children

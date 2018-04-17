@@ -7,7 +7,7 @@ GestureRecognizer = require '../../Events/GestureRecognizer'
 { log, inspect, currentSecond, bound, round,
   first, last, peek
   min, max, abs, merge,
-  createWithPostCreate, BaseObject, timeout, ceil, round
+  createWithPostCreate, BaseClass, timeout, ceil, round
   isPlainArray
   absLt
   absLte
@@ -109,7 +109,7 @@ scrollElement api:
 onIdle is called when all animations and gestures have stopped.
 
 ###
-class ScrollAnimator extends BaseObject
+class ScrollAnimator extends BaseClass
   constructor: (@scrollElement, @maximumVelocity)->
     super
     @_referenceFrame = @scrollElement.getPendingReferenceFrame()

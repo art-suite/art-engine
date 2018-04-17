@@ -8,7 +8,7 @@
   floatEq
   isNumber
 } = require 'art-standard-lib'
-{BaseObject} = require 'art-class-system'
+{BaseClass} = require 'art-class-system'
 {point, Point, perimeter, point0, Rectangle} = require 'art-atomic'
 
 ArtEngineCore = require '../namespace'
@@ -38,7 +38,7 @@ TODO:
 
 globalEpochCycle = null
 
-module.exports = class StateEpochLayout extends BaseObject
+module.exports = class StateEpochLayout extends BaseClass
 
   @markLayoutPropertiesChanged: (changingElements) =>
 

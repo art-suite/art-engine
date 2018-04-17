@@ -7,7 +7,7 @@ GestureRecognizer = require '../../Events/GestureRecognizer'
 { log, inspect, currentSecond, bound, round,
   first, last, peek
   min, max, abs, merge,
-  createWithPostCreate, BaseObject, timeout, ceil, round
+  createWithPostCreate, BaseClass, timeout, ceil, round
   isPlainArray
   absLt
   absLte

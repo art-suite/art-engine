@@ -1,8 +1,8 @@
 'use strict';
 Foundation= require 'art-foundation'
-{defineModule, log, miniInspect, currentSecond, arrayWithout, BaseObject, Stat} = Foundation
+{defineModule, log, miniInspect, currentSecond, arrayWithout, BaseClass, Stat} = Foundation
 
-defineModule module, class EngineStat extends BaseObject
+defineModule module, class EngineStat extends BaseClass
   constructor: ->
     @reset()
 

@@ -4,7 +4,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
 {point, Point, rect, Rectangle, matrix, Matrix} = Atomic
-{inspect, BaseObject, Map, timeout, remove, log, defineModule} = Foundation
+{inspect, BaseClass, Map, timeout, remove, log, defineModule} = Foundation
 {Bitmap} = Canvas
 
 globalEpochCycle = null
@@ -33,7 +33,7 @@ Call doneWithCacheBitmap from _clearDrawCache(doNotUpdateDrawCacheManager) unles
 call allocateCacheBitmap when a new cache bitmap is used
 call useCacheBitmap every time a the drawCache bitmap is used
 ###
-class CacheBitmap extends BaseObject
+class CacheBitmap extends BaseClass
 
   constructor: (@element, @bitmap, lastFrameUsed)->
     @_reset lastFrameUsed
@@ -64,7 +64,7 @@ class CacheBitmap extends BaseObject
     size: -> @bitmap.size
     byteSize: -> @bitmap.getByteSize()
 
-defineModule module, class DrawCacheManager extends BaseObject
+defineModule module, class DrawCacheManager extends BaseClass
   @byteSizeFromSize: byteSizeFromSize = (size) -> size.x * size.y * 4
   @singletonClass()
 

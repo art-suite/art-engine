@@ -4,7 +4,7 @@ Text = require 'art-text'
 ShadowableElement = require '../ShadowableElement'
 GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 
-{log, BaseObject, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
+{log, BaseClass, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
   isString, isNumber
 } = Foundation
 {point, rect} = Atomic
@@ -12,8 +12,8 @@ GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 
 {globalEpochCycle} = GlobalEpochCycle
 
-propInternalName = BaseObject.propInternalName
-propSetterName = BaseObject._propSetterName
+propInternalName = BaseClass.propInternalName
+propSetterName = BaseClass._propSetterName
 module.exports = createWithPostCreate class TextElement extends ShadowableElement
 
   # defaultSize: cs:1

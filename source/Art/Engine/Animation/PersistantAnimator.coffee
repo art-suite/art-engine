@@ -14,7 +14,7 @@ Events = require 'art-events'
   Promise
   isArray
 } = require 'art-standard-lib'
-{BaseObject} = require 'art-class-system'
+{BaseClass} = require 'art-class-system'
 {EventedMixin} = Events
 
 ###
@@ -279,7 +279,7 @@ Options: (events)
 
 ###
 
-module.exports = class PersistantAnimator extends EventedMixin BaseObject
+module.exports = class PersistantAnimator extends EventedMixin BaseClass
 
   @interpolate: interpolate = (fromValue, toValue, pos, root = true) ->
     if pos == 0

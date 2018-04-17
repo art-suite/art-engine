@@ -5,7 +5,7 @@ EasingFunctions = require './EasingFunctions'
 PersistantAnimator = require './PersistantAnimator'
 
 {
-  log, BaseObject
+  log, BaseClass
   isFunction, isString, isNumber
   min, max
 } = Foundation

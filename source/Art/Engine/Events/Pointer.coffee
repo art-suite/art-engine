@@ -1,10 +1,10 @@
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 
-{inspect, defineModule, clone, peek, first, BaseObject} = Foundation
+{inspect, defineModule, clone, peek, first, BaseClass} = Foundation
 {point, rect, matrix} = Atomic
 
-defineModule module, class Pointer extends BaseObject
+defineModule module, class Pointer extends BaseClass
   # a deadZone of 3 is fine for desktop touchpads and mind AND iOS, but it was terrible on the
   # Samsung Galaxy S6. A deadzone of 10 doesn't seem too much any device and works much better on the Galaxy.
   @pointerDeadZone: pointerDeadZone = 10

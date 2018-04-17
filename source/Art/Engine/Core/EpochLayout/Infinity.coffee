@@ -1,7 +1,7 @@
 'use strict';
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
-{BaseObject, isPlainObject, log, isFunction, nearInfinity, nearInfinityResult, abs} = Foundation
+{BaseClass, isPlainObject, log, isFunction, nearInfinity, nearInfinityResult, abs} = Foundation
 {point} = Atomic
 
 # nearInfinity NOTES:

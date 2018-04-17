@@ -2,10 +2,10 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Pointer = require './Pointer'
 
-{log, defineModule, inspect, merge, clone, peek, first, BaseObject, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
+{log, defineModule, inspect, merge, clone, peek, first, BaseClass, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
 {point, rect, matrix} = Atomic
 
-defineModule module, class GestureRecognizer extends BaseObject
+defineModule module, class GestureRecognizer extends BaseClass
   @createGestureRecognizer: (o)->
     gr = new GestureRecognizer o
     gr.getPointerHandlers()

@@ -12,7 +12,7 @@ reactColor = rgbColor "gold"
 aimColor = rgbColor "#9c3"
 
 defineModule module, ->
-  class GlobalEpochStat extends Foundation.BaseObject
+  class GlobalEpochStat extends Foundation.BaseClass
     constructor: (@sampleTime, @total, @sampleSet) ->
 
     @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactLC", "reactRender", "event", "flux"]
@@ -45,7 +45,7 @@ defineModule module, ->
       y = floor drawMatrix.transformY sampleTime, sample
       bitmap.drawRectangle null, rect(x, y, sampleWidth, h - y), color: statColors[sampleField]
 
-  class GlobalEpochStats extends Foundation.BaseObject
+  class GlobalEpochStats extends Foundation.BaseClass
     @classGetter
       enabled: -> !!globalEpochCycle.globalEpochStats
 
