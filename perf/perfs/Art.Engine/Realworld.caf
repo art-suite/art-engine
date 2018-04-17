@@ -48,46 +48,10 @@ createRealworldElementTree = ->
             cancel:    (a) -> { return fn.call(_this, a); }
             recognize: (e) -> { return e.delta.absoluteAspectRatio > 1; }
 
-          pointerDown:
-            function (e) {
-                        var base, ref;
-                        _this._capturedEvents = false;
-                        if (typeof (base = _this._nonGestureHandlers).pointerDown === "function") {
-                          base.pointerDown(e);
-                        }
-                        _this._startEvent = e.newEvent ? e.newEvent() : clone(e);
-                        if ((ref = _this._lastActiveGesture) != null ? typeof ref.resume === "function" ? ref.resume(e)
-
-          pointerMove:
-            function (e) {
-                        var ag, base, base1, base2, ref;
-                        if (ag = _this._activeGesture) {
-                          if (!_this._capturedEvents && !e.pointer.stayedWithinDeadzone && (typeof (base = _this._activeGesture).recognize === "function" ? base.recognize(e) : void 0)) {
-                            if ((ref = e.target) != null) {
-                              if (typeof ref.capturePointerEvents === "function") {
-
-          pointerUp:
-            function (e) {
-                        var base, base1;
-                        if (_this._activeGesture) {
-                          if (typeof (base = _this._activeGesture).end === "function") {
-                            base.end(e);
-                          }
-                          return _this._activeGesture = null;
-                        } else {
-                          return typeof (base1 = _this._nonGestureHandlers).pointerUp === "function" ? base1.pointerUp(e) : void 0;
-
-          pointerCancel:
-            function (e) {
-                        var base, base1;
-                        if (_this._activeGesture) {
-                          if (typeof (base = _this._activeGesture).cancel === "function") {
-                            base.cancel(e);
-                          }
-                          _this._activeGesture = null;
-                        } else {
-                          if (typeof (base1 = _this._nonGestureHandlers).pointerCancel === "function") {
-                            base1.pointerCa
+          pointerDown: ->
+          pointerMove: ->
+          pointerUp: ->
+          pointerCancel: ->
 
         size:        pointLayout(w: 432, hch: 1)
         currentSize: point(432, 477)
@@ -200,14 +164,11 @@ createRealworldElementTree = ->
 
                   draw: []
                     rectangle:
-                      area:
-                        function (arg, arg1) {
-                            var fadeHeight, fadeSize, h, w;
-                            w = arg.w, h = arg.h;
-                            fadeSize = arg1.fadeSize;
-                            fadeHeight = h * (fadeSize || 2);
-                            return rect(0, h - fadeHeight, w, fadeHeight);
-                          }
+                      area: (arg, arg1) ->
+                        w = arg.w, h = arg.h
+                        fadeSize = arg1.fadeSize
+                        fadeHeight = h * (fadeSize || 2)
+                        rect 0, h - fadeHeight, w, fadeHeight
 
                       fadeSize: 1.25
 
@@ -266,24 +227,7 @@ createRealworldElementTree = ->
 
 
                       Element
-                        on:
-                          mouseIn:       -> { return fn.call(_this); }
-                          mouseOut:      -> { return fn.call(_this); }
-                          pointerDown:   -> { return fn.call(_this); }
-                          pointerIn:     -> { return fn.call(_this); }
-                          pointerUp:     -> { return fn.call(_this); }
-                          pointerCancel: -> { return fn.call(_this); }
-                          pointerOut:    -> { return fn.call(_this); }
-                          pointerUpInside:
-                            function (event) {
-                                            var base, base1, ref1, ref2;
-                                            event.target.capturePointerEvents();
-                                            if (!_this.props.disabled) {
-                                              if (_this.doAction) {
-                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                              }
-                                              return typeof (base = (ref1 = customAction != null ? customAction :
-
+                        on: buttonHandlers
                         animators:
                           _drawOrder: []
                             PersistantAnimator
@@ -347,13 +291,10 @@ createRealworldElementTree = ->
                         TextElement
                           size:     pointLayout(cs: 1)
                           location: pointLayout(ps: point(0.5, 0.5))
-                          scale:
-                            function (ps, cs) {
-                                      var xRatio, yRatio;
-                                      xRatio = ps.x / cs.x;
-                                      yRatio = ps.y / cs.y;
-                                      return min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75);
-                                    }
+                          scale: (ps, cs) ->
+                            xRatio = ps.x / cs.x
+                            yRatio = ps.y / cs.y
+                            min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75)
 
                           axis:        point(0.5, 0.5)
                           currentSize: point(21.052490234375, 13.125)
@@ -396,23 +337,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
+                      on: buttonHandlers
 
                       size:                  pointLayout(hch: 1, w: 112)
                       currentSize:           point(112, 8.4)
@@ -432,24 +357,7 @@ createRealworldElementTree = ->
 
 
               Element
-                on:
-                  mouseIn:       -> { return fn.call(_this); }
-                  mouseOut:      -> { return fn.call(_this); }
-                  pointerDown:   -> { return fn.call(_this); }
-                  pointerIn:     -> { return fn.call(_this); }
-                  pointerUp:     -> { return fn.call(_this); }
-                  pointerCancel: -> { return fn.call(_this); }
-                  pointerOut:    -> { return fn.call(_this); }
-                  pointerUpInside:
-                    function (event) {
-                                    var base, base1, ref1, ref2;
-                                    event.target.capturePointerEvents();
-                                    if (!_this.props.disabled) {
-                                      if (_this.doAction) {
-                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                      }
-                                      return typeof (base = (ref1 = customAction != null ? customAction :
-
+                on: buttonHandlers
                 animators:
                   _opacity: []
                     PersistantAnimator
@@ -543,24 +451,7 @@ createRealworldElementTree = ->
 
 
                 Element
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   size:          pointLayout(55)
                   currentSize:   point(55, 55)
                   currentMargin: perimeter(8, 8, 8, 8)
@@ -608,24 +499,7 @@ createRealworldElementTree = ->
 
 
                 Element
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   size:                  pointLayout(cs: 1)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
                   currentSize:           point(148.33738708496094, 37.125)
@@ -731,24 +605,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:         "AnimatedIconTextButton-internal"
                   size:        pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -858,24 +715,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -986,24 +826,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -1226,14 +1049,9 @@ createRealworldElementTree = ->
 
                   draw: []
                     rectangle:
-                      area:
-                        function (arg, arg1) {
-                            var fadeHeight, fadeSize, h, w;
-                            w = arg.w, h = arg.h;
-                            fadeSize = arg1.fadeSize;
-                            fadeHeight = h * (fadeSize || 2);
-                            return rect(0, h - fadeHeight, w, fadeHeight);
-                          }
+                      area: ({w, h}, {fadeSize}) ->
+                        fadeHeight = h * (fadeSize || 2)
+                        rect 0, h - fadeHeight, w, fadeHeight
 
                       fadeSize: 1.25
 
@@ -1292,24 +1110,7 @@ createRealworldElementTree = ->
 
 
                       Element
-                        on:
-                          mouseIn:       -> { return fn.call(_this); }
-                          mouseOut:      -> { return fn.call(_this); }
-                          pointerDown:   -> { return fn.call(_this); }
-                          pointerIn:     -> { return fn.call(_this); }
-                          pointerUp:     -> { return fn.call(_this); }
-                          pointerCancel: -> { return fn.call(_this); }
-                          pointerOut:    -> { return fn.call(_this); }
-                          pointerUpInside:
-                            function (event) {
-                                            var base, base1, ref1, ref2;
-                                            event.target.capturePointerEvents();
-                                            if (!_this.props.disabled) {
-                                              if (_this.doAction) {
-                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                              }
-                                              return typeof (base = (ref1 = customAction != null ? customAction :
-
+                        on: buttonHandlers
                         animators:
                           _drawOrder: []
                             PersistantAnimator
@@ -1373,13 +1174,10 @@ createRealworldElementTree = ->
                         TextElement
                           size:     pointLayout(cs: 1)
                           location: pointLayout(ps: point(0.5, 0.5))
-                          scale:
-                            function (ps, cs) {
-                                      var xRatio, yRatio;
-                                      xRatio = ps.x / cs.x;
-                                      yRatio = ps.y / cs.y;
-                                      return min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75);
-                                    }
+                          scale: (ps, cs) ->
+                            xRatio = ps.x / cs.x;
+                            yRatio = ps.y / cs.y;
+                            min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75)
 
                           axis:        point(0.5, 0.5)
                           currentSize: point(21.052490234375, 13.125)
@@ -1422,24 +1220,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size:                  pointLayout(hch: 1, w: 112)
                       currentSize:           point(112, 8.4)
                       currentMargin:         perimeter(16, 16, 16, 16)
@@ -1458,24 +1239,7 @@ createRealworldElementTree = ->
 
 
               Element
-                on:
-                  mouseIn:       -> { return fn.call(_this); }
-                  mouseOut:      -> { return fn.call(_this); }
-                  pointerDown:   -> { return fn.call(_this); }
-                  pointerIn:     -> { return fn.call(_this); }
-                  pointerUp:     -> { return fn.call(_this); }
-                  pointerCancel: -> { return fn.call(_this); }
-                  pointerOut:    -> { return fn.call(_this); }
-                  pointerUpInside:
-                    function (event) {
-                                    var base, base1, ref1, ref2;
-                                    event.target.capturePointerEvents();
-                                    if (!_this.props.disabled) {
-                                      if (_this.doAction) {
-                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                      }
-                                      return typeof (base = (ref1 = customAction != null ? customAction :
-
+                on: buttonHandlers
                 animators:
                   _opacity: []
                     PersistantAnimator
@@ -1649,24 +1413,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size: pointLayout(cs: 1)
                       childArea:
                         (child) -> { return child.getPendingCurrentSize(); }
@@ -1731,24 +1478,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size:          pointLayout(55)
                       currentSize:   point(55, 55)
                       currentMargin: perimeter(8, 8, 8, 8)
@@ -1826,24 +1556,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:         "AnimatedIconTextButton-internal"
                   size:        pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -1953,24 +1666,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -2081,24 +1777,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -2392,24 +2071,7 @@ createRealworldElementTree = ->
 
 
                       Element
-                        on:
-                          mouseIn:       -> { return fn.call(_this); }
-                          mouseOut:      -> { return fn.call(_this); }
-                          pointerDown:   -> { return fn.call(_this); }
-                          pointerIn:     -> { return fn.call(_this); }
-                          pointerUp:     -> { return fn.call(_this); }
-                          pointerCancel: -> { return fn.call(_this); }
-                          pointerOut:    -> { return fn.call(_this); }
-                          pointerUpInside:
-                            function (event) {
-                                            var base, base1, ref1, ref2;
-                                            event.target.capturePointerEvents();
-                                            if (!_this.props.disabled) {
-                                              if (_this.doAction) {
-                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                              }
-                                              return typeof (base = (ref1 = customAction != null ? customAction :
-
+                        on: buttonHandlers
                         animators:
                           _drawOrder: []
                             PersistantAnimator
@@ -2522,24 +2184,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size:                  pointLayout(hch: 1, w: 112)
                       currentSize:           point(112, 8.4)
                       currentMargin:         perimeter(16, 16, 16, 16)
@@ -2558,24 +2203,7 @@ createRealworldElementTree = ->
 
 
               Element
-                on:
-                  mouseIn:       -> { return fn.call(_this); }
-                  mouseOut:      -> { return fn.call(_this); }
-                  pointerDown:   -> { return fn.call(_this); }
-                  pointerIn:     -> { return fn.call(_this); }
-                  pointerUp:     -> { return fn.call(_this); }
-                  pointerCancel: -> { return fn.call(_this); }
-                  pointerOut:    -> { return fn.call(_this); }
-                  pointerUpInside:
-                    function (event) {
-                                    var base, base1, ref1, ref2;
-                                    event.target.capturePointerEvents();
-                                    if (!_this.props.disabled) {
-                                      if (_this.doAction) {
-                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                      }
-                                      return typeof (base = (ref1 = customAction != null ? customAction :
-
+                on: buttonHandlers
                 animators:
                   _opacity: []
                     PersistantAnimator
@@ -2757,24 +2385,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size: pointLayout(cs: 1)
                       childArea:
                         (child) -> { return child.getPendingCurrentSize(); }
@@ -2839,24 +2450,7 @@ createRealworldElementTree = ->
 
 
                     Element
-                      on:
-                        mouseIn:       -> { return fn.call(_this); }
-                        mouseOut:      -> { return fn.call(_this); }
-                        pointerDown:   -> { return fn.call(_this); }
-                        pointerIn:     -> { return fn.call(_this); }
-                        pointerUp:     -> { return fn.call(_this); }
-                        pointerCancel: -> { return fn.call(_this); }
-                        pointerOut:    -> { return fn.call(_this); }
-                        pointerUpInside:
-                          function (event) {
-                                          var base, base1, ref1, ref2;
-                                          event.target.capturePointerEvents();
-                                          if (!_this.props.disabled) {
-                                            if (_this.doAction) {
-                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                            }
-                                            return typeof (base = (ref1 = customAction != null ? customAction :
-
+                      on: buttonHandlers
                       size:          pointLayout(55)
                       currentSize:   point(55, 55)
                       currentMargin: perimeter(8, 8, 8, 8)
@@ -2934,24 +2528,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:         "AnimatedIconTextButton-internal"
                   size:        pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -3061,24 +2638,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -3189,24 +2749,7 @@ createRealworldElementTree = ->
 
 
                   Element:AnimatedIconTextButton-internal
-                  on:
-                    mouseIn:       -> { return fn.call(_this); }
-                    mouseOut:      -> { return fn.call(_this); }
-                    pointerDown:   -> { return fn.call(_this); }
-                    pointerIn:     -> { return fn.call(_this); }
-                    pointerUp:     -> { return fn.call(_this); }
-                    pointerCancel: -> { return fn.call(_this); }
-                    pointerOut:    -> { return fn.call(_this); }
-                    pointerUpInside:
-                      function (event) {
-                                      var base, base1, ref1, ref2;
-                                      event.target.capturePointerEvents();
-                                      if (!_this.props.disabled) {
-                                        if (_this.doAction) {
-                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                        }
-                                        return typeof (base = (ref1 = customAction != null ? customAction :
-
+                  on: buttonHandlers
                   key:                   "AnimatedIconTextButton-internal"
                   size:                  pointLayout(ww: 1, h: 38)
                   childArea: (child) -> { return child.getPendingCurrentSize(); }
@@ -3324,24 +2867,7 @@ createRealworldElementTree = ->
 
 
         Element
-          on:
-            mouseIn:       -> { return fn.call(_this); }
-            mouseOut:      -> { return fn.call(_this); }
-            pointerDown:   -> { return fn.call(_this); }
-            pointerIn:     -> { return fn.call(_this); }
-            pointerUp:     -> { return fn.call(_this); }
-            pointerCancel: -> { return fn.call(_this); }
-            pointerOut:    -> { return fn.call(_this); }
-            pointerUpInside:
-              function (event) {
-                              var base, base1, ref1, ref2;
-                              event.target.capturePointerEvents();
-                              if (!_this.props.disabled) {
-                                if (_this.doAction) {
-                                  log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                                }
-                                return typeof (base = (ref1 = customAction != null ? customAction :
-
+          on: buttonHandlers
           size:                  pointLayout(ww: 1, hch: 1)
           location:              pointLayout(xw: 0.5, yh: 1, y: -16)
           axis:                  point(0.5, 0.5)
@@ -3409,24 +2935,7 @@ createRealworldElementTree = ->
 
 
       Element
-        on:
-          mouseIn:       -> { return fn.call(_this); }
-          mouseOut:      -> { return fn.call(_this); }
-          pointerDown:   -> { return fn.call(_this); }
-          pointerIn:     -> { return fn.call(_this); }
-          pointerUp:     -> { return fn.call(_this); }
-          pointerCancel: -> { return fn.call(_this); }
-          pointerOut:    -> { return fn.call(_this); }
-          pointerUpInside:
-            function (event) {
-                            var base, base1, ref1, ref2;
-                            event.target.capturePointerEvents();
-                            if (!_this.props.disabled) {
-                              if (_this.doAction) {
-                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                              }
-                              return typeof (base = (ref1 = customAction != null ? customAction :
-
+        on: buttonHandlers
         animators:
           _opacity: []
             PersistantAnimator
@@ -3487,24 +2996,7 @@ createRealworldElementTree = ->
 
 
       Element
-        on:
-          mouseIn:       -> { return fn.call(_this); }
-          mouseOut:      -> { return fn.call(_this); }
-          pointerDown:   -> { return fn.call(_this); }
-          pointerIn:     -> { return fn.call(_this); }
-          pointerUp:     -> { return fn.call(_this); }
-          pointerCancel: -> { return fn.call(_this); }
-          pointerOut:    -> { return fn.call(_this); }
-          pointerUpInside:
-            function (event) {
-                            var base, base1, ref1, ref2;
-                            event.target.capturePointerEvents();
-                            if (!_this.props.disabled) {
-                              if (_this.doAction) {
-                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
-                              }
-                              return typeof (base = (ref1 = customAction != null ? customAction :
-
+        on: buttonHandlers
         animators:
           _opacity: []
             PersistantAnimator
