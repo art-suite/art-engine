@@ -181,14 +181,14 @@ defineModule module, class StateEpoch extends Epoch
         o
       ]
 
-  applyAnimators: (changingElements)->
-    el._applyAnimators() for el in changingElements
+  preprocessElementsForEpoch: (changingElements)->
+    el.preprocessForEpoch() for el in changingElements
     null
 
   processEpochItems: (changingElements)->
     # log "StateEpoc#processEpochItems"
     # log @inspectChangingElements changingElements
-    @applyAnimators changingElements
+    @preprocessElementsForEpoch changingElements
 
     @computeDepths changingElements
     @notifyLayoutPropertiesChanged changingElements

@@ -5,8 +5,9 @@ module.exports = require './namespace'
 module.exports
 .includeInNamespace require './Engine'
 .addModules
-  Config:        require './Config'       
-  FullScreenApp: require './FullScreenApp'
+  Config:         require './Config'        
+  FullScreenApp:  require './FullScreenApp' 
+  StandardImport: require './StandardImport'
 require './Animation'
 require './Core'
 require './DevTools'

@@ -5,7 +5,7 @@ Xbd = require 'art-xbd'
 Core = require '../Core'
 Elements = require '../Elements'
 
-{Binary, inspect, BaseObject, Promise, log, mergeInto, lowerCamelCase, merge, ErrorWithInfo} = Foundation
+{Binary, inspect, BaseClass, Promise, log, mergeInto, lowerCamelCase, merge, ErrorWithInfo} = Foundation
 {point, rect, matrix} = Atomic
 {EncodedImage} = Binary
 
@@ -61,7 +61,7 @@ layoutModes =
   7: "bothMul"
   8: "bothStretch"
 
-module.exports = class V1Loader extends BaseObject
+module.exports = class V1Loader extends BaseClass
   @singletonClass()
 
   @load: (data, bitmapFactory) -> @singleton.load data, bitmapFactory

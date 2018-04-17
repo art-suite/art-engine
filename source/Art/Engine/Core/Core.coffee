@@ -2,4 +2,8 @@
 require './GlobalEpochCycle'
 require './Drawing'
 
-module.exports = newElement: (require './ElementFactory').newElement
+{merge} = require 'art-standard-lib'
+
+module.exports = merge
+  newElement: (require './ElementFactory').newElement
+  require './Lib'

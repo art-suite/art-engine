@@ -1,7 +1,10 @@
 'use strict';
 Atomic = require 'art-atomic'
 {elementFactory} = require "./ElementFactory"
-EventedEpochedObject = require './EventedEpochedObject'
+EventedElementMixin = require './EventedElementMixin'
+EpochedElementMixin = require './EpochedElementMixin'
+AnimatedElementMixin = require './AnimatedElementMixin'
+{BaseClass} = require 'art-class-system'
 
 {
   log, inspect
@@ -32,7 +35,7 @@ TODO:
   5. parent and children relationships should be in ElementBase not Element
 ###
 
-module.exports = class ElementBase extends EventedEpochedObject
+module.exports = class ElementBase extends AnimatedElementMixin EventedElementMixin EpochedElementMixin BaseClass
   @registerWithElementFactory: -> false
 
   @postCreate: ->

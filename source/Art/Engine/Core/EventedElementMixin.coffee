@@ -2,7 +2,6 @@
 Foundation = require 'art-foundation'
 Events = require 'art-events'
 StateEpoch = require "./StateEpoch"
-EpochedObject = require './EpochedObject'
 {EventedBaseMixin} = Events
 
 {
@@ -11,7 +10,7 @@ EpochedObject = require './EpochedObject'
 } = Foundation
 blankOptions = {}
 
-module.exports = class EventedEpochedObject extends EventedBaseMixin EpochedObject
+module.exports = (superClass) -> class EventedElementMixin extends EventedBaseMixin superClass
 
   constructor: (options = blankOptions)->
     super

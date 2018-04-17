@@ -14,7 +14,7 @@ module.exports
   ElementInstanceRegistry: require './ElementInstanceRegistry'
   ElementPointerEvents:    require './ElementPointerEvents'   
   ElementStateEpoch:       require './ElementStateEpoch'      
-  EpochedObject:           require './EpochedObject'          
+  EpochedElementMixin:     require './EpochedElementMixin'    
   StateEpochTestHelper:    require './StateEpochTestHelper'   
 require './Drawing'
 require './Element'

@@ -1,15 +1,9 @@
 'use strict';
-Foundation = require 'art-foundation'
-Events = require 'art-events'
-StateEpoch = require "./StateEpoch"
-GlobalEpochCycle = require './GlobalEpochCycle'
-{PersistantAnimator, EasingPersistantAnimator, PeriodicPersistantAnimator} = require '../Animation'
 
 {
   log
   merge
   mergeInto
-  BaseObject
   capitalize
   compactFlatten
   isNumber
@@ -21,15 +15,18 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   isPlainObject
   isPlainArray
   nextTick
-} = Foundation
-{propInternalName} = BaseObject
-blankOptions = {}
-{stateEpoch} = StateEpoch
-{globalEpochCycle} = GlobalEpochCycle
+  BaseClass: {propInternalName}
 
-module.exports = class EpochedObject extends BaseObject
-  @propsEq: propsEq = plainObjectsDeepEq
-  @shallowPropsEq: shallowPropsEq = shallowEq
+  propsEq
+  shallowPropsEq
+} = require './StandardImport'
+
+{stateEpoch} = StateEpoch = require "./StateEpoch"
+{globalEpochCycle} = require './GlobalEpochCycle'
+
+blankOptions = {}
+
+module.exports = (superClass) -> class EpochedElementMixin extends superClass
 
   ############################
   # PROPERTIES
@@ -437,7 +434,7 @@ module.exports = class EpochedObject extends BaseObject
 
   # used by Animator / Foundation.Transaction to normalize to/from values
   preprocessProperties: (propertySet) ->
-    metaProperties = @metaProperties
+    {metaProperties} = @
     for property, value of propertySet when mp = metaProperties[property]
       propertySet[property] = mp.preprocessor value, @[mp.internalName]
     propertySet
@@ -454,6 +451,7 @@ module.exports = class EpochedObject extends BaseObject
       ret[property] = @[metaProp.internalName]
     ret
 
+  minimalPropsIngore = ["children", "parent"]
   @getter
     props: ->
       ret = {}
@@ -473,8 +471,6 @@ module.exports = class EpochedObject extends BaseObject
         ret[k] = @[k]
       ret
 
-  minimalPropsIngore = ["children", "parent"]
-  @getter
     # conrete props which are not the default values
     minimalProps: ->
       ret = {}
@@ -484,6 +480,11 @@ module.exports = class EpochedObject extends BaseObject
             unless propsEq defaultValue, value = @[internalName]
               ret[k] = value
       ret
+
+  ##########################
+  # OVERRIDES
+  ##########################
+  preprocessForEpoch: ->
 
   ##########################
   # EPOCHED STATE
@@ -498,51 +499,6 @@ module.exports = class EpochedObject extends BaseObject
   getState: (pending = false) -> if pending then @_pendingState else @
   getPendingState: -> @_pendingState
 
-  ######################
-  # ANIMATORS for PROPS
-  ######################
-  processedAnimators = null
-  _addAnimator = (prop, options) =>
-    processedAnimators ||= {}
-    if match = prop.match /^_(.*)/
-      internalName = prop
-      [__, prop] = match
-    else
-      internalName = "_#{prop}"
-
-    processedAnimators[internalName] = if options instanceof PersistantAnimator
-      options
-    else if isFunction options
-      new PersistantAnimator prop, animate: options
-    else if isNumber options?.period
-      new PeriodicPersistantAnimator prop, merge options, continuous: true
-    else if options?.animate
-      new PersistantAnimator prop, options
-    else
-      new EasingPersistantAnimator prop, options
-
-  _addAnimators = (v) ->
-    return unless v
-    if isString v
-      _addAnimator prop for prop in v.match /[a-z]+/gi
-    else if isPlainArray v
-      _addAnimators el for el in v
-    else
-      _addAnimator prop, options for prop, options of v
-
-  @concreteProperty
-    animateOnCreation:
-      default: false
-      validate: (v) -> !v || v == true
-
-    animators:
-      default: null
-      preprocess: (v) ->
-        processedAnimators = null
-
-        _addAnimators v
-
-        processedAnimators
 
   ######################
   # CONSTRUCTOR
@@ -567,6 +523,20 @@ module.exports = class EpochedObject extends BaseObject
   # PRIVATE: PROPS
   ######################
 
+  ###
+  TODO: 2018-4-17 I'll bet that we can get a big speedup by using
+  the "_generateSetPropertyDefaults" pattern to:
+
+    a)  inline pending state fields
+    b)  _applyStateChanges with no loop
+
+  RefactorSteps:
+
+    0) design "real-world" object creation test
+    1) rename @_pendingState to ensure no external dependencies
+    2) add postCreate to run _generateSetPropertyDefaults and our
+       new _applyStateChanges function
+  ###
   @_generateSetPropertyDefaults: ->
     propertyInitializerList = @getPropertyInitializerList()
     metaProperties = @getMetaProperties()
@@ -602,6 +572,7 @@ module.exports = class EpochedObject extends BaseObject
   _initProperties: (options) ->
     {metaProperties} = @
 
+    # TODO 2018-4-17: Do this in postCreate!
     unless @__proto__.hasOwnProperty "_initPropertiesAuto"
       @__proto__._initPropertiesAuto = @class._generateSetPropertyDefaults()
 
@@ -688,51 +659,3 @@ module.exports = class EpochedObject extends BaseObject
     @__stateEpochCount++
 
     mergeInto @, @_pendingState
-
-  _deactivatePersistantAnimators: ->
-    for prop, animator of @animators
-      animator.deactivate()
-
-  _activateContinuousPersistantAnimators: ->
-    nextTick => @_elementChanged()
-
-  getPendingCreatedAndAddedToExistingParent: ->
-    {_parent, _animateOnCreation} = @_pendingState
-    @__stateEpochCount == 0 && (_animateOnCreation || !(@_pendingState._parent?.__stateEpochCount == 0))
-
-  _applyAnimators: ->
-    if pendingAnimators = @_pendingState._animators
-      animateFromVoid = @getPendingCreatedAndAddedToExistingParent()
-
-      {frameSecond, epochCount} = stateEpoch
-      # log frameSecond:frameSecond
-
-      for prop, animator of pendingAnimators
-        {active} = animator
-
-        pendingValue = @_pendingState[prop]
-
-        baseValue = if @__stateEpochCount == 0
-          pendingValue
-        else
-          @[prop]
-
-        currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
-          @_animatingFromVoid = true
-          animator.getPreprocessedFromVoid @, baseValue
-        else baseValue
-
-        # currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
-        #   animator.getPreprocessedFromVoid @
-        # else if @__stateEpochCount == 0
-        #   pendingValue
-        # else
-        #   @[prop]
-
-        newValue = if active || !propsEq currentValue, pendingValue
-          animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
-        else pendingValue
-
-        @_pendingState[prop] = newValue
-
-    null
