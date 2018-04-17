@@ -52,7 +52,8 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   isArray
   formattedInspect
   object
-} = require 'art-standard-lib'
+  toInspectedObjects
+} = require './StandardImport'
 
 stats = clone zeroedStats =
   stagingBitmapsCreated: 0
@@ -1294,7 +1295,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     inspectedObjects: ->
       [
         inspectedObjectLiteral @inspectedName
-        @minimalProps
+        toInspectedObjects @minimalProps
       ].concat (child.inspectedObjects for child in @children)
 
   childrenWithout = (children, child) ->
