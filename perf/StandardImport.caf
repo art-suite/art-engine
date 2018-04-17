@@ -4,4 +4,5 @@
   &ArtEngine
   &ArtClassSystem
   &ArtStandardLib
+  &Factories
   test: (args...) -> global.test args...

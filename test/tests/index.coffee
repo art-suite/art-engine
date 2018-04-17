@@ -3,4 +3,6 @@
 
 module.exports = require './namespace'
 module.exports
+.addModules
+  ArtEngineFactories: require './ArtEngineFactories'
 require './Art.Engine'

@@ -4,9 +4,8 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  ArtEngineFactories: require './ArtEngineFactories'
-  StandardImport:     require './StandardImport'    
-  TestHelper:         require './TestHelper'        
+  StandardImport: require './StandardImport'
+  TestHelper:     require './TestHelper'    
 require './Core'
 require './Elements'
 require './Events'

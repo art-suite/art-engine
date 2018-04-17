@@ -274,7 +274,7 @@ defineModule module, class PointLayout extends PointLayoutBase = require './Poin
     @ych = 0.0
 
   toString: ->
-    "PointLayout(#{@toStringLean()})"
+    "pointLayout(#{@toStringLean()})"
 
   toStringLean: ->
     out = if @initializer

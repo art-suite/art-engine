@@ -1,4 +1,3566 @@
 import &StandardImport
-suite: ->
 
+buttonHandlers =
+  mouseIn:          -> { return fn.call(_this); }
+  mouseOut:         -> { return fn.call(_this); }
+  pointerDown:      -> { return fn.call(_this); }
+  pointerIn:        -> { return fn.call(_this); }
+  pointerUp:        -> { return fn.call(_this); }
+  pointerCancel:    -> { return fn.call(_this); }
+  pointerOut:       -> { return fn.call(_this); }
+  pointerUpInside:  ->
+
+suite: ->
   benchmark "foo" ->
+
+createRealworldElementTree = ->
+  Element
+    animators:
+      _opacity: []
+        PersistantAnimator
+        prop: "opacity", element: "Element:MaDpQmCyBwFu", options: {}
+
+    key:                   "MaDpQmCyBwFu"
+    size:                  pointLayout(ww: 1, hch: 1)
+    childrenLayout:        "row"
+    childrenAlignment:     point(0.5, 0.5)
+    padding:               perimeter(0, 0, 0, 16)
+    currentSize:           point(779, 493)
+    currentPadding:        perimeter(0, 0, 0, 16)
+    elementToParentMatrix: matrix(1, 1, 0, 0, 0, 173)
+
+
+    Element
+      size:                  pointLayout(w: 432, hch: 1)
+      currentSize:           point(432, 477)
+      elementToParentMatrix: matrix(1, 1, 0, 0, 173.5, 0)
+      receivePointerEvents:  "passToChildren"
+
+
+      Element
+        on:
+          mouseIn:  -> { return fn.call(_this); }
+          mouseOut: -> { return fn.call(_this); }
+          horizontal:
+            begin:     (a) -> { return fn.call(_this, a); }
+            move:      (a) -> { return fn.call(_this, a); }
+            end:       (a) -> { return fn.call(_this, a); }
+            cancel:    (a) -> { return fn.call(_this, a); }
+            recognize: (e) -> { return e.delta.absoluteAspectRatio > 1; }
+
+          pointerDown:
+            function (e) {
+                        var base, ref;
+                        _this._capturedEvents = false;
+                        if (typeof (base = _this._nonGestureHandlers).pointerDown === "function") {
+                          base.pointerDown(e);
+                        }
+                        _this._startEvent = e.newEvent ? e.newEvent() : clone(e);
+                        if ((ref = _this._lastActiveGesture) != null ? typeof ref.resume === "function" ? ref.resume(e)
+
+          pointerMove:
+            function (e) {
+                        var ag, base, base1, base2, ref;
+                        if (ag = _this._activeGesture) {
+                          if (!_this._capturedEvents && !e.pointer.stayedWithinDeadzone && (typeof (base = _this._activeGesture).recognize === "function" ? base.recognize(e) : void 0)) {
+                            if ((ref = e.target) != null) {
+                              if (typeof ref.capturePointerEvents === "function") {
+
+          pointerUp:
+            function (e) {
+                        var base, base1;
+                        if (_this._activeGesture) {
+                          if (typeof (base = _this._activeGesture).end === "function") {
+                            base.end(e);
+                          }
+                          return _this._activeGesture = null;
+                        } else {
+                          return typeof (base1 = _this._nonGestureHandlers).pointerUp === "function" ? base1.pointerUp(e) : void 0;
+
+          pointerCancel:
+            function (e) {
+                        var base, base1;
+                        if (_this._activeGesture) {
+                          if (typeof (base = _this._activeGesture).cancel === "function") {
+                            base.cancel(e);
+                          }
+                          _this._activeGesture = null;
+                        } else {
+                          if (typeof (base1 = _this._nonGestureHandlers).pointerCancel === "function") {
+                            base1.pointerCa
+
+        size:        pointLayout(w: 432, hch: 1)
+        currentSize: point(432, 477)
+        clip:        true
+
+
+        Element
+          animators:
+            _axis:
+              [] PersistantAnimator, prop: "axis", element: undefined, options: {}
+
+            _location: []
+              PersistantAnimator
+              prop: "location", element: undefined, options: {}
+
+          cacheDraw:             true
+          size:                  pointLayout(w: 432, h: 477)
+          location:              pointLayout(x: -4)
+          axis:                  point(1, 0)
+          currentSize:           point(432, 477)
+          elementToParentMatrix: matrix(1, 1, 0, 0, -436, 0)
+          clip:                  true
+
+
+          Element
+            draw: []
+              {} rectangle: radius: 16
+              {} fill:      color:  rgbColor('#5c504c1')
+              "clip"
+              "children"
+              {} outline:   color:  rgbColor('#000000081')
+
+            childrenLayout:  "column"
+            childrenMargins: perimeter(16, 16, 16, 16)
+            currentSize:     point(432, 477)
+
+
+            Element
+              size:          pointLayout(ps: 1)
+              currentSize:   point(432, 361.875)
+              currentMargin: perimeter(16, 16, 16, 16)
+
+
+              Element
+                size: pointLayout(ps: 1, h: 32), currentSize: point(432, 393.875)
+
+                  MediaBackground:vy9wI3cLBaxA
+                  on:
+                    pointerClick: -> { return fn.call(_this); }
+                    ready:        (a) -> { return fn.call(_this, a); }
+
+                  animators:
+                    _focus: []
+                      PersistantAnimator
+                      prop: "focus", element: undefined, options: duration: 0.5
+
+                  key:         "vy9wI3cLBaxA"
+                  inFlow:      false
+                  currentSize: point(432, 393.875)
+                  cursor:      "pointer"
+                  layout:      "zoom"
+                  aspectRatio: 1
+                  bitmap:      <Neptune.Art.Canvas.Bitmap>
+                  source:
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=1024&h=1024&ver=1.2"
+
+                  altSources: []
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=512&h=512&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=256&h=256&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=128&h=128&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?ver=1.2"
+
+                  previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                  post:
+                    templateUseCount:   31
+                    templateByteLength: 597163
+                    postOrder:          1519647429
+                    messageCount:       0
+                    templateFile:       "nD1D0ctpdPtPr2r3.kimi"
+                    isChapterStart:     true
+                    mediaFile:          "nD1D0ctpdPtPr2r3.jpeg"
+                    createdAt:          1519647429
+                    participantCount:   1
+                    topicId:            "MaDpQmCyBwFu"
+                    activityCount:      0
+                    colorMap:
+                      "c4ad8bc7b494cebfafcaba9fbfad97c8b397b6976fb0998b876662"
+
+                    lastActivityAt:     1519647429
+                    caption:            "Picture Frame"
+                    chapterOrder:       1519647429
+                    colors: background: "#5c504c", foreground: "#9c6f3b"
+                    updatedAt:          1523820012
+                    userId:             "RQETVyWR1cYL"
+                    dimensions:         x:          1280,      y:          1280
+                    mediaByteLength:    478348
+                    id:                 "vy9wI3cLBaxA"
+                    displayCaption:     "Picture Frame"
+                    chapterTags:        null
+                    captionTags:        null
+                    computedBackground: rgbColor('#5c504c1')
+                    computedForeground: rgbColor('#9c6f3b1')
+
+
+                Element
+                  animators:
+                    _drawOrder: []
+                      PersistantAnimator
+                      prop: "drawOrder", element: undefined, options: {}
+
+                  draw: []
+                    rectangle:
+                      area:
+                        function (arg, arg1) {
+                            var fadeHeight, fadeSize, h, w;
+                            w = arg.w, h = arg.h;
+                            fadeSize = arg1.fadeSize;
+                            fadeHeight = h * (fadeSize || 2);
+                            return rect(0, h - fadeHeight, w, fadeHeight);
+                          }
+
+                      fadeSize: 1.25
+
+                    fill:
+                      colors: []
+                        rgbColor('#5c504c001')
+                        rgbColor('#5c504c081')
+                        rgbColor('#5c504c1e1')
+                        rgbColor('#5c504c401')
+                        rgbColor('#5c504c691')
+                        rgbColor('#5c504c961')
+                        rgbColor('#5c504cbf1')
+                        rgbColor('#5c504ce11')
+                        rgbColor('#5c504cf71')
+                        rgbColor('#5c504c1')
+
+                      from:   pointLayout(0)
+                      to:     pointLayout(point(0, 1))
+                      shadow: undefined
+                      color:  undefined
+
+                  size:                  pointLayout(ww: 1, hch: 1)
+                  location:              pointLayout(ps: point(0, 1))
+                  childrenLayout:        "column"
+                  axis:                  point(0, 1)
+                  currentSize:           point(432, 104.8125)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 0, 289.0625)
+                  receivePointerEvents:  "passToChildren"
+
+
+                  Element
+                    animators:
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: {}
+
+                      _size: []
+                        PersistantAnimator
+                        prop: "size", element: undefined, options: {}
+
+                    size:                  pointLayout(ww: 1, hch: 1)
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0, 1)
+                    padding:               perimeter(16, 16, 32, 32)
+                    childrenMargins:       perimeter(16, 16, 16, 16)
+                    currentSize:           point(432, 104.8125)
+                    currentPadding:        perimeter(16, 16, 32, 32)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 16, 32)
+                    receivePointerEvents:  "passToChildren"
+
+
+                    Element
+                      size:          pointLayout(w: 32, hh: 1)
+                      currentSize:   point(32, 40.8125)
+                      currentMargin: perimeter(16, 16, 16, 16)
+
+
+                      Element
+                        on:
+                          mouseIn:       -> { return fn.call(_this); }
+                          mouseOut:      -> { return fn.call(_this); }
+                          pointerDown:   -> { return fn.call(_this); }
+                          pointerIn:     -> { return fn.call(_this); }
+                          pointerUp:     -> { return fn.call(_this); }
+                          pointerCancel: -> { return fn.call(_this); }
+                          pointerOut:    -> { return fn.call(_this); }
+                          pointerUpInside:
+                            function (event) {
+                                            var base, base1, ref1, ref2;
+                                            event.target.capturePointerEvents();
+                                            if (!_this.props.disabled) {
+                                              if (_this.doAction) {
+                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                              }
+                                              return typeof (base = (ref1 = customAction != null ? customAction :
+
+                        animators:
+                          _drawOrder: []
+                            PersistantAnimator
+                            prop: "drawOrder", element: undefined, options: {}
+
+                        draw: []
+                          padding: undefined
+                          "circle"
+                          "clip"
+                          false
+                          "children"
+                          outline: color: rgbColor('#ffffff1'), lineWidth: 2
+
+                        size:                  pointLayout(48)
+                        location:              pointLayout(hh: 0.5, xw: 1, x: -16)
+                        axis:                  point(0.5, 0.5)
+                        currentSize:           point(48, 48)
+                        cursor:                "pointer"
+                        elementToParentMatrix: matrix(1, 1, 0, 0, -8, -3.59375)
+
+
+                          MediaBackground:object_1569
+                          on:
+                            pointerClick: undefined
+                            ready:        (a) -> { return fn.call(_this, a); }
+
+                          animators:
+                            _focus: []
+                              PersistantAnimator
+                              prop:    "focus"
+                              element: undefined
+                              options: duration: 0.5
+
+                          currentSize: point(48, 48)
+                          layout:      "zoom"
+                          altSources:
+                            [] undefined, undefined, undefined, undefined
+
+                          previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                          post:
+                            postOrder:        1519647170
+                            messageCount:     0
+                            isChapterStart:   true
+                            createdAt:        1519647170
+                            participantCount: 2
+                            topicId:          "WYlrQsQGDvuX"
+                            activityCount:    0
+                            colorMap:
+                              "00fcb800c2a500dd8b4100c00052e95800c6006ec77400f50900e6"
+
+                            lastActivityAt: 1519647170
+                            chapterOrder:   1519647170
+                            colors: background: "#00804f", foreground: "#0061ff"
+                            updatedAt:      1519647170
+                            userId:         "RQETVyWR1cYL"
+                            id:             "1xFOQUn5B8wo"
+                            chapterTags:    null
+                            captionTags:    null
+
+
+                        TextElement
+                          size:     pointLayout(cs: 1)
+                          location: pointLayout(ps: point(0.5, 0.5))
+                          scale:
+                            function (ps, cs) {
+                                      var xRatio, yRatio;
+                                      xRatio = ps.x / cs.x;
+                                      yRatio = ps.y / cs.y;
+                                      return min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75);
+                                    }
+
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(21.052490234375, 13.125)
+                          elementToParentMatrix:
+                            matrix(1.7100114807899711, 1.7100114807899711, 0, 0, 6, 12.778049657315815)
+
+                          color:      rgbColor('#ffffffdd1')
+                          fontSize:   17.5
+                          fontFamily: "AvenirNext-DemiBold,sans-serif"
+                          fontWeight: "bold"
+                          text:       "RS"
+
+
+                    Element
+                      size:                  pointLayout(ww: 1, hch: 1)
+                      childrenLayout:        "column"
+                      childrenMargins:       perimeter(8, 8, 8, 8)
+                      currentSize:           point(224, 40.8125)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 48, 0)
+                      receivePointerEvents:  "passToChildren"
+
+
+                      TextElement
+                        size:                 pointLayout(ww: 1, hch: 1)
+                        currentSize:          point(224, 40.8125)
+                        currentMargin:        perimeter(8, 8, 8, 8)
+                        cursor:               "pointer"
+                        receivePointerEvents: "never"
+                        color:                rgbColor('#ffffffdd1')
+                        fontSize:             21.875
+                        fontFamily:           "AvenirNext-DemiBold,sans-serif"
+                        fontWeight:           "bold"
+                        leading:              1.1157142857142857
+                        maxLines:             3
+                        text:
+                          """
+                            Rita Sommer's
+                            Picture Frames
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size:                  pointLayout(hch: 1, w: 112)
+                      currentSize:           point(112, 8.4)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 288, 32.4125)
+
+
+                      TextElement
+                        size:        pointLayout(ww: 1, hch: 1)
+                        currentSize: point(112, 8.4)
+                        cursor:      "pointer"
+                        color:       rgbColor('#ffffffdd1')
+                        fontSize:    11.200000000000001
+                        fontFamily:  "AvenirNext-Regular,sans-serif"
+                        align:       point(1, 0)
+                        text:        "February 26th"
+
+
+              Element
+                on:
+                  mouseIn:       -> { return fn.call(_this); }
+                  mouseOut:      -> { return fn.call(_this); }
+                  pointerDown:   -> { return fn.call(_this); }
+                  pointerIn:     -> { return fn.call(_this); }
+                  pointerUp:     -> { return fn.call(_this); }
+                  pointerCancel: -> { return fn.call(_this); }
+                  pointerOut:    -> { return fn.call(_this); }
+                  pointerUpInside:
+                    function (event) {
+                                    var base, base1, ref1, ref2;
+                                    event.target.capturePointerEvents();
+                                    if (!_this.props.disabled) {
+                                      if (_this.doAction) {
+                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                      }
+                                      return typeof (base = (ref1 = customAction != null ? customAction :
+
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(38)
+                location:              pointLayout(xw: 1, x: -4, y: 4)
+                axis:                  point(1, 0)
+                childArea: (child) -> { return child.getPendingCurrentSize(); }
+                currentSize:           point(38, 38)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 390, 4)
+
+
+                Element
+                  animators:
+                    _scale: []
+                      PersistantAnimator
+                      prop: "scale", element: undefined, options: duration: 0.15
+
+                    _opacity: []
+                      PersistantAnimator
+                      prop: "opacity", element: undefined, options: true
+
+                    _draw: []
+                      PersistantAnimator
+                      prop: "draw", element: undefined, options: true
+
+                  draw: []
+                    rectangle: radius: 1000
+                    padding:   perimeter(2, 2, 2, 2)
+                    fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                  location:    pointLayout(ps: 0.5)
+                  axis:        point(0.5, 0.5)
+                  currentSize: point(38, 38)
+                  cursor:      "pointer"
+
+
+                  Element
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0.5, 0.5)
+                    padding:               perimeter(4, 4, 0, 0)
+                    childrenMargins:       perimeter(8, 8, 8, 8)
+                    currentSize:           point(38, 38)
+                    currentPadding:        perimeter(4, 4, 0, 0)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 4, 0)
+
+
+                    TextElement
+                      animators:
+                        _size: []
+                          PersistantAnimator
+                          prop: "size", element: undefined, options: {}
+
+                        _fontSize: []
+                          PersistantAnimator
+                          prop: "fontSize", element: undefined, options: {}
+
+                      size:                  pointLayout(25)
+                      currentSize:           point(25, 25)
+                      currentMargin:         perimeter(8, 8, 8, 8)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 2.5, 6.5)
+                      color:                 rgbColor('#ffffffdd1')
+                      fontSize:              24
+                      fontFamily:            "icomoon"
+                      align:                 point(0.5, 0.5)
+                      layoutMode:            "tight"
+                      text:                  ""
+
+
+            Element
+              inFlow:               false
+              padding:              perimeter(0, 0, 0, 128)
+              currentSize:          point(432, 477)
+              currentPadding:       perimeter(0, 0, 0, 128)
+              currentMargin:        perimeter(16, 16, 16, 16)
+              receivePointerEvents: "passToChildren"
+
+
+              Element
+                size:                  pointLayout(cs: 1)
+                location:              pointLayout(ps: point(0, 0))
+                childrenLayout:        "row"
+                childrenAlignment:     point(1, 0.5)
+                padding:               perimeter(8, 8, 8, 8)
+                childrenMargins:       perimeter(8, 8, 8, 8)
+                currentSize:           point(227.33738708496094, 71)
+                currentPadding:        perimeter(8, 8, 8, 8)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 8, 8)
+                receivePointerEvents:  "passToChildren"
+
+
+                Element
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  size:          pointLayout(55)
+                  currentSize:   point(55, 55)
+                  currentMargin: perimeter(8, 8, 8, 8)
+                  cursor:        "pointer"
+
+
+                  Element
+                    animators:
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: {}
+
+                    draw: []
+                      radius: 1000
+                      fill:
+                        color: rgbColor('#19b2ff1')
+                        shadow:
+                          color:  "#0000006b"
+                          blur:   20
+                          offset: pointLayout(y: 5)
+
+                        colors: undefined
+                        to:     undefined
+                        from:   undefined
+
+                      rectangle: radius: 1000
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(55, 55)
+
+
+                    TextElement
+                      on:                    pointerClick: undefined
+                      size:                  pointLayout(cs: 1)
+                      location:              pointLayout(ps: 0.5)
+                      axis:                  point(0.5, 0.62)
+                      currentSize:           point(30, 32)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 12.5, 7.66)
+                      color:                 rgbColor('#ffffff1')
+                      fontSize:              35
+                      fontFamily:            "icomoon"
+                      layoutMode:            "tight"
+                      text:                  ""
+
+
+                Element
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  size:                  pointLayout(cs: 1)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(148.33738708496094, 37.125)
+                  currentMargin:         perimeter(8, 8, 8, 8)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 63, 8.9375)
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 1000
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:
+                        shadow:
+                          color:  "#0000006b"
+                          blur:   20
+                          offset: pointLayout(y: 5)
+
+                        color:  rgbColor('#19b2ff1')
+                        colors: undefined
+                        to:     undefined
+                        from:   undefined
+
+                    size:        pointLayout(cs: 1)
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(148.33738708496094, 37.125)
+                    cursor:      "pointer"
+
+
+                    Element
+                      size:                  pointLayout(cs: 1)
+                      padding:               perimeter(12, 12, 12, 12)
+                      currentSize:           point(148.33738708496094, 37.125)
+                      currentPadding:        perimeter(12, 12, 12, 12)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 12, 12)
+
+
+                      TextElement
+                        size:        pointLayout(cs: 1)
+                        currentSize: point(124.33738708496094, 13.125)
+                        color:       rgbColor('#ffffffdd1')
+                        fontSize:    17.5
+                        fontFamily:  "AvenirNext-Regular,sans-serif"
+                        text:        "add your photo"
+
+
+            Element
+              animators:
+                _drawOrder: []
+                  PersistantAnimator
+                  prop: "drawOrder", element: undefined, options: {}
+
+              size:                  pointLayout(hch: 1)
+              childrenLayout:        "column"
+              padding:               perimeter(16, 16, 0, 16)
+              childrenMargins:       perimeter(16, 16, 16, 16)
+              currentSize:           point(432, 99.125)
+              currentPadding:        perimeter(16, 16, 0, 16)
+              currentMargin:         perimeter(16, 16, 16, 16)
+              elementToParentMatrix: matrix(1, 1, 0, 0, 16, 377.875)
+
+
+              TextElement
+                on:               pointerClick: -> { return fn.call(_this); }
+                size:             pointLayout(ww: 1, hch: 1)
+                currentSize:      point(400, 13.125)
+                currentMargin:    perimeter(16, 16, 16, 16)
+                cursor:           "pointer"
+                color:            rgbColor('#ffffffdd1')
+                fontSize:         17.5
+                fontFamily:       "AvenirNext-Regular,sans-serif"
+                paragraphLeading: 2
+                maxLines:         2
+                text:             "Picture Frame"
+
+
+              Element
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(ww: 1, h: 38)
+                childrenLayout:        "row"
+                currentSize:           point(400, 38)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 29.125)
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:         "AnimatedIconTextButton-internal"
+                  size:        pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize: point(133.33333333333331, 38)
+                  clip:        true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333331, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333331, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 33.92268625895181, 9.625)
+
+
+                          TextElement:follow icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "follow icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "follow"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(38.73796081542969, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 60.67268625895181, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(38.73796081542969, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "follow"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 133.33333333333331, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 19.754694620768234, 9.625)
+
+
+                          TextElement:comments icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "comments icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "comments"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(67.07394409179688, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 46.504694620768234, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(67.07394409179688, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "comments"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 266.66666666666663, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 35.966684977213546, 9.625)
+
+
+                          TextElement:share icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "share icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "share"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(34.64996337890625, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 62.716684977213546, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(34.64996337890625, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "share"
+
+
+              Element
+                size:                  pointLayout(h: 0)
+                currentSize:           point(400, 0)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 83.125)
+
+
+        Element
+          animators:
+            _axis:
+              [] PersistantAnimator, prop: "axis", element: undefined, options: {}
+
+            _location: []
+              PersistantAnimator
+              prop: "location", element: undefined, options: {}
+
+          cacheDraw:             true
+          size:                  pointLayout(w: 432, h: 477)
+          location:              pointLayout(x: -4)
+          axis:                  point(1, 0)
+          currentSize:           point(432, 477)
+          elementToParentMatrix: matrix(1, 1, 0, 0, -436, 0)
+          clip:                  true
+
+
+          Element
+            draw: []
+              {} rectangle: radius: 16
+              {} fill:      color:  rgbColor('#5c504c1')
+              "clip"
+              "children"
+              {} outline:   color:  rgbColor('#000000081')
+
+            childrenLayout:  "column"
+            childrenMargins: perimeter(16, 16, 16, 16)
+            currentSize:     point(432, 477)
+
+
+            Element
+              size:          pointLayout(ww: 1, h: 92)
+              currentSize:   point(432, 92)
+              currentMargin: perimeter(16, 16, 16, 16)
+
+
+              Element
+                size: pointLayout(ps: 1, h: 32), currentSize: point(432, 124)
+
+                  MediaBackground:vy9wI3cLBaxA
+                  on:
+                    pointerClick: -> { return fn.call(_this); }
+                    ready:        (a) -> { return fn.call(_this, a); }
+
+                  animators:
+                    _focus: []
+                      PersistantAnimator
+                      prop: "focus", element: undefined, options: duration: 0.5
+
+                  key:         "vy9wI3cLBaxA"
+                  inFlow:      false
+                  currentSize: point(432, 124)
+                  cursor:      "pointer"
+                  layout:      "zoom"
+                  aspectRatio: 1
+                  bitmap:      <Neptune.Art.Canvas.Bitmap>
+                  source:
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=1024&h=1024&ver=1.2"
+
+                  altSources: []
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=512&h=512&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=256&h=256&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=128&h=128&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?ver=1.2"
+
+                  previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                  post:
+                    templateUseCount:   31
+                    templateByteLength: 597163
+                    postOrder:          1519647429
+                    messageCount:       0
+                    templateFile:       "nD1D0ctpdPtPr2r3.kimi"
+                    isChapterStart:     true
+                    mediaFile:          "nD1D0ctpdPtPr2r3.jpeg"
+                    createdAt:          1519647429
+                    participantCount:   1
+                    topicId:            "MaDpQmCyBwFu"
+                    activityCount:      0
+                    colorMap:
+                      "c4ad8bc7b494cebfafcaba9fbfad97c8b397b6976fb0998b876662"
+
+                    lastActivityAt:     1519647429
+                    caption:            "Picture Frame"
+                    chapterOrder:       1519647429
+                    colors: background: "#5c504c", foreground: "#9c6f3b"
+                    updatedAt:          1523820012
+                    userId:             "RQETVyWR1cYL"
+                    dimensions:         x:          1280,      y:          1280
+                    mediaByteLength:    478348
+                    id:                 "vy9wI3cLBaxA"
+                    displayCaption:     "Picture Frame"
+                    chapterTags:        null
+                    captionTags:        null
+                    computedBackground: rgbColor('#5c504c1')
+                    computedForeground: rgbColor('#9c6f3b1')
+
+
+                Element
+                  animators:
+                    _drawOrder: []
+                      PersistantAnimator
+                      prop: "drawOrder", element: undefined, options: {}
+
+                  draw: []
+                    rectangle:
+                      area:
+                        function (arg, arg1) {
+                            var fadeHeight, fadeSize, h, w;
+                            w = arg.w, h = arg.h;
+                            fadeSize = arg1.fadeSize;
+                            fadeHeight = h * (fadeSize || 2);
+                            return rect(0, h - fadeHeight, w, fadeHeight);
+                          }
+
+                      fadeSize: 1.25
+
+                    fill:
+                      colors: []
+                        rgbColor('#5c504c001')
+                        rgbColor('#5c504c081')
+                        rgbColor('#5c504c1e1')
+                        rgbColor('#5c504c401')
+                        rgbColor('#5c504c691')
+                        rgbColor('#5c504c961')
+                        rgbColor('#5c504cbf1')
+                        rgbColor('#5c504ce11')
+                        rgbColor('#5c504cf71')
+                        rgbColor('#5c504c1')
+
+                      from:   pointLayout(0)
+                      to:     pointLayout(point(0, 1))
+                      shadow: undefined
+                      color:  undefined
+
+                  size:                  pointLayout(ww: 1, hch: 1)
+                  location:              pointLayout(ps: point(0, 1))
+                  childrenLayout:        "column"
+                  axis:                  point(0, 1)
+                  currentSize:           point(432, 98.25)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 0, 25.75)
+                  receivePointerEvents:  "passToChildren"
+
+
+                  Element
+                    animators:
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: {}
+
+                      _size: []
+                        PersistantAnimator
+                        prop: "size", element: undefined, options: {}
+
+                    size:                  pointLayout(ww: 1, hch: 1)
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0, 1)
+                    padding:               perimeter(16, 16, 32, 32)
+                    childrenMargins:       perimeter(16, 16, 16, 16)
+                    currentSize:           point(432, 98.25)
+                    currentPadding:        perimeter(16, 16, 32, 32)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 16, 32)
+                    receivePointerEvents:  "passToChildren"
+
+
+                    Element
+                      size:          pointLayout(w: 32, hh: 1)
+                      currentSize:   point(32, 34.25)
+                      currentMargin: perimeter(16, 16, 16, 16)
+
+
+                      Element
+                        on:
+                          mouseIn:       -> { return fn.call(_this); }
+                          mouseOut:      -> { return fn.call(_this); }
+                          pointerDown:   -> { return fn.call(_this); }
+                          pointerIn:     -> { return fn.call(_this); }
+                          pointerUp:     -> { return fn.call(_this); }
+                          pointerCancel: -> { return fn.call(_this); }
+                          pointerOut:    -> { return fn.call(_this); }
+                          pointerUpInside:
+                            function (event) {
+                                            var base, base1, ref1, ref2;
+                                            event.target.capturePointerEvents();
+                                            if (!_this.props.disabled) {
+                                              if (_this.doAction) {
+                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                              }
+                                              return typeof (base = (ref1 = customAction != null ? customAction :
+
+                        animators:
+                          _drawOrder: []
+                            PersistantAnimator
+                            prop: "drawOrder", element: undefined, options: {}
+
+                        draw: []
+                          padding: undefined
+                          "circle"
+                          "clip"
+                          false
+                          "children"
+                          outline: color: rgbColor('#ffffff1'), lineWidth: 2
+
+                        size:                  pointLayout(48)
+                        location:              pointLayout(hh: 0.5, xw: 1, x: -16)
+                        axis:                  point(0.5, 0.5)
+                        currentSize:           point(48, 48)
+                        cursor:                "pointer"
+                        elementToParentMatrix: matrix(1, 1, 0, 0, -8, -6.875)
+
+
+                          MediaBackground:object_1570
+                          on:
+                            pointerClick: undefined
+                            ready:        (a) -> { return fn.call(_this, a); }
+
+                          animators:
+                            _focus: []
+                              PersistantAnimator
+                              prop:    "focus"
+                              element: undefined
+                              options: duration: 0.5
+
+                          currentSize: point(48, 48)
+                          layout:      "zoom"
+                          altSources:
+                            [] undefined, undefined, undefined, undefined
+
+                          previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                          post:
+                            postOrder:        1519647170
+                            messageCount:     0
+                            isChapterStart:   true
+                            createdAt:        1519647170
+                            participantCount: 2
+                            topicId:          "WYlrQsQGDvuX"
+                            activityCount:    0
+                            colorMap:
+                              "00fcb800c2a500dd8b4100c00052e95800c6006ec77400f50900e6"
+
+                            lastActivityAt: 1519647170
+                            chapterOrder:   1519647170
+                            colors: background: "#00804f", foreground: "#0061ff"
+                            updatedAt:      1519647170
+                            userId:         "RQETVyWR1cYL"
+                            id:             "1xFOQUn5B8wo"
+                            chapterTags:    null
+                            captionTags:    null
+
+
+                        TextElement
+                          size:     pointLayout(cs: 1)
+                          location: pointLayout(ps: point(0.5, 0.5))
+                          scale:
+                            function (ps, cs) {
+                                      var xRatio, yRatio;
+                                      xRatio = ps.x / cs.x;
+                                      yRatio = ps.y / cs.y;
+                                      return min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75);
+                                    }
+
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(21.052490234375, 13.125)
+                          elementToParentMatrix:
+                            matrix(1.7100114807899711, 1.7100114807899711, 0, 0, 6, 12.778049657315815)
+
+                          color:      rgbColor('#ffffffdd1')
+                          fontSize:   17.5
+                          fontFamily: "AvenirNext-DemiBold,sans-serif"
+                          fontWeight: "bold"
+                          text:       "RS"
+
+
+                    Element
+                      size:                  pointLayout(ww: 1, hch: 1)
+                      childrenLayout:        "column"
+                      childrenMargins:       perimeter(8, 8, 8, 8)
+                      currentSize:           point(224, 34.25)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 48, 0)
+                      receivePointerEvents:  "passToChildren"
+
+
+                      TextElement
+                        size:                 pointLayout(ww: 1, hch: 1)
+                        currentSize:          point(224, 34.25)
+                        currentMargin:        perimeter(8, 8, 8, 8)
+                        cursor:               "pointer"
+                        receivePointerEvents: "never"
+                        color:                rgbColor('#ffffffdd1')
+                        fontSize:             17.5
+                        fontFamily:           "AvenirNext-DemiBold,sans-serif"
+                        fontWeight:           "bold"
+                        leading:              1.207142857142857
+                        maxLines:             2
+                        text:
+                          """
+                            Rita Sommer's
+                            Picture Frames
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size:                  pointLayout(hch: 1, w: 112)
+                      currentSize:           point(112, 8.4)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 288, 25.85)
+
+
+                      TextElement
+                        size:        pointLayout(ww: 1, hch: 1)
+                        currentSize: point(112, 8.4)
+                        cursor:      "pointer"
+                        color:       rgbColor('#ffffffdd1')
+                        fontSize:    11.200000000000001
+                        fontFamily:  "AvenirNext-Regular,sans-serif"
+                        align:       point(1, 0)
+                        text:        "4:37pm"
+
+
+              Element
+                on:
+                  mouseIn:       -> { return fn.call(_this); }
+                  mouseOut:      -> { return fn.call(_this); }
+                  pointerDown:   -> { return fn.call(_this); }
+                  pointerIn:     -> { return fn.call(_this); }
+                  pointerUp:     -> { return fn.call(_this); }
+                  pointerCancel: -> { return fn.call(_this); }
+                  pointerOut:    -> { return fn.call(_this); }
+                  pointerUpInside:
+                    function (event) {
+                                    var base, base1, ref1, ref2;
+                                    event.target.capturePointerEvents();
+                                    if (!_this.props.disabled) {
+                                      if (_this.doAction) {
+                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                      }
+                                      return typeof (base = (ref1 = customAction != null ? customAction :
+
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(38)
+                location:              pointLayout(xw: 1, x: -4, y: 4)
+                axis:                  point(1, 0)
+                childArea: (child) -> { return child.getPendingCurrentSize(); }
+                currentSize:           point(38, 38)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 390, 4)
+
+
+                Element
+                  animators:
+                    _scale: []
+                      PersistantAnimator
+                      prop: "scale", element: undefined, options: duration: 0.15
+
+                    _opacity: []
+                      PersistantAnimator
+                      prop: "opacity", element: undefined, options: true
+
+                    _draw: []
+                      PersistantAnimator
+                      prop: "draw", element: undefined, options: true
+
+                  draw: []
+                    rectangle: radius: 1000
+                    padding:   perimeter(2, 2, 2, 2)
+                    fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                  location:    pointLayout(ps: 0.5)
+                  axis:        point(0.5, 0.5)
+                  currentSize: point(38, 38)
+                  cursor:      "pointer"
+
+
+                  Element
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0.5, 0.5)
+                    padding:               perimeter(4, 4, 0, 0)
+                    childrenMargins:       perimeter(8, 8, 8, 8)
+                    currentSize:           point(38, 38)
+                    currentPadding:        perimeter(4, 4, 0, 0)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 4, 0)
+
+
+                    TextElement
+                      animators:
+                        _size: []
+                          PersistantAnimator
+                          prop: "size", element: undefined, options: {}
+
+                        _fontSize: []
+                          PersistantAnimator
+                          prop: "fontSize", element: undefined, options: {}
+
+                      size:                  pointLayout(25)
+                      currentSize:           point(25, 25)
+                      currentMargin:         perimeter(8, 8, 8, 8)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 2.5, 6.5)
+                      color:                 rgbColor('#ffffffdd1')
+                      fontSize:              24
+                      fontFamily:            "icomoon"
+                      align:                 point(0.5, 0.5)
+                      layoutMode:            "tight"
+                      text:                  ""
+
+
+            Element
+              animators:
+                _drawOrder: []
+                  PersistantAnimator
+                  prop: "drawOrder", element: undefined, options: {}
+
+              size:                  pointLayout(ps: 1)
+              childrenLayout:        "column"
+              padding:               perimeter(16, 16, 0, 16)
+              childrenMargins:       perimeter(16, 16, 16, 16)
+              currentSize:           point(432, 369)
+              currentPadding:        perimeter(16, 16, 0, 16)
+              currentMargin:         perimeter(16, 16, 16, 16)
+              elementToParentMatrix: matrix(1, 1, 0, 0, 16, 108)
+
+
+              Element
+                on:            pointerClick: -> { return fn.call(_this); }
+                currentSize:   point(400, 253.875)
+                currentMargin: perimeter(16, 16, 16, 16)
+                cursor:        "pointer"
+
+
+                Element
+                  currentSize: point(400, 253.875)
+
+                    MediaBackground:object_1576
+                    on:
+                      pointerClick: undefined
+                      ready:        (a) -> { return fn.call(_this, a); }
+
+                    animators:
+                      _focus: []
+                        PersistantAnimator
+                        prop:    "focus"
+                        element: undefined
+                        options: duration: 0.5
+
+                    size:        pointLayout(ps: 1)
+                    currentSize: point(400, 253.875)
+                    shadow:
+                      blur:   2
+                      offset: pointLayout(y: 2)
+                      color:  rgbColor('#000000551')
+
+                    layout:      "zoom"
+                    aspectRatio: 1
+                    bitmap:      <Neptune.Art.Canvas.Bitmap>
+                    source:
+                      "https://zoimages.imikimi.com/yxGmD8W2s6P9Xmuq.jpeg?w=1024&h=1024&ver=1.2"
+
+                    altSources: []
+                      "https://zoimages.imikimi.com/yxGmD8W2s6P9Xmuq.jpeg?w=512&h=512&ver=1.2"
+                      "https://zoimages.imikimi.com/yxGmD8W2s6P9Xmuq.jpeg?w=256&h=256&ver=1.2"
+                      "https://zoimages.imikimi.com/yxGmD8W2s6P9Xmuq.jpeg?w=128&h=128&ver=1.2"
+                      "https://zoimages.imikimi.com/yxGmD8W2s6P9Xmuq.jpeg?ver=1.2"
+
+                    previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                    post:
+                      templateUseCount:   15
+                      templateByteLength: 556887
+                      postOrder:          1523983075
+                      messageCount:       0
+                      templateFile:       "yxGmD8W2s6P9Xmuq.kimi"
+                      mediaFile:          "yxGmD8W2s6P9Xmuq.jpeg"
+                      isChapterStart:     false
+                      createdAt:          1523983075
+                      participantCount:   1
+                      topicId:            "MaDpQmCyBwFu"
+                      activityCount:      0
+                      colorMap:
+                        "424f7b5a638f444f8f645e644d4c624c55884a4d7448507c304473"
+
+                      lastActivityAt:  1523983075
+                      caption:         "Picture Frame"
+                      colors: background: "#5a5781", foreground: "#a44c5c"
+                      userId:          "RQETVyWR1cYL"
+                      updatedAt:       1523987966
+                      dimensions:      x:          1225,      y:          1225
+                      mediaByteLength: 332750
+                      id:              "1OqZ0M95sTal"
+                      displayCaption:  "Picture Frame"
+                      chapterTags:     null
+                      captionTags:     null
+
+
+                  Element
+                    size:              pointLayout(cs: 1)
+                    location:          pointLayout(ps: point(1, 1))
+                    childrenLayout:    "row"
+                    childrenAlignment: point(1, 0.5)
+                    axis:              point(1, 1)
+                    padding:           perimeter(8, 8, 8, 8)
+                    childrenMargins:   perimeter(8, 8, 8, 8)
+                    currentSize:       point(227.33738708496094, 71)
+                    currentPadding:    perimeter(8, 8, 8, 8)
+                    elementToParentMatrix:
+                      matrix(1, 1, 0, 0, 180.66261291503906, 190.875)
+
+                    receivePointerEvents: "passToChildren"
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size: pointLayout(cs: 1)
+                      childArea:
+                        (child) -> { return child.getPendingCurrentSize(); }
+
+                      currentSize:           point(148.33738708496094, 37.125)
+                      currentMargin:         perimeter(8, 8, 8, 8)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 0, 8.9375)
+
+
+                      Element
+                        animators:
+                          _scale: []
+                            PersistantAnimator
+                            prop:    "scale"
+                            element: undefined
+                            options: duration: 0.15
+
+                          _opacity: []
+                            PersistantAnimator
+                            prop: "opacity", element: undefined, options: true
+
+                          _draw: []
+                            PersistantAnimator
+                            prop: "draw", element: undefined, options: true
+
+                        draw: []
+                          rectangle: radius: 1000
+                          padding:   perimeter(2, 2, 2, 2)
+                          fill:
+                            shadow:
+                              color:  "#0000006b"
+                              blur:   20
+                              offset: pointLayout(y: 5)
+
+                            color:  rgbColor('#19b2ff1')
+                            colors: undefined
+                            to:     undefined
+                            from:   undefined
+
+                        size:        pointLayout(cs: 1)
+                        location:    pointLayout(ps: 0.5)
+                        axis:        point(0.5, 0.5)
+                        currentSize: point(148.33738708496094, 37.125)
+                        cursor:      "pointer"
+
+
+                        Element
+                          size:                  pointLayout(cs: 1)
+                          padding:               perimeter(12, 12, 12, 12)
+                          currentSize:           point(148.33738708496094, 37.125)
+                          currentPadding:        perimeter(12, 12, 12, 12)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 12, 12)
+
+
+                          TextElement
+                            size:        pointLayout(cs: 1)
+                            currentSize: point(124.33738708496094, 13.125)
+                            color:       rgbColor('#ffffffdd1')
+                            fontSize:    17.5
+                            fontFamily:  "AvenirNext-Regular,sans-serif"
+                            text:        "add your photo"
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size:          pointLayout(55)
+                      currentSize:   point(55, 55)
+                      currentMargin: perimeter(8, 8, 8, 8)
+                      cursor:        "pointer"
+                      elementToParentMatrix:
+                        matrix(1, 1, 0, 0, 156.33738708496094, 0)
+
+
+                      Element
+                        animators:
+                          _draw: []
+                            PersistantAnimator
+                            prop: "draw", element: undefined, options: {}
+
+                        draw: []
+                          radius: 1000
+                          fill:
+                            color: rgbColor('#19b2ff1')
+                            shadow:
+                              color:  "#0000006b"
+                              blur:   20
+                              offset: pointLayout(y: 5)
+
+                            colors: undefined
+                            to:     undefined
+                            from:   undefined
+
+                          rectangle: radius: 1000
+
+                        location:    pointLayout(ps: 0.5)
+                        axis:        point(0.5, 0.5)
+                        currentSize: point(55, 55)
+
+
+                        TextElement
+                          on:                    pointerClick: undefined
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: 0.5)
+                          axis:                  point(0.5, 0.62)
+                          currentSize:           point(30, 32)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 12.5, 7.66)
+                          color:                 rgbColor('#ffffff1')
+                          fontSize:              35
+                          fontFamily:            "icomoon"
+                          layoutMode:            "tight"
+                          text:                  ""
+
+
+              TextElement
+                on:                    pointerClick: -> { return fn.call(_this); }
+                size:                  pointLayout(ww: 1, hch: 1)
+                currentSize:           point(400, 13.125)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                cursor:                "pointer"
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 269.875)
+                color:                 rgbColor('#ffffffdd1')
+                fontSize:              17.5
+                fontFamily:            "AvenirNext-Regular,sans-serif"
+                paragraphLeading:      2
+                maxLines:              2
+                text:                  "Picture Frame"
+
+
+              Element
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(ww: 1, h: 38)
+                childrenLayout:        "row"
+                currentSize:           point(400, 38)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 299)
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:         "AnimatedIconTextButton-internal"
+                  size:        pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize: point(133.33333333333331, 38)
+                  clip:        true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333331, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333331, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 33.92268625895181, 9.625)
+
+
+                          TextElement:follow icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "follow icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "follow"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(38.73796081542969, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 60.67268625895181, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(38.73796081542969, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "follow"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 133.33333333333331, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 19.754694620768234, 9.625)
+
+
+                          TextElement:comments icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "comments icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "comments"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(67.07394409179688, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 46.504694620768234, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(67.07394409179688, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "comments"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 266.66666666666663, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 35.966684977213546, 9.625)
+
+
+                          TextElement:share icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "share icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "share"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(34.64996337890625, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 62.716684977213546, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(34.64996337890625, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "share"
+
+
+              Element
+                size:                  pointLayout(h: 0)
+                currentSize:           point(400, 0)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 353)
+
+
+        Element
+          animators:
+            _axis:
+              [] PersistantAnimator, prop: "axis", element: undefined, options: {}
+
+            _location: []
+              PersistantAnimator
+              prop: "location", element: undefined, options: {}
+
+          cacheDraw:   true
+          size:        pointLayout(w: 432, h: 477)
+          currentSize: point(432, 477)
+          clip:        true
+
+
+          Element
+            draw: []
+              {} rectangle: radius: 16
+              {} fill:      color:  rgbColor('#5c504c1')
+              "clip"
+              "children"
+              {} outline:   color:  rgbColor('#000000081')
+
+            childrenLayout:  "column"
+            childrenMargins: perimeter(16, 16, 16, 16)
+            currentSize:     point(432, 477)
+
+
+            Element
+              size:          pointLayout(ww: 1, h: 92)
+              currentSize:   point(432, 92)
+              currentMargin: perimeter(16, 16, 16, 16)
+
+
+              Element
+                size: pointLayout(ps: 1, h: 32), currentSize: point(432, 124)
+
+                  MediaBackground:vy9wI3cLBaxA
+                  on:
+                    pointerClick: -> { return fn.call(_this); }
+                    ready:        (a) -> { return fn.call(_this, a); }
+
+                  animators:
+                    _focus: []
+                      PersistantAnimator
+                      prop: "focus", element: undefined, options: duration: 0.5
+
+                    _bitmapOpacity: []
+                      PersistantAnimator
+                      prop:    "bitmapOpacity"
+                      element: "MediaBackground:vy9wI3cLBaxA"
+                      options: true
+
+                  key:         "vy9wI3cLBaxA"
+                  inFlow:      false
+                  currentSize: point(432, 124)
+                  cursor:      "pointer"
+                  layout:      "zoom"
+                  aspectRatio: 1
+                  bitmap:      <Neptune.Art.Canvas.Bitmap>
+                  source:
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=1024&h=1024&ver=1.2"
+
+                  altSources: []
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=512&h=512&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=256&h=256&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?w=128&h=128&ver=1.2"
+                    "https://zoimages.imikimi.com/nD1D0ctpdPtPr2r3.jpeg?ver=1.2"
+
+                  previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                  post:
+                    templateUseCount:   31
+                    templateByteLength: 597163
+                    postOrder:          1519647429
+                    messageCount:       0
+                    templateFile:       "nD1D0ctpdPtPr2r3.kimi"
+                    isChapterStart:     true
+                    mediaFile:          "nD1D0ctpdPtPr2r3.jpeg"
+                    createdAt:          1519647429
+                    participantCount:   1
+                    topicId:            "MaDpQmCyBwFu"
+                    activityCount:      0
+                    colorMap:
+                      "c4ad8bc7b494cebfafcaba9fbfad97c8b397b6976fb0998b876662"
+
+                    lastActivityAt:     1519647429
+                    caption:            "Picture Frame"
+                    chapterOrder:       1519647429
+                    colors: background: "#5c504c", foreground: "#9c6f3b"
+                    updatedAt:          1523820012
+                    userId:             "RQETVyWR1cYL"
+                    dimensions:         x:          1280,      y:          1280
+                    mediaByteLength:    478348
+                    id:                 "vy9wI3cLBaxA"
+                    displayCaption:     "Picture Frame"
+                    chapterTags:        null
+                    captionTags:        null
+                    computedBackground: rgbColor('#5c504c1')
+                    computedForeground: rgbColor('#9c6f3b1')
+
+                  bitmapOpacity: 1
+
+
+                Element
+                  animators:
+                    _drawOrder: []
+                      PersistantAnimator
+                      prop: "drawOrder", element: undefined, options: {}
+
+                  draw: []
+                    rectangle:
+                      area:
+                        function (arg, arg1) {
+                            var fadeHeight, fadeSize, h, w;
+                            w = arg.w, h = arg.h;
+                            fadeSize = arg1.fadeSize;
+                            fadeHeight = h * (fadeSize || 2);
+                            return rect(0, h - fadeHeight, w, fadeHeight);
+                          }
+
+                      fadeSize: 1.25
+
+                    fill:
+                      colors: []
+                        rgbColor('#5c504c001')
+                        rgbColor('#5c504c081')
+                        rgbColor('#5c504c1e1')
+                        rgbColor('#5c504c401')
+                        rgbColor('#5c504c691')
+                        rgbColor('#5c504c961')
+                        rgbColor('#5c504cbf1')
+                        rgbColor('#5c504ce11')
+                        rgbColor('#5c504cf71')
+                        rgbColor('#5c504c1')
+
+                      from:   pointLayout(0)
+                      to:     pointLayout(point(0, 1))
+                      shadow: undefined
+                      color:  undefined
+
+                  size:                  pointLayout(ww: 1, hch: 1)
+                  location:              pointLayout(ps: point(0, 1))
+                  childrenLayout:        "column"
+                  axis:                  point(0, 1)
+                  currentSize:           point(432, 98.25)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 0, 25.75)
+                  receivePointerEvents:  "passToChildren"
+
+
+                  Element
+                    animators:
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: {}
+
+                      _size: []
+                        PersistantAnimator
+                        prop: "size", element: undefined, options: {}
+
+                    size:                  pointLayout(ww: 1, hch: 1)
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0, 1)
+                    padding:               perimeter(16, 16, 32, 32)
+                    childrenMargins:       perimeter(16, 16, 16, 16)
+                    currentSize:           point(432, 98.25)
+                    currentPadding:        perimeter(16, 16, 32, 32)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 16, 32)
+                    receivePointerEvents:  "passToChildren"
+
+
+                    Element
+                      size:          pointLayout(w: 32, hh: 1)
+                      currentSize:   point(32, 34.25)
+                      currentMargin: perimeter(16, 16, 16, 16)
+
+
+                      Element
+                        on:
+                          mouseIn:       -> { return fn.call(_this); }
+                          mouseOut:      -> { return fn.call(_this); }
+                          pointerDown:   -> { return fn.call(_this); }
+                          pointerIn:     -> { return fn.call(_this); }
+                          pointerUp:     -> { return fn.call(_this); }
+                          pointerCancel: -> { return fn.call(_this); }
+                          pointerOut:    -> { return fn.call(_this); }
+                          pointerUpInside:
+                            function (event) {
+                                            var base, base1, ref1, ref2;
+                                            event.target.capturePointerEvents();
+                                            if (!_this.props.disabled) {
+                                              if (_this.doAction) {
+                                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                              }
+                                              return typeof (base = (ref1 = customAction != null ? customAction :
+
+                        animators:
+                          _drawOrder: []
+                            PersistantAnimator
+                            prop: "drawOrder", element: undefined, options: {}
+
+                        draw: []
+                          padding: undefined
+                          "circle"
+                          "clip"
+                          false
+                          "children"
+                          outline: color: rgbColor('#ffffff1'), lineWidth: 2
+
+                        size:                  pointLayout(48)
+                        location:              pointLayout(hh: 0.5, xw: 1, x: -16)
+                        axis:                  point(0.5, 0.5)
+                        currentSize:           point(48, 48)
+                        cursor:                "pointer"
+                        elementToParentMatrix: matrix(1, 1, 0, 0, -8, -6.875)
+
+
+                          MediaBackground:object_1500
+                          on:
+                            pointerClick: undefined
+                            ready:        (a) -> { return fn.call(_this, a); }
+
+                          animators:
+                            _focus: []
+                              PersistantAnimator
+                              prop:    "focus"
+                              element: undefined
+                              options: duration: 0.5
+
+                          currentSize: point(48, 48)
+                          layout:      "zoom"
+                          altSources:
+                            [] undefined, undefined, undefined, undefined
+
+                          previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                          post:
+                            postOrder:        1519647170
+                            messageCount:     0
+                            isChapterStart:   true
+                            createdAt:        1519647170
+                            participantCount: 2
+                            topicId:          "WYlrQsQGDvuX"
+                            activityCount:    0
+                            colorMap:
+                              "00fcb800c2a500dd8b4100c00052e95800c6006ec77400f50900e6"
+
+                            lastActivityAt: 1519647170
+                            chapterOrder:   1519647170
+                            colors: background: "#00804f", foreground: "#0061ff"
+                            updatedAt:      1519647170
+                            userId:         "RQETVyWR1cYL"
+                            id:             "1xFOQUn5B8wo"
+                            chapterTags:    null
+                            captionTags:    null
+
+
+                        TextElement
+                          size:     pointLayout(cs: 1)
+                          location: pointLayout(ps: point(0.5, 0.5))
+                          scale:
+                            function (ps, cs) {
+                                      var xRatio, yRatio;
+                                      xRatio = ps.x / cs.x;
+                                      yRatio = ps.y / cs.y;
+                                      return min(max(yRatio, xRatio) * .5, min(yRatio, xRatio) * .75);
+                                    }
+
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(21.052490234375, 13.125)
+                          elementToParentMatrix:
+                            matrix(1.7100114807899711, 1.7100114807899711, 0, 0, 6, 12.778049657315815)
+
+                          color:      rgbColor('#ffffffdd1')
+                          fontSize:   17.5
+                          fontFamily: "AvenirNext-DemiBold,sans-serif"
+                          fontWeight: "bold"
+                          text:       "RS"
+
+
+                    Element
+                      size:                  pointLayout(ww: 1, hch: 1)
+                      childrenLayout:        "column"
+                      childrenMargins:       perimeter(8, 8, 8, 8)
+                      currentSize:           point(224, 34.25)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 48, 0)
+                      receivePointerEvents:  "passToChildren"
+
+
+                      TextElement
+                        size:                 pointLayout(ww: 1, hch: 1)
+                        currentSize:          point(224, 34.25)
+                        currentMargin:        perimeter(8, 8, 8, 8)
+                        cursor:               "pointer"
+                        receivePointerEvents: "never"
+                        color:                rgbColor('#ffffffdd1')
+                        fontSize:             17.5
+                        fontFamily:           "AvenirNext-DemiBold,sans-serif"
+                        fontWeight:           "bold"
+                        leading:              1.207142857142857
+                        maxLines:             2
+                        text:
+                          """
+                            Rita Sommer's
+                            Picture Frames
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size:                  pointLayout(hch: 1, w: 112)
+                      currentSize:           point(112, 8.4)
+                      currentMargin:         perimeter(16, 16, 16, 16)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 288, 25.85)
+
+
+                      TextElement
+                        size:        pointLayout(ww: 1, hch: 1)
+                        currentSize: point(112, 8.4)
+                        cursor:      "pointer"
+                        color:       rgbColor('#ffffffdd1')
+                        fontSize:    11.200000000000001
+                        fontFamily:  "AvenirNext-Regular,sans-serif"
+                        align:       point(1, 0)
+                        text:        "5:57pm"
+
+
+              Element
+                on:
+                  mouseIn:       -> { return fn.call(_this); }
+                  mouseOut:      -> { return fn.call(_this); }
+                  pointerDown:   -> { return fn.call(_this); }
+                  pointerIn:     -> { return fn.call(_this); }
+                  pointerUp:     -> { return fn.call(_this); }
+                  pointerCancel: -> { return fn.call(_this); }
+                  pointerOut:    -> { return fn.call(_this); }
+                  pointerUpInside:
+                    function (event) {
+                                    var base, base1, ref1, ref2;
+                                    event.target.capturePointerEvents();
+                                    if (!_this.props.disabled) {
+                                      if (_this.doAction) {
+                                        log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                      }
+                                      return typeof (base = (ref1 = customAction != null ? customAction :
+
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(38)
+                location:              pointLayout(xw: 1, x: -4, y: 4)
+                axis:                  point(1, 0)
+                childArea: (child) -> { return child.getPendingCurrentSize(); }
+                currentSize:           point(38, 38)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 390, 4)
+
+
+                Element
+                  animators:
+                    _scale: []
+                      PersistantAnimator
+                      prop: "scale", element: undefined, options: duration: 0.15
+
+                    _opacity: []
+                      PersistantAnimator
+                      prop: "opacity", element: undefined, options: true
+
+                    _draw: []
+                      PersistantAnimator
+                      prop: "draw", element: undefined, options: true
+
+                  draw: []
+                    rectangle: radius: 1000
+                    padding:   perimeter(2, 2, 2, 2)
+                    fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                  location:    pointLayout(ps: 0.5)
+                  axis:        point(0.5, 0.5)
+                  currentSize: point(38, 38)
+                  cursor:      "pointer"
+
+
+                  Element
+                    childrenLayout:        "row"
+                    childrenAlignment:     point(0.5, 0.5)
+                    padding:               perimeter(4, 4, 0, 0)
+                    childrenMargins:       perimeter(8, 8, 8, 8)
+                    currentSize:           point(38, 38)
+                    currentPadding:        perimeter(4, 4, 0, 0)
+                    elementToParentMatrix: matrix(1, 1, 0, 0, 4, 0)
+
+
+                    TextElement
+                      animators:
+                        _size: []
+                          PersistantAnimator
+                          prop: "size", element: undefined, options: {}
+
+                        _fontSize: []
+                          PersistantAnimator
+                          prop: "fontSize", element: undefined, options: {}
+
+                      size:                  pointLayout(25)
+                      currentSize:           point(25, 25)
+                      currentMargin:         perimeter(8, 8, 8, 8)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 2.5, 6.5)
+                      color:                 rgbColor('#ffffffdd1')
+                      fontSize:              24
+                      fontFamily:            "icomoon"
+                      align:                 point(0.5, 0.5)
+                      layoutMode:            "tight"
+                      text:                  ""
+
+
+            Element
+              animators:
+                _drawOrder: []
+                  PersistantAnimator
+                  prop: "drawOrder", element: undefined, options: {}
+
+              size:                  pointLayout(ps: 1)
+              childrenLayout:        "column"
+              padding:               perimeter(16, 16, 0, 16)
+              childrenMargins:       perimeter(16, 16, 16, 16)
+              currentSize:           point(432, 369)
+              currentPadding:        perimeter(16, 16, 0, 16)
+              currentMargin:         perimeter(16, 16, 16, 16)
+              elementToParentMatrix: matrix(1, 1, 0, 0, 16, 108)
+
+
+              Element
+                on:            pointerClick: -> { return fn.call(_this); }
+                currentSize:   point(400, 253.875)
+                currentMargin: perimeter(16, 16, 16, 16)
+                cursor:        "pointer"
+
+
+                Element
+                  currentSize: point(400, 253.875)
+
+                    MediaBackground:object_687
+                    on:
+                      pointerClick: undefined
+                      ready:        (a) -> { return fn.call(_this, a); }
+
+                    animators:
+                      _focus: []
+                        PersistantAnimator
+                        prop:    "focus"
+                        element: undefined
+                        options: duration: 0.5
+
+                      _bitmapOpacity: []
+                        PersistantAnimator
+                        prop:    "bitmapOpacity"
+                        element: "MediaBackground:object_687"
+                        options: true
+
+                    size:        pointLayout(ps: 1)
+                    currentSize: point(400, 253.875)
+                    shadow:
+                      blur:   2
+                      offset: pointLayout(y: 2)
+                      color:  rgbColor('#000000551')
+
+                    layout:      "zoom"
+                    aspectRatio: 1
+                    bitmap:      <Neptune.Art.Canvas.Bitmap>
+                    source:
+                      "https://zoimages.imikimi.com/EWDpKBFnXdNe7Gu7.jpeg?w=1024&h=1024&ver=1.2"
+
+                    altSources: []
+                      "https://zoimages.imikimi.com/EWDpKBFnXdNe7Gu7.jpeg?w=512&h=512&ver=1.2"
+                      "https://zoimages.imikimi.com/EWDpKBFnXdNe7Gu7.jpeg?w=256&h=256&ver=1.2"
+                      "https://zoimages.imikimi.com/EWDpKBFnXdNe7Gu7.jpeg?w=128&h=128&ver=1.2"
+                      "https://zoimages.imikimi.com/EWDpKBFnXdNe7Gu7.jpeg?ver=1.2"
+
+                    previewBitmap: <Neptune.Art.Canvas.Bitmap>
+                    post:
+                      templateUseCount:   7
+                      templateByteLength: 480277
+                      postOrder:          1523987825
+                      messageCount:       0
+                      templateFile:       "EWDpKBFnXdNe7Gu7.kimi"
+                      isChapterStart:     false
+                      mediaFile:          "EWDpKBFnXdNe7Gu7.jpeg"
+                      createdAt:          1523987825
+                      participantCount:   1
+                      topicId:            "MaDpQmCyBwFu"
+                      activityCount:      0
+                      colorMap:
+                        "a99c93a99d909d8d82a9978d866c64ab97908a7c78b5a095af9c95"
+
+                      lastActivityAt:  1523987825
+                      caption:         "Picture Frame"
+                      colors: background: "#544454", foreground: "#4c6c24"
+                      updatedAt:       1523991299
+                      userId:          "RQETVyWR1cYL"
+                      dimensions:      x:          1225,      y:          1225
+                      mediaByteLength: 328718
+                      id:              "QCkPY4dFJabM"
+                      displayCaption:  "Picture Frame"
+                      chapterTags:     null
+                      captionTags:     null
+
+                    bitmapOpacity: 1
+
+
+                  Element
+                    size:              pointLayout(cs: 1)
+                    location:          pointLayout(ps: point(1, 1))
+                    childrenLayout:    "row"
+                    childrenAlignment: point(1, 0.5)
+                    axis:              point(1, 1)
+                    padding:           perimeter(8, 8, 8, 8)
+                    childrenMargins:   perimeter(8, 8, 8, 8)
+                    currentSize:       point(227.33738708496094, 71)
+                    currentPadding:    perimeter(8, 8, 8, 8)
+                    elementToParentMatrix:
+                      matrix(1, 1, 0, 0, 180.66261291503906, 190.875)
+
+                    receivePointerEvents: "passToChildren"
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size: pointLayout(cs: 1)
+                      childArea:
+                        (child) -> { return child.getPendingCurrentSize(); }
+
+                      currentSize:           point(148.33738708496094, 37.125)
+                      currentMargin:         perimeter(8, 8, 8, 8)
+                      elementToParentMatrix: matrix(1, 1, 0, 0, 0, 8.9375)
+
+
+                      Element
+                        animators:
+                          _scale: []
+                            PersistantAnimator
+                            prop:    "scale"
+                            element: undefined
+                            options: duration: 0.15
+
+                          _opacity: []
+                            PersistantAnimator
+                            prop: "opacity", element: undefined, options: true
+
+                          _draw: []
+                            PersistantAnimator
+                            prop: "draw", element: undefined, options: true
+
+                        draw: []
+                          rectangle: radius: 1000
+                          padding:   perimeter(2, 2, 2, 2)
+                          fill:
+                            shadow:
+                              color:  "#0000006b"
+                              blur:   20
+                              offset: pointLayout(y: 5)
+
+                            color:  rgbColor('#19b2ff1')
+                            colors: undefined
+                            to:     undefined
+                            from:   undefined
+
+                        size:        pointLayout(cs: 1)
+                        location:    pointLayout(ps: 0.5)
+                        axis:        point(0.5, 0.5)
+                        currentSize: point(148.33738708496094, 37.125)
+                        cursor:      "pointer"
+
+
+                        Element
+                          size:                  pointLayout(cs: 1)
+                          padding:               perimeter(12, 12, 12, 12)
+                          currentSize:           point(148.33738708496094, 37.125)
+                          currentPadding:        perimeter(12, 12, 12, 12)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 12, 12)
+
+
+                          TextElement
+                            size:        pointLayout(cs: 1)
+                            currentSize: point(124.33738708496094, 13.125)
+                            color:       rgbColor('#ffffffdd1')
+                            fontSize:    17.5
+                            fontFamily:  "AvenirNext-Regular,sans-serif"
+                            text:        "add your photo"
+
+
+                    Element
+                      on:
+                        mouseIn:       -> { return fn.call(_this); }
+                        mouseOut:      -> { return fn.call(_this); }
+                        pointerDown:   -> { return fn.call(_this); }
+                        pointerIn:     -> { return fn.call(_this); }
+                        pointerUp:     -> { return fn.call(_this); }
+                        pointerCancel: -> { return fn.call(_this); }
+                        pointerOut:    -> { return fn.call(_this); }
+                        pointerUpInside:
+                          function (event) {
+                                          var base, base1, ref1, ref2;
+                                          event.target.capturePointerEvents();
+                                          if (!_this.props.disabled) {
+                                            if (_this.doAction) {
+                                              log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                            }
+                                            return typeof (base = (ref1 = customAction != null ? customAction :
+
+                      size:          pointLayout(55)
+                      currentSize:   point(55, 55)
+                      currentMargin: perimeter(8, 8, 8, 8)
+                      cursor:        "pointer"
+                      elementToParentMatrix:
+                        matrix(1, 1, 0, 0, 156.33738708496094, 0)
+
+
+                      Element
+                        animators:
+                          _draw: []
+                            PersistantAnimator
+                            prop: "draw", element: undefined, options: {}
+
+                        draw: []
+                          radius: 1000
+                          fill:
+                            color: rgbColor('#19b2ff1')
+                            shadow:
+                              color:  "#0000006b"
+                              blur:   20
+                              offset: pointLayout(y: 5)
+
+                            colors: undefined
+                            to:     undefined
+                            from:   undefined
+
+                          rectangle: radius: 1000
+
+                        location:    pointLayout(ps: 0.5)
+                        axis:        point(0.5, 0.5)
+                        currentSize: point(55, 55)
+
+
+                        TextElement
+                          on:                    pointerClick: undefined
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: 0.5)
+                          axis:                  point(0.5, 0.62)
+                          currentSize:           point(30, 32)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 12.5, 7.66)
+                          color:                 rgbColor('#ffffff1')
+                          fontSize:              35
+                          fontFamily:            "icomoon"
+                          layoutMode:            "tight"
+                          text:                  ""
+
+
+              TextElement
+                on:                    pointerClick: -> { return fn.call(_this); }
+                size:                  pointLayout(ww: 1, hch: 1)
+                currentSize:           point(400, 13.125)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                cursor:                "pointer"
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 269.875)
+                color:                 rgbColor('#ffffffdd1')
+                fontSize:              17.5
+                fontFamily:            "AvenirNext-Regular,sans-serif"
+                paragraphLeading:      2
+                maxLines:              2
+                text:                  "Picture Frame"
+
+
+              Element
+                animators:
+                  _opacity: []
+                    PersistantAnimator
+                    prop: "opacity", element: undefined, options: {}
+
+                size:                  pointLayout(ww: 1, h: 38)
+                childrenLayout:        "row"
+                currentSize:           point(400, 38)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 299)
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:         "AnimatedIconTextButton-internal"
+                  size:        pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize: point(133.33333333333331, 38)
+                  clip:        true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333331, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333331, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 33.92268625895181, 9.625)
+
+
+                          TextElement:follow icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "follow icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "follow"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(38.73796081542969, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 60.67268625895181, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(38.73796081542969, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "follow"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 133.33333333333331, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 19.754694620768234, 9.625)
+
+
+                          TextElement:comments icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "comments icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "comments"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(67.07394409179688, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 46.504694620768234, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(67.07394409179688, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "comments"
+
+
+                  Element:AnimatedIconTextButton-internal
+                  on:
+                    mouseIn:       -> { return fn.call(_this); }
+                    mouseOut:      -> { return fn.call(_this); }
+                    pointerDown:   -> { return fn.call(_this); }
+                    pointerIn:     -> { return fn.call(_this); }
+                    pointerUp:     -> { return fn.call(_this); }
+                    pointerCancel: -> { return fn.call(_this); }
+                    pointerOut:    -> { return fn.call(_this); }
+                    pointerUpInside:
+                      function (event) {
+                                      var base, base1, ref1, ref2;
+                                      event.target.capturePointerEvents();
+                                      if (!_this.props.disabled) {
+                                        if (_this.doAction) {
+                                          log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                        }
+                                        return typeof (base = (ref1 = customAction != null ? customAction :
+
+                  key:                   "AnimatedIconTextButton-internal"
+                  size:                  pointLayout(ww: 1, h: 38)
+                  childArea: (child) -> { return child.getPendingCurrentSize(); }
+                  currentSize:           point(133.33333333333334, 38)
+                  elementToParentMatrix: matrix(1, 1, 0, 0, 266.66666666666663, 0)
+                  clip:                  true
+
+
+                  Element
+                    animators:
+                      _scale: []
+                        PersistantAnimator
+                        prop:    "scale"
+                        element: undefined
+                        options: duration: 0.15
+
+                      _opacity: []
+                        PersistantAnimator
+                        prop: "opacity", element: undefined, options: true
+
+                      _draw: []
+                        PersistantAnimator
+                        prop: "draw", element: undefined, options: true
+
+                    draw: []
+                      rectangle: radius: 8
+                      padding:   perimeter(2, 2, 2, 2)
+                      fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+                    location:    pointLayout(ps: 0.5)
+                    axis:        point(0.5, 0.5)
+                    currentSize: point(133.33333333333334, 38)
+                    cursor:      "pointer"
+
+
+                    Element
+                      childrenLayout:    "row"
+                      childrenAlignment: point(0.5, 0.5)
+                      childrenMargins:   perimeter(8, 8, 8, 8)
+                      currentSize:       point(133.33333333333334, 38)
+
+
+                      Element
+                        key:           "icons"
+                        size:          pointLayout(18.75)
+                        currentSize:   point(18.75, 18.75)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 35.966684977213546, 9.625)
+
+
+                          TextElement:share icon
+                          animators:
+                            _scale: []
+                              PersistantAnimator
+                              prop:    "scale"
+                              element: undefined
+                              options: toFrom: 0, f: "easeInBounce", duration: 1
+
+                          key:         "share icon"
+                          size:        pointLayout(ps: 1)
+                          location:    pointLayout(ps: point(0.5, 0.5))
+                          axis:        point(0.5, 0.5)
+                          currentSize: point(18.75, 18.75)
+                          color:       rgbColor('#ffffffdd1')
+                          fontSize:    18
+                          fontFamily:  "icomoon"
+                          align:       point(0.5, 0.5)
+                          layoutMode:  "tight"
+                          text:        ""
+
+
+                      Element
+                        animators:
+                          _size: []
+                            PersistantAnimator
+                            prop:    "size"
+                            element: undefined
+                            options: toFrom: w: 0
+
+                          _margin: []
+                            PersistantAnimator
+                            prop:    "margin"
+                            element: undefined
+                            options: toFrom: 0
+
+                        key:           "share"
+                        size:          pointLayout(hh: 1, wcw: 1)
+                        margin:        perimeter(8, 8, 8, 8)
+                        currentSize:   point(34.64996337890625, 38)
+                        currentMargin: perimeter(8, 8, 8, 8)
+                        elementToParentMatrix:
+                          matrix(1, 1, 0, 0, 62.716684977213546, 0)
+
+                        clip: true
+
+
+                        TextElement
+                          size:                  pointLayout(cs: 1)
+                          location:              pointLayout(ps: point(0, 0.5))
+                          axis:                  point(0, 0.5)
+                          currentSize:           point(34.64996337890625, 10.5)
+                          elementToParentMatrix: matrix(1, 1, 0, 0, 0, 13.75)
+                          color:                 rgbColor('#ffffffdd1')
+                          fontSize:              14
+                          fontFamily:            "AvenirNext-Regular,sans-serif"
+                          text:                  "share"
+
+
+              Element
+                size:                  pointLayout(h: 0)
+                currentSize:           point(400, 0)
+                currentMargin:         perimeter(16, 16, 16, 16)
+                elementToParentMatrix: matrix(1, 1, 0, 0, 0, 353)
+
+
+        Element
+          on:
+            mouseIn:       -> { return fn.call(_this); }
+            mouseOut:      -> { return fn.call(_this); }
+            pointerDown:   -> { return fn.call(_this); }
+            pointerIn:     -> { return fn.call(_this); }
+            pointerUp:     -> { return fn.call(_this); }
+            pointerCancel: -> { return fn.call(_this); }
+            pointerOut:    -> { return fn.call(_this); }
+            pointerUpInside:
+              function (event) {
+                              var base, base1, ref1, ref2;
+                              event.target.capturePointerEvents();
+                              if (!_this.props.disabled) {
+                                if (_this.doAction) {
+                                  log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                                }
+                                return typeof (base = (ref1 = customAction != null ? customAction :
+
+          size:                  pointLayout(ww: 1, hch: 1)
+          location:              pointLayout(xw: 0.5, yh: 1, y: -16)
+          axis:                  point(0.5, 0.5)
+          padding:               perimeter(8, 8, 0, 0)
+          childArea: (child) -> { return child.getPendingCurrentSize(); }
+          currentSize:           point(432, 30)
+          currentPadding:        perimeter(8, 8, 0, 0)
+          elementToParentMatrix: matrix(1, 1, 0, 0, 8, 446)
+
+
+          Element
+            animators:
+              _scale: []
+                PersistantAnimator
+                prop: "scale", element: undefined, options: duration: 0.15
+
+              _opacity: []
+                PersistantAnimator
+                prop: "opacity", element: undefined, options: true
+
+              _draw: []
+                PersistantAnimator
+                prop: "draw", element: undefined, options: true
+
+            draw: []
+              rectangle: radius: 100
+              padding:   perimeter(2, 2, 2, 2)
+              fill:      shadow: undefined, color: rgbColor('#9c6f3b001')
+
+            size:        pointLayout(ww: 1, hch: 1)
+            location:    pointLayout(ps: 0.5)
+            axis:        point(0.5, 0.5)
+            currentSize: point(416, 30)
+            cursor:      "pointer"
+
+
+            Element
+              animators:
+                _draw: []
+                  PersistantAnimator
+                  prop: "draw", element: undefined, options: true
+
+              draw: []
+                rect(12.5, 12.5, 5, 5)
+                "circle"
+                fill: color: rgbColor('#ffffff881')
+                rect(27.5, 12.5, 5, 5)
+                "circle"
+                fill: color: rgbColor('#ffffff881')
+                rect(42.5, 12.5, 5, 5)
+                "circle"
+                fill: color: rgbColor('#ffffff881')
+                rect(57.5, 12.5, 5, 5)
+                "circle"
+                fill: color: rgbColor('#ffffff881')
+                rect(72.5, 12.5, 5, 5)
+                "circle"
+                fill: color: rgbColor('#ffffffdd1')
+
+              size:                  pointLayout(h: 30, w: 90)
+              location:              pointLayout(ps: point(0.5, 0))
+              axis:                  point(0.5, 0)
+              currentSize:           point(90, 30)
+              elementToParentMatrix: matrix(1, 1, 0, 0, 163, 0)
+
+
+      Element
+        on:
+          mouseIn:       -> { return fn.call(_this); }
+          mouseOut:      -> { return fn.call(_this); }
+          pointerDown:   -> { return fn.call(_this); }
+          pointerIn:     -> { return fn.call(_this); }
+          pointerUp:     -> { return fn.call(_this); }
+          pointerCancel: -> { return fn.call(_this); }
+          pointerOut:    -> { return fn.call(_this); }
+          pointerUpInside:
+            function (event) {
+                            var base, base1, ref1, ref2;
+                            event.target.capturePointerEvents();
+                            if (!_this.props.disabled) {
+                              if (_this.doAction) {
+                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                              }
+                              return typeof (base = (ref1 = customAction != null ? customAction :
+
+        animators:
+          _opacity: []
+            PersistantAnimator
+            prop:    "opacity"
+            element: "Element:prevPostButtonExternal"
+            options: toFrom: 0
+
+        key:                   "prevPostButtonExternal"
+        size:                  pointLayout(57)
+        location:              pointLayout(yh: 0.5, x: -44.5)
+        axis:                  point(0.5, 0.5)
+        childArea: (child) -> { return child.getPendingCurrentSize(); }
+        currentSize:           point(57, 57)
+        elementToParentMatrix: matrix(1, 1, 0, 0, -73, 210)
+
+
+        Element
+          animators:
+            _scale: []
+              PersistantAnimator
+              prop: "scale", element: undefined, options: duration: 0.15
+
+            _opacity: []
+              PersistantAnimator
+              prop: "opacity", element: undefined, options: true
+
+            _draw: []
+              PersistantAnimator
+              prop: "draw", element: undefined, options: true
+
+          draw: []
+            rectangle: radius: 100
+            padding:   perimeter(2, 2, 2, 2)
+            fill:      shadow: undefined, color: rgbColor('#5c504c1')
+
+          location:    pointLayout(ps: 0.5)
+          axis:        point(0.5, 0.5)
+          currentSize: point(57, 57)
+          cursor:      "pointer"
+
+
+          TextElement
+            animators:
+              _opacity: []
+                PersistantAnimator
+                prop: "opacity", element: undefined, options: toFrom: 0
+
+            size:        pointLayout(ps: 1)
+            location:    pointLayout(ps: point(0.5, 0.5))
+            axis:        point(0.5, 0.5)
+            currentSize: point(57, 57)
+            color:       rgbColor('#ffffff881')
+            fontSize:    24
+            fontFamily:  "icomoon"
+            align:       point(0.5, 0.5)
+            layoutMode:  "tight"
+            text:        ""
+
+
+      Element
+        on:
+          mouseIn:       -> { return fn.call(_this); }
+          mouseOut:      -> { return fn.call(_this); }
+          pointerDown:   -> { return fn.call(_this); }
+          pointerIn:     -> { return fn.call(_this); }
+          pointerUp:     -> { return fn.call(_this); }
+          pointerCancel: -> { return fn.call(_this); }
+          pointerOut:    -> { return fn.call(_this); }
+          pointerUpInside:
+            function (event) {
+                            var base, base1, ref1, ref2;
+                            event.target.capturePointerEvents();
+                            if (!_this.props.disabled) {
+                              if (_this.doAction) {
+                                log.error("DEPRICATED: @doAction is no longer supported, use @action");
+                              }
+                              return typeof (base = (ref1 = customAction != null ? customAction :
+
+        animators:
+          _opacity: []
+            PersistantAnimator
+            prop:    "opacity"
+            element: "Element:nextPostButtonExternal"
+            options: toFrom: 0
+
+        key:                   "nextPostButtonExternal"
+        size:                  pointLayout(57)
+        location:              pointLayout(yh: 0.5, xw: 1, x: 44.5)
+        axis:                  point(0.5, 0.5)
+        childArea: (child) -> { return child.getPendingCurrentSize(); }
+        currentSize:           point(57, 57)
+        elementToParentMatrix: matrix(1, 1, 0, 0, 448, 210)
+
+
+        Element
+          animators:
+            _scale: []
+              PersistantAnimator
+              prop: "scale", element: undefined, options: duration: 0.15
+
+            _opacity: []
+              PersistantAnimator
+              prop: "opacity", element: undefined, options: true
+
+            _draw: []
+              PersistantAnimator
+              prop: "draw", element: undefined, options: true
+
+          draw: []
+            rectangle: radius: 100
+            padding:   perimeter(2, 2, 2, 2)
+            fill:      shadow: undefined, color: rgbColor('#5c504c1')
+
+          location:    pointLayout(ps: 0.5)
+          axis:        point(0.5, 0.5)
+          currentSize: point(57, 57)
+          cursor:      false
+          opacity:     0
+
+
+          TextElement
+            animators:
+              _opacity: []
+                PersistantAnimator
+                prop: "opacity", element: undefined, options: toFrom: 0
+
+            size:        pointLayout(ps: 1)
+            location:    pointLayout(ps: point(0.5, 0.5))
+            axis:        point(0.5, 0.5)
+            currentSize: point(57, 57)
+            opacity:     0.25
+            color:       rgbColor('#ffffff881')
+            fontSize:    24
+            fontFamily:  "icomoon"
+            align:       point(0.5, 0.5)
+            layoutMode:  "tight"
+            text:        ""

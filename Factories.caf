@@ -1,4 +1,4 @@
-import &ArtStandardLib, &source/Art/Engine
+import &ArtStandardLib, &ArtEngine
 {elementClasses} = ElementFactory
 
 &ArtObjectTreeFactory.createObjectTreeFactories

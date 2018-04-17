@@ -35,4 +35,4 @@ class TestHelper
           if (v = options.elementSpaceDrawAreaShouldBe)?
             assert.eq element.elementSpaceDrawArea, v, :elementSpaceDrawAreaShouldBe
 
-  object &ArtEngineFactories into @
+  object &ArtEngine/Factories into @
