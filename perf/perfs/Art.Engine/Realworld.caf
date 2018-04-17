@@ -1,0 +1,4 @@
+import &StandardImport
+suite: ->
+
+  benchmark "foo" ->
