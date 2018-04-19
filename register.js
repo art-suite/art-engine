@@ -1,0 +1,1 @@
+require('coffee-script/register'); require('caffeine-mc/register');
