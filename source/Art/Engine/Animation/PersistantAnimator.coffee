@@ -347,12 +347,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseClass
 
   @getter
     inspectedObjects: ->
-      [
-        inspectedObjectLiteral "PersistantAnimator"
-        prop: @prop
-        element: @element?.inspectedName
-        options: @options
-      ]
+      "#{@prop}": @options
   ###
   IN:
     options:

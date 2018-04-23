@@ -1298,6 +1298,26 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         toInspectedObjects @minimalProps
       ].concat (child.inspectedObjects for child in @children)
 
+  # WIP
+  # getConstructableCode: (indent = '', out = string: "")->
+  #   {minimalProps} = @
+  #   {animators, on} = minimalProps
+  #   if animators
+  #     a2 = minimalProps.animators = {}
+  #     for k, v of animators
+  #       mergeInto a2, toInspectedObjects v
+
+  #   if on
+  #     minimalProps.on = object on, (v, k) -> (->)
+
+  #   delete minimalProps.elementToParentMatrix
+
+  #   out.string += indent
+  #   out.string += @class.name
+  #   out.string += "\n"
+
+  #   out.string
+
   childrenWithout = (children, child) ->
     children = children.slice()
     if (index = children.indexOf(child)) >= 0
