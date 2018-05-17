@@ -3,7 +3,7 @@ ArtEngineCore = require './namespace'
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Canvas = require 'art-canvas'
-{point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+{point1, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 {inspect, BaseClass, Map, timeout, remove, log, defineModule} = Foundation
 {Bitmap} = Canvas
 
@@ -145,6 +145,7 @@ defineModule module, class DrawCacheManager extends BaseClass
       unusedCacheBitmap.bitmap
 
   _createCacheBitmap: (element, size) ->
+    size = size.max point1
     @_evictCacheBitmaps size if !@_roomInCacheForNewBitmap size
 
     @_validateCacheByteSize()
