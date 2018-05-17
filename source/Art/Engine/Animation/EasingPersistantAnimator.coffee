@@ -14,14 +14,23 @@ PersistantAnimator = require './PersistantAnimator'
 
 module.exports = class EasingPersistantAnimator extends PersistantAnimator
 
-  @getter "duration easingFunction"
+  @getter "duration easingFunction delay"
 
   @getter animationPos: ->
-    min 1, @getAnimationSeconds() / @_duration
+    s = @getAnimationSeconds()
+    {duration, delay} = @
+    if s <= delay
+      0
+    else
+      s -= delay
+      min 1, s / @_duration
 
   @setter
     duration: (d) ->
       @_duration = if isNumber(d) then max .001, d else .25
+
+    delay: (d) ->
+      @_delay = if isNumber(d) then max 0, d else 0
 
     easingFunction: (f) ->
       @_easingFunction = f
@@ -34,7 +43,7 @@ module.exports = class EasingPersistantAnimator extends PersistantAnimator
   constructor: (_, options = {}) ->
     super
     @setEasingFunction options.f || options.easingFunction
-    @setDuration if options.d? then options.d else options.duration
+    {d, @duration = d, @delay} = options
 
   animate: () ->
     {startValue, toValue, animationPos, easingFunction} = @
