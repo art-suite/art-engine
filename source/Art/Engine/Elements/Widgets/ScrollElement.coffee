@@ -255,7 +255,7 @@ defineModule module, class ScrollElement extends Element
     focusedChildFromPendingGeometry: ->
       focusedChild = @getPendingFocusedChild()
       if focusedChild && focusedChild.getPendingParent() != @
-        @getPendingStart()._focusedChild = @_inFlowChildren[min @_inFlowChildren.length - 1, @_focusedChildIndex]
+        @getPendingState()._focusedChild = @_inFlowChildren[min @_inFlowChildren.length - 1, @_focusedChildIndex]
       else
         focusedChild
 
