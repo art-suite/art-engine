@@ -28,11 +28,6 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
     maxLength:    postSetter: (v) -> @domElement?.maxLength   = v ? null
     fontFamily:   "sans-serif", postSetter: (v) -> @domElement?.fontFamily  = v ? "sans-serif"
     align:
-      # validate: (v) ->
-      #   switch v
-      #     when "left", "center", "right", null, undefined then true
-      #     else false
-      # preprocess: (v) -> v ? "left"
       preprocess: (v) ->
         switch v
           when "left", "center", "right" then v
