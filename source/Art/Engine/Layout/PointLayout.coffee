@@ -4,6 +4,31 @@
   defineModule, log, inspect, inspectLean, isFunction, isNumber, isString, isPlainObject, min, max
 } = require 'art-standard-lib'
 
+###
+TODO:
+  max-layout shouldn't affect parent-relativity. Or, perhaps more refined, it shouldn't count for
+  circular-layout if it's the only thing that is parent-relative when the parent is child-relative.
+
+  Example:
+    Element
+      size: "parentHeightChildrenWidth"
+      childrenLayout: "row"
+      TextElement
+        size:
+          hh 1
+          wcw: 1
+          # max: ww:1
+        "foo bar baz"
+
+  Adding or removing max: ww: 1 shouldn't affect layout. Since the parent
+  element effectively has unconstrained width, the child's limit on the parents width
+  should be considered unlimited  - effectively ignored.
+
+  Instead, the current system thinks there is circular layout constraints and layout breaks.
+     I think the width gets set to 0 for the child.
+
+###
+
 # a singleton to help make initializing from component-options fast
 class Components
 
