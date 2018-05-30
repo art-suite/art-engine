@@ -93,7 +93,7 @@ module.exports = suite:
         e = new RectangleElement animators: location: ({stop}) ->
           stop()
           e.onNextReady ->
-            assert.eq e.location.toString(), "PointLayout(10)"
+            assert.eq e.location.toString(), "pointLayout(10)"
             resolve()
           10
         e._register()
@@ -202,15 +202,15 @@ module.exports = suite:
           animators: location: on:
             start: ->
               testedStart = true
-              assert.eq e.location.toString(), "PointLayout(10)"
+              assert.eq e.location.toString(), "pointLayout(10)"
             update: ->
               testedUpdate = true
-              assert.neq e.location.toString(), "PointLayout(10)"
-              assert.neq e.location.toString(), "PointLayout(20)"
+              assert.neq e.location.toString(), "pointLayout(10)"
+              assert.neq e.location.toString(), "pointLayout(20)"
             done: ->
               assert.eq testedStart, true
               assert.eq testedUpdate, true
-              assert.eq e.location.toString(), "PointLayout(20)"
+              assert.eq e.location.toString(), "pointLayout(20)"
               resolve()
         ._register()
 

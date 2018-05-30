@@ -6,4 +6,5 @@ require './Drawing'
 
 module.exports = merge
   newElement: (require './ElementFactory').newElement
+  require './Drawing/DrawCacheManager'
   require './Lib'

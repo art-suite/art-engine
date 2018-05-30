@@ -70,7 +70,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           drawCount++
           rect()
 
-        new RectangleElement color:"red"
+        new Element draw: "red"
 
       el.toBitmapWithInfo()
       .then (rendered) ->
@@ -126,6 +126,23 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
               result: rendered
               test: testName
             assert.eq false, !!testElement._drawCacheBitmap
+
+
+  tools: ->
+
+    test "flushCache", ->
+      el = new Element
+        cacheDraw:  true
+        size:       100
+        draw:       "red"
+
+      el.toBitmapWithInfo()
+      .then ->
+        Engine.validateCacheByteSize()
+        assert.gt Engine.getCacheInfo().cacheByteSize, 0
+        Engine.flushCache()
+        Engine.validateCacheByteSize()
+        assert.eq Engine.getCacheInfo().cacheByteSize, 0
 
   partialInitialDraw: ->
     test "move Element doesn't redraw whole screen", ->

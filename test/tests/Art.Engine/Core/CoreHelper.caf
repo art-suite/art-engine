@@ -30,8 +30,8 @@ class CoreHelper
 
     getMinValueNotdone = ->
       seed = 256
-      each x, i from out when x < 0 && seed > v = imageData[i]
-        seed = v
+      each x, i from out when x < 0 && seed > imageData[i]
+        seed = imageData[i]
 
       seed
 

@@ -3,7 +3,7 @@ webpack:
   targets:
     index: {}
     test: {}
-    perf: {}
+    # perf: {}
 
 package:
   description: "" The ArtEngine is a layout, rendering and event engine for creating user interfaces in HTML5 Canvas elements.
