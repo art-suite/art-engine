@@ -121,12 +121,12 @@ defineModule module, class DrawCacheManager extends BaseClass
   @getCacheInfo: -> DrawCacheManager.singleton.getCacheInfo()
   getCacheInfo: ->
     {
-      cacheBitmaps:      @_cacheBitmaps.size
+      cacheBitmaps:       @_cacheBitmaps.size
       unusedCacheBitmaps: @_unusedCacheBitmaps.length
-      @bitmapsCreated
-      @maxCacheByteSize
       @cacheByteSize
       @unusedCacheByteSize
+      @maxCacheByteSize
+      @bitmapsCreated
     }
 
   # manually callable
