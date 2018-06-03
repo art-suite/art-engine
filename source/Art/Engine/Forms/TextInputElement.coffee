@@ -168,6 +168,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         v = if v? then "#{v}" else ""
         unless @domElement.value == v
           @_elementChanged true
+          @lastValue = v
           @domElement.value = v
 
     color:
