@@ -211,6 +211,14 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       el.select()
       document.execCommand 'copy'
 
+  @getter
+    selectionStart: -> @domElement.selectionStart
+    selectionEnd: -> @domElement.selectionEnd
+
+  @setter
+    selectionStart: (v)-> @domElement.selectionStart = v
+    selectionEnd: (v)-> @domElement.selectionEnd = v
+
   insertAtCursor: (insertValue) ->
     log insertAtCursor: {insertValue}
     # //IE support
