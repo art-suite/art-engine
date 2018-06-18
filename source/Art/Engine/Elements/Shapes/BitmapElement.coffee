@@ -22,9 +22,24 @@ defineModule module, class BitmapElement extends ShadowableElement
     get: (url, initializerPromise) ->
       return Bitmap.get url unless isString url # non-string sources are not cached
       @_referenceCounts[url] = (@_referenceCounts[url] || 0) + 1
-      out = @_cache[url] ||= initializerPromise || Bitmap.get url
-      out.then (bitmap) => @_loaded[url] = bitmap
-      out
+      @_cache[url] ||= initializerPromise || @_get url
+      .tap (bitmap) => @_loaded[url] = bitmap
+
+    _get: (url, tryCount = 0) ->
+      Bitmap.get url
+      # .tap =>
+      #   if tryCount > 0
+      #     log sourceToBitmapCacheSuccess: {url, tryCount, refs: @_referenceCounts[url]}
+      .catch (error) =>
+        if @_referenceCounts[url] > 0
+          retryInSeconds = min(30, (2 ** tryCount)) * .9 + .2 * Math.random()
+          # log sourceToBitmapCache1: {retryInSeconds, url, tryCount, refs: @_referenceCounts[url], message: error?.message}
+          timeout 1000 * retryInSeconds, =>
+            # log sourceToBitmapCache2: {retryInSeconds, url, tryCount, refs: @_referenceCounts[url]}
+            if @_referenceCounts[url] > 0
+              @_get url, tryCount + 1
+            else throw error
+        else throw error
 
     loaded: (url) -> @_loaded[url]
 
