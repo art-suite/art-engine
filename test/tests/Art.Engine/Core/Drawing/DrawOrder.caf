@@ -992,6 +992,26 @@ suite:
           log shouldBeVisibleNow: {bitmap, e.drawArea}
           assert.eq e.drawArea.h, 20, "should be 20"
 
+    renderTest
+      "clip rotated 90 degress"
+      render: ->
+        log "before"
+        Element
+          draw: "red"
+          Element
+            size: ps: .6
+            location: :centerCenter
+            axis: :centerCenter
+            angle: Math.PI / 2
+            draw:
+              :clip
+              :white
+
+      test: (e) ->
+        # [child] = e.children
+        # assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
+        # assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+
   compositeMode: ->
     renderTest
       "compositeMode on second draw-step"
@@ -1109,4 +1129,3 @@ suite:
         [child] = e.children
         assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
         assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
-

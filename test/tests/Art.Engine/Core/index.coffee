@@ -8,6 +8,7 @@ module.exports
   DrawAreaHelpers:         require './DrawAreaHelpers'        
   ElementChildren:         require './ElementChildren'        
   ElementDrawArea:         require './ElementDrawArea'        
+  ElementDrawArea2:        require './ElementDrawArea2'       
   ElementExtending:        require './ElementExtending'       
   ElementFamilyEvents:     require './ElementFamilyEvents'    
   ElementGeometry:         require './ElementGeometry'        

@@ -1,0 +1,126 @@
+import &StandardImport, &ArtEngineFactories
+
+testArea = (name, element, expectedArea) ->
+  test name, ->
+    element.toBitmapBasic()
+    .then (rendered) -> log [name]: {} rendered, element.drawArea
+    .then -> assert.eq element.drawArea.roundOut(), rect expectedArea
+
+makeTestBitmap = ->
+  new Bitmap point 60, 30
+  .clear #cccccc
+  .drawRectangle null,
+    15 0 30 30
+    color: #e86b00
+
+  .drawRectangle null,
+    20 5 20 20
+    color: #ffd400
+
+suite:
+  bitmap:
+    basics: ->
+      portraitBitmap = makeTestBitmap()
+
+      testArea "basic",
+        BitmapElement
+          size: :childrenSize
+          bitmap: portraitBitmap
+        portraitBitmap.size
+
+      testArea "square stretch",
+        BitmapElement
+          size:   portraitBitmap.size.min()
+          bitmap: portraitBitmap
+        portraitBitmap.size.min()
+
+      testArea "square fit",
+        BitmapElement
+          size:   portraitBitmap.size.min()
+          layout: :fit
+          bitmap: portraitBitmap
+        portraitBitmap.size.min()
+
+      testArea "square zoom",
+        Element
+          size: 60
+          # draw: #222222
+          BitmapElement
+            size:     30
+            axis:     :centerCenter
+            location: :centerCenter
+            layout:   :zoom
+            bitmap:   portraitBitmap
+        15, 15, 30, 30
+
+      testArea "rotated 90 Zoom",
+        Element
+          size: 60
+          # draw: #222222
+          BitmapElement
+            size:     30
+            axis:     :centerCenter
+            location: :centerCenter
+            angle:    Math.PI / 2
+            layout:   :zoom
+            bitmap:   portraitBitmap
+        15, 15, 30, 30
+
+      testArea "square rotated 45 Zoom",
+        Element
+          size: 45
+          # draw: #222222
+          BitmapElement
+            size:     30
+            axis:     :centerCenter
+            location: :centerCenter
+            angle:    Math.PI / 4
+            layout:   :zoom
+            bitmap:   portraitBitmap
+        1 1 43 43
+
+      testArea "childrenSize rotated 45",
+        Element
+          size: 45
+          draw: #222222
+          BitmapElement
+            size:     :childrenSize
+            axis:     :centerCenter
+            location: :centerCenter
+            angle:    Math.PI / 4
+            bitmap:   portraitBitmap
+        -10 -10 65 65
+
+    regressions: ->
+      portraitBitmap = makeTestBitmap()
+
+      testArea 'wild',
+        Element
+          size: 200
+          # draw:
+          #   #222
+          #   rectangle: rect(49.50961894323342, 27.548094716167107, 63.48076211353316, 79.9519052838329)
+          #   fill: :red
+          #   {}
+          #     rectangle: rect(49.50961894323342, 27.548094716167107, 40.98076211353316, 40.98076211353315)
+          #     fill: #700
+
+          Element
+            size: w: 60, h: 30
+            axis: :centerRight
+            location: :centerCenter
+            angle: Math.PI / 3
+            # draw: #444
+
+            Element
+              size: 30
+              axis:     :centerCenter
+              location: :centerLeft
+              draw:
+                :circle
+                :clip
+              BitmapElement
+                size:     30
+                bitmap:   portraitBitmap
+
+        49 27 42 42
