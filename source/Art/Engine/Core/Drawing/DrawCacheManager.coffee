@@ -68,6 +68,8 @@ defineModule module, class DrawCacheManager extends BaseClass
   @byteSizeFromSize: byteSizeFromSize = (size) -> size.x * size.y * 4
   @singletonClass()
 
+  @getDrawCacheManager: -> DrawCacheManager.singleton
+
   @usableBitmap: usableBitmap = (bitmap, w, h) ->
     {x, y} = bitmap.size
     w <= x && h <= y && # big enough
