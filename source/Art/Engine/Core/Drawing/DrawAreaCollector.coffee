@@ -12,6 +12,7 @@ defineModule module, ->
     offsetX ?= 0
     offsetY ?= 0
     blur ?= 0
+    blur /= 2
     expandLeft    = max 0, blur - offsetX - 1
     expandTop     = max 0, blur - offsetY - 1
     expandRight   = max 0, blur + offsetX + 1
