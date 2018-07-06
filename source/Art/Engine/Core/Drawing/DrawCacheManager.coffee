@@ -60,7 +60,7 @@ class CacheBitmap extends BaseClass
     @element = null
 
   @getter
-    inspectedObjects: -> {@size, @byteSize}
+    inspectedObjects: -> {@size, @byteSize, @bitmap}
     size: -> @bitmap.size
     byteSize: -> @bitmap.getByteSize()
 
@@ -87,6 +87,13 @@ defineModule module, class DrawCacheManager extends BaseClass
 
     @_unusedCacheBitmaps = []
     @_unusedCacheByteSize = 0
+
+  @getter
+    inspectedObjects: ->
+      cacheBitmaps = []
+      @_cacheBitmaps.forEach (cacheBitmap) -> cacheBitmaps.push cacheBitmap.inspectedObjects
+      {cacheBitmaps}
+
 
 
   # EFFECT: all cached bitmaps are released
