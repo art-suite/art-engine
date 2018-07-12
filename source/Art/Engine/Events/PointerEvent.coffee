@@ -17,15 +17,17 @@ defineModule module, class PointerEvent extends Events.Event
     super type, props, time
     @pointer = pointer
 
+  clone: -> @newEvent()
+
   emptyObject = {}
   newEvent: (options = emptyObject)->
     e = new PointerEvent(
-      options.type || @type
-      options.pointer || @pointer
-      options.time || @time
+      options.type    ? @type
+      options.pointer ? @pointer
+      options.time    ? @time
     )
     e.timeStamp = @timeStamp
-    e.target = options.target || @target
+    e.target = options.target ? @target
     e
 
   @getter
