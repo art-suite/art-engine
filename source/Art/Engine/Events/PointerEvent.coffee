@@ -1,9 +1,6 @@
-Atomic = require 'art-atomic'
-Foundation = require 'art-foundation'
-Events = require 'art-events'
-
-{point, rect, matrix} = Atomic
-{defineModule, inspect, clone, peek, first, merge} = Foundation
+{defineModule, inspect, clone, peek, first, merge, isNumber} = require 'art-standard-lib'
+{Event} = require 'art-events'
+{point, rect, matrix} = require 'art-atomic'
 
 arrayize = (single, array, defaultArray)->
   if single then [single] else array || defaultArray || []
@@ -12,9 +9,13 @@ transformedArray = (arrayOfPoints, matrix) ->
   for p in arrayOfPoints
     matrix.transform p
 
-defineModule module, class PointerEvent extends Events.Event
-  constructor: (type, pointer, time, props) ->
-    super type, props, time
+defineModule module, class PointerEvent extends Event
+  constructor: (type, pointer, propsOrTime) ->
+    props = if isNumber propsOrTime
+      time: propsOrTime
+    else propsOrTime
+
+    super type, props, props?.time
     @pointer = pointer
 
   clone: -> @newEvent()
@@ -25,6 +26,7 @@ defineModule module, class PointerEvent extends Events.Event
       options.type    ? @type
       options.pointer ? @pointer
       options.time    ? @time
+      options.props   ? @props
     )
     e.timeStamp = @timeStamp
     e.target = options.target ? @target

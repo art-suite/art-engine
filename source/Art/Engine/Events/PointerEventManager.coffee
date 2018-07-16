@@ -171,10 +171,10 @@ module.exports = class PointerEventManager extends BaseClass
     for element in elements
       element.queueEvent type, newEventFunction
 
-  queuePointerEventForElement: (element, type, pointer, timeStampInPerformanceSeconds, props) ->
+  queuePointerEventForElement: (element, type, pointer, props) ->
     element.queueEvent type, =>
       if !@capturingElement || type == "pointerCancel" || element == @capturingElement
-        new PointerEvent type, pointer, timeStampInPerformanceSeconds, props
+        new PointerEvent type, pointer, props
 
   ###
   SBD NOTE 2016: This method of sorting priority is global and breaks "parents encapsulate children".
@@ -290,14 +290,14 @@ module.exports = class PointerEventManager extends BaseClass
     recurse 0, elementPriorities.length
     orderList
 
-  queuePointerEventForElements: (elements, type, pointer, timeStampInPerformanceSeconds, props) ->
+  queuePointerEventForElements: (elements, type, pointer, props) ->
     elements = prioritySortElements elements.slice()
     for element in elements
-      @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds, props
+      @queuePointerEventForElement element, type, pointer, props
 
-  queuePointerEvents: (type, pointer, timeStampInPerformanceSeconds) ->
+  queuePointerEvents: (type, pointer, props) ->
     @forEachReceivingElement (e) =>
-      @queuePointerEventForElement e, type, pointer, timeStampInPerformanceSeconds
+      @queuePointerEventForElement e, type, pointer, props
 
   forEachReceivingElement: (f) ->
     if e = @capturingElement
@@ -305,8 +305,8 @@ module.exports = class PointerEventManager extends BaseClass
     else
       f e for e in prioritySortElements @currentFocusedPath
 
-  queueMouseEvents: (type, pointer, timeStampInPerformanceSeconds, props) ->
-    @queuePointerEventForElements @currentMousePath, type, pointer, timeStampInPerformanceSeconds, props
+  queueMouseEvents: (type, pointer, props) ->
+    @queuePointerEventForElements @currentMousePath, type, pointer, props
 
   ###
   queueKeyEvents
@@ -431,7 +431,7 @@ module.exports = class PointerEventManager extends BaseClass
       (newElements) => @queueInEvents pointer, newElements
       (newPath) => @updateCursor newPath
 
-  pointerDown: (id, location, timeStampInPerformanceSeconds) ->
+  pointerDown: (id, location, props) ->
     eventEpoch.logEvent "pointerDown", id
     if @activePointers[id]
       console.error "pointerDown(id:#{inspect id}, location:#{inspect location}): already have an active pointer for that id"
@@ -443,15 +443,15 @@ module.exports = class PointerEventManager extends BaseClass
     if @_numActivePointers == 1
       @focus pointer
 
-    @queuePointerEvents "pointerDown", pointer, timeStampInPerformanceSeconds
+    @queuePointerEvents "pointerDown", pointer, props
 
-  queuePointerUpInAndOutsideEvents: (pointer, timeStampInPerformanceSeconds) ->
+  queuePointerUpInAndOutsideEvents: (pointer, props) ->
     @forEachReceivingElement (element) =>
       locationInParentSpace = pointer.locationIn element.parent
       type = if element.pointInside locationInParentSpace then  "pointerUpInside" else "pointerUpOutside"
-      @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
+      @queuePointerEventForElement element, type, pointer, props
 
-  queuePointerMoveInAndOutEvents: (pointer, timeStampInPerformanceSeconds) ->
+  queuePointerMoveInAndOutEvents: (pointer, props) ->
     isInsideParent = true
     wasInsideParent = true
     @forEachReceivingElement (element) =>
@@ -462,13 +462,13 @@ module.exports = class PointerEventManager extends BaseClass
 
       if isInside != wasInside
         type = if isInside then "pointerIn" else "pointerOut"
-        @queuePointerEventForElement element, type, pointer, timeStampInPerformanceSeconds
+        @queuePointerEventForElement element, type, pointer, props
 
       isInsideParent = isInside
       wasInsideParent = wasInside
 
   # pointerUp - user activity cased this
-  pointerUp: (id, timeStampInPerformanceSeconds) ->
+  pointerUp: (id, props) ->
 
     # If there were other events queued for the current cycle, their handlers
     # may very will choose to lock cursor focus. BUT, if this happens AFTER
@@ -483,24 +483,23 @@ module.exports = class PointerEventManager extends BaseClass
     @_numActivePointers--
     delete @activePointers[id]
 
-    @queuePointerUpInAndOutsideEvents pointer, timeStampInPerformanceSeconds
-    @queuePointerEvents "pointerUp", pointer, timeStampInPerformanceSeconds
+    @queuePointerUpInAndOutsideEvents pointer, props
+    @queuePointerEvents "pointerUp", pointer, props
 
     if pointer.stayedWithinDeadzone
       # If you want to open a file dialog, for security reasons, the browser REQUIRES this happens within the mouse-up event.
       # So, flush the eventEpoch immediatly.
-      @queuePointerEvents "pointerClick", pointer, timeStampInPerformanceSeconds
+      @queuePointerEvents "pointerClick", pointer, props
       eventEpoch.flushEpochNow()
 
     @capturingElement = null if @capturingElement && @_numActivePointers == 0
 
-  mouseWheel: (location, timeStampInPerformanceSeconds, props) ->
-    @queueMouseEvents "mouseWheel", @mouse, timeStampInPerformanceSeconds, props
-
+  mouseWheel: (location, props) ->
+    @queueMouseEvents "mouseWheel", @mouse, props
 
   # pointerCancel - the pointer became inactive, but not because of the user. Ex: system interrupted the action with a dialog such as "low power"
   # No subsequent action should be taken, but this event notifies Elements to clean up or abort any action related to this active pointer.
-  pointerCancel: (id, timeStampInPerformanceSeconds) ->
+  pointerCancel: (id, props) ->
     eventEpoch.logEvent "pointerCancel", id
     unless pointer = @activePointers[id]
       return console.error "pointerCancel(#{id}): no active pointer for that id"
@@ -508,11 +507,11 @@ module.exports = class PointerEventManager extends BaseClass
     @_numActivePointers--
     delete @activePointers[id]
 
-    @queuePointerEvents "pointerCancel", pointer, timeStampInPerformanceSeconds
+    @queuePointerEvents "pointerCancel", pointer, props
 
     @capturingElement = null if @capturingElement && @_numActivePointers == 0
 
-  pointerMove: (id, location, timeStampInPerformanceSeconds) ->
+  pointerMove: (id, location, props) ->
     eventEpoch.logEvent "pointerMove", id
     unless pointer = @activePointers[id]
       return console.error "pointerMove(#{id}, #{location}): no active pointer for that id"
@@ -520,23 +519,23 @@ module.exports = class PointerEventManager extends BaseClass
     return unless !pointer.location.eq location
 
     @activePointers[id] = pointer = pointer.moved location
-    @queuePointerMoveInAndOutEvents pointer, timeStampInPerformanceSeconds
-    @queuePointerEvents "pointerMove", pointer, timeStampInPerformanceSeconds
+    @queuePointerMoveInAndOutEvents pointer, props
+    @queuePointerEvents "pointerMove", pointer, props
 
-  mouseDown: (location, timeStampInPerformanceSeconds) -> @pointerDown "mousePointer", location, timeStampInPerformanceSeconds
-  mouseUp: (timeStampInPerformanceSeconds) ->
-    @pointerUp "mousePointer", timeStampInPerformanceSeconds
+  mouseDown: (location, props) -> @pointerDown "mousePointer", location, props
+  mouseUp: (props) ->
+    @pointerUp "mousePointer", props
     @updateMousePath()
 
   # on desktop, when the mouse moves, all "pointers" move
   # There is one pointer for each actively pressed button, and one pointer for no buttons pressed.
-  mouseMove: (location, timeStampInPerformanceSeconds) ->
+  mouseMove: (location, props) ->
     return unless !@mouse.location.eq location
 
     @mouse = @mouse.moved location
 
     @updateMousePath()
-    @pointerMove "mousePointer", location, timeStampInPerformanceSeconds if @_numActivePointers > 0
+    @pointerMove "mousePointer", location, props if @_numActivePointers > 0
 
     @queueMouseEvents "mouseMove", @mouse
 

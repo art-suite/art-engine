@@ -49,6 +49,10 @@ HtmlCanvas = Browser.DomElementFactories.Canvas
 {globalEpochCycle} = GlobalEpochCycle
 {drawEpoch} = DrawEpoch
 
+extractPointerEventProps = (domEvent) ->
+  {ctrlKey, metaKey, shiftKey, timeStamp} = domEvent
+  {ctrlKey, metaKey, shiftKey, time: timeStampToPerformanceSecond timeStamp}
+
 module.exports = createWithPostCreate class CanvasElement extends Element
   @classGetter
     devicePixelsPerPoint: -> getDevicePixelRatio()
@@ -225,22 +229,22 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     unless window.FileReader
       @log "#{@className}#enableFileDrop failed - browser not supported"
       return false
-    @_domListener window, 'dragover',  (e) => @routeFileDropEvent e, 'dragOver'
-    @_domListener window, 'dragenter', (e) => @routeFileDropEvent e, 'dragEnter'
-    @_domListener window, 'dragleave', (e) => @routeFileDropEvent e, 'dragLeave'
-    @_domListener window, 'drop',      (e) => @routeFileDropEvent e, 'drop'
+    @_domListener window, 'dragover',  (domEvent) => @routeFileDropEvent domEvent, 'dragOver'
+    @_domListener window, 'dragenter', (domEvent) => @routeFileDropEvent domEvent, 'dragEnter'
+    @_domListener window, 'dragleave', (domEvent) => @routeFileDropEvent domEvent, 'dragLeave'
+    @_domListener window, 'drop',      (domEvent) => @routeFileDropEvent domEvent, 'drop'
 
     @log "#{@className}#enableFileDrop enabled"
     true
 
-  routeFileDropEvent: (e, type) ->
-    return true if e.dataTransfer.types[0] != "Files"
-    e.preventDefault()
+  routeFileDropEvent: (domEvent, type) ->
+    return true if domEvent.dataTransfer.types[0] != "Files"
+    domEvent.preventDefault()
 
     # TODO this isn't currently used anywhere, so I'm not testing it; it won't work; fileDropEvent isn't implemented
     @pointerEventManager.fileDropEvent type,
-      locations: [@_domEventLocation e]
-      files: e.dataTransfer.files
+      locations: [@_domEventLocation domEvent]
+      files: domEvent.dataTransfer.files
 
     false
 
@@ -416,43 +420,43 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_domListener @_canvas, "mousemove", (domEvent)=>
       if @numActivePointers == 0
         @mouseMove @_domEventLocation domEvent,
-          timeStampToPerformanceSecond domEvent.timeStamp
+          extractPointerEventProps domEvent
 
     @_domListener window,  "mousemove", (domEvent)=>
       if @numActivePointers >  0
         @mouseMove @_domEventLocation(domEvent),
-          timeStampToPerformanceSecond domEvent.timeStamp
+          extractPointerEventProps domEvent
 
   @getter
     numActivePointers: -> @pointerEventManager.numActivePointers
     activePointers: -> @pointerEventManager.activePointers
 
-  mouseDown: (location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.mouseMove location, timeStampInPerformanceSeconds
-    @pointerEventManager.mouseDown location, timeStampInPerformanceSeconds
+  mouseDown: (location, props) ->
+    @pointerEventManager.mouseMove location, props
+    @pointerEventManager.mouseDown location, props
 
-  mouseMove: (location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.mouseMove location, timeStampInPerformanceSeconds
+  mouseMove: (location, props) ->
+    @pointerEventManager.mouseMove location, props
 
-  mouseUp: (location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.mouseMove location, timeStampInPerformanceSeconds
-    @pointerEventManager.mouseUp timeStampInPerformanceSeconds
+  mouseUp: (location, props) ->
+    @pointerEventManager.mouseMove location, props
+    @pointerEventManager.mouseUp props
 
-  mouseWheel: (location, timeStampInPerformanceSeconds, props) ->
-    @pointerEventManager.mouseWheel location, timeStampInPerformanceSeconds, props
+  mouseWheel: (location, props) ->
+    @pointerEventManager.mouseWheel location, props
 
-  touchDown:   (id, location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.pointerDown id, location, timeStampInPerformanceSeconds
+  touchDown:   (id, location, props) ->
+    @pointerEventManager.pointerDown id, location, props
 
-  touchMove:   (id, location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.pointerMove id, location, timeStampInPerformanceSeconds
+  touchMove:   (id, location, props) ->
+    @pointerEventManager.pointerMove id, location, props
 
-  touchUp:     (id, location, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.pointerMove id, location, timeStampInPerformanceSeconds
-    @pointerEventManager.pointerUp id, timeStampInPerformanceSeconds
+  touchUp:     (id, location, props) ->
+    @pointerEventManager.pointerMove id, location, props
+    @pointerEventManager.pointerUp id, props
 
-  touchCancel: (id, timeStampInPerformanceSeconds) ->
-    @pointerEventManager.pointerCancel id, timeStampInPerformanceSeconds
+  touchCancel: (id, props) ->
+    @pointerEventManager.pointerCancel id, props
 
   _focus: ->
     @_canvas.focus()
@@ -481,20 +485,20 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       if domEvent.button == 0
         domEvent.preventDefault()
         @mouseDown @_domEventLocation(domEvent),
-          timeStampToPerformanceSecond domEvent.timeStamp
+          extractPointerEventProps domEvent
 
     @_domListener window, "mouseup", (domEvent)=>
       if domEvent.button == 0 && @activePointers["mousePointer"]
         domEvent.preventDefault()
         @mouseUp @_domEventLocation(domEvent),
-          timeStampToPerformanceSecond domEvent.timeStamp
+          extractPointerEventProps domEvent
 
   _attachPointerWheelListeners: ->
     @_domListener @_canvas, "wheel", (domEvent)=>
       domEvent.preventDefault()
       @mouseWheel @_domEventLocation(domEvent),
-        timeStampToPerformanceSecond domEvent.timeStamp
-        merge
+        merge null,
+          extractPointerEventProps domEvent
           deltaMode: switch domEvent.deltaMode
             when 0 then "pixel"
             when 1 then "line"
@@ -502,41 +506,41 @@ module.exports = createWithPostCreate class CanvasElement extends Element
           select domEvent, "deltaX", "deltaY", "deltaZ"
 
   _attachPointerTouchListeners: ->
-    @_domListener @_canvas, "touchstart",  (e) =>
+    @_domListener @_canvas, "touchstart",  (domEvent) =>
       @_updateDocumentMatricies()
-      e.preventDefault()
+      domEvent.preventDefault()
       @_restoreFocus()
 
-      for changedTouch in e.changedTouches
+      for changedTouch in domEvent.changedTouches
         @touchDown changedTouch.identifier,
           @_domEventLocation changedTouch
-          timeStampToPerformanceSecond e.timeStamp
+          extractPointerEventProps domEvent
 
-    @_domListener @_canvas, "touchmove",   (e) =>
-      e.preventDefault()
-      for changedTouch in e.changedTouches
+    @_domListener @_canvas, "touchmove",   (domEvent) =>
+      domEvent.preventDefault()
+      for changedTouch in domEvent.changedTouches
         @pointerEventManager.pointerMove changedTouch.identifier,
           @_domEventLocation changedTouch
-          timeStampToPerformanceSecond e.timeStamp
+          extractPointerEventProps domEvent
 
-    @_domListener @_canvas, "touchend",    (e) =>
-      e.preventDefault()
-      for changedTouch in e.changedTouches
+    @_domListener @_canvas, "touchend",    (domEvent) =>
+      domEvent.preventDefault()
+      for changedTouch in domEvent.changedTouches
         @touchUp changedTouch.identifier,
           @_domEventLocation changedTouch
-          timeStampToPerformanceSecond e.timeStamp
+          extractPointerEventProps domEvent
 
-    @_domListener @_canvas, "touchcancel", (e) =>
-      e.preventDefault()
-      for changedTouch in e.changedTouches
+    @_domListener @_canvas, "touchcancel", (domEvent) =>
+      domEvent.preventDefault()
+      for changedTouch in domEvent.changedTouches
         @touchCancel changedTouch.identifier,
-          timeStampToPerformanceSecond e.timeStamp
+          extractPointerEventProps domEvent
 
     # NOTE: touchleave and touchenter are ignored
     #   Currently, touch events are handled with the assumption that the canvas element is fullscreen, so this definitly can be ignored.
     #   Even if the canvas isn't fullscreen, we want to handle touches like we handle the mouse - if the first one started in the canvas, capture all activity until they are all released, otherwise ignore.
-    # @_domListener @_canvas, "touchleave",  (e) =>
-    # @_domListener @_canvas, "touchenter",  (e) =>
+    # @_domListener @_canvas, "touchleave",  (domEvent) =>
+    # @_domListener @_canvas, "touchenter",  (domEvent) =>
 
   queueKeyEvents: (type, keyboardEvent) ->
     @pointerEventManager.queueKeyEvents type, keyboardEvent
