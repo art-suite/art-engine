@@ -41,7 +41,7 @@ EngineStat= require './EngineStat'
 {nativeAppDetect, iPadDetect, iOSDetect, isMobileBrowser, getOrientationAngle} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
-{point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+{rgbColor, hslColor, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
 
 {getDevicePixelRatio, domElementOffset} = Browser.Dom
 {PointerEventManager, PointerEvent, KeyEvent} = ArtEngineEvents
@@ -588,6 +588,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # DRAWING and DRAW STATS
   ###############################################
 
+  partialRedrawCount = 0
   drawOnBitmap: ->
 
     Element.resetStats()
@@ -608,9 +609,20 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       else
         super @canvasBitmap, @elementToParentMatrix
 
-    if showPartialDrawAreas || config.showPartialDrawAreas
+    if spda = showPartialDrawAreas || config.showPartialDrawAreas
       for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
-        @canvasBitmap?.drawBorder null, (dirtyDrawArea.mul @_devicePixelsPerPoint), color: "red"
+        partialRedrawCount++
+        spdaFull = spda == "full"
+        spdaApts = color: hslColor (partialRedrawCount % 36) / 36, 1,
+          if spdaFull then 1 else .8,
+          if spdaFull then 1/3 else 1
+        spdaArea = (dirtyDrawArea.mul @_devicePixelsPerPoint)
+        if spda == "log"
+          log "#{dirtyDrawArea.toString()} (#{dirtyDrawArea.area} pixels)"
+        if spdaFull
+          @canvasBitmap?.drawRectangle null, spdaArea, spdaApts
+        else
+          @canvasBitmap?.drawBorder null, spdaArea, spdaApts
 
     frameEndTime = currentSecond()
     @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
