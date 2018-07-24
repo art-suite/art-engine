@@ -42,8 +42,9 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
       preprocess: (t) ->
         if isPlainArray t
           t.join "\n"
-        else
+        else if t?
           "#{t}"
+        else ""
 
   @virtualProperty
     font:
