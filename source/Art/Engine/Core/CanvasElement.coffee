@@ -336,7 +336,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_canvas.setAttribute "height",  @_pixelSize.y
 
     @_updateDocumentMatricies()
-    @_bitmapFactory = @canvasBitmap = new Canvas.Bitmap @_canvas
+    @_bitmapFactory = @canvasBitmap = new Canvas.Bitmap @_canvas, alpha: false
     @queueDrawEpoch()
 
   _setElementToParentMatrixFromLayoutXY: (x, y) ->
