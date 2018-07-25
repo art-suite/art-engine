@@ -13,6 +13,19 @@ suite:
           rect -8, -8, 92, 32
 
     renderTest
+      "empty-string layout textualBaseline size"
+      render: -> TextElement size: "childrenSize", text: "", layoutMode: "textualBaseline", size: cs: 1
+      test: (root) ->
+        assert.within root.currentSize, point(0, 12), point(0, 12)
+
+    renderTest
+      "'|'-string layout textualBaseline size"
+      render: -> TextElement size: "childrenSize", text: "|", layoutMode: "textualBaseline", size: cs: 1
+      test: (root) ->
+        assert.within root.currentSize, point(3, 12), point(4, 12)
+
+
+    renderTest
       "change in text size should affect children layout"
       render: -> TextElement
         text: "D"
@@ -75,3 +88,31 @@ suite:
         assert.eq
           element.children[0].drawArea.h
           element.children[1].drawArea.h
+
+  regressions: ->
+
+    renderTest
+      "empty-string regression"
+      render: ->
+        Element
+          size: w: 100, hch:1
+          draw: "#777"
+          TextElement
+            fontSize: 20
+            size: "parentWidthChildrenHeight"
+            text: ''
+
+      test: (root) -> assert.eq root.currentSize, point 100, 15
+
+    renderTest
+      "empty-string regression - baseline"
+      render: ->
+        Element
+          size: w: 100, hch:1
+          draw: "#777"
+          TextElement
+            fontSize: 20
+            size: "parentWidthChildrenHeight"
+            text: '-'
+
+      test: (root) -> assert.eq root.currentSize, point 100, 15
