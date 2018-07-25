@@ -16,7 +16,7 @@
   "scripts": {
     "build": "webpack --progress",
     "start": "webpack-dev-server --hot --inline --progress",
-    "test": "webpack-dev-server --progress",
+    "test": "webpack-dev-server  --progress",
     "testInBrowser": "webpack-dev-server --progress"
   },
   "version": "3.8.0"
