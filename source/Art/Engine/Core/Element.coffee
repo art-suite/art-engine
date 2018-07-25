@@ -1080,7 +1080,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     @_elementChanged()
 
   _sizeDirectlyEffectsDrawing: ->
-    ((c = @getPendingChildren()) && c.length == 0) || @getPendingClip()
+    ((c = @getPendingChildren()) && c.length == 0) || @getPendingClip() || @_draw
 
   # used to apply a new layout (among other things), so:
   # does not alter layout
