@@ -27,6 +27,7 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
     doAfterTest = (canvasElement, change, after, moreAfterTests...) ->
 
       canvasElement.canvasBitmap.clear :black
+      log apply: {change}
       object change into testElement
       canvasElement.onNextReady()
       .then ->
@@ -42,12 +43,13 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
 
     canvasElement ||=
       CanvasElement
+        key: "partialRedrawCanvas"
         pixelsPerPoint: 1
         size: canvasSize
         canvas: HtmlCanvas
           width:  canvasSize
           height: canvasSize
-        RectangleElement color: canvasColor
+        draw: canvasColor
         children ? RectangleElement
           key: :testElement
           color: color
@@ -651,3 +653,36 @@ suite:
       before: 8 8 8 8 8
       change: size: 4 1
       after:  8 8 8 8 4
+
+    testPartialBeforeAfter
+      "visible true > false"
+
+      canvasSize: 2 1
+
+      children:
+        Element
+          Element
+            key: "testElement"
+            draw: defaultElementColor
+
+      before: 8 8
+      change: visible: false
+      after:  4 4
+
+    # THIS IS THE ONE THAT WAS ACTUALLY FAILING!
+    testPartialBeforeAfter
+      "visible false > true"
+
+      canvasSize: 2 1
+
+      children:
+        # the nested elements was required to make this fail
+        Element
+          Element
+            key: "testElement"
+            visible: false
+            draw: defaultElementColor
+
+      before: 4 4
+      change: visible: true
+      after:  8 8

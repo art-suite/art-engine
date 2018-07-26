@@ -356,8 +356,8 @@ defineModule module, ->
       if @_drawCacheBitmap
         @_addDescendantsDirtyDrawArea descendant
 
-      # @_clearDrawCache()
-      if @getVisible() && @getOpacity() > colorPrecision
+      # if @getVisible() && @getOpacity() > colorPrecision
+      if (@getVisible() || @getPendingVisible()) && @getPendingOpacity() > colorPrecision
         @getParent()?._needsRedrawing descendant
 
     # Whenever the drawCacheManager evicts a cache entry, it calls this
