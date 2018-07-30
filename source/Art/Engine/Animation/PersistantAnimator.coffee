@@ -381,7 +381,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseClass
       fromVoid:   # added animation
       toVoid:     # removed animation
   ###
-  constructor: (prop, options)->
+  constructor: (prop, options = {})->
     super
     @_prop = prop
     @_options = options
