@@ -335,8 +335,9 @@ defineModule module, class ScrollElement extends Element
 
   ###################
   ###################
-  animateToValidScrollPosition: ->
-    {boundedScrollPosition, scrollPosition} = @
+  animateToValidScrollPosition: (desiredOffset = 0)->
+    {scrollPosition} = @
+    boundedScrollPosition = @boundSp scrollPosition + desiredOffset
     if boundedScrollPosition != scrollPosition
       @animators = merge originialAnimators = @animators,
         scrollPosition: on: done: => @animators = originialAnimators
@@ -396,6 +397,9 @@ defineModule module, class ScrollElement extends Element
     @_pointerReferenceFrame = null
     @_lastPointerEventTime = null
     @_flickSpeed = 0
+
+  pageDown: -> @animateToValidScrollPosition -@windowSize
+  pageUp:   -> @animateToValidScrollPosition @windowSize
 
   getMainCoordinate: (pnt) ->
     if @isVertical
