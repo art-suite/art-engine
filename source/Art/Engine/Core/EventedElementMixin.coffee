@@ -81,6 +81,7 @@ module.exports = (superClass) -> class EventedElementMixin extends EventedBaseMi
         try
           processedEvent = preprocessor event
         catch e
+          log eventError1: e
           processedEvent = null
           @_handleErrorInHandler event, preprocessor, e
 
@@ -88,5 +89,6 @@ module.exports = (superClass) -> class EventedElementMixin extends EventedBaseMi
         try
           handler processedEvent
         catch e
+          log eventError2: e
           @_handleErrorInHandler processedEvent, handler, e
 
