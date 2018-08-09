@@ -1027,6 +1027,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     {
       _currentPadding, _currentSize, _axis, _scale, _angle, _elementToParentMatrix
     } = state = @getState pending
+    originalScale = _scale
     _scale = withScale if withScale?
 
     if isFunction _scale
@@ -1039,6 +1040,16 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       _scale = _scale parentSize, _currentSize
 
     _scale = point _scale
+    if _scale.isInfinite
+      log.warn "Art.Engine.Element":
+        message: "Scale is infinite. Replacing with point(1)."
+        element: @inspectedName
+        scale:
+          input:      originalScale
+          output:     _scale
+        parentSize:   parentSize
+        currentSize:  _currentSize
+      _scale = point1
 
     {left, top} = _currentPadding
     size  = _currentSize
