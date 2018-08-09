@@ -83,13 +83,13 @@ defineModule module, class ElementDrawLib
         lineWidth = defaultLineWidth
         miterLimit = defaultMiterLimit
         lineJoin
-        linCap
+        lineCap
       } = drawOptions
 
       o.lineWidth = lineWidth
       o.miterLimit = miterLimit
       o.lineJoin = lineJoin
-      o.linCap = linCap
+      o.lineCap = lineCap
 
     o.color         = color
     o.colors        = colors
