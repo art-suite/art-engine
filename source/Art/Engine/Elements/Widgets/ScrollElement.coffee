@@ -86,6 +86,7 @@ defineModule module, class ScrollElement extends Element
     @_lastOnScreenChildIndex = -1
     @_focusedChildIndex = -1
     @_initGestureProps()
+    @_gestureScrollStartPosition = 0
     @_gestureScrollPosition = 0
     @onNextReady =>
       # @jumpToEnd() if @startAtEnd
@@ -370,6 +371,7 @@ defineModule module, class ScrollElement extends Element
           begin:      @gestureBegin.bind @
           move:       @gestureMove.bind @
           end:        @gestureEnd.bind @
+          cancel:     @gestureCancel.bind @
 
   mouseWheelEvent: (event) =>
     @_mostRecentMouseWheelEvent = event
@@ -401,6 +403,9 @@ defineModule module, class ScrollElement extends Element
   pageDown: -> @animateToValidScrollPosition -@windowSize
   pageUp:   -> @animateToValidScrollPosition @windowSize
 
+  gestureCancel: ->
+    @scrollPosition = @_gestureScrollStartPosition
+
   getMainCoordinate: (pnt) ->
     if @isVertical
       pnt.y
@@ -413,7 +418,7 @@ defineModule module, class ScrollElement extends Element
     else
       1 < delta.absoluteAspectRatio
 
-  gestureBegin:   (e) -> @_gestureScrollPosition = @getPendingScrollPosition()
+  gestureBegin:   (e) ->  @_gestureScrollStartPosition =  @_gestureScrollPosition = @getPendingScrollPosition()
   gestureResume:  (e) ->
   gestureMove:    (e) ->
     scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
