@@ -239,6 +239,61 @@ defineModule module, class ElementDrawLib
 
     dirtyDrawAreas
 
+  ###
+  # 2018-8-14
+  # This is an easier-to-understand version of addDirtyDrawArea, though it is not
+  # object-creation optimized.
+  # I added this because I suspected the other version was buggy.
+  # However, after lots of playing, this, clearly correct version, produced
+  # the same results - which probably means the bug is elsewhere. Still...
+  # since I haven't found the bug, I'm keeping this around.
+  # The bugs are:
+  #     Zo initial fade screen has a moment where the blue is almost gone and
+  #     the rest of the screen draws and the result is everal white rectangles
+  #     - just for a milisecond...
+  # The other bug is the zo stream manager - dragging a pile of posts around
+  # sometimes results in an actual left-behind glitch which doesn't update until
+  # something else overlaps it.
+
+  @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea, snapTo) =>
+    if dirtyArea.area > 0
+      dirtyArea = dirtyArea.roundOut snapTo, colorPrecision if snapTo?
+      @_addDirtyDrawArea dirtyDrawAreas, dirtyArea
+    else
+      dirtyDrawAreas
+
+  @_addDirtyDrawArea: (dirtyDrawAreas, dirtyArea) =>
+
+    if dirtyDrawAreas
+      if false # brute force
+        for area in dirtyDrawAreas
+          dirtyArea = dirtyArea.union area
+        for area in dirtyDrawAreas
+          throw new Error "not covered" unless dirtyArea.contains area
+        [dirtyArea]
+
+      else
+        if (i = findOverlappingArea dirtyDrawAreas, dirtyArea)?
+          area = dirtyDrawAreas[i]
+          if area.contains dirtyArea
+            dirtyDrawAreas
+
+          else
+            @_addDirtyDrawArea(
+              arrayWithout dirtyDrawAreas, i
+              area.union dirtyArea
+            )
+
+        else
+          dirtyDrawAreas.push dirtyArea
+          dirtyDrawAreas
+
+    else
+      [dirtyArea]
+
+
+  ###
+
   @partitionAreasByInteresection: (partitioningArea, areas) ->
     insideAreas = null
     outsideAreas = null
