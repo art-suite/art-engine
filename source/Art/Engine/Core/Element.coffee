@@ -204,8 +204,14 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     parentWidthSquare:                        hw:1, ww:1
     parentFitSquare:                          hh:1, wh:1, max: hw:1, ww: 1
     childrenSizeMaxParentWidth:               cs:1, max: ww: 1
+    childrenSizeMaxParentHeight:              cs:1, max: hh: 1
+
     parentHeightChildrenWidth:                hh:1, wcw:1
     parentWidthChildrenHeight:                ww:1, hch:1
+
+    childrenWidthParentHeight:                hh:1, wcw:1
+    childrenHeightParentWidth:                ww:1, hch:1
+
     parentHeightChildrenWidthMaxParentWidth:  wcw:1, hh:1, max: ww:1
 
   namedSizeLayouts = object namedSizeLayoutsRaw, (v) -> pointLayout v
