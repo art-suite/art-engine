@@ -76,6 +76,7 @@ defineModule module, class ElementDrawLib
       to
       from
       radius
+      radial
     } = drawOptions
 
     if isOutline
@@ -91,6 +92,7 @@ defineModule module, class ElementDrawLib
       o.lineJoin = lineJoin
       o.lineCap = lineCap
 
+    o.radial        = !!radial
     o.color         = color
     o.colors        = colors
     o.compositeMode = compositeMode
