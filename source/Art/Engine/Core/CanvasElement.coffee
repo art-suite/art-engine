@@ -293,6 +293,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @currentSize
         @canvasBitmap
       }
+
+    canvasByteSize: -> @canvasBitmap.byteSize
+
     htmlCanvasElement: -> @_canvas
     numActivePointers: -> @pointerEventManager.getNumActivePointers()
     cacheable: -> false
