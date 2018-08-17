@@ -630,9 +630,6 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       v == "inPaddedArea" ||
       v == "passToChildren"
 
-    # SBD TODO 2016: allow a custom function: (pointInElementSpace, element, pointInParentSpace) ->
-    pointInsideTest: default: null, validate: (v) -> !v || isFunction v
-
   @virtualProperty
     invisible:
       getter: (pending) -> @getState(pending)._visible
