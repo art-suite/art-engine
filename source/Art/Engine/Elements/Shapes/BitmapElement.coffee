@@ -43,6 +43,13 @@ defineModule module, class BitmapElement extends ShadowableElement
 
     loaded: (url) -> @_loaded[url]
 
+    @getter
+      memoryUsage: ->
+        bytes = 0
+        for k, v of @_loaded
+          bytes += v.byteSize
+        bytes
+
     temporaryPut: (duration, url, bitmap) ->
       @get url, Promise.resolve bitmap
       # log temporaryPut: {bitmap, duration, url}
@@ -73,8 +80,13 @@ defineModule module, class BitmapElement extends ShadowableElement
     super
     @_bitmapToElementMatrix = new Matrix
 
+  _releaseCachedBitmap: ->
+    if @_previousCacheSource
+      sourceToBitmapCache.release @_previousCacheSource
+      @_previousCacheSource = null
+
   _unregister: ->
-    sourceToBitmapCache.release @getSource()
+    @_releaseCachedBitmap()
     super
 
   @getter
@@ -132,6 +144,8 @@ defineModule module, class BitmapElement extends ShadowableElement
       validate:   (v) -> !v || isPlainArray v
 
   _loadBitmapFromSource: (source) ->
+    @_releaseCachedBitmap()
+    @_previousCacheSource = source
     sourceToBitmapCache.get source
     .then (bitmap) =>
       @onNextReady => @queueEvent "load", => bitmap:bitmap
