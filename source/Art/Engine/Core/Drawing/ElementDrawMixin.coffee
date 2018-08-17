@@ -65,10 +65,6 @@ defineModule module, ->
       cacheDraw:
         default: false
         validate: (v) -> v == false || v == true || isPlainObject v
-        # preprocess: (v) -> if v == true then "auto" else v
-
-        description:
-          "true => stage always unless cacheThrough or it's not needed AND it's faster w/o"
 
     @drawLayoutProperty
 
@@ -406,6 +402,15 @@ defineModule module, ->
         @drawOrderRequiresStaging
       )
 
+    getWhyStagingIsNeeded: (elementToTargetMatrix) ->
+      switch
+        when @stage then "stage property is true"
+        when @getIsMask() then "is mask"
+        when ((@getHasChildren() || @draw?) && !@getCompositingIsBasic()) then "compositing requires staging: #{@compositeMode}, opacity: #{@opacity}"
+        when (@_clip && elementToTargetMatrix?.getHasSkew()) then "clipping and non-rectangular area due to matrix: #{elementToTargetMatrix}"
+        when @getChildRequiresParentStagingBitmap() then "child needs parent staging"
+        when @drawOrderRequiresStaging then "draw property requries staging: #{formattedInspect @draw}"
+
     @getter
       compositingIsBasic: -> @_compositeMode == "normal" && floatEq @_opacity, 1
       cacheIsValid: -> !!@_drawCacheBitmap
@@ -438,8 +443,10 @@ defineModule module, ->
       return if elementSpaceDrawArea.getArea() <= 0
 
       cacheScale =
-        pixelsPerPoint *
-          if @getCacheDraw() || @getStage() then 1 else elementToTargetMatrix.getExactScaler()
+        if @getCacheDraw() || @getStage()
+          pixelsPerPoint
+        else
+          elementToTargetMatrix.getExactScaler()
 
       cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale
       while cacheSpaceDrawArea.area >= maxCanvasSize
