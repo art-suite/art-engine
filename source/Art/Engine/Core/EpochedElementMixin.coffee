@@ -481,6 +481,10 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
               ret[k] = value
       ret
 
+  @getConcreteProps: ->
+    for k, mp of @getMetaProperties() when !mp.virtual
+      k
+
   ##########################
   # OVERRIDES
   ##########################
