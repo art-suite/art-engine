@@ -251,7 +251,7 @@ defineModule module, ->
                   when shape      then customShapePath
 
               if padding
-                currentDrawArea = padding.pad currentDrawArea
+                currentDrawArea = padding.pad @currentSize
 
               if clip?
                 if clip
