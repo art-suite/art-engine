@@ -1,5 +1,6 @@
 webpack:
-  common: {}
+  common:
+    mode: "development"
   targets:
     index: {}
     test: {}

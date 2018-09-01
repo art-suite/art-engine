@@ -82,7 +82,7 @@ defineModule module, class StateEpoch extends Epoch
     null
 
   # __drawAreaChanged should already be set for any state change which changes an element's baseDrawArea computation
-  # This just takes care of the case when an element's drawArea isn't changing, but it moved, so it's parents will.
+  # This just takes care of the case when an element's drawArea isn't changing, but it moved, so it's parent's drawArea will change.
   markDrawAreaChanged: (changingElements)->
     for element in changingElements
       element.__drawAreaChanged ||= element.getChildrenChanged() ||

@@ -1,12 +1,22 @@
-import &ArtStandardLib, &source/Art/Engine, &ArtCanvas
+import &ArtStandardLib, &source/Art/Engine, &ArtCanvas, &ArtAtomic
 
 class CoreHelper
-  @getRedImageData: getRedImageData = (bitmap) ->
+  @getRedImageData: getRedImageData = (bitmap, testArea) ->
     if isPlainArray bitmap
       bitmap
     else
-      bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
-      .getImageDataArray "red"
+      b = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
+
+      {data} = b.getImageData testArea
+      i = channel = 0
+      end = data.length
+      out = []
+
+      while i < end
+        i += 4
+        out.push data[i - 4]
+
+      out
 
   getReducedAdjacent = (data, width, index, func, seed) ->
     height = data.length / width
@@ -45,8 +55,8 @@ class CoreHelper
     out
 
   @getDownsampledRedChannel: getDownsampledRedChannel = (bitmap, options) ->
-    {downsampleBits = 4, sliceAmount} = options || {}
-    out = array a in getRedImageData bitmap with a >> downsampleBits
+    {downsampleBits = 4, sliceAmount, testArea} = options || {}
+    out = array a in getRedImageData bitmap, testArea with a >> downsampleBits
     if sliceAmount
       out.slice 0, sliceAmount
     else
@@ -66,8 +76,10 @@ class CoreHelper
 
     bitmap = bitmap.canvasBitmap || bitmap._drawCacheBitmap || bitmap
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
-    log {} "#{message}": bitmap.clone(), size: bitmap.size
-    assert.eq expecting.length, bitmap.size.area, "#{message} - bitmap area (#{bitmap.size.area}) didn't match expecting-area (#{expecting.length})"
+    {testArea} = options
+    testArea = rect testArea ? bitmap.size
+    log {} "#{message}": bitmap.clone(), size: bitmap.size, testArea
+    assert.eq expecting.length, testArea.area, "#{message} - bitmap area (#{bitmap.size.area}) didn't match expecting-area (#{expecting.length})"
     if eq expecting, expecting2
       assert.eq
         downsampled

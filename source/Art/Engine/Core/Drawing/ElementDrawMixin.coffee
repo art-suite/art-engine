@@ -353,7 +353,7 @@ defineModule module, ->
         @_addDescendantsDirtyDrawArea descendant
 
       # if @getVisible() && @getOpacity() > colorPrecision
-      if (@getVisible() || @getPendingVisible()) && @getPendingOpacity() > colorPrecision
+      if (@getVisible() || @getPendingVisible()) && (@getPendingOpacity() > colorPrecision || @getOpacity() > colorPrecision)
         @getParent()?._needsRedrawing descendant
 
     # Whenever the drawCacheManager evicts a cache entry, it calls this

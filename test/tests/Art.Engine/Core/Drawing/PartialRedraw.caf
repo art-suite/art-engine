@@ -22,16 +22,20 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
     init,
     before,
     after,
-    change} = options
+    change,
+    testArea} = options
 
     doAfterTest = (canvasElement, change, after, moreAfterTests...) ->
 
       canvasElement.canvasBitmap.clear :black
       log apply: {change}
       object change into testElement
+      log testElement: {} testElement?.redrawRequired, testElement.changingProps
+
       canvasElement.onNextReady()
       .then ->
-        compareDownsampledRedChannel "#{name}: after #{formattedInspect change}", canvasElement, after
+
+        compareDownsampledRedChannel "#{name}: after #{formattedInspect change}", canvasElement, after, {} testArea
         if moreTests?.length > 0
           [{change, after}, rest...] = moreAfterTests
           doAfterTest
@@ -60,7 +64,7 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
     canvasElement.onNextReady()
     .then ->
       [testElement] = canvasElement.find :testElement
-      before && compareDownsampledRedChannel "#{name}: before", canvasElement, before
+      before && compareDownsampledRedChannel "#{name}: before", canvasElement, before, {} testArea
       doAfterTest canvasElement, change, after, moreTests...
 
 suite:
@@ -686,3 +690,20 @@ suite:
       before: 4 4
       change: visible: true
       after:  8 8
+
+    testPartialBeforeAfter
+      "cached-opacity set to zero"
+
+      canvasSize: 1
+
+      children:
+        # the nested elements was required to make this fail
+        Element
+          draw: defaultElementColor
+          size: 1
+          key: "testElement"
+          opacity: 1
+
+      before: 8
+      change: opacity: 0
+      after:  4
