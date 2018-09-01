@@ -15,6 +15,7 @@
   isPlainObject
   isPlainArray
   nextTick
+  object
   BaseClass: {propInternalName}
 
   propsEq
@@ -480,6 +481,14 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
             unless propsEq defaultValue, value = @[internalName]
               ret[k] = value
       ret
+
+    changingProps: ->
+      object @_pendingState,
+        when: (v, k) => @[k] != v
+        with: (v, k) =>
+          old: @[k]
+          new: v
+
 
   @getConcreteProps: ->
     for k, mp of @getMetaProperties() when !mp.virtual
