@@ -336,9 +336,14 @@ defineModule module, class ScrollElement extends Element
 
   ###################
   ###################
+  scrollToTop: -> @animateToValidScrollPosition @childrenSize
+  scrollToBottom: -> @animateToValidScrollPosition -@childrenSize
+
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     boundedScrollPosition = @boundSp scrollPosition + desiredOffset
+    log {boundedScrollPosition}
+    global.scrollElement = @
     if boundedScrollPosition != scrollPosition
       @animators = merge originialAnimators = @animators,
         scrollPosition: on: done: => @animators = originialAnimators
