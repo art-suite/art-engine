@@ -342,7 +342,6 @@ defineModule module, class ScrollElement extends Element
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     boundedScrollPosition = @boundSp scrollPosition + desiredOffset
-    log {boundedScrollPosition}
     global.scrollElement = @
     if boundedScrollPosition != scrollPosition
       @animators = merge originialAnimators = @animators,
