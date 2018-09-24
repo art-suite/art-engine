@@ -102,7 +102,7 @@ defineModule module, ->
         @_currentDrawTarget = target
         @_currentToTargetMatrix = elementToTargetMatrix
 
-        targetSpaceDrawArea = @drawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
+        targetSpaceDrawArea = @getDrawAreaIn(elementToTargetMatrix).intersection target.getClippingArea()
         return unless targetSpaceDrawArea.area > 0
 
         cacheDrawRequested = @getCacheDrawRequested elementToTargetMatrix
@@ -539,7 +539,7 @@ defineModule module, ->
       @_drawCacheBitmap.clear() unless alreadyClear # TODO - if we know we will REPLACE 100% of the pixels, we don't need to do this
       if @_clip && (!alreadyClipped || hasCustomClipping = @getHasCustomClipping())
         unless hasCustomClipping
-          targetSpaceDrawArea = @drawAreaIn(@_elementToDrawCacheMatrix).intersection @_drawCacheBitmap.size
+          targetSpaceDrawArea = @getDrawAreaIn(@_elementToDrawCacheMatrix).intersection @_drawCacheBitmap.size
 
         @_drawWithClipping targetSpaceDrawArea, @_drawCacheBitmap, @_elementToDrawCacheMatrix
       else

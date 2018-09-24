@@ -291,7 +291,7 @@ suite:
         new FillElement color: "red"
         new ShadowElement location: 5, radius: 6
       test: (element) ->
-        assert.eq element.drawAreaIn(Matrix.scale 2), rect(-1, -1, 112, 112).mul 2
+        assert.eq element.getDrawAreaIn(Matrix.scale 2), rect(-1, -1, 112, 112).mul 2
 
   inverted: ->
     drawTest2 "blurred", ->

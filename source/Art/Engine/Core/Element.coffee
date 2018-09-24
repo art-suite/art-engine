@@ -938,7 +938,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       when "parentPaddedArea"   then drawArea: @parent.paddedArea,            elementToDrawAreaMatrix: @elementToParentMatrix
       when "parentDrawArea"     then drawArea: @parent.elementSpaceDrawArea,  elementToDrawAreaMatrix: @elementToParentMatrix
       when "targetDrawArea"
-        drawArea: @drawAreaIn options.elementToDrawAreaMatrix || identityMatrix
+        drawArea: @getDrawAreaIn options.elementToDrawAreaMatrix || identityMatrix
         elementToDrawAreaMatrix: identityMatrix
       else
         throw new Error "invalid area option: #{options.area}"

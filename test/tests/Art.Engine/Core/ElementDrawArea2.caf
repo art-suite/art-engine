@@ -124,3 +124,151 @@ suite:
                 bitmap:   portraitBitmap
 
         49 27 42 42
+
+  drawAreaInParent: ->
+
+    testDrawAreaInParent = (name, element, expectedArea) ->
+      test name, ->
+        parent = Element element
+        .toBitmapBasic()
+        .then (rendered) -> log [name]: parent: {} rendered, parent.drawAreaInParent
+        .then -> assert.eq parent.drawAreaInParent.roundOut(), rect expectedArea
+
+    testDrawAreaInParent
+      :location0
+      Element
+        size: 200
+        draw: :red
+
+      0 0 200 200
+
+    testDrawAreaInParent
+      :location10
+      Element
+        location: 10
+        size: 200
+        draw: :red
+
+      10 10 200 200
+
+    testDrawAreaInParent
+      :grandChild
+      Element
+        location: 100
+        Element
+          location: 10
+          size: 200
+          draw: :red
+
+      110 110 200 200
+
+    testDrawAreaInParent
+      :grandChild2
+      Element
+        location: 100
+        size: :childrenSize
+        draw: :green
+        Element
+          location: 10
+          size: 200
+          draw: :red
+
+      100 100 210 210
+
+    testDrawAreaInParent
+      :angle90
+      Element
+        location: 10
+        size: 200
+        angle: Math.PI / 2
+        draw: :red
+
+      -190 10 200 200
+
+
+  clippedDrawAreaInParent: ->
+
+    testDrawAreaInParent = (name, element, expectedArea) ->
+      test name, ->
+        parent = Element
+          size: 100
+          clip: true
+          element
+        .toBitmapBasic()
+        .then (rendered) -> log [name]: parent: {} rendered, parent.clippedDrawAreaInParent
+        .then -> assert.eq parent.clippedDrawAreaInParent.roundOut(), rect expectedArea
+
+    testDrawAreaInParent
+      :location0
+      Element
+        size: 200
+        draw: :red
+
+      0 0 100 100
+
+    testDrawAreaInParent
+      :location10
+      Element
+        location: 10
+        size: 200
+        draw: :red
+
+      10 10 90 90
+
+    testDrawAreaInParent
+      :angle45
+      Element
+        size: 200
+        angle: Math.PI / 4
+        draw: :red
+
+      0, 0, 100, 100
+
+
+
+  clippedDrawAreaInAncestor: ->
+
+    testDrawAreaInParent = (name, element, expectedArea) ->
+      test name, ->
+        [testElement = element] = element.find :testElement
+        parent = Element
+          size: 100
+          clip: true
+          element
+        .toBitmapBasic()
+        .then (rendered) -> log [name]:
+          testElement: {}
+            element: testElement
+            testElement.clippedDrawAreaInAncestor
+          parent: {} rendered, testElement.drawArea
+        .then -> assert.eq testElement.clippedDrawAreaInAncestor.roundOut(), rect expectedArea
+
+    testDrawAreaInParent
+      "" grandparent's cliping doesn't get triggered
+      Element
+        location: 10
+        size: 50
+        clip: true
+        Element
+          key: :testElement
+          location: 10
+          size: 100
+          draw: :red
+
+      20 20 40 40
+
+
+    testDrawAreaInParent
+      "" grandparent's cliping and parent's clipping have an effect
+      Element
+        location: y: -5
+        size: 50
+        clip: true
+        draw: :blue
+        Element
+          key: :testElement
+          location: x: 10
+          size: 100
+          draw: :red
+
+      10 0 40 45

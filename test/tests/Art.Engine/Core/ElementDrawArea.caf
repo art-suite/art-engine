@@ -132,7 +132,7 @@ suite:
       o = new Element size: 400 drawOrder: :red
       ->
         m = Matrix.rotate Math.PI/4
-        assert.eq o.drawAreaIn(m).roundOut(), rect -283, 0, 566, 566
+        assert.eq o.getDrawAreaIn(m).roundOut(), rect -283, 0, 566, 566
 
   outline: ->
     stateEpochTest "with outline", ->

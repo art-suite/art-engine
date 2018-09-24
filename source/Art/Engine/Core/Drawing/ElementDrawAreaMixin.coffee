@@ -1,6 +1,6 @@
 'use strict';
 {compactFlatten, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
-{Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
+{Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter, Rectangle} = require 'art-atomic'
 {GradientFillStyle, Paths} = require 'art-canvas'
 {rectanglePath, ellipsePath, circlePath} = Paths
 {BaseClass} = require 'art-class-system'
@@ -32,39 +32,112 @@ defineModule module, ->
       baseDrawArea: (pending) ->
         @getPreFilteredBaseDrawArea pending
 
+
+    ###
+    IN:
+      elementSpaceDrawArea: required
+        the area to clip
+      into: [default = new Rectangle]
+        If present, this rectangle will be completely replaced with new values.
+    OUT: into, if present, else a new Rectangle
+    ###
+    clipElementSpaceArea: (elementSpaceArea, into) ->
+      # log clipElementSpaceArea:
+      #   clip: @clip
+      #   elementSpaceArea: elementSpaceArea?.clone()
+      #   into: into?.clone()
+      #   currentSize: @currentSize
+      if @clip
+        @currentSize.intersect elementSpaceArea, into
+        # log clipElementSpaceAreaA:
+        #   clip: @clip
+        #   elementSpaceArea: elementSpaceArea?.clone()
+        #   into: into?.clone()
+        #   currentSize: @currentSize
+      else if elementSpaceArea != into
+        {x, y, w, h} = elementSpaceArea
+        if into
+          into._setAll x, y, w, h
+        else
+          new Rectangle x, y, w, h
+      else
+        elementSpaceArea
+
+
     @getter
       parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
       elementSpaceDrawArea: -> @_elementSpaceDrawArea ||= @_computeElementSpaceDrawArea()
       drawArea: -> @elementSpaceDrawArea
-    #   drawAreas are computed once and only updated as needed
-    #   drawAreas are kept in elementSpace
+      drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
 
-    # drawAreaIn should become:
-    # drawAreaOverlapsTarget: (target, elementToTargetMatrix) ->
-    #   elementToTargetMatrix.rectanglesOverlap @_elementSpaceDrawArea, target.size
-    # This avoids creating a rectangle object by adding a method to Matrix:
-    #   rectanglesOverlap: (sourceSpaceRectangle, targetSpaceRectangle)
-    drawAreaIn: (elementToTargetMatrix = @getElementToAbsMatrix()) -> elementToTargetMatrix.transformBoundingRect @getElementSpaceDrawArea()
-    drawAreaInElement: (element) -> @drawAreaIn @getElementToElementMatrix element
+      ###
+      IN:
+        elementSpaceDrawArea: [default = @drawArea]
+          the source area to transform to parent-space and then clip
+        into: [default = new Rectangle]
+          If present, this rectangle will be completely replaced with new values.
+      OUT: into, if present, else a new Rectangle
+      ###
+      drawAreaInParent: (elementSpaceDrawArea, into)->
+        # log drawAreaInParent:
+        #   elementSpaceDrawArea: elementSpaceDrawArea ? @elementSpaceDrawArea
+        #   elementToParentMatrix: @elementToParentMatrix
+        #   intoSame: elementSpaceDrawArea == into
+        out = @elementToParentMatrix.transformBoundingRect elementSpaceDrawArea ? @elementSpaceDrawArea, false, into
+        # log drawAreaInParent:
+        #   elementSpaceDrawArea: elementSpaceDrawArea
+        #   elementToParentMatrix: @elementToParentMatrix
+        #   out: out.clone()
+        out
 
-    @getter
-      clippedDrawArea: (stopAtParent)->
-        parent = @
-        requiredParentFound = false
+      ###
+      IN:
+        elementSpaceDrawArea: [default = @drawArea]
+          the source area to transform to parent-space and then clip
+        into: [default = new Rectangle]
+          If present, this rectangle will be completely replaced with new values.
 
-        # we are going to mutate drawArea - so clone it
-        drawArea = clone @drawAreaInElement stopAtParent
+        NOTE: @parent must be set
 
-        while parent = parent.getParent()
-          parent.drawAreaInElement(stopAtParent).intersectInto drawArea if parent.clip
-          if parent == stopAtParent
-            requiredParentFound = true
+      OUT: into, if present, else a new Rectangle
+      ###
+      clippedDrawAreaInParent: (elementSpaceDrawArea, into)->
+        drawAreaInParent = @getDrawAreaInParent elementSpaceDrawArea, into
+        # log clippedDrawAreaInParent: drawAreaInParent.clone()
+        @parent?.clipElementSpaceArea drawAreaInParent, drawAreaInParent
+        drawAreaInParent
+
+      ###
+      IN:
+        ancestor: Element instance
+          if null
+            return clippedDrawAreaInAbsSapce
+          else
+            return clippedDrawArea in ancestor's space
+
+      OUT: new Rectangle
+      ###
+      clippedDrawAreaInAncestor: (ancestor) ->
+        self = @
+
+        while parent = self.parent
+          oldDrawArea = drawArea?.clone()
+          drawArea = self.getClippedDrawAreaInParent drawArea, drawArea
+          # log clippedDrawAreaInAncestor: {
+          #   oldDrawArea
+          #   drawArea: drawArea.clone()
+          #   self: self
+          # }
+
+
+          if parent != ancestor
+            self = parent
+          else
             break
-        return rect() if stopAtParent && !requiredParentFound
-        drawArea
+
+        drawArea ? @drawArea
 
     # overridden by some children (Ex: Filter)
-
     _drawAreaChanged: ->
       if @_elementSpaceDrawArea
         @_elementSpaceDrawArea = null
@@ -88,7 +161,7 @@ defineModule module, ->
     # returns computed elementSpaceDrawArea
     _computeElementSpaceDrawArea: (upToChild)->
       drawAreaCollector = new DrawAreaCollector @currentPadding
-      if @getClip()
+      if @clip
         drawAreaCollector.openClipping null, identityMatrix, @paddedArea
       @_drawChildren drawAreaCollector, identityMatrix, false, upToChild
       drawAreaCollector.drawArea
@@ -96,7 +169,7 @@ defineModule module, ->
     _addDescendantsDirtyDrawArea: (descendant) ->
       if descendant && !@_redrawAll
         if descendant != @
-          @_addDirtyDrawArea (dirtyArea = descendant.getClippedDrawArea @), true
+          @_addDirtyDrawArea (dirtyArea = descendant.getClippedDrawAreaInAncestor @), true
       else
         @_dirtyDrawAreas = null
         @_redrawAll = true
@@ -108,3 +181,16 @@ defineModule module, ->
       @setDirtyDrawAreasChanged true if triggeredByChild
       @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea, snapTo
 
+    ###
+    NOTE: art-engine-clipping is always the 'logicalArea'
+    Effect:
+      if @clip
+        elementSpaceArea is clipped in-place (mutated)
+      else
+        noop: return elementSpaceArea
+    ###
+    _clipInPlace: (elementSpaceArea) ->
+      if @clip
+        @currentSize.intersectInto elementSpaceArea
+      else
+        elementSpaceArea
