@@ -4,7 +4,9 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Element = require '../Core/Element'
 {timeout, log, merge, inspect, float32Eq} = Foundation
-{rect, point1, point} = Atomic
+{rect, point1, point, point0} = Atomic
+
+{Div} = Foundation.Browser.DomElementFactories
 
 # TODO: add a clipping <div> so the domElement is propperly clipped if its Art-Element is clipped.
 
@@ -55,58 +57,57 @@ module.exports = class SynchronizedDomOverlay extends Element
     , false) # don't force an epoch - wait until the next one
 
   _updateDomLayout: ->
-
     if @_shouldAttachDomElement
       unless canvasElement?.htmlCanvasElement?.parentElement
         timeout 50, => @_updateDomLayout()
         return null
 
-      @_shouldAttachDomElement = false
-      canvasElement.htmlCanvasElement.parentElement.appendChild @_domElement
-      @queueEvent "domElementAttached"
+      @_attachDomElementNow()
 
     if @_attachedToCanvasElement != newCanvasElement = @getCanvasElement()
       @_attachDomElement newCanvasElement
 
     return unless @_attachedToCanvasElement
-    m = @getElementToDocumentMatrix()
-    x = m.getLocationX()
-    y = m.getLocationY()
-    size  = @getPaddedSize()
-    sx = m.getScaleX()
-    sy = m.getScaleY()
-    r = rect(x, y, size.x, size.y).round()
+    {elementToDocumentMatrix, htmlCanvasElement} = @_attachedToCanvasElement
 
+    clippedDrawAreaInAncestor = @clippedDrawAreaInAncestor.roundOut()
+
+    m       = @getElementToElementMatrix @_attachedToCanvasElement
+    size    = @getPaddedSize()
     opacity = @getAbsOpacity()
 
+    {x:canvasLeft, y:canvasTop} = elementToDocumentMatrix.transform point0
+    @_domElementWrapper.style.top     = "#{canvasTop  + clippedDrawAreaInAncestor.top}px"
+    @_domElementWrapper.style.left    = "#{canvasLeft + clippedDrawAreaInAncestor.left}px"
+    @_domElementWrapper.style.width   = "#{clippedDrawAreaInAncestor.w}px"
+    @_domElementWrapper.style.height  = "#{clippedDrawAreaInAncestor.h}px"
+
     # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
-    @_domElement.style.opacity = opacity
-    @_domElement.style.display = if opacity == 0 then "none" else "block"
-    @_domElement.style.left   = "#{r.x}px"
-    @_domElement.style.top    = "#{r.y}px"
-    @_domElement.style.width  = "#{r.w}px"
-    @_domElement.style.height = "#{r.h}px"
+    @_domElement.style.opacity  = opacity
+    @_domElement.style.display  = if opacity == 0 then "none" else "block"
+    @_domElement.style.left     = "#{m.getLocationX() - clippedDrawAreaInAncestor.left}px"
+    @_domElement.style.top      = "#{m.getLocationY() - clippedDrawAreaInAncestor.top}px"
+    @_domElement.style.width    = "#{size.x}px"
+    @_domElement.style.height   = "#{size.y}px"
+
+    sx    = m.getScaleX()
+    sy    = m.getScaleY()
+
     @_domElement.style.transform = if !float32Eq(sx, 1) || !float32Eq(sy, 1)
       @_domElement.style["transform-origin"] = "left top"
       "scale(#{sx}, #{sy})"
     else
       "none"
 
+  _computeElementSpaceDrawArea: (upToChild)->
+    rect @currentSize
+
   _focusDomElement: ->
     @_domElement?.focus()
 
-  _detachDomElement: ->
-    return unless @_attachedToCanvasElement
-    # TODO: fix documentMatriciesChanged
-    #   We no longer support adding and removing listeners on an Element. You can only set, and replace all, the
-    #   listener property. So, how should SynchronizedDomOverlay update the dom elements if the CanvasElement moves?
-    # if @_attachedToCanvasElement && @_documentMatriciesChangedListener
-    #   @_attachedToCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
-    #   @_documentMatriciesChangedListener = @_attachedToCanvasElement = null
-    @_shouldAttachDomElement = false
-    @_domElement?.parentElement?.removeChild @_domElement
-    @_attachedToCanvasElement = null
-
+  # _attachDomElement doesn't actually attach the element yet;
+  # instead, we wait until the next _updateDomLayout.
+  # Q: Why? A: So that we not only attach it, but we also lay it out properly.
   _attachDomElement: ->
     return unless @isRegistered
     canvasElement = @getCanvasElement()
@@ -121,3 +122,27 @@ module.exports = class SynchronizedDomOverlay extends Element
       @_queueUpdate()
 
     @_layoutPropertyChanged()
+
+  _attachDomElementNow: ->
+    @_shouldAttachDomElement = false
+    {htmlCanvasElement} = @_attachedToCanvasElement
+
+    {top, left, width, height} = htmlCanvasElement.style
+    htmlCanvasElement.parentElement.appendChild @_domElementWrapper = Div
+      style: {top, left, width, height, overflow: "hidden", position: "absolute"}
+      @_domElement
+
+    @queueEvent "domElementAttached"
+
+  _detachDomElement: ->
+    return unless @_attachedToCanvasElement
+    # TODO: fix documentMatriciesChanged
+    #   We no longer support adding and removing listeners on an Element. You can only set, and replace all, the
+    #   listener property. So, how should SynchronizedDomOverlay update the dom elements if the CanvasElement moves?
+    # if @_attachedToCanvasElement && @_documentMatriciesChangedListener
+    #   @_attachedToCanvasElement.removeListeners documentMatriciesChanged:@_documentMatriciesChangedListener
+    #   @_documentMatriciesChangedListener = @_attachedToCanvasElement = null
+    @_shouldAttachDomElement = false
+    @_domElementWrapper?.parentElement?.removeChild @_domElementWrapper
+    @_domElementWrapper = null
+    @_attachedToCanvasElement = null

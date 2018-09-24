@@ -121,14 +121,7 @@ defineModule module, ->
         self = @
 
         while parent = self.parent
-          oldDrawArea = drawArea?.clone()
           drawArea = self.getClippedDrawAreaInParent drawArea, drawArea
-          # log clippedDrawAreaInAncestor: {
-          #   oldDrawArea
-          #   drawArea: drawArea.clone()
-          #   self: self
-          # }
-
 
           if parent != ancestor
             self = parent
