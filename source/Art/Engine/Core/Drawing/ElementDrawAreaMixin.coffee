@@ -14,7 +14,6 @@ defineModule module, ->
 
     @setter
       dirtyDrawAreasChanged: (v) ->
-        # log.error "dirtyDrawAreasChanged #{v} #{@key}"
         if v
           @_dirtyDrawAreasChangedWasTrue = v
         else if @_dirtyDrawAreasChangedWasTrue
@@ -32,7 +31,6 @@ defineModule module, ->
       baseDrawArea: (pending) ->
         @getPreFilteredBaseDrawArea pending
 
-
     ###
     IN:
       elementSpaceDrawArea: required
@@ -42,18 +40,12 @@ defineModule module, ->
     OUT: into, if present, else a new Rectangle
     ###
     clipElementSpaceArea: (elementSpaceArea, into) ->
-      # log clipElementSpaceArea:
-      #   clip: @clip
-      #   elementSpaceArea: elementSpaceArea?.clone()
-      #   into: into?.clone()
-      #   currentSize: @currentSize
       if @clip
-        @currentSize.intersect elementSpaceArea, into
-        # log clipElementSpaceAreaA:
-        #   clip: @clip
-        #   elementSpaceArea: elementSpaceArea?.clone()
-        #   into: into?.clone()
-        #   currentSize: @currentSize
+        if @padding
+          @paddedArea.intersect elementSpaceArea, into
+        else
+          @currentSize.intersect elementSpaceArea, into
+
       else if elementSpaceArea != into
         {x, y, w, h} = elementSpaceArea
         if into
@@ -79,16 +71,7 @@ defineModule module, ->
       OUT: into, if present, else a new Rectangle
       ###
       drawAreaInParent: (elementSpaceDrawArea, into)->
-        # log drawAreaInParent:
-        #   elementSpaceDrawArea: elementSpaceDrawArea ? @elementSpaceDrawArea
-        #   elementToParentMatrix: @elementToParentMatrix
-        #   intoSame: elementSpaceDrawArea == into
-        out = @elementToParentMatrix.transformBoundingRect elementSpaceDrawArea ? @elementSpaceDrawArea, false, into
-        # log drawAreaInParent:
-        #   elementSpaceDrawArea: elementSpaceDrawArea
-        #   elementToParentMatrix: @elementToParentMatrix
-        #   out: out.clone()
-        out
+        @elementToParentMatrix.transformBoundingRect elementSpaceDrawArea ? @elementSpaceDrawArea, false, into
 
       ###
       IN:
@@ -103,7 +86,6 @@ defineModule module, ->
       ###
       clippedDrawAreaInParent: (elementSpaceDrawArea, into)->
         drawAreaInParent = @getDrawAreaInParent elementSpaceDrawArea, into
-        # log clippedDrawAreaInParent: drawAreaInParent.clone()
         @parent?.clipElementSpaceArea drawAreaInParent, drawAreaInParent
         drawAreaInParent
 
