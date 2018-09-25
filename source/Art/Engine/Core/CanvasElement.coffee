@@ -162,13 +162,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
           height = clientHeight
 
         else if innerWidth > 0 && innerHeight > 0
-          # SUPER HACK - I think this is a bug with cordova-plugin-wkwebview-engine/
-          # randomly, mostly on load, innerHeight gets stuck at the wrong height.
-          # Rotate the iPad and it's fine.
-          if nativeAppDetect() && iOSDetect()
-            unless iPadDetect() && innerHeight != height - 20
-              innerHeight = height
-
           width = innerWidth
           height = innerHeight
 
