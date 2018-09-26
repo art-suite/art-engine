@@ -83,10 +83,13 @@ defineModule module, class StateEpoch extends Epoch
 
   # __drawAreaChanged should already be set for any state change which changes an element's baseDrawArea computation
   # This just takes care of the case when an element's drawArea isn't changing, but it moved, so it's parent's drawArea will change.
+  # NOTE: the draw-property is already declared as a "drawLayoutProperty" which means changing it sets __drawAreaChanged = true
+  #   Hoever, children is just a concrete property, and therefor doesn't automatically set any __*changed values.
   markDrawAreaChanged: (changingElements)->
     for element in changingElements
-      element.__drawAreaChanged ||= element.getChildrenChanged() ||
-        (element.getCurrentSizeChanged() && (element.getPendingChildren().length == 0 || element.getPendingClip()))
+      element.__drawAreaChanged ||=
+        element.getChildrenChanged() ||
+        element.getCurrentSizeChanged() && element.getSizeAffectsDrawArea true
 
       if element.getElementToParentMatrixChanged()
         if parent = element.getPendingParent()

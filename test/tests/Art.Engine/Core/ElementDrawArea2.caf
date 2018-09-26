@@ -272,3 +272,55 @@ suite:
           draw: :red
 
       10 0 40 45
+
+  regressions: ->
+    test "size change updates drawArea", ->
+      e = Element
+        size: 100
+        draw: :red
+      .onNextReady ->
+        assert.eq e.drawArea, rect 100
+        e.size = 150
+        e.onNextReady()
+      .then ->
+        assert.eq e.drawArea, rect 150
+
+    test "parent size-change updates drawArea", ->
+      p = Element
+        size: 100
+        key: "parent"
+
+        e = Element
+          draw: #f70
+          key: "child"
+          Element size: 1000, key: "grandChild"
+
+      log "start superme 1"
+      p.onNextReady()
+      .then ->
+        log "start superme 2"
+        assert.eq e.currentSize,  point(100), "" currentSize control
+        assert.eq e.drawArea,     rect(100),  "" drawArea control
+        p.size = 150
+        p.onNextReady()
+      .then ->
+        log "start superme 3"
+        assert.eq e.currentSize,  point(150), "" primary currentSize test
+        assert.eq e.drawArea,     rect(150),  "" primary drawArea test
+
+    test "draw change updates drawArea", ->
+      e = Element
+        size: 100
+        draw:
+          rectangle: (ps) -> rect ps
+          :red
+
+      .onNextReady ->
+        assert.eq e.drawArea, rect 100
+        e.draw =
+          rectangle: (ps) -> rect ps.mul .5
+          :red
+
+        e.onNextReady()
+      .then ->
+        assert.eq e.drawArea, rect 50

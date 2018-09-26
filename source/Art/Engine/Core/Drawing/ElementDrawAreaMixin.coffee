@@ -55,6 +55,10 @@ defineModule module, ->
       else
         elementSpaceArea
 
+    @virtualProperty
+      sizeAffectsDrawArea: (pending) ->
+        {_draw, _children, _clip} = @getState pending
+        _draw || (_children.length > 0 && _clip)
 
     @getter
       parentSpaceDrawArea: -> @_elementToParentMatrix.transformBoundingRect(@getElementSpaceDrawArea())
