@@ -172,9 +172,9 @@ defineModule module, class ScrollElement extends Element
     # update _spMinusTp
     if contentFits
       if wasTracking
-        @_pendingState._spMinusTp = _scrollPosition
+        @_spMinusTp = _scrollPosition
     else
-      @_pendingState._spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
+      @_spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
 
     @_updateOnScreenInfo oldChildrenOffset != @_childrenOffset
 
