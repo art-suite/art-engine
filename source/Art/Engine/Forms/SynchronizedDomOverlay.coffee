@@ -99,6 +99,8 @@ module.exports = class SynchronizedDomOverlay extends Element
     else
       "none"
 
+  getSizeAffectsDrawArea: -> true
+
   _computeElementSpaceDrawArea: (upToChild)->
     rect @currentSize
 
