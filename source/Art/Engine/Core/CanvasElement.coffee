@@ -32,6 +32,7 @@ EngineStat= require './EngineStat'
   isPlainObject
   clone
   getEnv
+  peek
 } = require 'art-standard-lib'
 
 {showPartialDrawAreas} = getEnv()
@@ -77,8 +78,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   constructor: (options = {}) ->
     super
 
-    @_focusedElement = null
-    @_wasFocusedElement = null
     @_devicePixelsPerPoint = options.pixelsPerPoint ? if options.disableRetina
       1
     else
@@ -197,11 +196,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       listener.target.removeEventListener listener.type, listener.listener
     @_domEventListeners = []
 
-  isFocused: (el) ->
+  isFocused: (el = @focusedElement) ->
     (!@_canvas || (document.hasFocus() && (document.activeElement == @_canvas || document.activeElement == el?._domElement))) && @pointerEventManager.isFocused el
 
+  # _blur is a noop at the CanvasElement level
   _blur: ->
-    @_focusedElement = null
 
   focusCanvas: ->
     @_canvas?.focus()
@@ -210,13 +209,15 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_canvas?.blur()
     @_blur()
 
+  @getter
+    focusedElement: -> @pointerEventManager.focusedElement
+
+  blurElement: (el) -> @pointerEventManager.focus null, el?.parent
   focusElement: (el) ->
-    return unless el && el != @_focusedElement
-    @_focusedElement = @_wasFocusedElement = el
     @pointerEventManager.focus null, el
 
-  _restoreFocus: ->
-    (@_wasFocusedElement || @)._focus()
+  _saveFocus: -> @pointerEventManager.saveFocus()
+  _restoreFocus: -> @pointerEventManager.restoreFocus()
 
   enableFileDrop: ->
     unless window.FileReader
@@ -291,6 +292,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     htmlCanvasElement: -> @_canvas
     numActivePointers: -> @pointerEventManager.getNumActivePointers()
+    focusPath: -> @pointerEventManager.currentFocusedPath
     cacheable: -> false
     canvasElement: -> @
     cssCursor: -> @_cssCursor
@@ -399,8 +401,13 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       globalEpochCycle.processEpoch()
 
   _attachBlurFocusListeners: ->
-    @_domListener @_canvas, "blur", (domEvent) => @_blur()
-    @_domListener @_canvas, "focus", (domEvent) => @_restoreFocus()
+    @_domListener @_canvas, "blur", (domEvent) => timeout 100, =>
+      unless @isFocused()
+        @_saveFocus()
+        @blurElement()
+
+    @_domListener @_canvas, "focus", (domEvent) =>
+      @_restoreFocus()
 
   # DOM limitation:
   #   HTMLCanvas mousemove only gets events if the mouse is over the canvas regardless of button status.
@@ -456,7 +463,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   _focus: ->
     @_canvas.focus()
-    @focusElement @_focusedElement = @_wasFocusedElement
 
   capturePointerEvents: (element) ->
     @pointerEventManager.capturePointerEvents element

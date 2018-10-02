@@ -133,10 +133,24 @@ module.exports = class PointerEventManager extends BaseClass
     @capturingElement = null
     @currentMousePath = []
     @_currentFocusedPath = [@canvasElement]
+    @_savedFocusedElement = null
+
+  saveFocus: ->
+    @_savedFocusedElement = peek @_currentFocusedPath
+
+  restoreFocus: ->
+    # log "restoreFocus 1: #{@_savedFocusedElement?.inspectedName}"
+    if @_savedFocusedElement
+      # log "restoreFocus 2"
+      if @_savedFocusedElement.canvasElement == @canvasElement
+        # log "restoreFocus 3"
+        @focus null, @_savedFocusedElement
+      @_savedFocusedElement = null
 
   @getter
     currentFocusedPath: -> @_currentFocusedPath
     numActivePointers: -> @_numActivePointers
+    focusedElement: -> peek @_currentFocusedPath
     hasMouseCursor: -> true # should be false on touch-only device - can be used to speed things up
     currentMousePathClassNames: -> el.classPathName for el in @currentMousePath
 
@@ -325,7 +339,7 @@ module.exports = class PointerEventManager extends BaseClass
 
   ###
   queueKeyEvents: (artEngineEventType, keyboardEvent) ->
-    elementsToSendEventTo = elements = @updateFocusedPath()
+    elementsToSendEventTo = elements = @refreshFocusPath()
     lastBeforeParent = null
 
     for element, i in elements
@@ -402,25 +416,47 @@ module.exports = class PointerEventManager extends BaseClass
       return [@canvasElement] unless path[0] == @canvasElement
       path
 
+  refreshFocusPath: ->
+    @updateFocusedPath null, @focusedElement
+
   updateFocusedPath: (pointer, element)->
     pointer ||= @activePointers[0]
 
-    newPath = if isArray element then element else rootToElementPath element || peek @currentFocusedPath
-    newPath = @validatedFocusPath if newPath[0] != @canvasElement
+    if element
+      newPath = if isArray element then element else rootToElementPath element || peek @currentFocusedPath
+      newPath = @validatedFocusPath if newPath[0] != @canvasElement
+    else
+      newPath = [@canvasElement]
+
+    # log "pointerEventManager updateFocusedPath: #{element?.inspectedName} 1"
 
     @_currentFocusedPath = updatePath @currentFocusedPath, newPath,
-      (oldElements) => @queueBlurEvents pointer, oldElements
-      (newElements) => @queueFocusEvents pointer, newElements
+      (oldElements) =>
+        # log "pointerEventManager queueBlurEvents: #{(e.inspectedName for e in oldElements).join ', '} 1"
+        @queueBlurEvents pointer, oldElements
+      (newElements) =>
+        # log "pointerEventManager queueFocusEvents: #{(e.inspectedName for e in newElements).join ', '} 1"
+        @queueFocusEvents pointer, newElements
 
     unless @currentFocusedPath[0] == @canvasElement
-      log (el.inspectedName for el in @currentFocusedPath)
+      # log (el.inspectedName for el in @currentFocusedPath)
       throw new Error "root element should be canvas (internal error - it should be impossible for this to happen)"
 
     @currentFocusedPath
 
-  focus: (pointer, element) ->
+  # pointer can be null
+  blur: (pointer) -> @focus pointer, null
+
+  focusDom: (element) ->
     (element ? @canvasElement)?._focusDomElement()
-    @updateFocusedPath pointer, element || @pointerElementPath pointer
+
+  # pointer can be null
+  focus: (pointer, element) ->
+    # log "pointerEventManager focus: #{element?.inspectedName} 1"
+    @focusDom element
+    # log "pointerEventManager focus: #{element?.inspectedName} 2"
+    @updateFocusedPath pointer, element || pointer && @pointerElementPath pointer
+    # log "pointerEventManager focus: #{element?.inspectedName} done"
 
   updateMousePath: ->
     pointer = @mouse
