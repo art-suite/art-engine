@@ -48,6 +48,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   normalizeAuto = (v) ->
     if v?
       v || "off"
+    else "off"
 
   constructor: (options = {}) ->
     @_focusEventsDisabled = false
@@ -84,8 +85,12 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         padding:          "0"
         textAlign:        options.align || "left"
         verticalAlign:    "bottom"
+        overflow:         "hidden"
       on:
-        keydown:  (keyboardEvent) => @getCanvasElement()?.keyDownEvent keyboardEvent
+        cut:      (keyboardEvent) => @delayedCheckIfValueChanged()
+        paste:    (keyboardEvent) => @delayedCheckIfValueChanged()
+        drop:     (keyboardEvent) => @delayedCheckIfValueChanged()
+        keydown:  (keyboardEvent) => @delayedCheckIfValueChanged();@getCanvasElement()?.keyDownEvent keyboardEvent
         keyup:    (keyboardEvent) => @getCanvasElement()?.keyUpEvent keyboardEvent
         change:   (event) => @checkIfValueChanged()
         input:    (event) => @checkIfValueChanged()
@@ -116,10 +121,14 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
     @lastValue = @value
 
+  # Reference: https://stackoverflow.com/questions/454202/creating-a-textarea-with-auto-resize
   # returns childrenSize
   nonChildrenLayoutFirstPass: ->
     point @domElement.scrollWidth,
-      max @getPendingFontSize() * 1.4, if @value.length > 0 then @domElement.scrollHeight else 0
+      max @getPendingFontSize() * 1.4, if @value.length > 0
+        @domElement.style.height = '0'
+        @domElement.scrollHeight
+      else 0
 
   _safeToProcessFocusEvents: ->
     if @_focusEventsDisabled
@@ -151,6 +160,9 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   _unregister: ->
     @_canvasElementToFocusOnBlur?.focusCanvas()
     super
+
+  delayedCheckIfValueChanged: ->
+    timeout 0, => @checkIfValueChanged()
 
   checkIfValueChanged: ->
     if @lastValue != @value
@@ -220,14 +232,6 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
     selectionEnd: (v)-> @domElement.selectionEnd = v
 
   insertAtCursor: (insertValue) ->
-    log insertAtCursor: {insertValue}
-    # //IE support
-    # if (document.selection) {
-    #     @domElement.focus();
-    #     sel = document.selection.createRange();
-    #     sel.text = insertValue;
-    # }
-    # //MOZILLA and others
     if @domElement.selectionStart || @domElement.selectionStart == '0'
       {value, selectionStart, selectionEnd} = @domElement
       log insertAtCursor: {value, selectionStart, selectionEnd,insertValue}
