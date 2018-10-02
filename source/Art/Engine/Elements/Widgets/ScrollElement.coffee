@@ -78,6 +78,8 @@ defineModule module, class ScrollElement extends Element
     super
     @_spMinusTp = 0
 
+    @_gestureActive = false
+    @_validScrollPositionCheckScheduled = false
     @_inFlowChildren = null
     @_childrenOffset = 0
     @_childrenSize = 0
@@ -97,6 +99,14 @@ defineModule module, class ScrollElement extends Element
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
     Math.atan(scrollPosition / maxBeyond ) * (2 / Math.PI) * maxBeyond
+
+  scheduleValidScrollPositionCheck: ->
+    unless @_validScrollPositionCheckScheduled
+      @_validScrollPositionCheckScheduled = true
+      timeout 250, =>
+        if @_validScrollPositionCheckScheduled && !@_gestureActive
+          @animateToValidScrollPosition()
+        @_validScrollPositionCheckScheduled = false
 
   postFlexLayout: (mainCoordinate, inFlowChildren, mainChildrenSize, mainElementSizeForChildren, mainChildrenAlignedOffset) ->
     contentFits       = mainChildrenSize <= mainElementSizeForChildren
@@ -146,6 +156,9 @@ defineModule module, class ScrollElement extends Element
     scrolledPastEnd   = mainChildrenOffset + mainChildrenSize <= mainElementSizeForChildren
     scrolledPastStart = mainChildrenOffset >= 0
     scrolled          = @_scrollPosition != _scrollPosition
+
+    if _scrollPosition != @boundSp _scrollPosition
+      @scheduleValidScrollPositionCheck()
 
     # update _tracking
     @_pendingState._tracking = _tracking =
@@ -362,6 +375,7 @@ defineModule module, class ScrollElement extends Element
 
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
+    @_validScrollPositionCheckScheduled = false
     boundedScrollPosition = @boundSp scrollPosition + desiredOffset
     global.scrollElement = @
     if boundedScrollPosition != scrollPosition
@@ -429,6 +443,7 @@ defineModule module, class ScrollElement extends Element
   pageUp:   -> @animateToValidScrollPosition @windowSize
 
   gestureCancel: ->
+    @_gestureActive = false
     @scrollPosition = @_gestureScrollStartPosition
 
   getMainCoordinate: (pnt) ->
@@ -443,7 +458,7 @@ defineModule module, class ScrollElement extends Element
     else
       1 < delta.absoluteAspectRatio
 
-  gestureBegin:   (e) ->  @_gestureScrollStartPosition =  @_gestureScrollPosition = @getPendingScrollPosition()
+  gestureBegin:   (e) -> @_gestureActive = true; @_gestureScrollStartPosition =  @_gestureScrollPosition = @getPendingScrollPosition()
   gestureResume:  (e) ->
   gestureMove:    (e) ->
     scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
@@ -451,4 +466,6 @@ defineModule module, class ScrollElement extends Element
       boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
     else scrollPosition
 
-  gestureEnd:     (e) -> @animateToValidScrollPosition()
+  gestureEnd:     (e) ->
+    @_gestureActive = false
+    @animateToValidScrollPosition()
