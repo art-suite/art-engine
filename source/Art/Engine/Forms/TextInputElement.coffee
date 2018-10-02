@@ -96,7 +96,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         padding:          "0"
         textAlign:        options.align || "left"
         verticalAlign:    "bottom"
-        overflow:         "hidden"
+
       on: logEventErrors
         cut:      (keyboardEvent) => @delayedCheckIfValueChanged()
         paste:    (keyboardEvent) => @delayedCheckIfValueChanged()
