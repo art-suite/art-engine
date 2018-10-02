@@ -14,6 +14,8 @@ defineModule module, class AtomElement extends Element
     super
     @_drawOptions = {}
 
+  getSizeAffectsDrawArea: -> true
+
   @drawProperty
     color:
       default: null
