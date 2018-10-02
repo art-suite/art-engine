@@ -139,11 +139,8 @@ module.exports = class PointerEventManager extends BaseClass
     @_savedFocusedElement = peek @_currentFocusedPath
 
   restoreFocus: ->
-    # log "restoreFocus 1: #{@_savedFocusedElement?.inspectedName}"
     if @_savedFocusedElement
-      # log "restoreFocus 2"
       if @_savedFocusedElement.canvasElement == @canvasElement
-        # log "restoreFocus 3"
         @focus null, @_savedFocusedElement
       @_savedFocusedElement = null
 
@@ -274,12 +271,6 @@ module.exports = class PointerEventManager extends BaseClass
         switch priority
           when "beforeDescendents" then firstBeforeDescendentsIndex = i
           when "beforeAncestors"   then firstBeforeAncestorsIndex = i if i > startIndexInclusive
-
-      # log
-      #   range: [startIndexInclusive, endIndexExclusive]
-      #   values: elementPriorities.slice startIndexInclusive, endIndexExclusive
-      #   relative_firstBeforeDescendentsIndex:  firstBeforeDescendentsIndex < endIndexExclusive &&  firstBeforeDescendentsIndex - startIndexInclusive
-      #   relative_firstBeforeAncestorsIndex:    firstBeforeAncestorsIndex < endIndexExclusive && firstBeforeAncestorsIndex - startIndexInclusive
 
       if firstBeforeDescendentsIndex <= firstBeforeAncestorsIndex
         addLast = false
@@ -428,18 +419,11 @@ module.exports = class PointerEventManager extends BaseClass
     else
       newPath = [@canvasElement]
 
-    # log "pointerEventManager updateFocusedPath: #{element?.inspectedName} 1"
-
     @_currentFocusedPath = updatePath @currentFocusedPath, newPath,
-      (oldElements) =>
-        # log "pointerEventManager queueBlurEvents: #{(e.inspectedName for e in oldElements).join ', '} 1"
-        @queueBlurEvents pointer, oldElements
-      (newElements) =>
-        # log "pointerEventManager queueFocusEvents: #{(e.inspectedName for e in newElements).join ', '} 1"
-        @queueFocusEvents pointer, newElements
+      (oldElements) => @queueBlurEvents pointer, oldElements
+      (newElements) => @queueFocusEvents pointer, newElements
 
     unless @currentFocusedPath[0] == @canvasElement
-      # log (el.inspectedName for el in @currentFocusedPath)
       throw new Error "root element should be canvas (internal error - it should be impossible for this to happen)"
 
     @currentFocusedPath
@@ -452,11 +436,8 @@ module.exports = class PointerEventManager extends BaseClass
 
   # pointer can be null
   focus: (pointer, element) ->
-    # log "pointerEventManager focus: #{element?.inspectedName} 1"
     @focusDom element
-    # log "pointerEventManager focus: #{element?.inspectedName} 2"
     @updateFocusedPath pointer, element || pointer && @pointerElementPath pointer
-    # log "pointerEventManager focus: #{element?.inspectedName} done"
 
   updateMousePath: ->
     pointer = @mouse
