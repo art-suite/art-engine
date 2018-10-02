@@ -916,6 +916,12 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         resolve results = @toBitmapSync options
         callback? results.bitmap, results.elementToBitmapMatrix
 
+  scrollOnScreen: ->
+    {parent} = @
+    while parent
+      parent.scrollToChild? @
+      {parent} = parent
+
   toBitmap: (options) ->
     log.error "DEPRICATED: ArtEngine.Element.toBitmap use toBitmapBasic of toBitmapWithInfo"
     @toBitmapWithInfo options

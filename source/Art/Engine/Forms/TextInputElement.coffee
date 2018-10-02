@@ -97,6 +97,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         select:   (event) => @queueEvent "selectionChanged"
         focus:    (event) =>
           if @_safeToProcessFocusEvents()
+            @scrollOnScreen()
 
             @_canvasElementToFocusOnBlur = @getCanvasElement()
             @_focus()
