@@ -202,10 +202,14 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # _blur is a noop at the CanvasElement level
   _blur: ->
 
-  focusCanvas: ->
+  _focus: -> @_focusDomElement()
+
+  _focusDomElement: ->
+    log "CanvasElement._focusDomElement: @_canvas.focus()"
     @_canvas?.focus()
 
   blur: ->
+    log "CanvasElement.blur: @_canvas.blur()"
     @_canvas?.blur()
     @_blur()
 
@@ -292,7 +296,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
     htmlCanvasElement: -> @_canvas
     numActivePointers: -> @pointerEventManager.getNumActivePointers()
-    focusPath: -> @pointerEventManager.currentFocusedPath
+    focusPath: -> @pointerEventManager.currentFocusPath
     cacheable: -> false
     canvasElement: -> @
     cssCursor: -> @_cssCursor
@@ -460,9 +464,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
 
   touchCancel: (id, props) ->
     @pointerEventManager.pointerCancel id, props
-
-  _focus: ->
-    @_canvas.focus()
 
   capturePointerEvents: (element) ->
     @pointerEventManager.capturePointerEvents element

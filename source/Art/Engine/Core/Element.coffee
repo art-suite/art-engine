@@ -394,6 +394,11 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         !v? || isFunction(v) || namedChildrenSizeFunctions[v]
 
   @concreteProperty
+    noFocus:
+      default: false
+      preprocess: (v) -> !!v
+      validate:   (v) -> !v? || v == true || v == false
+
     # TODO: I think currentSize should not be an epoched property. It should litterally be the currentSize - it gets updated during the stateEpoch
     currentSize:
       default: defaultSize
@@ -1509,7 +1514,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     return unless @focused
     @getCanvasElement()?.focusElement @parent
 
-  _focusDomElement: -> @getCanvasElement()?.focusCanvas()
+  _focusDomElement: -> @getCanvasElement()?._focusDomElement()
 
   # focus this element and make sure the parent DOM Canvas is focused
   focus: -> @_focus()

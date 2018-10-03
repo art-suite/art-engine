@@ -121,7 +121,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
               # If we are switching focus to another TextInput, document.activeElement won't be updated
               # until AFTER this event is processed. Wait and check in a bit to see if focus really reverted to 'body'.
               timeout 0, =>
-                @_canvasElementToFocusOnBlur.focusCanvas() if document.body == document.activeElement
+                @_canvasElementToFocusOnBlur._focusDomElement() if document.body == document.activeElement
 
             @_blur()
 
@@ -162,14 +162,12 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   preprocessEventHandlers: (handlerMap) ->
     merge super,
       focus: (event) =>
-        if true # @_safeToProcessFocusEvents()
-          @domElement.focus() unless @domElementFocused
-          handlerMap.focus? event
+        @_focusDomElement()
+        handlerMap.focus? event
 
       blur:  (event) =>
-        if true # @_safeToProcessFocusEvents()
-          @domElement.blur() if @domElementFocused
-          handlerMap.blur? event
+        @_blurDomElement()
+        handlerMap.blur? event
 
       keyPress: (e) =>
 
@@ -179,7 +177,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         @handleEvent "escape", merge props, value: @value if props.key == "Escape"
 
   _unregister: ->
-    @_canvasElementToFocusOnBlur?.focusCanvas()
+    @_canvasElementToFocusOnBlur?._focusDomElement()
     super
 
   delayedCheckIfValueChanged: ->

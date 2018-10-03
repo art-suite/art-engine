@@ -104,8 +104,8 @@ module.exports = class SynchronizedDomOverlay extends Element
   _computeElementSpaceDrawArea: (upToChild)->
     rect @currentSize
 
-  _focusDomElement: ->
-    @_domElement?.focus()
+  _focusDomElement: -> @_domElement?.focus() unless @domElementFocused
+  _blurDomElement:  -> @_domElement?.blur()  if     @domElementFocused
 
   # _attachDomElement doesn't actually attach the element yet;
   # instead, we wait until the next _updateDomLayout.
