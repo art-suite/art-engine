@@ -205,11 +205,9 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   _focus: -> @_focusDomElement()
 
   _focusDomElement: ->
-    log "CanvasElement._focusDomElement: @_canvas.focus()"
     @_canvas?.focus()
 
   blur: ->
-    log "CanvasElement.blur: @_canvas.blur()"
     @_canvas?.blur()
     @_blur()
 

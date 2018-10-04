@@ -8,6 +8,8 @@
 {EventEpoch} = require 'art-events'
 {eventEpoch} = EventEpoch
 
+{simpleBrowserInfo} = require('art-foundation').Browser
+
 Pointer = require './Pointer'
 PointerEvent = require './PointerEvent'
 KeyEvent = require './KeyEvent'
@@ -139,8 +141,12 @@ module.exports = class PointerEventManager extends BaseClass
   saveFocus: ->
     @_savedFocusedElement = peek @_currentFocusPath
 
+  # NOTE: don't restore focus on devices with software keybaords.
+  #   On iOS at least, when the keyboard is dismissed, restoreFocus gets triggered -
+  #   which in turn refocuses the text element, which brings the keyboard right back up - oops!
+  #   Anyway, it's not generally needed on touch devices. It mostly has to do with switching apps.
   restoreFocus: ->
-    if @_savedFocusedElement
+    if @_savedFocusedElement && !simpleBrowserInfo.touch
       if @_savedFocusedElement.canvasElement == @canvasElement
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
