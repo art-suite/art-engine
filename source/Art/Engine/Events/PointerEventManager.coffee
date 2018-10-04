@@ -144,7 +144,8 @@ module.exports = class PointerEventManager extends BaseClass
   # NOTE: don't restore focus on devices with software keybaords.
   #   On iOS at least, when the keyboard is dismissed, restoreFocus gets triggered -
   #   which in turn refocuses the text element, which brings the keyboard right back up - oops!
-  #   Anyway, it's not generally needed on touch devices. It mostly has to do with switching apps.
+  #   Anyway, it's not generally needed on touch devices.
+  #   It mostly has to do with desktop switching apps and switching back.
   restoreFocus: ->
     if @_savedFocusedElement && !simpleBrowserInfo.touch
       if @_savedFocusedElement.canvasElement == @canvasElement
