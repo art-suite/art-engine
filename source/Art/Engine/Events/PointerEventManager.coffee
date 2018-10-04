@@ -149,6 +149,7 @@ module.exports = class PointerEventManager extends BaseClass
   restoreFocus: ->
     if @_savedFocusedElement && !simpleBrowserInfo.touch
       if @_savedFocusedElement.canvasElement == @canvasElement
+        log restoreFocus: document.activeElement
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
 
@@ -443,10 +444,11 @@ module.exports = class PointerEventManager extends BaseClass
   # pointer can be null
   # focusPath: element, array of elements or null
   focus: (pointer, focusPath) ->
-    focusPath = rootToElementPath focusPath ? @canvasElement unless isArray focusPath
+    if focusPath
+      focusPath = rootToElementPath focusPath unless isArray focusPath
+      (peek focusPath)._focusDomElement()
 
-    (peek focusPath)._focusDomElement()
-    @_updateFocusedPath pointer, focusPath
+    @_updateFocusedPath pointer, focusPath ? [@canvasElement]
 
   updateMousePath: ->
     pointer = @mouse
