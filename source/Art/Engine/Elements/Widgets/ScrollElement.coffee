@@ -1,3 +1,4 @@
+
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 {EventEpoch} = require 'art-events'
@@ -78,6 +79,8 @@ defineModule module, class ScrollElement extends Element
     super
     @_spMinusTp = 0
 
+    @_animating = false
+
     @_gestureActive = false
     @_validScrollPositionCheckScheduled = false
     @_inFlowChildren = null
@@ -104,7 +107,7 @@ defineModule module, class ScrollElement extends Element
     unless @_validScrollPositionCheckScheduled
       @_validScrollPositionCheckScheduled = true
       timeout 250, =>
-        if @_validScrollPositionCheckScheduled && !@_gestureActive
+        if !@_gestureActive
           @animateToValidScrollPosition()
         @_validScrollPositionCheckScheduled = false
 
@@ -157,7 +160,7 @@ defineModule module, class ScrollElement extends Element
     scrolledPastStart = mainChildrenOffset >= 0
     scrolled          = @_scrollPosition != _scrollPosition
 
-    if _scrollPosition != @boundSp _scrollPosition
+    if Math.abs(_scrollPosition - @boundSp _scrollPosition) > 1/256
       @scheduleValidScrollPositionCheck()
 
     # update _tracking
@@ -378,11 +381,14 @@ defineModule module, class ScrollElement extends Element
     @_validScrollPositionCheckScheduled = false
     boundedScrollPosition = @boundSp scrollPosition + desiredOffset
     global.scrollElement = @
-    if boundedScrollPosition != scrollPosition
+    if boundedScrollPosition != scrollPosition && !@_animating
+      @_animating = true
       @animators = merge originialAnimators = @animators,
-        scrollPosition: on: done: => @animators = originialAnimators
+        scrollPosition: on: done: =>
+          @_animating = false
+          @animators = originialAnimators
 
-      @scrollPosition   = boundedScrollPosition
+      @scrollPosition = boundedScrollPosition
 
   _scrollPositionChanged: ->
     unless @_activelyScrolling
