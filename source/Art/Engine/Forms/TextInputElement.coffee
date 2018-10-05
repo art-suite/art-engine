@@ -48,7 +48,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   normalizeAuto = (v) ->
     if v?
       v || "off"
-    else "off"
+    else undefined
 
   logEventErrors = (handlerMap) ->
     object handlerMap, (handler, eventName) ->
@@ -63,7 +63,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
   constructor: (options = {}) ->
     @_focusEventsDisabled = false
-    props = object
+    props = merge
       placeholder:    options.placeholder || ""
       type:           options.type
       # NOTE: moving towards using 100% lowerCamelCase in Art.Engine - even if HTML5's name is full-lower-case
