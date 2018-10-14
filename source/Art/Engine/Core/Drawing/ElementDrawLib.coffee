@@ -77,6 +77,7 @@ defineModule module, class ElementDrawLib
       from
       radius
       radial
+      fillRule
     } = drawOptions
 
     if isOutline
@@ -101,6 +102,7 @@ defineModule module, class ElementDrawLib
     o.from          = colors && if from? then layoutToFrom from, drawArea else drawArea.topLeft
     o.to            = colors && if to?   then layoutToFrom to, drawArea else drawArea.bottomLeft
     o.radius        = radius
+    o.fillRule      = fillRule
 
     if colors?.constructor == GradientFillStyle
       colors.to = o.to
