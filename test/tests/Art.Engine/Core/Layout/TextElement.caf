@@ -59,7 +59,7 @@ suite:
       test: (element) ->
         assert.within
           element.currentSize
-          point 72, 32
+          point 68, 29
           point 72, 33
 
   drawArea: ->

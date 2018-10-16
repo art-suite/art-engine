@@ -484,7 +484,7 @@ defineModule module, suite:
       hCenterAligned  = [50   ]
       vCenterAligned  = [50   ]
       for value, result of {
-          top:          top:      topAligned,     left:     leftAligned, h: {min:[29],max:[31]}, w: min:[43], max:[44]
+          top:          top:      topAligned,     left:     leftAligned, h: {min:[27],max:[31]}, w: min:[41], max:[44]
           left:         top:      topAligned,     left:     leftAligned
           center:       top:      topAligned,     hCenter:  hCenterAligned
           right:        top:      topAligned,     right:    rightAligned
