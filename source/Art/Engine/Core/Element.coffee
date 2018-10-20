@@ -37,8 +37,7 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   isString
   isFunction
   mergeInto
-  floatEq
-  floatEq0
+  float32Eq0
   Join
   rubyTrue
   createWithPostCreate
@@ -806,7 +805,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         "axis" if @_axis && !@axis.eq point()
         "location" if !@location.eq point0
         "size" if @_currentSize
-        "angle" if !floatEq0 @angle
+        "angle" if !float32Eq0 @angle
         "scale" if !@scale.eq point(1,1)
         "compositeMode" if @_compositeMode && @_compositeMode != "normal"
         "opacity" if @_opacity? && @_opacity < 1
@@ -933,8 +932,6 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
   # OUT: promise.then -> (bitmap) ->
   toBitmapBasic: (options) ->
-    if @key == "child"
-      throw new Error "GOTCHA!"
     @toBitmapWithInfo options
     .then ({bitmap}) -> bitmap
 
