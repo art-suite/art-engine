@@ -1,8 +1,6 @@
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
+{isFunction, log, isString, defineModule} = require 'art-standard-lib'
+{Matrix} = require 'art-atomic'
 AtomElement = require '../AtomElement'
-{log, isString, createWithPostCreate} = Foundation
-{Matrix} = Atomic
 
 ###
 A FilterElement is any Element with a draw method that takes uses "target's" pixels as input to its own draw computations.
@@ -13,8 +11,8 @@ TODO - Fully implelement Blur and Shadow's new semantics:
 
   Each has a sourceArea, in parent-space, default: rect @parent.size
 ###
-module.exports = createWithPostCreate class FilterElement extends AtomElement
-  @registerWithElementFactory: -> @ != FilterElement
+defineModule module, class FilterElement extends AtomElement
+  @registerWithElementFactory: -> true # @ != FilterElement
 
   ########################
   # PUBLIC PROPERTIES
@@ -28,6 +26,32 @@ module.exports = createWithPostCreate class FilterElement extends AtomElement
     Then methods like Element#_accountForOverdraw can correctly check each FilterElement decendent instead of only children.
   ###
   @drawProperty filterSource: default: null, validate: (v) -> !v || isString v
+
+  ###
+  filter: (filterScratchBitmap, scale, elementToFilterScratchMatrix, drawOptions) ->
+  IN:
+    filterScratchBitmap:
+      at start contains the pixels to be filtered
+
+    scale: number
+      If the scale is 1, then the filter's currentSize is 1:1 pixels in filterScratchBitmap.
+
+    elementToFilterScratchMatrix
+      In case you need more detailed spacial information.
+
+    drawOptions:
+      opacity:
+      compositeMode:
+      color:
+      colors:
+      # everything set by _prepareDrawOptions
+
+  OUT: ignored
+  ###
+  @drawProperty
+    filter:
+      default: null
+      validate: (v) -> !v || isFunction v
 
   ###
   Radius is interpeted by FilterElement as the size of the convolution kernel the filter will apply.
@@ -61,18 +85,13 @@ module.exports = createWithPostCreate class FilterElement extends AtomElement
 
   ###
   override this for "normal" filter control.
-  IN:
-    filterScratchBitmap:
-      at start contains the pixels to be filtered
-
-    scale: number
-      If the scale is 1, then the filter's currentSize is 1:1 pixels in filterScratchBitmap.
+  see "filter" above for INputs
 
   OUT: filterScratchBitmap with filter results or new bitmap of the same size
     NOTE: you can, and should if possible, re-use filterScratchBitmap
   ###
-  filter: (filterScratchBitmap, scale, elementToFilterScratchMatrix, options) ->
-    imageData = filterScratchBitmap.getImageData()
+  applyFilter: (filterScratchBitmap, scale, elementToFilterScratchMatrix, drawOptions) ->
+    {imageData} = filterScratchBitmap
     @filterPixelData filterScratchBitmap, imageData.data, scale
     filterScratchBitmap.putImageData imageData
     filterScratchBitmap
@@ -83,13 +102,16 @@ module.exports = createWithPostCreate class FilterElement extends AtomElement
   fillShape: (target, elementToTargetMatrix, options) ->
     scale = elementToTargetMatrix.exactScaler
 
-    {filterTargetToElementMatrix, filterTarget} = @_filterFilterSource scale, target, options
+    if @_filter
+      @_filter target, scale, elementToTargetMatrix, options
+    else
+      {filterTargetToElementMatrix, filterTarget} = @_filterFilterSource scale, target, options
 
-    target.drawBitmap(
-      filterTargetToElementMatrix.mul elementToTargetMatrix
-      filterTarget
-      options
-    )
+      target.drawBitmap(
+        filterTargetToElementMatrix.mul elementToTargetMatrix
+        filterTarget
+        options
+      )
 
   overDraw: (proposedTargetSpaceDrawArea, parentToTargetMatrix) ->
     targetToElementMatrix = parentToTargetMatrix.inv.mul @parentToElementMatrix
@@ -156,7 +178,7 @@ module.exports = createWithPostCreate class FilterElement extends AtomElement
     .drawBitmap filterSourceTargetToFilterScratchMatrix, filterSource._currentDrawTarget
 
     filterTargetToElementMatrix: elementToFilterScratchMatrix.inv
-    filterTarget: @filter filterScratch, scale, elementToFilterScratchMatrix, options
+    filterTarget: @applyFilter filterScratch, scale, elementToFilterScratchMatrix, options
 
   #####################################
   # PRIVATE HELPER VIRTUAL PROPSERTIES

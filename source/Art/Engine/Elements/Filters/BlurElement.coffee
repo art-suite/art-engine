@@ -8,5 +8,5 @@ defineModule module, class BlurElement extends FilterElement
   defaultRadius: 10
   defaultCompositeMode: "replace"
 
-  filter: (elementSpaceTarget, scale) ->
+  applyFilter: (elementSpaceTarget, scale) ->
     elementSpaceTarget.blur @radius * scale

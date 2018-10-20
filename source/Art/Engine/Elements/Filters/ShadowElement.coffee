@@ -7,12 +7,12 @@ defineModule module, class ShadowElement extends FilterElement
   @drawProperty
     inverted: default: false
 
-  filter: (elementSpaceTarget, scale, elementToFilterScratchMatrix, options) ->
+  applyFilter: (elementSpaceTarget, scale, elementToFilterScratchMatrix, options) ->
     elementSpaceTarget.blurAlpha @_radius * scale, inverted: @inverted
 
     options =
       merge options,
-        compositeMode: "targetAlphaMask"
+        compositeMode: "sourceTopIntersection"
         opacity: 1
 
     options.from = elementToFilterScratchMatrix.transform options.from if options.from
