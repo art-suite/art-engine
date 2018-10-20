@@ -2,7 +2,7 @@ Atomic = require 'art-atomic'
 Text = require 'art-text'
 ShadowableElement = require '../ShadowableElement'
 {Paths} = require 'art-canvas'
-{pureMerge, floatEq, log, AtomElement, defineModule, isPlainObject, isNumber} = require 'art-standard-lib'
+{pureMerge, float32Eq0, log, AtomElement, defineModule, isPlainObject, isNumber} = require 'art-standard-lib'
 {rectanglePath} = Paths
 
 defineModule module, class RectangleElement extends ShadowableElement
@@ -31,7 +31,7 @@ defineModule module, class RectangleElement extends ShadowableElement
   #####################
   clipOptions = radius: 0
   _drawWithClipping: (clipArea, target, elementToTargetMatrix)->
-    if floatEq @_radius, 0
+    if float32Eq0 @_radius
       super
     else
       clipOptions.radius = @_radius
