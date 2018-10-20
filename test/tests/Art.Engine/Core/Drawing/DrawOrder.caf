@@ -1,60 +1,156 @@
 import &StandardImport
 
 suite:
-  padding: ->
-    renderTest
-      "and draw drawArea"
-      render: ->
-        Element
-          padding: 10
-          draw: :red
-          RectangleElement()
-      test: (e) ->
-        assert.eq e.drawArea, rect -10, -10, 100, 100
-
-    renderTest
-      "draw padding"
-      render: ->
-        Element
-          draw:
-            :circle
-            padding: 10
-            :red
-      test: (e) ->
-        assert.eq e.drawArea, rect 10, 10, 80, 80
-
-    renderTest
-      "via paddedDrawArea"
-      render: ->
-        Element
-          padding: 10
-          draw:
-            :paddedDrawArea
-            color: :red :yellow :green
-      test: (e) ->
-        assert.eq e.drawArea, rect 80
-
-    renderTest
-      "via padded"
-      render: ->
-        Element
-          padding: 10
-          draw:
-            :padded
-            color: :red :yellow :green
-      test: (e) ->
-        assert.eq e.drawArea, rect 80
-
-    renderTest
-      "and children drawArea"
-      render: ->
-        Element
-          padding: 10
+  drawArea:
+    basic: ->
+      renderTest
+        "draw"
+        render: ->
           Element
-            draw: color: :red :yellow :green
-      test: (e) ->
-        assert.eq e.drawArea, rect 80
+            draw: :red
+            size: 100
+        test: (e) ->
+          assert.eq e.drawArea, rect 0, 0, 100, 100
 
+    compositeModes: ->
+      renderTest
+        "normal"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              :blue
+        test: (e) ->
+          assert.eq e.drawArea, rect -25, -25, 125, 125
+
+      renderTest
+        "sourceTopInTarget"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              fill:
+                color: :blue
+                compositeMode: "sourceTopInTarget"
+        test: (e) ->
+          assert.eq e.drawArea, rect 0, 0, 100, 100
+
+      renderTest
+        "targetTopInSource"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              fill:
+                color: :blue
+                compositeMode: "targetTopInSource"
+        test: (e) ->
+          assert.eq e.drawArea, rect -25, -25, 50, 50
+
+      renderTest
+        "sourceWithoutTarget"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              fill:
+                color: :blue
+                compositeMode: "sourceWithoutTarget"
+        test: (e) ->
+          assert.eq e.drawArea, rect -25, -25, 50, 50
+
+
+      renderTest
+        "targetWithoutSource"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              fill:
+                color: :blue
+                compositeMode: "targetWithoutSource"
+        test: (e) ->
+          assert.eq e.drawArea, rect 0, 0, 100, 100
+
+      renderTest
+        "targetTopIntersection"
+        render: ->
+          Element
+            size: 100
+            draw:
+              :red
+              rectangle: rect -25, -25, 50, 50
+              fill:
+                color: :blue
+                compositeMode: "targetTopIntersection"
+        test: (e) ->
+          assert.eq e.drawArea, rect 0, 0, 25, 25
+
+    padding: ->
+      renderTest
+        "and draw drawArea"
+        render: ->
+          Element
+            padding: 10
+            draw: :red
+            RectangleElement()
+        test: (e) ->
+          assert.eq e.drawArea, rect -10, -10, 100, 100
+
+      renderTest
+        "draw padding"
+        render: ->
+          Element
+            draw:
+              :circle
+              padding: 10
+              :red
+        test: (e) ->
+          assert.eq e.drawArea, rect 10, 10, 80, 80
+
+      renderTest
+        "via paddedDrawArea"
+        render: ->
+          Element
+            padding: 10
+            draw:
+              :paddedDrawArea
+              color: :red :yellow :green
+        test: (e) ->
+          assert.eq e.drawArea, rect 80
+
+      renderTest
+        "via padded"
+        render: ->
+          Element
+            padding: 10
+            draw:
+              :padded
+              color: :red :yellow :green
+        test: (e) ->
+          assert.eq e.drawArea, rect 80
+
+      renderTest
+        "and children drawArea"
+        render: ->
+          Element
+            padding: 10
+            Element
+              draw: color: :red :yellow :green
+        test: (e) ->
+          assert.eq e.drawArea, rect 80
+
+  padding: ->
     test "pixelsPerPoint: 2", ->
       e =
         Element
@@ -995,7 +1091,6 @@ suite:
     renderTest
       "clip rotated 90 degress"
       render: ->
-        log "before"
         Element
           draw: "red"
           Element
@@ -1014,25 +1109,26 @@ suite:
 
   compositeMode: ->
     renderTest
-      "compositeMode on second draw-step"
+      "sourceTopInTarget on second draw-step"
       render: ->
         Element
           draw:
             :circle
             fill: :red
+
             :rectangle
             outline:
-              color: "orange"
-              lineWidth: 20
-              compositeMode: "sourceIn"
+              color:          :orange
+              lineWidth:      20
+              compositeMode:  :sourceTopInTarget
 
     renderTest
-      "child Element's compositeMode"
+      "sourceTopIntersection child Element's compositeMode"
       render: ->
         Element
-          draw: "circle", "red"
+          draw: :circle :red
           Element
-            compositeMode: "sourceIn"
+            compositeMode: "sourceTopIntersection"
             draw:
               outline:
                 color: "orange"
@@ -1043,47 +1139,47 @@ suite:
         assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's compositeMode with stage override"
+      "sourceTopIntersection child Element's compositeMode with stage override"
       render: ->
         Element
-          draw: "circle", "red"
+          draw: :circle :red
           Element
-            compositeMode: "sourceIn"
+            compositeMode: :sourceTopIntersection
             stage: false
             draw:
               outline:
-                color: "orange"
-                lineWidth: 20
+                color:      :orange
+                lineWidth:  20
       test: (e) ->
         [child] = e.children
         assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
         assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's compositeMode and draw compositeMode"
+      "sourceTopIntersection and lighten child Element's compositeMode and draw compositeMode"
       render: ->
         Element
-          draw: "black"
+          draw: :black
           Element
-            draw: "circle", "red"
+            draw: :circle :red
             Element
-              compositeMode: "sourceIn"
+              compositeMode: :sourceTopIntersection
               draw:
                 {}
-                  fill: "#00f"
-                  padding: bottom: 50
-                "reset"
+                  fill:     #00f
+                  padding:  bottom: 50
+                :reset
                 outline:
-                  color: "#0f0"
-                  compositeMode: "add"
-                  lineWidth: 20
+                  color:          #0f0
+                  compositeMode:  :lighten
+                  lineWidth:      20
       test: (e) ->
         [child] = e.children[0].children
-        assert.eq true, child.getNeedsStagingBitmap(), "need staging bitmap"
-        assert.eq true, child.requiresParentStagingBitmap, "parent needs staging bitmap"
+        assert.eq true, child.getNeedsStagingBitmap(),      "need staging bitmap"
+        assert.eq true, child.requiresParentStagingBitmap,  "parent needs staging bitmap"
 
     renderTest
-      "child Element's only draw compositeMode"
+      "sourceTopIntersection child Element's only draw compositeMode with auto-stage"
       render: ->
         Element
           draw: "circle", "red"
@@ -1092,14 +1188,14 @@ suite:
               outline:
                 color: "orange"
                 lineWidth: 20
-                compositeMode: "sourceIn"
+                compositeMode: "sourceTopIntersection"
       test: (e) ->
         [child] = e.children
         assert.eq true, child.getNeedsStagingBitmap(), "need staging bitmap"
         assert.eq false, child.requiresParentStagingBitmap, "parent needs staging bitmap"
 
     renderTest
-      "child Element's only draw compositeMode with stage override"
+      "sourceTopIntersection child Element's only draw compositeMode with force stage: false"
       render: ->
         Element
           draw: "circle", "red"
@@ -1109,7 +1205,7 @@ suite:
               outline:
                 color: "orange"
                 lineWidth: 20
-                compositeMode: "sourceIn"
+                compositeMode: "sourceTopIntersection"
       test: (e) ->
         [child] = e.children
         assert.eq false, child.getNeedsStagingBitmap(), "need staging bitmap"
