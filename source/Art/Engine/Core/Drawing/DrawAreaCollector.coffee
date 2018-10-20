@@ -1,7 +1,8 @@
 'use strict';
-{defineModule, log, min, max} = require 'art-standard-lib'
+{clone, defineModule, log, min, max} = require 'art-standard-lib'
 {BaseClass} = require 'art-class-system'
-{rect} = require 'art-atomic'
+{rect, Rectangle} = require 'art-atomic'
+{compositeModeMap} = require 'art-canvas'
 
 defineModule module, ->
 
@@ -38,30 +39,20 @@ defineModule module, ->
       @reset()
 
     reset: ->
-      @totalDrawArea = null
+      @targetDrawArea = null
       @clippingArea = null
 
     @getter
-      drawArea: -> @totalDrawArea || rect()
+      drawArea: -> @targetDrawArea || new Rectangle
+      inspectedObjects: -> DrawAreaCollector: clone @targetDrawArea
 
-    addDrawArea: (drawArea) ->
+    clipDrawArea: (drawArea) ->
       if @clippingArea
         drawAreaBefore = drawArea
         drawAreaBeforeString = drawArea.toString()
-        drawArea = drawArea.intersection @clippingArea
-      @totalDrawArea = drawArea.unionInto @totalDrawArea
-      # log drawAreaCollector: addDrawArea: {@clippingArea, drawArea, @totalDrawArea, drawAreaBefore, drawAreaBeforeString}
-
-    fillShape: (drawMatrix, options, pathFunction, pathSize, pathOptions) ->
-      # log drawAreaCollector: fillShape: {pathSize, expanded: expandDrawAreaByShadow pathSize, options}
-      @addDrawArea drawMatrix.transformBoundingRect expandDrawAreaByShadow pathSize, options
-
-    strokeShape: (drawMatrix, options, pathFunction, pathSize, pathOptions) ->
-      @addDrawArea drawMatrix.transformBoundingRect expandDrawAreaByOutline(
-        expandDrawAreaByShadow pathSize, options
-        options
-        pathFunction
-      )
+        drawArea.intersection @clippingArea
+      else
+        drawArea
 
     # returns an existing-value
     openClipping: (area, drawMatrix, pathSize, areaArg2) ->
@@ -72,27 +63,43 @@ defineModule module, ->
     closeClipping: (oldClipArea) ->
       @clippingArea = oldClipArea
 
+    fillShape: (drawMatrix, options, pathFunction, pathSize, pathOptions) ->
+      # log drawAreaCollector: fillShape: {pathSize, expanded: expandDrawAreaByShadow pathSize, options}
+      @compositeDrawAreas options.compositeMode,
+        drawMatrix.transformBoundingRect expandDrawAreaByShadow pathSize, options
+
+    strokeShape: (drawMatrix, options, pathFunction, pathSize, pathOptions) ->
+      @compositeDrawAreas options.compositeMode,
+        drawMatrix.transformBoundingRect expandDrawAreaByOutline(
+          expandDrawAreaByShadow pathSize, options
+          options
+          pathFunction
+        )
+
     drawDrawable: (child, elementToTargetMatrix) ->
+      @compositeDrawAreas child.compositeMode,
+        elementToTargetMatrix.transformBoundingRect child.elementSpaceDrawArea
 
-      targetSpaceChildDrawArea = elementToTargetMatrix.transformBoundingRect child.elementSpaceDrawArea
-      # {left, top} = @padding
-      # if left != 0 || top != 0
-      #   targetSpaceChildDrawArea = @padding.translate targetSpaceChildDrawArea
+    compositeDrawAreas: (compositeMode, sourceDrawArea) ->
 
-      switch child.compositeMode
-        when "alphaMask"
-          # technically this is more accurate:
-          #   elementSpaceDrawArea.intersection targetSpaceChildDrawArea
-          # However, usually if there is a mask, it is "full", which makes "intersection" a no-op.
-          # Further, we'd rather this value be more "stable" so changes in drawAreas don't
-          # propgate any higher than they need to.
-          # This way, if only children below a mask change, there is no need to propogate up.
-          @totalDrawArea = targetSpaceChildDrawArea.intersectInto @totalDrawArea
+      if @targetDrawArea && @clippingArea && !@clippingArea.contains @targetDrawArea
+        clippingDoesNotCoverTargetDrawArea = true
 
-        when "sourceIn", "targetAlphaMask", "inverseAlphaMask"
-          null # doesn't change drawArea
+      sourceDrawArea = @clipDrawArea sourceDrawArea
 
-        when "normal", "add", "replace", "destOver"
-          @addDrawArea targetSpaceChildDrawArea
+      out = switch compositeModeMap[compositeMode]
+        # new drawArea is the intersection (alphaMask)
+        when "destination-in", "source-in"    then reducesDrawArea = true; sourceDrawArea.intersectInto @targetDrawArea
 
-        else throw new Error "unknown compositeMode:#{child.compositeMode}"
+        # new drawArea is only sourceDrawArea (inverseAlphaMask)
+        when "destination-atop", "source-out" then reducesDrawArea = true; sourceDrawArea
+
+        # new drawArea is only targetDrawAaea
+        when "destination-out", "source-atop" then @targetDrawArea
+
+        # new drawArea is the union
+        else sourceDrawArea.unionInto @targetDrawArea
+
+      @targetDrawArea = if reducesDrawArea && clippingDoesNotCoverTargetDrawArea
+        out.unionInto @targetDrawArea
+      else out
