@@ -28,6 +28,7 @@ defineModule module, class ElementDrawLib
     paddedDrawArea:     true  # currentDrawArea = paddedArea
     padded:             true  # paddedDrawArea alias
     resetClip:          true  # same as: clip: false
+    debug:              true
 
   @looksLikeColor: looksLikeColor = (v) ->
     return v unless v?

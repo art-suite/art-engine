@@ -4,7 +4,7 @@
   compactFlatten, objectWithout, defineModule, formattedInspect, clone, max,
   isFunction, log, object, isNumber, isArray, isPlainObject, isString, each,
   isPlainObject, merge, mergeInto
-  floatEq
+  float32Eq
   neq
 
 } = require 'art-standard-lib'
@@ -129,10 +129,220 @@ defineModule module, ->
       finally
         @_currentDrawTarget = @_currentToTargetMatrix = null
 
+    _debugDrawSteps: (target, elementToTargetMatrix, usingStagedBitmap) ->
+      {children} = @
+      drawSteps = @getDraw()
+
+      currentPath = rectanglePath
+      currentPathOptions = undefined
+
+      # start with non-padded matrix
+      # NOTE: children ignore drawMatrix since they were layed out with elementToTargetMatrix
+      drawMatrix = if @_currentPadding.needsTranslation
+        Matrix.translateXY(
+          -@_currentPadding.left
+          -@_currentPadding.top
+        ).mul elementToTargetMatrix
+      else
+        elementToTargetMatrix
+
+      currentDrawArea = @_currentSize
+
+      drewChildren = false
+
+      lastClippingInfo = null
+
+      log debugDrawStart: target: target?.clone?() || target
+
+      try
+        explicitlyDrawnChildrenByKey = null
+        for drawStep in drawSteps when (childKey = drawStep.child)?
+          (explicitlyDrawnChildrenByKey ||= {})[childKey] = true
+
+        if explicitlyDrawnChildrenByKey
+          childrenByKey = {}
+          for child in children when (key = child._key)?
+            childrenByKey[key] = child
+
+        for drawStep in drawSteps
+          if isFunction drawStep
+            log drawFunction: {elementToParentMatrix, currentDrawArea, currentPath, f: if present(name = drawStep.name) then name else drawStep.toString()}
+
+          else if isRect drawStep
+            currentPath = rectanglePath
+            currentDrawArea = drawStep
+            currentPathOptions = undefined
+            log drawSet: {currentPath, currentDrawArea}
+
+          else if isString instruction = drawStep
+            log "draw #{instruction}":
+              switch instruction
+                when "debug" then true
+                when "reset"
+                  currentPath = rectanglePath
+                  currentDrawArea = @currentSize
+                  currentPathOptions = undefined
+
+                  if lastClippingInfo?
+                    lastClippingInfo = undefined
+
+                  {currentPath, currentDrawArea, clipping: false}
+
+                when "resetClip"
+                  if lastClippingInfo?
+                    lastClippingInfo = undefined
+                    clip: false
+                  else
+                    clip: "wasn't clipping"
+
+                when "resetDrawArea", "logicalDrawArea"
+                  currentDrawArea = @currentSize
+                  {currentDrawArea}
+
+                when "padded", "paddedDrawArea"
+                  currentDrawArea = @currentPadding.pad @currentSize
+                  inputs: {currentPadding, currentSize}
+                  output: {currentDrawArea}
+
+                when "resetShape"
+                  currentPath = rectanglePath
+                  currentPathOptions = undefined
+                  {currentPath}
+
+                when "circle"
+                  currentPath = circlePath
+                  # currentDrawArea = @currentSize
+                  currentPathOptions = undefined
+                  {currentPath}
+
+                when "rectangle"
+                  currentPath = rectanglePath
+                  # currentDrawArea = @currentSize
+                  currentPathOptions = undefined
+                  {currentPath}
+
+                when "clip"
+                  if lastClippingInfo
+                    log drawAutoResetClipping: true
+                  lastClippingInfo = true
+                  {currentPath, drawMatrix, currentDrawArea, currentPathOptions}
+
+                when "children"
+                  childrenDrawn = []
+                  for child in children when !((key = child._key)? && explicitlyDrawnChildrenByKey?[key])
+                    child.visible && childrenDrawn.push child.inspectedName
+                  drewChildren = true
+                  {childrenDrawn}
+
+                else
+                  console.warn "Art.Engine.Element: invalid draw instruction: #{instruction}"
+
+          else if isPlainObject drawStep
+            {padding, fill, clip, outline, shape, rectangle, child, circle} = drawStep
+
+            drawOptionActions = []
+
+            if newShapeOptions = rectangle ? circle ? shape
+
+              currentPathOptions = if isPlainObject newShapeOptions
+                {area, path: customShapePath} = newShapeOptions
+                newShapeOptions
+              else
+                if shape
+                  customShapePath = shape
+                else
+                  area = newShapeOptions
+
+                undefined
+
+              currentDrawArea = if isFunction area
+                area @_currentSize, currentPathOptions, @
+              else if isRect area
+                area
+              else
+                currentDrawArea
+
+              currentPath = switch
+                when circle     then circlePath
+                when rectangle  then rectanglePath
+                when shape      then customShapePath
+
+              drawOptionActions.push shape:
+                in: merge {rectangle, circle, shape}
+                out: merge {currentDrawArea, currentPath, currentPathOptions}
+
+            if padding
+              currentDrawArea = padding.pad @currentSize
+              drawOptionActions.push padding:
+                inputs: {padding, @currentPath}
+                output: {currentDrawArea}
+
+            if clip?
+              drawOptionActions.push clip: if clip
+                if lastClippingInfo?
+                  log drawAutoResetClipping: true
+                lastClippingInfo = true
+                {currentPath, drawMatrix, currentDrawArea, currentPathOptions}
+              else
+                if lastClippingInfo?
+                  lastClippingInfo = undefined
+                  false
+                else
+                  "wasn't clipping"
+
+            if fill?
+              drawOptionActions.push
+                fill: merge fill,
+                  fillShape: merge {
+                    drawMatrix
+                    options: merge prepareDrawOptions fill, currentDrawArea
+                    currentPath
+                    currentDrawArea
+                    currentPathOptions
+                  }
+
+            if outline?
+              drawOptionActions.push
+                outline: merge outline,
+                  strokeShape: merge {
+                    drawMatrix
+                    options: merge prepareDrawOptions fill, currentDrawArea
+                    currentPath
+                    currentDrawArea
+                    currentPathOptions
+                  }
+
+            if child?
+              drawOptionActions.push if childElement = childrenByKey[child]
+                {child, childElement: childElement.inspectedName}
+              else
+                {child, childElement: "not found (ignored)"}
+
+            log {drawOptionActions}
+
+      catch error
+        log.error ArtEngine: drawChildren: {error}
+      unless drewChildren
+        if explicitlyDrawnChildrenByKey
+          log drawRemainingChildren:
+            for child in children
+              if !((key = child._key)? && explicitlyDrawnChildrenByKey?[key])
+                "#{child.inspectedName} already drawn"
+              else
+               child.inspectedName
+        else
+          log drawAllChildren: (child.inspectedName for child in children)
+
+      # close clipping if we have any
+      if lastClippingInfo?
+        log drawDoneClippingReset: true
+      else
+        log drawDone: true
 
     _drawChildren: (target, elementToTargetMatrix, usingStagedBitmap, upToChild) ->
       {children} = @
       if drawSteps = @getDraw()
+        debug = false
         currentPath = rectanglePath
         currentPathOptions = null
 
@@ -171,6 +381,7 @@ defineModule module, ->
 
             else if isString instruction = drawStep
               switch instruction
+                when "debug" then debug = true; @_debugDrawSteps target, elementToTargetMatrix, usingStagedBitmap, upToChild
                 when "reset"
                   currentPath = rectanglePath
                   currentDrawArea = @currentSize
@@ -292,6 +503,9 @@ defineModule module, ->
         if lastClippingInfo?
           target.closeClipping lastClippingInfo
 
+        if debug
+          log debugDrawEnd: target: target?.clone?() || target
+
       else
         for child in children
           break if child == upToChild
@@ -412,7 +626,7 @@ defineModule module, ->
         when @drawOrderRequiresStaging then "draw property requries staging: #{formattedInspect @draw}"
 
     @getter
-      compositingIsBasic: -> @_compositeMode == "normal" && floatEq @_opacity, 1
+      compositingIsBasic: -> @_compositeMode == "normal" && float32Eq @_opacity, 1
       cacheIsValid: -> !!@_drawCacheBitmap
 
       # override this for elements which are faster w/o caching (RectangleElement, BitmapElement)
