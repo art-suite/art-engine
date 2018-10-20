@@ -3,7 +3,7 @@
   inspect, Map, timeout, remove, log, defineModule
   getEnv
 } = require 'art-standard-lib'
-{isMobileBrowser} = (require 'art-foundation').Browser
+{humanByteSize, isMobileBrowser} = (require 'art-foundation').Browser
 {BaseClass} = require 'art-class-system'
 
 {
@@ -41,17 +41,6 @@ Call doneWithCacheBitmap from _clearDrawCache(doNotUpdateDrawCacheManager) unles
 call allocateCacheBitmap when a new cache bitmap is used
 call useCacheBitmap every time a the drawCache bitmap is used
 ###
-
-humanByteSize = (bytes) ->
-  if bytes < 2048
-    "#{bytes}bytes"
-  else
-    bytes /= 1024
-    if bytes < 2048
-      "#{bytes | 0}KB"
-    else
-      bytes /= 1024
-      "#{bytes | 0}MB"
 
 class CacheBitmap extends BaseClass
 
