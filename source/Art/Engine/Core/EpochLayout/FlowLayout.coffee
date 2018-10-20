@@ -1,6 +1,6 @@
 'use strict';
 {
-  defineModule, floatEq, max
+  defineModule, float32Eq0, max
 } = require 'art-standard-lib'
 {point, point0} = require 'art-atomic'
 {sizeWithPadding} = LayoutTools = require './LayoutTools'
@@ -116,7 +116,7 @@ defineModule module, class FlexLayout
       maxWidth: 0
 
     childrenAlignment = element.getPendingChildrenAlignment()
-    if !floatEq(childrenAlignment.x, 0) || !floatEq(childrenAlignment.y, 0)
+    if !float32Eq0(childrenAlignment.x) || !float32Eq0(childrenAlignment.y)
 
       state.childrenAlignment = childrenAlignment
       state.flowChildren = children

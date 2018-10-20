@@ -3,7 +3,7 @@
   log, inspect
   shallowEq
   select, peek, inspect,
-  floatEq
+  float32Eq0
 } = require 'art-standard-lib'
 {isInfiniteResult, isFiniteResult} = require './Infinity'
 
@@ -196,7 +196,7 @@ module.exports = class FlexLayout
     childrenAlignment = element.getPendingChildrenAlignment()
     mainAlignment     = childrenAlignment[mainCoordinate]
     crossAlignment    = childrenAlignment[crossCoordinate]
-    hasCrossAlignment = !floatEq 0, crossAlignment
+    hasCrossAlignment = !float32Eq0 crossAlignment
 
     mainLayoutIsFinite = (isFiniteResult mainElementSizeForChildren) && isFiniteResult mainChildrenSize
     # compute main alignment

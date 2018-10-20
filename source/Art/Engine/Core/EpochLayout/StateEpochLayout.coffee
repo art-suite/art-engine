@@ -5,7 +5,7 @@
   shallowEq
   longestCommonSubsequence, select, Unique, peek, inspect, isFunction,
   eachRunAsCharCodes
-  floatEq
+  float32Eq0
   isNumber
 } = require 'art-standard-lib'
 {BaseClass} = require 'art-class-system'
@@ -169,7 +169,7 @@ module.exports = class StateEpochLayout extends BaseClass
       offsetX = (parentSize.x - width) * childrenAlignmentX
       offsetY = (parentSize.y - childrenSize.y) * childrenAlignmentY
 
-      if !floatEq(offsetX, 0) || !floatEq(offsetY, 0)
+      if !float32Eq0(offsetX) || !float32Eq0(offsetY)
         for j in [firstIndex..lastIndex] by 1
           child = flowChildren[j]
           l = child.getPendingCurrentLocation()
