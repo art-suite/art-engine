@@ -5,8 +5,11 @@ Xbd = require 'art-xbd'
 Core = require '../Core'
 Elements = require '../Elements'
 
+compositeModes = require './V1CompositeModes'
+{normalizedCompositeModeMap} = require 'art-canvas'
+
 {
-  BaseClass, log, createObjectTreeFactories, createWithPostCreate, floatEq, Promise
+  BaseClass, log, createObjectTreeFactories, createWithPostCreate, float32Eq0, Promise
   propsEq
 } = require './StandardImport'
 
@@ -91,7 +94,7 @@ module.exports = createWithPostCreate module, class V1Writer extends BaseClass
     e2p = element.getElementToParentMatrix()
     matrix = e2p.withLocation(0).toArray().join ','
     encodedProps.matrix = matrix unless matrix == "1,1,0,0,0,0"
-    unless floatEq 0, angle = e2p.getAngle()
+    unless float32Eq0 angle = e2p.getAngle()
       encodedProps.angle = "#{angle}"
     encodedProps.w_val = currentSize.x.toString()
     encodedProps.h_val = currentSize.y.toString()
@@ -152,8 +155,17 @@ module.exports = createWithPostCreate module, class V1Writer extends BaseClass
             encodedProps.lock_mode = "2"
 
         when "compositeMode"
-          if v == "alphaMask"
-            encodedProps.stack_mode = "+stencil"
+          switch normalizedCompositeMode = normalizedCompositeModeMap[v]
+            when "targetTopIntersection"
+              encodedProps.stack_mode = "+stencil"
+            when "targetWithoutSource"
+              encodedProps.stack_mode = "-stencil"
+            else
+              if supportedCompositMode = compositeModes[normalizedCompositeMode]
+                encodedProps.composite_mode = supportedCompositMode
+              else
+                log.warn "WARNING: V1Writer does not support composite mode: #{normalizedCompositeMode} (from: #{v})"
+
         when "key" then encodedProps.name = v.toString()
         when "elementToParentMatrix" then encodedProps.matrix = v.toString()
         when "bitmap"
@@ -163,7 +175,7 @@ module.exports = createWithPostCreate module, class V1Writer extends BaseClass
         when "location", "children", "parent", "currentSize", "size", "axis", "color", "scale", "angle"
           # handled elsewhere
         else
-          console.warn "Art.Engine.V1Writer: ignored unsupported prop type: elementType: #{element.class.name}, propType: #{k}"
+          log.warn "Art.Engine.V1Writer: ignored unsupported prop type: elementType: #{element.class.name}, propType: #{k}"
     @_encodeLayout element, encodedProps
 
     encodedProps

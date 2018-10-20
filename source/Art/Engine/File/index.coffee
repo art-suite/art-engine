@@ -4,6 +4,8 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  StandardImport: require './StandardImport'
-  V1Loader:       require './V1Loader'      
-  V1Writer:       require './V1Writer'      
+  StandardImport:   require './StandardImport'  
+  V1CompositeModes: require './V1CompositeModes'
+  V1LayoutModes:    require './V1LayoutModes'   
+  V1Loader:         require './V1Loader'        
+  V1Writer:         require './V1Writer'        
