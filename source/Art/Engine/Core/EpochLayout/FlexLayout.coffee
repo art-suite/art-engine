@@ -56,14 +56,14 @@ module.exports = class FlexLayout
       previousMargin = "left"
       nextMargin = "right"
       mainAxisRelativeTestFunction = "getXRelativeToParentW"
-      crossRelativeTestFunction = "getYRelativeToParentH"
+      crossAxisRelativeTestFunction = "getYRelativeToParentH"
     else
       mainCoordinate = "y"
       crossCoordinate = "x"
       previousMargin = "top"
       nextMargin = "bottom"
       mainAxisRelativeTestFunction = "getYRelativeToParentH"
-      crossRelativeTestFunction = "getXRelativeToParentW"
+      crossAxisRelativeTestFunction = "getXRelativeToParentW"
 
     mainElementSizeForChildren = elementSizeForChildren[mainCoordinate]
     crossElementSizeForChildren = elementSizeForChildren[crossCoordinate]
@@ -78,11 +78,14 @@ module.exports = class FlexLayout
     # FIRST FLEX PASS - Fixed inFlowChildren layout
     ###########################################
     lastChildsNextMargin = 0
-    finalPassSizeLayoutChildren = null
+    finalPassCrossSizeLayoutChildren = null
+
+    flexChildren = null
 
     for child, i in inFlowChildren
       if child.getPendingSize()[mainAxisRelativeTestFunction]()
         currentSize = child._layoutSize elementSizeForChildren, point0
+        (flexChildren ?= []).push child
         childFlexWeight = child.getPendingLayoutWeight()
         totalFlexWeight += childFlexWeight
       else
@@ -94,8 +97,8 @@ module.exports = class FlexLayout
         mainChildrenSize += mainSize
         spaceForFlexChildren -= mainSize
 
-        if child.getPendingLayoutSizeParentCircular()
-          (finalPassSizeLayoutChildren||=[]).push child
+        if child.getPendingLayoutSizeParentCircular() && child.getPendingSize()[crossAxisRelativeTestFunction]()
+          (finalPassCrossSizeLayoutChildren||=[]).push child
           if (!isRowLayout && child._pendingState._size.xChildrenRelative) || (isRowLayout && child._pendingState._size.yChildrenRelative)
             maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
         else
@@ -113,8 +116,8 @@ module.exports = class FlexLayout
     #   element: element.inspectedName
     #   maxCrossSize: maxCrossSize
     #   mainChildrenSize: mainChildrenSize
-    #   finalPassSizeLayoutChildren:
-    #     for child in finalPassProps.finalPassSizeLayoutChildren || []
+    #   finalPassCrossSizeLayoutChildren:
+    #     for child in finalPassProps.finalPassCrossSizeLayoutChildren || []
     #       "#{child.inspectedName} #{child.getPendingCurrentSize()}"
 
     # set locations
@@ -122,30 +125,91 @@ module.exports = class FlexLayout
 
     spaceForFlexChildren = max 0, spaceForFlexChildren
 
-
     ###########################################
     # SECOND FLEX PASS
-    # Relative inFlowChildren layout
+    # layout FlexChildren's main-axis
     ###########################################
-    for child, i in inFlowChildren when child.getPendingSize()[mainAxisRelativeTestFunction]()
-      childFlexWeight = child.getPendingLayoutWeight()
-      ratio = childFlexWeight / totalFlexWeight
 
-      flexParentSize = toPoint isRowLayout, mainSizeForChild = spaceForFlexChildren * ratio, crossElementSizeForChildren
-      LayoutTools.layoutElement child, flexParentSize, true
+    if flexChildren
 
-      currentSize = child.getPendingCurrentSize()
-      mainSize = currentSize[mainCoordinate]
+      flexChildrenMainSizes =
+      for child, i in flexChildren
+        childFlexWeight = child.getPendingLayoutWeight()
+        ratio = childFlexWeight / totalFlexWeight
+        spaceForFlexChildren * ratio
 
-      if child.getPendingLayoutSizeParentCircular()
-        (finalPassSizeLayoutChildren||=[]).push child
-      else
-        crossSize = currentSize[crossCoordinate]
-        maxCrossSize = max maxCrossSize, crossSize
+      attempts = 0
+      attemptsLeft = maxAttempts = 10
+      while attemptsLeft > 0
+        attempts++
+        accurateChildenTotalSize = 0
+        inaccurateChildrenTotalSize = 0
+        expectedInaccurateChildrenTotatlSize = 0
+        inaccurateCount = 0
 
-      totalFlexWeight -= childFlexWeight
-      spaceForFlexChildren -= mainSize
-      mainChildrenSize += mainSize
+        for child, i in flexChildren
+          mainSizeForChild = flexChildrenMainSizes[i]
+
+          LayoutTools.layoutElement child,
+            toPoint isRowLayout, mainSizeForChild, crossElementSizeForChildren
+            true
+
+          mainSize = child.getPendingCurrentSize()[mainCoordinate]
+
+          if .001 < Math.abs 1 - mainSize / mainSizeForChild
+            expectedInaccurateChildrenTotatlSize += mainSizeForChild
+            inaccurateCount++
+            inaccurateChildrenTotalSize += mainSize
+
+          else
+            accurateChildenTotalSize += mainSize
+
+        adjustSizeBy = (inaccurateChildrenTotalSize + accurateChildenTotalSize) - spaceForFlexChildren
+
+        attemptsLeft--
+        if attemptsLeft > 0 && inaccurateCount > 0 && .01 < Math.abs adjustSizeBy
+          spaceForAccurateChildren = max 0, spaceForFlexChildren - inaccurateChildrenTotalSize
+          scaleInaccureateChildrenBy = if inaccurateChildrenTotalSize > spaceForFlexChildren
+            spaceForFlexChildren / inaccurateChildrenTotalSize
+          else if expectedInaccurateChildrenTotatlSize > 0
+            inaccurateChildrenTotalSize / expectedInaccurateChildrenTotatlSize
+          else 1
+
+          scaleAccurateChildrenBy = spaceForAccurateChildren / accurateChildenTotalSize
+
+          for child, i in flexChildren
+            mainSizeForChild = flexChildrenMainSizes[i]
+            mainSize = child.getPendingCurrentSize()[mainCoordinate]
+
+            if .001 < Math.abs 1 - mainSize / mainSizeForChild
+              flexChildrenMainSizes[i] *= scaleInaccureateChildrenBy
+            else
+              flexChildrenMainSizes[i] *= scaleAccurateChildrenBy
+
+        else
+          attemptsLeft = 0
+
+      if attempts > 1
+        if attempts > 2
+          log layoutChildrenFlex: {
+            element: element.inspectedName
+            mainCoordinate
+            attempts
+            spaceForFlexChildren
+            flexChildrenMainSizes
+          }
+
+        if attempts >= maxAttempts
+          log.error "too many attempts to stablize layout (#{attempts} >= #{maxAttempts}"
+
+      for child, i in flexChildren
+        currentSize = child.getPendingCurrentSize()
+        mainChildrenSize += mainSize = currentSize[mainCoordinate]
+
+        if child.getPendingLayoutSizeParentCircular() && child.getPendingSize()[crossAxisRelativeTestFunction]()
+          (finalPassCrossSizeLayoutChildren||=[]).push child
+        else
+          maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
 
     ####################
     # maxCrossSize is potentially final
@@ -164,17 +228,17 @@ module.exports = class FlexLayout
     #   childrenSize
     #   mainElementSizeForChildren
     #   crossElementSizeForChildren
-    #   finalPassSizeLayoutChildren: finalPassProps.finalPassSizeLayoutChildren?.length
+    #   finalPassCrossSizeLayoutChildren: finalPassProps.finalPassCrossSizeLayoutChildren?.length
     # }
 
     ####################
     # FINAL PASS
     ####################
-    if finalPassSizeLayoutChildren
+    if finalPassCrossSizeLayoutChildren
       oldMaxCrossSize = maxCrossSize
       secondPassSizeForChildren = toPoint isRowLayout, mainElementSizeForChildren, crossElementSizeForChildren
 
-      for child, i in finalPassSizeLayoutChildren
+      for child, i in finalPassCrossSizeLayoutChildren
         sizeForChild = toPoint isRowLayout, child.getPendingCurrentSize()[mainCoordinate], crossElementSizeForChildren
 
         LayoutTools.layoutElement child, sizeForChild, true

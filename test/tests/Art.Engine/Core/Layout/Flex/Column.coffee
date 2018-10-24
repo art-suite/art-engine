@@ -144,8 +144,20 @@ module.exports = suite:
         new RectangleElement color:"green", size: hph:.5, w:50
 
       test: ->
-        assert.eq sizes = (c.currentSize for c in root.children), [point(30, 75), point(50, 12.5)]
+        assert.eq sizes = (c.currentSize for c in root.children), [point(30, 75), point(50, 25)]
         assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 75)]
+        log sizes: sizes, locations:locations
+
+    testLogBitmap "dynamic weight detection with two effectively equal-wighted children", ->
+      root: root = new Element
+        size: 100
+        childrenLayout: "column"
+        new RectangleElement color:"red",   size: hph:1.5, w:30
+        new RectangleElement color:"green", size: hph:1.5, w:50
+
+      test: ->
+        assert.eq sizes = (c.currentSize for c in root.children), [point(30, 50), point(50, 50)]
+        assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 50)]
         log sizes: sizes, locations:locations
 
     testLogBitmap "variable child with min height", ->

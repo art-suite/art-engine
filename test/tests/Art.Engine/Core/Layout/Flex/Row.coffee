@@ -101,7 +101,7 @@ module.exports = suite:
         new RectangleElement color:"green", size: wpw:.5, h:50
 
       test: ->
-        assert.eq sizes = (c.currentSize for c in root.children), [point(75, 30), point(12.5, 50)]
+        assert.eq sizes = (c.currentSize for c in root.children), [point(75, 30), point(25, 50)]
         assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(75, 0)]
         log sizes: sizes, locations:locations
 
