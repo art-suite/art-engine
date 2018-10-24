@@ -72,6 +72,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       autocapitalize: normalizeAuto options.autoCapitalize  ? options.autocapitalize
       autocomplete:   normalizeAuto options.autoComplete    ? options.autocomplete
       autocorrect:    normalizeAuto options.autoCorrect     ? options.autocorrect
+      spellcheck:     if options.spellcheck? then "#{!!options.spellcheck}"
 
     Factory = if props.type == "textarea"
       delete props.type
