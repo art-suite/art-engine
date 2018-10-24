@@ -1,4 +1,4 @@
-import &StandardImport
+import &StandardImport, &source/Art/Engine/Layout/PointLayout
 
 suite:
   row: ->
@@ -202,3 +202,90 @@ suite:
       test: (element) ->
         assert.eq 25 element.find("testChild1")[0].currentSize.y
         assert.eq 75 element.find("testChild2")[0].currentSize.y
+
+    renderTest
+      "" under-sized children 1
+      render: ->
+
+        Element
+          key: "wrapper"
+          size: 100
+          childrenLayout: :column
+
+          Element
+            key: "testChild1"
+            size:
+              pointLayout ww:1, hh: .5
+            draw: #f00
+
+      test: (element) ->
+        assert.eq 100 element.find("testChild1")[0].currentSize.y
+
+    renderTest
+      "" under-sized children 2
+      render: ->
+
+        Element
+          key: "wrapper"
+          size: 100
+          childrenLayout: :column
+
+          Element
+            key: "testChild1"
+            size: pointLayout ww:1, hh: .6
+            draw: #f00
+
+          Element
+            key: "testChild2"
+            size: pointLayout ww:1, hh: .2
+            draw: #f70
+
+      test: (element) ->
+        assert.eq 75 element.find("testChild1")[0].currentSize.y
+        assert.eq 25 element.find("testChild2")[0].currentSize.y
+
+    renderTest
+      "" under-sized children 3 - parent relativity has an affect
+      render: ->
+
+        Element
+          key: "wrapper"
+          size: 100
+          childrenLayout: :column
+
+          Element
+            key: "testChild1"
+            size: pointLayout ww:1, h: 40, max: ps: 1
+            draw: #f00
+
+          Element
+            key: "testChild2"
+            size: pointLayout ww:1, hh: .2
+            draw: #f70
+
+      test: (element) ->
+        assert.eq 40 element.find("testChild1")[0].currentSize.y
+        assert.eq 20 element.find("testChild2")[0].currentSize.y
+
+    renderTest
+      "" under-sized children 4 - parent relativity has an affect
+      render: ->
+
+        Element
+          key: "wrapper"
+          size: 100
+          childrenLayout: :column
+
+          Element
+            key: "testChild1"
+            size: pointLayout ww:1, h: 40
+            draw: #f00
+
+          Element
+            key: "testChild2"
+            size: pointLayout ww:1, hh: .2
+            draw: #f70
+
+      test: (element) ->
+        assert.eq 40 element.find("testChild1")[0].currentSize.y
+        assert.eq 60 element.find("testChild2")[0].currentSize.y

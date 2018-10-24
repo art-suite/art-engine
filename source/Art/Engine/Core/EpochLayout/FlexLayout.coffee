@@ -138,31 +138,45 @@ module.exports = class FlexLayout
         ratio = childFlexWeight / totalFlexWeight
         spaceForFlexChildren * ratio
 
+      initial_flexChildrenMainSizes = (f for f in flexChildrenMainSizes)
+
       attempts = 0
-      attemptsLeft = maxAttempts = 10
+      attemptsLeft = maxAttempts = 2
       while attemptsLeft > 0
         attempts++
         accurateChildenTotalSize = 0
         inaccurateChildrenTotalSize = 0
-        expectedInaccurateChildrenTotatlSize = 0
+        expectedInaccurateChildrenTotalSize = 0
         inaccurateCount = 0
+        accurateCount = 0
 
         for child, i in flexChildren
-          mainSizeForChild = flexChildrenMainSizes[i]
+          flexLayoutMainSizeForChild = flexChildrenMainSizes[i]
 
           LayoutTools.layoutElement child,
-            toPoint isRowLayout, mainSizeForChild, crossElementSizeForChildren
+            toPoint isRowLayout, flexLayoutMainSizeForChild, crossElementSizeForChildren
             true
 
-          mainSize = child.getPendingCurrentSize()[mainCoordinate]
+          layoutMainSizeFromChild = child.getPendingCurrentSize()[mainCoordinate]
 
-          if .001 < Math.abs 1 - mainSize / mainSizeForChild
-            expectedInaccurateChildrenTotatlSize += mainSizeForChild
+          # log {i, layoutMainSizeFromChild, flexLayoutMainSizeForChild}
+
+          if .001 < Math.abs 1 - layoutMainSizeFromChild / flexLayoutMainSizeForChild
+            expectedInaccurateChildrenTotalSize += flexLayoutMainSizeForChild
             inaccurateCount++
-            inaccurateChildrenTotalSize += mainSize
+            inaccurateChildrenTotalSize += layoutMainSizeFromChild
+            # log inaccurateChild: {
+            #   name: child.inspectedName
+            #   i
+            #   attempts
+            #   layoutMainSizeFromChild
+            #   flexLayoutMainSizeForChild
+            #   crossElementSizeForChildren
+            # }
 
           else
-            accurateChildenTotalSize += mainSize
+            accurateCount++
+            accurateChildenTotalSize += layoutMainSizeFromChild
 
         adjustSizeBy = (inaccurateChildrenTotalSize + accurateChildenTotalSize) - spaceForFlexChildren
 
@@ -171,36 +185,75 @@ module.exports = class FlexLayout
           spaceForAccurateChildren = max 0, spaceForFlexChildren - inaccurateChildrenTotalSize
           scaleInaccureateChildrenBy = if inaccurateChildrenTotalSize > spaceForFlexChildren
             spaceForFlexChildren / inaccurateChildrenTotalSize
-          else if expectedInaccurateChildrenTotatlSize > 0
-            inaccurateChildrenTotalSize / expectedInaccurateChildrenTotatlSize
+          else if accurateCount == 0 && inaccurateChildrenTotalSize > 0
+            spaceForFlexChildren / inaccurateChildrenTotalSize
+          else if expectedInaccurateChildrenTotalSize > 0
+            inaccurateChildrenTotalSize / expectedInaccurateChildrenTotalSize
           else 1
 
-          scaleAccurateChildrenBy = spaceForAccurateChildren / accurateChildenTotalSize
+          scaleAccurateChildrenBy = if accurateChildenTotalSize > 0
+            spaceForAccurateChildren / accurateChildenTotalSize
+          else
+            1
 
-          for child, i in flexChildren
-            mainSizeForChild = flexChildrenMainSizes[i]
-            mainSize = child.getPendingCurrentSize()[mainCoordinate]
+          if !float32Eq0(1 - scaleAccurateChildrenBy) || !float32Eq0(1 - scaleInaccureateChildrenBy)
+            for child, i in flexChildren
+              mainSizeForChild = flexChildrenMainSizes[i]
+              mainSize = child.getPendingCurrentSize()[mainCoordinate]
 
-            if .001 < Math.abs 1 - mainSize / mainSizeForChild
-              flexChildrenMainSizes[i] *= scaleInaccureateChildrenBy
-            else
-              flexChildrenMainSizes[i] *= scaleAccurateChildrenBy
+              if .001 < Math.abs 1 - mainSize / mainSizeForChild
+                flexChildrenMainSizes[i] *= scaleInaccureateChildrenBy
+              else
+                flexChildrenMainSizes[i] *= scaleAccurateChildrenBy
+
+            # if attempts > 1
+            # log {
+            #   attempts
+            #   accurateChildenTotalSize
+            #   inaccurateChildrenTotalSize
+            #   expectedInaccurateChildrenTotalSize
+            #   spaceForAccurateChildren
+            #   spaceForFlexChildren
+            #   scaleInaccureateChildrenBy
+            #   scaleAccurateChildrenBy
+            # }
+          else
+            attemptsLeft = 0
 
         else
           attemptsLeft = 0
 
-      if attempts > 1
-        if attempts > 2
-          log layoutChildrenFlex: {
-            element: element.inspectedName
-            mainCoordinate
-            attempts
-            spaceForFlexChildren
-            flexChildrenMainSizes
-          }
+      # if attempts > 1
+      #   if attempts > 2
+      #     log layoutChildrenFlex: {
+      #       element: element.inspectedName
+      #       mainCoordinate
+      #       attempts
+      #       spaceForFlexChildren
+      #       flexChildrenMainSizes
+      #       initial_flexChildrenMainSizes
+      #       elementLayout: element.getPendingSize()
+      #       childrenLayouts:
+      #         for child in flexChildren
+      #           name: child.inspectedName
+      #           size: child.getPendingSize()
+      #     }
 
-        if attempts >= maxAttempts
-          log.error "too many attempts to stablize layout (#{attempts} >= #{maxAttempts}"
+      #   if attempts >= maxAttempts
+      #      log.error "too many attempts to stablize layout (#{attempts})"
+
+      if attempts > maxAttempts
+        # revert!
+
+        for child, i in flexChildren
+          childFlexWeight = child.getPendingLayoutWeight()
+          ratio = childFlexWeight / totalFlexWeight
+          flexLayoutMainSizeForChild = spaceForFlexChildren * ratio
+
+          LayoutTools.layoutElement child,
+            toPoint isRowLayout, flexLayoutMainSizeForChild, crossElementSizeForChildren
+            true
+
 
       for child, i in flexChildren
         currentSize = child.getPendingCurrentSize()
