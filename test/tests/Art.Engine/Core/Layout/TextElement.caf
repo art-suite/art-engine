@@ -48,7 +48,7 @@ suite:
           assert.eq element.currentSize, child.currentSize, "test 2"
 
     renderTest
-      "tight layoutMode"
+      "tight layoutMode 1"
       stagingBitmapsCreatedShouldBe: 0
       render: ->
         Element
@@ -61,6 +61,31 @@ suite:
           element.currentSize
           point 68, 29
           point 72, 33
+
+    renderTest
+      "tight layoutMode 2"
+      stagingBitmapsCreatedShouldBe: 0
+      render: ->
+        Element
+          size: cs:1
+          RectangleElement color:"#ff7"
+          TextElement size: :childrenSize text: :well? layoutMode: :tight fontSize: 50 fontFamily: :AvenirNext-DemiBold
+
+      test: (element) ->
+        assert.within
+          element.currentSize
+          point 119, 38
+          point 120, 39
+
+        area = rect element.currentSize
+        element extract drawArea
+        log {area, drawArea}
+        assert.eq
+          true
+          drawArea.neq area
+          && drawArea.contains area.expand .5
+          && area.expand(5).contains drawArea
+          :drawArea
 
   drawArea: ->
     renderTest
