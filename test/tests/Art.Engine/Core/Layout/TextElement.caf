@@ -69,23 +69,32 @@ suite:
         Element
           size: cs:1
           RectangleElement color:"#ff7"
-          TextElement size: :childrenSize text: :well? layoutMode: :tight fontSize: 50 fontFamily: :AvenirNext-DemiBold
+          TextElement
+            scale: 10
+            size: :childrenSize
+            text: :well?
+            layoutMode: :tight
+            fontFamily: "AvenirNext-DemiBold,sans-serif"
+            fontSize: 5.5
+            fontStyle: "normal"
+            fontVariant: "normal"
+            fontWeight: "bold"
 
-      test: (element) ->
+      test: (element, name, bitmap) ->
         assert.within
           element.currentSize
-          point 119, 38
-          point 120, 39
+          point 131, 40.5
+          point 133.5, 43
 
+        {autoCropRectangle} = bitmap
         area = rect element.currentSize
+        areaAccuracy = log((area.size.sub autoCropRectangle.size).abs).max()
         element extract drawArea
-        log {area, drawArea}
-        assert.eq
-          true
-          drawArea.neq area
-          && drawArea.contains area.expand .5
-          && area.expand(5).contains drawArea
-          :drawArea
+        log {area, drawArea, autoCropRectangle, areaAccuracy}
+        assert.lt areaAccuracy, 2, :areaAccuracy
+        assert.neq drawArea, area
+        assert.true drawArea.contains area.expand .5
+        assert.true area.expand(15).contains drawArea
 
   drawArea: ->
     renderTest
