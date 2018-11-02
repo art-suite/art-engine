@@ -149,7 +149,7 @@ module.exports = class PointerEventManager extends BaseClass
   restoreFocus: ->
     if @_savedFocusedElement && !simpleBrowserInfo.touch
       if @_savedFocusedElement.canvasElement == @canvasElement
-        log restoreFocus: document.activeElement
+        # log restoreFocus: document.activeElement
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
 
@@ -426,7 +426,7 @@ module.exports = class PointerEventManager extends BaseClass
     pointer ?= @_activePointers[0]
 
     if focusPath[0] != @canvasElement
-      log.warn "_updateFocusedPath - path invalid - DOES THIS EVER HAPPEN?"
+      # log.warn "_updateFocusedPath - path invalid - DOES THIS EVER HAPPEN?"
       focusPath = @validatedFocusPath
 
     @_currentFocusPath = updatePath @_currentFocusPath, focusPath,
