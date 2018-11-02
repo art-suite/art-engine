@@ -81,10 +81,10 @@ module.exports = class SynchronizedDomOverlay extends Element
     @_domElementWrapper.style.left    = "#{canvasLeft + clippedDrawAreaInAncestor.left}px"
     @_domElementWrapper.style.width   = "#{clippedDrawAreaInAncestor.w}px"
     @_domElementWrapper.style.height  = "#{clippedDrawAreaInAncestor.h}px"
+    @_domElementWrapper.style.display = if opacity == 0 then "none" else "block"
 
     # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
     @_domElement.style.opacity  = opacity
-    @_domElement.style.display  = if opacity == 0 then "none" else "block"
     @_domElement.style.left     = "#{m.getLocationX() - clippedDrawAreaInAncestor.left}px"
     @_domElement.style.top      = "#{m.getLocationY() - clippedDrawAreaInAncestor.top}px"
     @_domElement.style.width    = "#{size.x}px"
