@@ -16,6 +16,7 @@ AnimatedElementMixin = require './AnimatedElementMixin'
   compact
   isObject
   object
+  compactFlatten
   w
 } = require 'art-standard-lib'
 {Bitmap} = require 'art-canvas'
@@ -188,6 +189,10 @@ module.exports = class ElementBase extends AnimatedElementMixin EventedElementMi
     shortNamespacePath: ->
       name = @namespacePath
       peek name.split '.'
+
+    inspectedPath: ->
+      compactFlatten [@parent?.inspectedPath, @inspectedName]
+      .join '/'
 
     inspectedName: ->
       "#{@shortNamespacePath}:#{@pendingKey || @instanceId}"
