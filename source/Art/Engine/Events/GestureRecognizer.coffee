@@ -5,47 +5,70 @@ Pointer = require './Pointer'
 {log, defineModule, inspect, merge, clone, peek, first, BaseClass, isPlainObject, clone, abs, isFunction, select, objectWithout} = Foundation
 {point, rect, matrix} = Atomic
 
+###
+TODO:
+  add 'finally' handler that gets called after 'end' or 'cancel'
+###
+
 defineModule module, class GestureRecognizer extends BaseClass
   @createGestureRecognizer: (o)->
     gr = new GestureRecognizer o
     gr.getPointerHandlers()
 
-  # gestureRecognizers is a plain Object
-  #   keys name each of your recognizers. "horizontal" and "vertical" are special only in that they have default recognize functions.
-  #   values can be:
-  #     begin: (e) ->
-  #       IN: e: the original pointerDown PointerEvent
-  #       When the gesture is recognized, this is called with the original pointerDown event.
-  #     move: (e) ->
-  #       IN: e: a pointerMove PointerEvent
-  #       When the gesture is recognized, this is called with the pointerMove event that triggered the recognition.
-  #       This is then called with each additional pointerMove no matter what it is.
-  #     end: (e) ->
-  #       IN: e: the pointerUp PointerEvent
-  #       This is called with the pointerUp event, and the gesture "ends.""
-  #     resume: (e) ->
-  #       IN: e: a pointerDown PointerEvent
-  #       OUT: return true to guarantee the new touch-start is "recognized" as this gesture
-  #       After the gesture has happend once, the next pointerDown event calls this to see if the gesture
-  #       should "resume." This is used in the ScrollElement to continually capture all touch events while momentum-scrolling.
-  #     recognize: (e) ->
-  #       IN: e: a pointerMove PointerEvent
-  #       OUT: true if the gesture was recognized
-  #       The first time the pointer moves outside the "dead zone", this gets called.
-  #       If "true" is returned, then the "begin" and "move" functions will be invoked.
-  #       If "false" then this gesture will not be "recognized" until the next pointerDown.
-  #       NOTE: required unless the name is "horizontal" or "vertical"
-  # gestureRecognizers can also have normal pointer* event handlers:
-  #   pointerDown:    (e) -> # always fires with the natural pointerDown
-  #   pointerMove:    (e) -> # fires if a gesture hasn't been recognized yet
-  #   pointerUp:      (e) -> # only fires if a gesture wasn't recognized
-  #   pointerCancel:  (e) -> # fires when a gesture is recognized OR if a natural pointerCancel comes in before a gesture is recognized
-  # NOTE: Why specify pointer* handlers with the gestures?
-  #   All other objects will get normal pointer* events, get pointerCancel and stop getting events when a gesture is recognized.
-  #   This doesn't work on the object with the gesture recognizer, since it still needs to receive natural pointer-events to drive the gesture.
-  #   This solves the problem. Passing pointer* handlers to the gesture-recognizer works just like all other objects w.r.t. gestures.
-  #
-  # TODO: I haven't decided how to handle multiple-touches (multiple active PointerEvents).
+  ###
+  gestureRecognizers is a plain Object
+    keys name each of your recognizers. "horizontal" and "vertical" are special only in that they have default recognize functions.
+
+    pointerUp/pointerDown/pointerCancel/pointerMove/pointerClick: (e) ->
+      These 5 'normal' events are passed through IFF a gesture hasn't been recognized yet (or was never recognized).
+
+    horizontal/vertical:
+      begin: (e) ->
+        IN: e: the original pointerDown PointerEvent
+        When the gesture is recognized, this is called with the original pointerDown event.
+
+      move: (e) ->
+        IN: e: a pointerMove PointerEvent
+        When the gesture is recognized, this is called with the pointerMove event that triggered the recognition.
+        This is then called with each additional pointerMove no matter what it is.
+
+      cancel: (e) ->
+        IN: e: the pointerCancel PointerEvent
+        Called if the gesture is canceled
+
+      finally: (e) ->
+        IN: e: either a pointerUp or pointerCancel PointerEvent
+        Called after every 'cancel' OR 'end'. Basically like a 'try finally'
+
+      end: (e) ->
+        IN: e: the pointerUp PointerEvent
+        This is called with the pointerUp event, and the gesture "ends.""
+
+      resume: (e) ->
+        IN: e: a pointerDown PointerEvent
+        OUT: return true to guarantee the new touch-start is "recognized" as this gesture
+        After the gesture has happend once, the next pointerDown event calls this to see if the gesture
+        should "resume." This is used in the ScrollElement to continually capture all touch events while momentum-scrolling.
+
+      recognize: (e) ->
+        IN: e: a pointerMove PointerEvent
+        OUT: true if the gesture was recognized
+        The first time the pointer moves outside the "dead zone", this gets called.
+        If "true" is returned, then the "begin" and "move" functions will be invoked.
+        If "false" then this gesture will not be "recognized" until the next pointerDown.
+        NOTE: required unless the name is "horizontal" or "vertical"
+  gestureRecognizers can also have normal pointer* event handlers:
+    pointerDown:    (e) -> # always fires with the natural pointerDown
+    pointerMove:    (e) -> # fires if a gesture hasn't been recognized yet
+    pointerUp:      (e) -> # only fires if a gesture wasn't recognized
+    pointerCancel:  (e) -> # fires when a gesture is recognized OR if a natural pointerCancel comes in before a gesture is recognized
+  NOTE: Why specify pointer* handlers with the gestures?
+    All other objects will get normal pointer* events, get pointerCancel and stop getting events when a gesture is recognized.
+    This doesn't work on the object with the gesture recognizer, since it still needs to receive natural pointer-events to drive the gesture.
+    This solves the problem. Passing pointer* handlers to the gesture-recognizer works just like all other objects w.r.t. gestures.
+
+  TODO: I haven't decided how to handle multiple-touches (multiple active PointerEvents).
+  ###
 
   pointerHandlers = ["pointerDown", "pointerUp", "pointerMove", "pointerCancel"]
   constructor: (gestureRecognizers)->
@@ -92,13 +115,18 @@ defineModule module, class GestureRecognizer extends BaseClass
         pointerUp:     (e) =>
           if @_activeGesture
             @_activeGesture.end? e
+            @_activeGesture.finally? e
             @_activeGesture = null
           else
             @_nonGestureHandlers.pointerUp? e
+            @_nonGestureHandlers.pointerClick? e
+
+        pointerClick: (e) => # ignored, handled internally
 
         pointerCancel: (e) =>
           if @_activeGesture
             @_activeGesture.cancel? e
+            @_activeGesture.finally? e
             @_activeGesture = null
           else
             @_nonGestureHandlers.pointerCancel? e
