@@ -281,6 +281,7 @@ defineModule module, class PointLayout extends PointLayoutBase = require './Poin
     else if isPlainObject @initializer
       @_setupFromOptions @initializer, previousLayout
     else
+      throw new Error "PointLayout#constructor: @initializer is NaN" if isNumber(@initializer) && isNaN @initializer
       # Points, numbers, strings or arrays all get passed to point() and used as @initializer constant layout
       @_setupFromPoint @initializer
 
