@@ -32,10 +32,30 @@ defineModule module, class PointerEvent extends Event
     e.target = options.target ? @target
     e
 
+  getAngle = ({currentSize}, {x, y}) ->
+    Math.atan2(
+      y - currentSize.y / 2
+      x - currentSize.x / 2
+    )
+
+  getAngleDelta = (a1, a2) ->
+    d = (a1 - a2) %% (Math.PI * 2)
+    if d > Math.PI
+      d - Math.PI * 2
+    else
+      d
+
   @getter
+    stayedWithinDeadzone:      -> @pointer.stayedWithinDeadzone
+    leftDeadzone:              -> !@stayedWithinDeadzone
     location:                  -> @pointer.locationIn @target
     firstLocation:             -> @pointer.firstLocationIn @target
     lastLocation:              -> @pointer.lastLocationIn @target
+
+    # NOTE - angles are taken from the center of @target
+    firstAngle:                -> getAngle @target, @firstLocation
+    angle:                     -> getAngle @target, @location
+    angleDelta:                -> getAngleDelta @firstAngle, @angle
 
     absLocation:               -> @pointer.location
     absFirstLocation:          -> @pointer.firstLocation
