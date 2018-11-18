@@ -15,6 +15,8 @@ defineModule module, class GestureRecognizer extends BaseClass
     gr = new GestureRecognizer o
     gr.getPointerHandlers()
 
+  @create: @createGestureRecognizer
+
   ###
   gestureRecognizers is a plain Object
     keys name each of your recognizers. "horizontal" and "vertical" are special only in that they have default recognize functions.
@@ -23,6 +25,8 @@ defineModule module, class GestureRecognizer extends BaseClass
       These 5 'normal' events are passed through IFF a gesture hasn't been recognized yet (or was never recognized).
 
     horizontal/vertical:
+      prepare: (e) -> # called on pointerDown (alias)
+
       begin: (e) ->
         IN: e: the original pointerDown PointerEvent
         When the gesture is recognized, this is called with the original pointerDown event.
@@ -89,6 +93,20 @@ defineModule module, class GestureRecognizer extends BaseClass
       switch k
         when "horizontal" then v.recognize ||= (e) -> e.delta.absoluteAspectRatio > 1
         when "vertical"   then v.recognize ||= (e) -> e.delta.absoluteAspectRatio < 1
+        when "rotate"
+          v.recognize ||= ({firstLocation, target, delta}) ->
+            startVector = firstLocation.sub target.currentSize.div(2)
+
+            # via dot-product
+            projectionTowardsCenterSquared = startVector.scalerProjectionSquared delta
+
+            # via Pythagoras
+            projectionTowardsRadialSquared = startVector.magnitudeSquared - projectionTowardsCenterSquared
+
+
+            recognized = projectionTowardsCenterSquared < projectionTowardsRadialSquared
+            # log {startVector, delta, projectionTowardsRadialSquared, projectionTowardsCenterSquared, recognized}
+            recognized
 
   @getter
     pointerHandlers: ->
@@ -96,6 +114,7 @@ defineModule module, class GestureRecognizer extends BaseClass
         pointerDown:  (e) =>
           @_capturedEvents = false
           @_nonGestureHandlers.pointerDown? e
+          @_nonGestureHandlers.prepare? e
           @_startEvent = if e.newEvent then e.newEvent() else clone e
           @_resumeGesture e if @_lastActiveGesture?.resume? e
 
@@ -113,11 +132,19 @@ defineModule module, class GestureRecognizer extends BaseClass
               @_nonGestureHandlers.pointerMove? e
 
         pointerUp:     (e) =>
+          fireNonGestureEvents = false
           if @_activeGesture
-            @_activeGesture.end? e
-            @_activeGesture.finally? e
+            if e.leftDeadzone
+              @_activeGesture.end? e
+              @_activeGesture.finally? e
+            else
+              @_activeGesture.cancel? e
+              fireNonGestureEvents = true
             @_activeGesture = null
           else
+            fireNonGestureEvents = true
+
+          if fireNonGestureEvents
             @_nonGestureHandlers.pointerUp? e
             @_nonGestureHandlers.pointerClick? e
 
