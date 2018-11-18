@@ -104,7 +104,11 @@ defineModule module, class BitmapElement extends ShadowableElement
     aspectRatio:  default: null,      validate:   (v) -> !v? || isNumber v
 
   @drawLayoutProperty
-    bitmap:       default: null,      validate:   (v) -> !v || v instanceof BitmapBase
+    bitmap:
+      default:    null
+      validate:   (v) -> !v || v instanceof BitmapBase
+      postSetter: (newV, oldV) ->
+        @_mipmaps = null if newV != oldV
 
   @virtualProperty
     mode: setter: (mode) ->
@@ -163,10 +167,14 @@ defineModule module, class BitmapElement extends ShadowableElement
 
   _prepareDrawOptions: (drawOptions, compositeMode, opacity)->
     super
+    drawOptions.mipmaps     = @_mipmaps ? true
     drawOptions.focus       = @_focus
     drawOptions.layout      = @getLayout()
     drawOptions.targetSize  = @getSizeForChildren()
     drawOptions.aspectRatio = @getAspectRatio()
 
+  _drawBitmapElement: (target, elementToTargetMatrix, options) ->
+    @_mipmaps = target.drawBitmapWithLayout elementToTargetMatrix, @getCurrentBitmap(), options
+
   fillShape: (target, elementToTargetMatrix, options) ->
-    target.drawBitmapWithLayout elementToTargetMatrix, @getCurrentBitmap(), options
+    @_drawBitmapElement target, elementToTargetMatrix, options
