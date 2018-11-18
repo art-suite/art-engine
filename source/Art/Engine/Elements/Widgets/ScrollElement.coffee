@@ -99,6 +99,14 @@ defineModule module, class ScrollElement extends Element
 
   @getter "childrenOffset firstOnScreenChildIndex lastOnScreenChildIndex focusedChildIndex childrenSize windowSize inFlowChildren"
 
+
+  @getter
+    scrollRatio: -> -@childrenOffset / (@childrenSize - @windowSize)
+
+  @setter
+    scrollRatio: (r)->
+      @setFirstElementPosition -r * (@childrenSize - @windowSize)
+
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
     Math.atan(scrollPosition / maxBeyond ) * (2 / Math.PI) * maxBeyond
@@ -230,6 +238,7 @@ defineModule module, class ScrollElement extends Element
       )
       @queueEvent "scrollUpdate", =>
         {
+          @scrollRatio
           @childrenOffset
           @childrenSize
           windowSize
@@ -380,7 +389,6 @@ defineModule module, class ScrollElement extends Element
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
     boundedScrollPosition = @boundSp scrollPosition + desiredOffset
-    global.scrollElement = @
     if boundedScrollPosition != scrollPosition && !@_animating
       @_animating = true
       @animators = merge originialAnimators = @animators,
@@ -389,6 +397,9 @@ defineModule module, class ScrollElement extends Element
           @animators = originialAnimators
 
       @scrollPosition = boundedScrollPosition
+
+  setFirstElementPosition: (fp)->
+    @scrollPosition = @boundSp @fp2sp fp
 
   _scrollPositionChanged: ->
     unless @_activelyScrolling
