@@ -631,6 +631,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
     ###
     receivePointerEvents:   default: "inLogicalArea",       validate: (v) ->
       isFunction(v) ||
+      v == "always" ||
       v == "never" ||
       v == "inLogicalArea" ||
       v == "inPaddedArea" ||
@@ -1217,6 +1218,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       @_receivePointerEvents (@getParentToElementMatrix().transform p), @, p
     else
       switch @_receivePointerEvents
+        when "always"         then true
         when "never"          then false
         when "passToChildren" then @pointInsideChildren p
         when "inPaddedArea"
