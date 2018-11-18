@@ -150,6 +150,30 @@ suite:
         test: (e) ->
           assert.eq e.drawArea, rect 80
 
+    outline: ->
+      renderTest
+        :outline
+        render: ->
+          Element
+            size: 100
+            draw:
+              :children
+              radius: 20
+              outline:
+                lineWidth: 10
+                colors:
+                  1:  rgbColor "#be8e42"
+                  .8: rgbColor "#fef5ac"
+                  .5: rgbColor "#9e682a"
+                  .4: rgbColor "#d7bb73"
+                  0:  rgbColor "#a36828"
+
+                to: :bottomRight
+
+        test: (e) ->
+          assert.eq e.drawArea, rect -5, -5, 110, 110
+
+
   padding: ->
     test "pixelsPerPoint: 2", ->
       e =

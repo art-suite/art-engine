@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Engine = require 'art-engine'
 
-{defineModule, log, inspect, inspectLean, nextTick, eq, merge} = Foundation
+{max, defineModule, log, inspect, inspectLean, nextTick, eq, merge, min} = Foundation
 {point, matrix} = Atomic
 {Element, CanvasElement} = Engine.Core
 
@@ -23,6 +23,9 @@ eventKey = (e)->
 #   setup
 #   events
 #   tests
+{pointerDeadZone} = Neptune.Art.Engine.Events.Pointer
+spacing = max 5, 1 + pointerDeadZone
+
 newEventRig = (options={})->
   canvasElement = new CanvasElement
     canvas: HtmlCanvas()
@@ -31,19 +34,19 @@ newEventRig = (options={})->
     size: 100
     child = new Element
       name:"child"
-      location: 10
-      size: 50
+      location: spacing * 2
+      size: spacing * 10
       pointerEventPriority: options.childPointerEventPriority
 
-  rig =
+  rig = log
     eventSequence: []
     canvasElement: canvasElement
     parent: canvasElement
     child: child
-    outsidePoint: point 5
+    outsidePoint: point spacing
     outsidePoint2: point 0
-    insidePoint: point 15
-    secondInsidePoint2: point 25
+    insidePoint: point spacing * 3
+    secondInsidePoint2: point spacing * 5
 
   canvasElement.onNextReady()
   .then ->
@@ -110,10 +113,10 @@ defineModule module, suite: ->
     newEventCounterRig
       events: (rig) ->
         points = [
-          point 10, 9
-          point 9,  10
-          point 10, 60
-          point 60, 60
+          point spacing * 2, spacing * 2 - 1
+          point spacing * 2 - 1, spacing * 2
+          point spacing * 2, spacing * 12
+          point spacing * 12, spacing * 12
         ]
         rig.canvasElement.mouseMove p for p in points
 
@@ -186,7 +189,7 @@ defineModule module, suite: ->
   test "mouseDown mouseUp triggers click", ->
     newEventCounterRig
       events: (rig) ->
-        rig.canvasElement.mouseDown      rig.outsidePoint
+        rig.canvasElement.mouseDown    rig.outsidePoint
         rig.canvasElement.mouseUp      rig.outsidePoint
 
       tests: (rig) ->
@@ -197,6 +200,41 @@ defineModule module, suite: ->
             "parent_pointerDown_mousePointer"
             "parent_pointerUp_mousePointer"
             "parent_pointerClick_mousePointer"
+          ]
+
+  test "mouseDown mouseUp after deadZone(#{pointerDeadZone}) move triggers click", ->
+    newEventCounterRig
+      events: (rig) ->
+        rig.canvasElement.mouseDown   rig.outsidePoint
+        rig.canvasElement.mouseUp     rig.outsidePoint.add point pointerDeadZone, 0
+
+      tests: (rig) ->
+        assert.eq rig.eventSequence,
+          [
+            "parent_mouseIn_mouse"
+            "parent_mouseMove_mouse"
+            "parent_pointerDown_mousePointer"
+            "parent_pointerMove_mousePointer"
+            "parent_mouseMove_mouse"
+            "parent_pointerUp_mousePointer"
+            "parent_pointerClick_mousePointer"
+          ]
+
+  test "mouseDown mouseUp after non-deadZone(#{pointerDeadZone}) move doesn't trigger click", ->
+    newEventCounterRig
+      events: (rig) ->
+        rig.canvasElement.mouseDown   rig.outsidePoint
+        rig.canvasElement.mouseUp     rig.outsidePoint.add point pointerDeadZone + 1, 0
+
+      tests: (rig) ->
+        assert.eq rig.eventSequence,
+          [
+            "parent_mouseIn_mouse"
+            "parent_mouseMove_mouse"
+            "parent_pointerDown_mousePointer"
+            "parent_pointerMove_mousePointer"
+            "parent_mouseMove_mouse"
+            "parent_pointerUp_mousePointer"
           ]
 
 
@@ -215,7 +253,6 @@ defineModule module, suite: ->
             "parent_pointerMove_mousePointer"
             "parent_mouseMove_mouse"
             "parent_pointerUp_mousePointer"
-            "parent_pointerClick_mousePointer"
           ]
 
 
@@ -295,7 +332,7 @@ defineModule module, suite: ->
       events: (rig) ->
         rig.canvasElement.touchDown 100, rig.outsidePoint
         rig.canvasElement.touchMove 100, rig.outsidePoint2
-        rig.canvasElement.touchUp 100, rig.outsidePoint2
+        rig.canvasElement.touchUp   100, rig.outsidePoint2
 
       tests: (rig) ->
         assert.eq rig.eventSequence,
@@ -303,7 +340,6 @@ defineModule module, suite: ->
             "parent_pointerDown_100"
             "parent_pointerMove_100"
             "parent_pointerUp_100"
-            "parent_pointerClick_100"
           ]
 
 
@@ -319,7 +355,6 @@ defineModule module, suite: ->
             "parent_pointerDown_100"
             "parent_pointerMove_100"
             "parent_pointerUp_100"
-            "parent_pointerClick_100"
           ]
 
 
@@ -374,7 +409,6 @@ defineModule module, suite: ->
             "child_pointerDown_100"
             "child_pointerMove_100"
             "child_pointerUp_100"
-            "child_pointerClick_100"
           ]
 
   test "capturePointerEvents auto uncapture", ->
@@ -396,7 +430,6 @@ defineModule module, suite: ->
             "child_pointerDown_100"
             "child_pointerMove_100"
             "child_pointerUp_100"
-            "child_pointerClick_100"
 
             # new event not in "capturePointerEvents basic" test above;
             # Pointer events no longer captured by child.

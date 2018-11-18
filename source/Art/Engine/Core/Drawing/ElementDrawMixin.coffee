@@ -66,6 +66,17 @@ defineModule module, ->
         default: false
         validate: (v) -> v == false || v == true || isPlainObject v
 
+      ### TODO:
+
+      validCacheScaleValues:
+        :auto       # 1:1 with pixels drawn on screen; checked every draw, redraw automatically if this value changes
+        number      # number * pixelsPerPoint
+
+      cacheScale:
+        default:  1
+        validate: (v) -> v == :auto else isNumber v
+      ###
+
     @drawLayoutProperty
 
       # is an array of keys and one 'null' entry.

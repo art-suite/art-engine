@@ -1,0 +1,142 @@
+import &StandardImport, Neptune.Art.Engine.Core.Drawing.ElementDrawLib
+
+# validateDrawAreas2 = (newDrawAreas, oldDrawAreas, addedDrawArea) ->
+#   areasToTest = compactFlatten [] oldDrawAreas, addedDrawArea
+#   each area in compactFlatten [] oldDrawAreas, addedDrawArea
+#     unless (find newDrawArea in newDrawAreas when newDrawArea.contains area)
+#       log formattedInspect {newDrawAreas, oldDrawAreas, addedDrawArea}
+#       throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
+
+suite:
+  validateDrawAreas: ->
+    test "good because one area in newDrawAreas overlaps oldDrawAreas" ->
+      validateDrawAreas
+        [] rect 10 10
+        [] rect 10 10
+
+    test "should fail because no areas in newDrawAreas should overlap oldDrawAreas" ->
+      assert.throws -> validateDrawAreas
+        [] rect 10 10
+        [] rect 10 12
+
+    test "should fail because no areas in newDrawAreas should overlap addedDrawArea" ->
+      assert.throws -> validateDrawAreas
+        [] rect 10 10
+        [] rect 10 10
+        rect 10 12
+
+    test "should fail because areas in newDrawAreas mutually overlap" ->
+      assert.throws -> validateDrawAreas
+        []
+          rect 10 10
+          rect 10 10
+        [] rect 10 10
+
+  addDirtyDrawArea: ->
+    test :validateDrawAreas ->
+      validateDrawAreas
+        [] rect 10 10
+        []
+        rect 10 10
+
+    each {newDrawAreas, oldDrawAreas, addDrawArea}, name in
+        noOldDrawAreas:
+          oldDrawAreas: null
+          addDrawArea:  rect 10 10
+          newDrawAreas: [] rect 10 10
+
+        emptyOldDrawAreas:
+          oldDrawAreas: []
+          addDrawArea:  rect 10 10
+          newDrawAreas: [] rect 10 10
+
+        fullyOverlapsOldDrawArea:
+          oldDrawAreas: [] rect 2, 2, 4, 4
+          addDrawArea:  rect 10 10
+          newDrawAreas: [] rect 10 10
+
+        fullyMissesOldDrawArea:
+          oldDrawAreas: [] rect 10 10
+          addDrawArea:  rect 20 0 10 10
+          newDrawAreas:
+            rect 10 10
+            rect 20 0 10 10
+
+        fullyOverlapsBothOldDrawAreas:
+          oldDrawAreas:
+            rect 1, 1, 4, 4
+            rect 8, 8, 2, 2
+          addDrawArea:  rect 10 10
+          newDrawAreas: [] rect 10 10
+
+        partiallyOverlapsOldDrawArea:
+          oldDrawAreas: [] rect 10 10
+          addDrawArea:  rect 5 5 10 10
+          newDrawAreas: [] rect 15 15
+
+        overlapsTwoOldDrawAreas:
+          oldDrawAreas:
+            rect 10 10
+            rect 0 20 10 10
+
+          addDrawArea:
+            rect 5 5 10 20
+
+          newDrawAreas: [] rect 15 30
+
+        simplifiesToOneDrawArea:
+          oldDrawAreas:
+            rect 15 10
+            rect 0 15 5 30
+
+          addDrawArea:
+            rect 10 5 10 20
+
+          newDrawAreas: [] rect 0, 0, 20, 45
+
+        overlapsJustOneOldDrawArea:
+          oldDrawAreas:
+            rect 15 10
+            rect 0 30 5 5
+
+          addDrawArea:
+            rect 10 5 10 20
+
+          newDrawAreas: [] rect(0, 30, 5, 5), rect(0, 0, 20, 25)
+
+        regressionSequence1:
+          oldDrawAreas: null
+          addDrawArea:  rect 20
+          newDrawAreas: [] rect 20
+
+        regressionSequence2:
+          oldDrawAreas: [] rect 20
+          addDrawArea:  rect 20 1 1 38
+          newDrawAreas: [] rect(0, 0, 20, 20), rect(20, 1, 1, 38)
+
+        regressionSequence3:
+          oldDrawAreas: [] rect(0, 0, 20, 20), rect(20, 1, 1, 38)
+          addDrawArea:  rect 1 20 37 1
+          newDrawAreas: [] rect 0, 0, 38, 39
+
+      test (upperCamelCase name, ' '), ->
+        totalArea = reduce totalArea, a in compactFlatten [] oldDrawAreas, newDrawAreas, addDrawArea
+          a.union totalArea
+
+        bitmap = new Bitmap totalArea.bottomRight
+        bitmap.clear #e
+        each area in oldDrawAreas do bitmap.drawRectangle null, area, color: #00f
+        bitmap.drawRectangle null, addDrawArea, color: #0f07
+        each area in newDrawAreas do bitmap.drawRectangle null, area, color: #f007
+        log {} bitmap, name,  totalArea
+
+        assert.eq
+          computedNewDrawAreas = addDirtyDrawArea
+            oldDrawAreas
+            addDrawArea
+          newDrawAreas
+          expected: {} newDrawAreas
+
+        validateDrawAreas computedNewDrawAreas, oldDrawAreas, addDrawArea
+
+      # newDrawAreas:  [] rect(-3, 0, 1901, 518.500000)

@@ -1,5 +1,5 @@
 'use strict';
-{compactFlatten, arrayWithout, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
+{compactFlatten, arrayWithout, arrayWith, objectWithout, defineModule, formattedInspect, clone, max, isFunction, log, object, isNumber, isArray, isPlainObject, isString, each, isPlainObject, merge, mergeInto} = require 'art-standard-lib'
 {Matrix, identityMatrix, Color, point, rect, rgbColor, isRect, isColor, perimeter} = require 'art-atomic'
 {PointLayout} = require '../../Layout'
 {pointLayout} = PointLayout
@@ -193,54 +193,107 @@ defineModule module, class ElementDrawLib
     else
       step
 
+  # @validateDrawAreas: (newDrawAreas, oldDrawAreas, addedDrawArea) ->
+  #   areasToTest = compactFlatten [oldDrawAreas, addedDrawArea]
+  #   each areasToTest, (area) ->
+  #     unless (find newDrawAreas, (newDrawArea) -> newDrawArea.contains area)
+  #       throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
+
   @validateDrawAreas: (newDrawAreas, oldDrawAreas, addedDrawArea) ->
     areasToTest = compactFlatten [oldDrawAreas, addedDrawArea]
-    each areasToTest, (area) ->
-      unless (find newDrawAreas, (newDrawArea) -> newDrawArea.contains area)
+
+    # all areasToTest are contained by at least one area in newDrawAreas
+    for area in (compactFlatten [oldDrawAreas, addedDrawArea])
+      ok = false
+      for newDrawArea in newDrawAreas
+        if newDrawArea.contains area
+          ok = true
+          break
+
+      unless ok
+        log formattedInspect {newDrawAreas, oldDrawAreas, addedDrawArea}
         throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
+
+    # all newDrawAreas are mutually exclusive (don't overlap)
+    for area1 in newDrawAreas
+      overlapCount = 0
+      for area2 in newDrawAreas when area1.overlaps area2
+        overlapCount++
+      unless overlapCount == 1
+        log formattedInspect {newDrawAreas, oldDrawAreas, addedDrawArea}
+        throw new Error "expected newDrawAreas to be mutually exclusive: #{formattedInspect newDrawAreas}"
+
+    null
 
   @findFirstOverlappingAreaIndex: (areas, testArea) ->
     for area, i in areas when area.overlaps testArea
       return i
 
-  @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea, snapTo) =>
+  ###
+  IN:
+    dirtyDrawAreas: null or array of rectangles
+    areaToAdd: rectangle
+    snapTo: number (or undefined)
+      default: 1
+      suggested: 1 / devicePixelRatio
 
-    if dirtyArea.area > 0
+  NOTES:
+    areaToAdd is rounded out using: areaToAdd.roundOut snapTo, colorPrecision
 
-      da0 = dirtyArea = dirtyArea.roundOut snapTo, colorPrecision
-      dda0 = dirtyDrawAreas
+  OUT: null (only if areaToAdd.area is 0 AND dirtyDrawAreas is null
+  OR
+  OUT: array of rectangles
+    Guarantees:
+      All rectangles are mutually exclusive - they don't overlap each other at all
+      Each rectangle in IN:dirtyDrawAreas and areaToAdd has exactly one
+      rectangle in OUT which contains it.
+
+  NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
+  OPTIMIZED: creates at most 1 rectangle and 1 array
+  ###
+  @addDirtyDrawArea: (dirtyDrawAreas, areaToAdd, snapTo) =>
+
+    if areaToAdd.area == 0
+      dirtyDrawAreas
+
+    else
+      areaToAdd = areaToAdd.roundOut snapTo, colorPrecision
 
       if dirtyDrawAreas
-        # optimized: creates 1 rect and 1 array if there is overlap, otherwise, creates nothing
 
-        da = dirtyArea
-        foundNewOverlap = true
-        # union all overlaps into dirtyArea
-        while foundNewOverlap
-          foundNewOverlap = false
-          for area in dirtyDrawAreas
-            return dirtyDrawAreas if area.contains dirtyArea
+        overlapCount = 0
+        for area in dirtyDrawAreas
+          if area.contains areaToAdd
+            # dirtyDrawAreas already contains areaToAdd! We're done.
+            return dirtyDrawAreas
+          else if area.overlaps areaToAdd
+            overlapCount++
 
-            if area.overlaps dirtyArea
-              # ensure safe to mutate
-              da2 = dirtyArea
-              dirtyArea = dirtyArea.clone() if da == dirtyArea
-              area.unionInto dirtyArea
-              foundNewOverlap = da2 != dirtyArea
+        # oldDrawAreas = dirtyDrawAreas # DEBUG ONLY! for validateDrawAreas below
 
-        if da != dirtyArea
-          # get new array, with all overlaps removed - they are now represented by dirtyArea
-          dirtyDrawAreas = for area in dirtyDrawAreas when !area.overlaps dirtyArea
+        if overlapCount == 0
+          arrayWith dirtyDrawAreas, areaToAdd
+
+        else
+          workingDirtyArea = areaToAdd.clone()
+
+          foundNewOverlap = true
+          # grow areaToAdd unil it contains all overlaps
+          while foundNewOverlap
+            foundNewOverlap = false
+            for area in dirtyDrawAreas when workingDirtyArea.overlaps(area) && !workingDirtyArea.contains area
+              area.unionInto workingDirtyArea
+              foundNewOverlap = true
+
+          # get new array, with all overlaps removed - they are now represented by areaToAdd
+          dirtyDrawAreas = for area in dirtyDrawAreas when !area.overlaps workingDirtyArea
             area
 
-        dirtyDrawAreas.push dirtyArea
+          arrayWith dirtyDrawAreas, workingDirtyArea
 
+        # @validateDrawAreas dirtyDrawAreas, oldDrawAreas, areaToAdd
       else
-        dirtyDrawAreas = [dirtyArea]
-
-      # @validateDrawAreas dirtyDrawAreas, dirtyArea
-
-    dirtyDrawAreas
+        [areaToAdd]
 
   ###
   # 2018-8-14

@@ -4,10 +4,11 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  Basics:        require './Basics'       
-  Clipping:      require './Clipping'     
-  DrawOrder:     require './DrawOrder'    
-  PartialRedraw: require './PartialRedraw'
-  Retina:        require './Retina'       
-  ToBitmap:      require './toBitmap'     
+  Basics:         require './Basics'        
+  Clipping:       require './Clipping'      
+  DrawOrder:      require './DrawOrder'     
+  ElementDrawLib: require './ElementDrawLib'
+  PartialRedraw:  require './PartialRedraw' 
+  Retina:         require './Retina'        
+  ToBitmap:       require './toBitmap'      
 require './CachingAndStaging'

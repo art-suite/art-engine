@@ -6,4 +6,6 @@ module.exports = [
   require './Layout'
   package: _package = require "art-engine/package.json"
   version: _package.version
+  GestureRecognizer: GestureRecognizer = (require './Events').GestureRecognizer
+  createGestureRecognizer: GestureRecognizer.createGestureRecognizer
 ]
