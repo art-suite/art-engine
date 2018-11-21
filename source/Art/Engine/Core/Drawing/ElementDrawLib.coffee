@@ -211,7 +211,7 @@ defineModule module, class ElementDrawLib
           break
 
       unless ok
-        log formattedInspect {newDrawAreas, oldDrawAreas, addedDrawArea}
+        log formattedInspect validateDrawAreasFail: global.validateDrawAreasFail = {newDrawAreas, oldDrawAreas, addedDrawArea}
         throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
 
     # all newDrawAreas are mutually exclusive (don't overlap)
@@ -278,12 +278,17 @@ defineModule module, class ElementDrawLib
           workingDirtyArea = areaToAdd.clone()
 
           foundNewOverlap = true
+          triesLeft = dirtyDrawAreas.length + 1
           # grow areaToAdd unil it contains all overlaps
-          while foundNewOverlap
+          while foundNewOverlap && triesLeft-- >= 0
             foundNewOverlap = false
             for area in dirtyDrawAreas when workingDirtyArea.overlaps(area) && !workingDirtyArea.contains area
               area.unionInto workingDirtyArea
               foundNewOverlap = true
+
+          if triesLeft < 0
+            log.error formattedInspect lastAddDirtyDrawAreaFailure: {dirtyDrawAreas, triesLeft, areaToAdd, workingDirtyArea, snapTo}
+            global.lastAddDirtyDrawAreaFailure = {dirtyDrawAreas, areaToAdd, workingDirtyArea, snapTo}
 
           # get new array, with all overlaps removed - they are now represented by areaToAdd
           dirtyDrawAreas = for area in dirtyDrawAreas when !area.overlaps workingDirtyArea
