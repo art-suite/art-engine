@@ -16,6 +16,7 @@ module.exports
   GlobalEpochCycle:     require './GlobalEpochCycle'    
   IdleEpoch:            require './IdleEpoch'           
   Lib:                  require './Lib'                 
+  SourceToBitmapCache:  require './SourceToBitmapCache' 
   StandardImport:       require './StandardImport'      
   StateEpoch:           require './StateEpoch'          
 require './Drawing'

@@ -39,7 +39,7 @@ suite:
         []
         rect 10 10
 
-    each {newDrawAreas, oldDrawAreas, addDrawArea}, name in
+    each {newDrawAreas, oldDrawAreas, addDrawArea, snapTo}, name in
         noOldDrawAreas:
           oldDrawAreas: null
           addDrawArea:  rect 10 10
@@ -119,7 +119,28 @@ suite:
           addDrawArea:  rect 1 20 37 1
           newDrawAreas: [] rect 0, 0, 38, 39
 
-      test (upperCamelCase name, ' '), ->
+        regressionInfinitLoop:
+          oldDrawAreas: [] rect
+            h: 76
+            w: 87 + 1/3
+            x: 25
+            y: 714 + 2/6
+
+          addDrawArea:  rect
+            h: 76 + 2/6
+            w: 87 + 2/6
+            x: 24.666666666666664
+            y: 714 + 1/3
+
+          newDrawAreas: [] rect
+            h: 76.33333333333337
+            w: 87.66666666666666
+            x: 24.666666666666664
+            y: 714.3333333333333
+
+          snapTo: 1/3
+
+      test name, ->
         totalArea = reduce totalArea, a in compactFlatten [] oldDrawAreas, newDrawAreas, addDrawArea
           a.union totalArea
 
@@ -130,12 +151,18 @@ suite:
         each area in newDrawAreas do bitmap.drawRectangle null, area, color: #f007
         log {} bitmap, name,  totalArea
 
-        assert.eq
-          computedNewDrawAreas = addDirtyDrawArea
-            oldDrawAreas
-            addDrawArea
-          newDrawAreas
-          expected: {} newDrawAreas
+        global.newDrawAreas = newDrawAreas
+
+        computedNewDrawAreas = addDirtyDrawArea
+          oldDrawAreas
+          addDrawArea
+          snapTo
+        assert.eq computedNewDrawAreas.length, newDrawAreas.length
+        each area, i in computedNewDrawAreas
+          newDrawArea = newDrawAreas[i]
+          unless area.eq newDrawArea
+            log global.neqError = neqError: {area, newDrawArea: newDrawAreas[i]}
+          assert.eq area, newDrawArea, "element #{i}/#{computedNewDrawAreas.length}"
 
         validateDrawAreas computedNewDrawAreas, oldDrawAreas, addDrawArea
 
