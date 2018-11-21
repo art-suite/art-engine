@@ -147,6 +147,10 @@ defineModule module, class DrawCacheManager extends BaseClass
 
     {bytesReleased, bitmapsReleased}
 
+  releaseUnusedBitmaps: ->
+    @_unusedCacheByteSize = 0
+    @_unusedCacheBitmaps = []
+
   @getCacheInfo: -> DrawCacheManager.singleton.getCacheInfo()
   getCacheInfo: ->
     {
