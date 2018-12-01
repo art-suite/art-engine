@@ -1,6 +1,6 @@
 {defineModule, inspect, clone, peek, first, merge, isNumber} = require 'art-standard-lib'
 {Event} = require 'art-events'
-{point, rect, matrix} = require 'art-atomic'
+{Matrix, point, rect, matrix} = require 'art-atomic'
 
 arrayize = (single, array, defaultArray)->
   if single then [single] else array || defaultArray || []
@@ -12,6 +12,7 @@ transformedArray = (arrayOfPoints, matrix) ->
 defineModule module, class PointerEvent extends Event
   constructor: (type, pointer, propsOrTime) ->
     props = if isNumber propsOrTime
+      log.warn "DEPRICATED: propsOrTime should always be props. Use: 'time: eventTime'"
       time: propsOrTime
     else propsOrTime
 
@@ -46,39 +47,67 @@ defineModule module, class PointerEvent extends Event
       d
 
   @getter
-    stayedWithinDeadzone:      -> @pointer.stayedWithinDeadzone
-    leftDeadzone:              -> !@stayedWithinDeadzone
-    location:                  -> @pointer.locationIn @target
-    firstLocation:             -> @pointer.firstLocationIn @target
-    lastLocation:              -> @pointer.lastLocationIn @target
+    activePointers:             -> @pointer.activePointers
+    stayedWithinDeadzone:       -> @pointer.stayedWithinDeadzone
+    leftDeadzone:               -> !@stayedWithinDeadzone
+    location:                   -> @pointer.locationIn @target
+    firstLocation:              -> @pointer.firstLocationIn @target
+    lastLocation:               -> @pointer.lastLocationIn @target
 
     # NOTE - angles are taken from the center of @target
-    firstAngle:                -> getAngle @target, @firstLocation
-    angle:                     -> getAngle @target, @location
-    angleDelta:                -> getAngleDelta @firstAngle, @angle
+    firstAngle:                 -> getAngle @target, @firstLocation
+    angle:                      -> getAngle @target, @location
+    angleDelta:                 -> getAngleDelta @firstAngle, @angle
 
-    absLocation:               -> @pointer.location
-    absFirstLocation:          -> @pointer.firstLocation
-    absLastLocation:           -> @pointer.lastLocation
+    absLocation:                -> @pointer.location
+    absFirstLocation:           -> @pointer.firstLocation
+    absLastLocation:            -> @pointer.lastLocation
 
-    parentLocation:            -> @pointer.locationIn @target.parent
-    parentParentLocation:      -> @pointer.locationIn @target.parent.parent
+    parentLocation:             -> @pointer.locationIn @target.parent
+    parentParentLocation:       -> @pointer.locationIn @target.parent.parent
 
-    parentFirstLocation:       -> @pointer.firstLocationIn @target.parent
-    parentParentFirstLocation: -> @pointer.firstLocationIn @target.parent.parent
+    parentFirstLocation:        -> @pointer.firstLocationIn @target.parent
+    parentParentFirstLocation:  -> @pointer.firstLocationIn @target.parent.parent
 
-    parentLastLocation:        -> @pointer.lastLocationIn @target.parent
-    parentParentLastLocation:  -> @pointer.lastLocationIn @target.parent.parent
+    parentLastLocation:         -> @pointer.lastLocationIn @target.parent
+    parentParentLastLocation:   -> @pointer.lastLocationIn @target.parent.parent
 
-    absDelta:                  -> @pointer.location.sub @pointer.lastLocation
-    delta:                     -> @location.sub @lastLocation
-    parentDelta:               -> @pointer.deltaIn @target.parent
-    parentParentDelta:         -> @pointer.deltaIn @target.parent.parent
+    absDelta:                   -> @pointer.location.sub @pointer.lastLocation
+    delta:                      -> @location.sub @lastLocation
+    parentDelta:                -> @pointer.deltaIn @target.parent
+    parentParentDelta:          -> @pointer.deltaIn @target.parent.parent
 
-    absTotalDelta:             -> @pointer.location.sub @pointer.firstLocation
-    totalDelta:                -> @location.sub @firstLocation
-    totalParentDelta:          -> @pointer.totalDeltaIn @target.parent
-    totalParentParentDelta:    -> @pointer.totalDeltaIn @target.parent.parent
+    absTotalDelta:              -> @pointer.location.sub @pointer.firstLocation
+    totalDelta:                 -> @location.sub @firstLocation
+    totalParentDelta:           -> @pointer.totalDeltaIn @target.parent
+    totalParentParentDelta:     -> @pointer.totalDeltaIn @target.parent.parent
+
+    # Multitouch
+    locations: ->
+      if @pointer.activePointers?.length > 1
+        for pointer in @pointer.activePointers
+          pointer.locationIn @target
+      else
+        [@locationIn]
+
+    firstLocations: ->
+      if @pointer.activePointers?.length > 1
+        for pointer in @pointer.activePointers
+          pointer.firstLocationIn @target
+      else
+        [@firstLocation]
+
+    multitouchTransform: ->
+      if @pointer.activePointers?.length > 1
+        [p1, p2] = @pointer.activePointers
+        Matrix.multitouch(
+          p1.firstLocationIn  @target
+          p1.locationIn       @target
+          p2.firstLocationIn  @target
+          p2.locationIn       @target
+        )
+      else
+        Matrix.translate @totalDelta
 
   toElementMatrix: (element) ->
     @target.getElementToElementMatrix(element)

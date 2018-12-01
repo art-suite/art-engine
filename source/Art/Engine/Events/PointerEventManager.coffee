@@ -128,15 +128,17 @@ module.exports = class PointerEventManager extends BaseClass
     {@canvasElement} = options
 
     # the passive pointer is for the mouse when no buttons are down
-    @mouse = new Pointer "mouse", point -1
-    @_activePointers = {}
-    @_numActivePointers = 0
+    @mouse = new Pointer @, "mouse", point -1
+    @_activePointers = []
 
     @_capturingElement = null
     @_currentMousePath = []
     @_currentFocusPath = [@canvasElement]
     @_pointerFocusPath = null
     @_savedFocusedElement = null
+
+    @_doingMultitouchMoveEvents = false
+    @_moveEventOccured = false
 
   saveFocus: ->
     @_savedFocusedElement = peek @_currentFocusPath
@@ -153,15 +155,61 @@ module.exports = class PointerEventManager extends BaseClass
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
 
-  @getter "activePointers currentFocusPath numActivePointers",
+  @getter "activePointers currentFocusPath",
     focusedElement: -> peek @_currentFocusPath
     hasMouseCursor: -> true # should be false on touch-only device - can be used to speed things up
     currentMousePathClassNames: -> el.classPathName for el in @_currentMousePath
 
+  startMultitouchMoveEvents: ->
+    @_doingMultitouchMoveEvents = true
+    @_moveEventOccured = false
+
+  endMultitouchMoveEvents: ->
+    @_doingMultitouchMoveEvents =
+    @_moveEventOccured = false
+
+  ##################################
+  # ActivePointers Management
+  ##################################
+  getActivePointerIndex: (id) ->
+    if @_activePointers.length > 0
+      for pointer, i in @_activePointers when id == pointer.id
+        return i
+    return null
+
+  getActivePointer: (id) ->
+    (index = @getActivePointerIndex id)? && @_activePointers[index]
+
+  addActivePointer: (pointer, forEvent) ->
+    unless @getActivePointer pointer.id
+      @_activePointers.push pointer
+      pointer
+    else
+      console.error "#{forEvent}-addActivePointer #{id}: already have active pointer for that id"
+      false
+
+  removeActivePointer: (id, forEvent) ->
+    if pointer = @getActivePointer id
+      @_activePointers = arrayWithoutValue @_activePointers, pointer
+
+      if @numActivePointers == 0
+        @_pointerFocusPath = @_capturingElement = null
+
+    else
+      console.error "#{forEvent}-removeActivePointer #{id}: no active pointer for that id"
+
+    pointer
+
+
+  @getter
+    firstActivePointer: -> @_activePointers[0]
+    numActivePointers: -> @_activePointers.length
+
+  #################
   # element captures all new pointerEvents UNTIL all pointers are "up"
   capturePointerEvents: (element) ->
     elementsToCancel = arrayWithoutValue @_pointerFocusPath, element
-    for name, pointer of @_activePointers
+    for pointer in @_activePointers
       @queuePointerEventForElements elementsToCancel, "pointerCancel", pointer
 
     @_capturingElement = element
@@ -181,15 +229,6 @@ module.exports = class PointerEventManager extends BaseClass
       newPath.push element
       element = element.childUnderPoint pointer.locationIn element
     newPath
-
-  queueEventForElements: (elements, type, newEventFunction) ->
-    for element in elements
-      element.queueEvent type, newEventFunction
-
-  queuePointerEventForElement: (element, type, pointer, props) ->
-    element.queueEvent type, =>
-      if !@_capturingElement || type == "pointerCancel" || element == @_capturingElement
-        new PointerEvent type, pointer, props
 
   ###
   SBD NOTE 2016: This method of sorting priority is global and breaks "parents encapsulate children".
@@ -302,6 +341,24 @@ module.exports = class PointerEventManager extends BaseClass
     recurse 0, elementPriorities.length
     orderList
 
+  forEachPointerFocusedElement: (f) ->
+    if e = @_capturingElement
+      f e
+    else
+      f e for e in prioritySortElements @_pointerFocusPath
+
+  ##############################
+  # Queue Pointer/Mouse Events
+  ##############################
+  queueEventForElements: (elements, type, newEventFunction) ->
+    for element in elements
+      element.queueEvent type, newEventFunction
+
+  queuePointerEventForElement: (element, type, pointer, props) ->
+    element.queueEvent type, =>
+      if !@_capturingElement || type == "pointerCancel" || element == @_capturingElement
+        new PointerEvent type, pointer, props
+
   queuePointerEventForElements: (elements, type, pointer, props) ->
     elements = prioritySortElements elements.slice()
     for element in elements
@@ -311,15 +368,39 @@ module.exports = class PointerEventManager extends BaseClass
     @forEachPointerFocusedElement (e) =>
       @queuePointerEventForElement e, type, pointer, props
 
-  forEachPointerFocusedElement: (f) ->
-    if e = @_capturingElement
-      f e
-    else
-      f e for e in prioritySortElements @_pointerFocusPath
-
   queueMouseEvents: (type, pointer, props) ->
     @queuePointerEventForElements @_currentMousePath, type, pointer, props
 
+  queuePointerUpInAndOutsideEvents: (pointer, props) ->
+    @forEachPointerFocusedElement (element) =>
+      locationInParentSpace = pointer.locationIn element.parent
+      type = if element.pointInside locationInParentSpace then  "pointerUpInside" else "pointerUpOutside"
+      @queuePointerEventForElement element, type, pointer, props
+
+  queuePointerMoveInAndOutEvents: (pointer, props) ->
+    isInsideParent = true
+    wasInsideParent = true
+    @forEachPointerFocusedElement (element) =>
+      lastLocationInParentSpace = pointer.lastLocationIn element.parent
+      locationInParentSpace = pointer.locationIn element.parent
+      wasInside = wasInsideParent && element.pointInside lastLocationInParentSpace
+      isInside = isInsideParent && element.pointInside locationInParentSpace
+
+      if isInside != wasInside
+        type = if isInside then "pointerIn" else "pointerOut"
+        @queuePointerEventForElement element, type, pointer, props
+
+      isInsideParent = isInside
+      wasInsideParent = wasInside
+
+  queueOutEvents:   (pointer, elements) -> @queuePointerEventForElements elements, "mouseOut", pointer
+  queueInEvents:    (pointer, elements) -> @queuePointerEventForElements elements, "mouseIn", pointer
+  queueBlurEvents:  (pointer, elements) -> @queuePointerEventForElements elements, "blur", pointer
+  queueFocusEvents: (pointer, elements) -> @queuePointerEventForElements elements, "focus", pointer
+
+  ##############################
+  # Queue Key Events
+  ##############################
   ###
   queueKeyEvents
 
@@ -362,6 +443,7 @@ module.exports = class PointerEventManager extends BaseClass
       for element in elementsToSendEventTo
         element.queueEvent artEngineEventType, newEventFunction
 
+  ##########
   @elementToRootPath: elementToRootPath = (element) ->
      path = []
      while element
@@ -397,10 +479,6 @@ module.exports = class PointerEventManager extends BaseClass
     @canvasElement.cssCursor = cursor
 
   #########################
-  queueOutEvents:   (pointer, elements) -> @queuePointerEventForElements elements, "mouseOut", pointer
-  queueInEvents:    (pointer, elements) -> @queuePointerEventForElements elements, "mouseIn", pointer
-  queueBlurEvents:  (pointer, elements) -> @queuePointerEventForElements elements, "blur", pointer
-  queueFocusEvents: (pointer, elements) -> @queuePointerEventForElements elements, "focus", pointer
 
   isFocused: (element) -> @_currentFocusPath.indexOf(element) >= 0
 
@@ -423,7 +501,7 @@ module.exports = class PointerEventManager extends BaseClass
     focusPath:  required - array of elements starting with @canvasElement
   ###
   _updateFocusedPath: (pointer, focusPath)->
-    pointer ?= @_activePointers[0]
+    pointer ?= @firstActivePointer
 
     if focusPath[0] != @canvasElement
       # log.warn "_updateFocusedPath - path invalid - DOES THIS EVER HAPPEN?"
@@ -452,23 +530,24 @@ module.exports = class PointerEventManager extends BaseClass
 
   updateMousePath: ->
     pointer = @mouse
-    return unless @_numActivePointers == 0 && @getHasMouseCursor()
+    return unless @numActivePointers == 0 && @getHasMouseCursor()
     @_currentMousePath = updatePath @_currentMousePath,
       @pointerElementPath pointer
       (oldElements) => @queueOutEvents pointer, oldElements
       (newElements) => @queueInEvents pointer, newElements
       (newPath) => @updateCursor newPath
 
+  ############################
+  # Trigger Events
+  # (called by CanvasElement)
+  ############################
   pointerDown: (id, location, props) ->
-    eventEpoch.logEvent "pointerDown", id
-    if @_activePointers[id]
-      console.error "pointerDown(id:#{inspect id}, location:#{inspect location}): already have an active pointer for that id"
-    else
-      @_numActivePointers++
+    eventType = if @numActivePointers == 0 then "pointerDown" else "pointerAdd"
+    eventEpoch.logEvent eventType, id
 
-    pointer = @_activePointers[id] = new Pointer id, location
+    return unless @addActivePointer pointer = new Pointer @, id, location
 
-    if @_numActivePointers == 1 || !@_pointerFocusPath?
+    if @numActivePointers == 1 || !@_pointerFocusPath?
       @_pointerFocusPath = @pointerElementPath pointer
       focusable = true
       for el in @_pointerFocusPath = @pointerElementPath pointer when el.noFocus
@@ -476,29 +555,7 @@ module.exports = class PointerEventManager extends BaseClass
         break
       @focus pointer, @_pointerFocusPath if focusable
 
-    @queuePointerEvents "pointerDown", pointer, props
-
-  queuePointerUpInAndOutsideEvents: (pointer, props) ->
-    @forEachPointerFocusedElement (element) =>
-      locationInParentSpace = pointer.locationIn element.parent
-      type = if element.pointInside locationInParentSpace then  "pointerUpInside" else "pointerUpOutside"
-      @queuePointerEventForElement element, type, pointer, props
-
-  queuePointerMoveInAndOutEvents: (pointer, props) ->
-    isInsideParent = true
-    wasInsideParent = true
-    @forEachPointerFocusedElement (element) =>
-      lastLocationInParentSpace = pointer.lastLocationIn element.parent
-      locationInParentSpace = pointer.locationIn element.parent
-      wasInside = wasInsideParent && element.pointInside lastLocationInParentSpace
-      isInside = isInsideParent && element.pointInside locationInParentSpace
-
-      if isInside != wasInside
-        type = if isInside then "pointerIn" else "pointerOut"
-        @queuePointerEventForElement element, type, pointer, props
-
-      isInsideParent = isInside
-      wasInsideParent = wasInside
+    @queuePointerEvents eventType, pointer, props
 
   # pointerUp - user activity cased this
   pointerUp: (id, props) ->
@@ -508,16 +565,14 @@ module.exports = class PointerEventManager extends BaseClass
     # the steps in this method, then the cursor will get stuck in a focus-locked
     # state! So, we flush any pending events first.
     eventEpoch.flushEpochNow()
-    eventEpoch.logEvent "pointerUp", id
+    eventType = if @numActivePointers == 1 then "pointerUp" else "pointerRemove"
 
-    unless pointer = @_activePointers[id]
-      return console.error "pointerUp(#{id}): no active pointer for that id"
+    eventEpoch.logEvent eventType, id
 
-    @_numActivePointers--
-    delete @_activePointers[id]
+    return unless pointer = @getActivePointer id
 
     @queuePointerUpInAndOutsideEvents pointer, props
-    @queuePointerEvents "pointerUp", pointer, props
+    @queuePointerEvents eventType, pointer, props
 
     if pointer.stayedWithinDeadzone
       # If you want to open a file dialog, for security reasons, the browser REQUIRES this happens within the mouse-up event.
@@ -525,9 +580,7 @@ module.exports = class PointerEventManager extends BaseClass
       @queuePointerEvents "pointerClick", pointer, props
       eventEpoch.flushEpochNow()
 
-
-    if @_numActivePointers == 0
-      @_pointerFocusPath = @_capturingElement = null
+    @removeActivePointer id, eventType
 
   mouseWheel: (location, props) ->
     @queueMouseEvents "mouseWheel", @mouse, props
@@ -536,26 +589,30 @@ module.exports = class PointerEventManager extends BaseClass
   # No subsequent action should be taken, but this event notifies Elements to clean up or abort any action related to this active pointer.
   pointerCancel: (id, props) ->
     eventEpoch.logEvent "pointerCancel", id
-    unless pointer = @_activePointers[id]
-      return console.error "pointerCancel(#{id}): no active pointer for that id"
 
-    @_numActivePointers--
-    delete @_activePointers[id]
+    return unless pointer = @getActivePointer id
 
     @queuePointerEvents "pointerCancel", pointer, props
 
-    @_capturingElement = null if @_capturingElement && @_numActivePointers == 0
+    @removeActivePointer id, "pointerCancel"
 
   pointerMove: (id, location, props) ->
     eventEpoch.logEvent "pointerMove", id
-    unless pointer = @_activePointers[id]
+
+    unless (pointerIndex = @getActivePointerIndex id)?
       return console.error "pointerMove(#{id}, #{location}): no active pointer for that id"
 
+    pointer = @_activePointers[pointerIndex]
     return unless !pointer.location.eq location
 
-    @_activePointers[id] = pointer = pointer.moved location
+    @_activePointers[pointerIndex] = pointer = pointer.moved location
+
     @queuePointerMoveInAndOutEvents pointer, props
-    @queuePointerEvents "pointerMove", pointer, props
+
+    unless @_doingMultitouchMoveEvents && @_moveEventOccured
+      @_moveEventOccured = true
+      pointer = @firstActivePointer if @_doingMultitouchMoveEvents
+      @queuePointerEvents "pointerMove", pointer, props
 
   mouseDown: (location, props) -> @pointerDown "mousePointer", location, props
   mouseUp: (props) ->
@@ -570,7 +627,7 @@ module.exports = class PointerEventManager extends BaseClass
     @mouse = @mouse.moved location
 
     @updateMousePath()
-    @pointerMove "mousePointer", location, props if @_numActivePointers > 0
+    @pointerMove "mousePointer", location, props if @numActivePointers > 0
 
     @queueMouseEvents "mouseMove", @mouse
 

@@ -28,8 +28,18 @@ defineModule module, class Pointer extends BaseClass
         3
 
   @pointerDeadZoneSquared:  pointerDeadZoneSquared = pointerDeadZone * pointerDeadZone
+  @getter
+    activePointers: -> @pointerEventManager.activePointers
+    inspectedObjects: ->
+      pointer: {
+        @id
+        @location
+        @lastLocation
+        @firstLocation
+        @stayedWithinDeadzone
+      }
 
-  constructor: (id, location, lastLocation, firstLocation, stayedWithinDeadzone = true)->
+  constructor: (@pointerEventManager, id, location, lastLocation, firstLocation, stayedWithinDeadzone = true)->
     @id = id
     @location = location
     @lastLocation = lastLocation || location
@@ -39,6 +49,7 @@ defineModule module, class Pointer extends BaseClass
   emptyObject = {}
   newPointer: (options = emptyObject) ->
     new Pointer(
+      options.pointerEventManager || @pointerEventManager
       options.id || @id
       options.location || @location
       options.lastLocation || @lastLocation
@@ -50,7 +61,7 @@ defineModule module, class Pointer extends BaseClass
     stayedWithinDeadzone = @stayedWithinDeadzone &&
       newLocation.distanceSquared(@firstLocation) <= pointerDeadZoneSquared
 
-    new Pointer @id, newLocation, @location, @firstLocation, stayedWithinDeadzone
+    new Pointer @pointerEventManager, @id, newLocation, @location, @firstLocation, stayedWithinDeadzone
 
   locationIn:      (element) -> if element then element.absToElementMatrix.transform @location else @location
   lastLocationIn:  (element) -> if element then element.absToElementMatrix.transform @lastLocation else @lastLocation

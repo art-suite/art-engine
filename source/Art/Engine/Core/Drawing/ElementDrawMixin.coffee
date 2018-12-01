@@ -135,7 +135,7 @@ defineModule module, ->
           @setDirtyDrawAreasChanged false
 
       catch error
-        log ArtEngine: drawOnBitmap: {error}
+        log ArtEngine: drawOnBitmap: {@inspectedPath, error}
 
       finally
         @_currentDrawTarget = @_currentToTargetMatrix = null
@@ -332,7 +332,7 @@ defineModule module, ->
             log {drawOptionActions}
 
       catch error
-        log.error ArtEngine: drawChildren: {error}
+        log.error ArtEngine: drawChildren: {@inspectedPath, error}
       unless drewChildren
         if explicitlyDrawnChildrenByKey
           log drawRemainingChildren:
@@ -504,7 +504,7 @@ defineModule module, ->
                 target.drawDrawable childElement, childElement.getElementToTargetMatrix elementToTargetMatrix
 
         catch error
-          log.error ArtEngine: drawChildren: {error}
+          log.error ArtEngine: drawChildren: {@inspectedPath, error}
         unless drewChildren
           for child in children when !((key = child._key)? && explicitlyDrawnChildrenByKey?[key])
              break if upToChild == child
@@ -748,7 +748,7 @@ defineModule module, ->
           @_updateCurrentDrawCacheClippedArea bitmapAlreadyClear
 
       catch error
-        log ArtEngine: _updateDrawCache: {error}
+        log ArtEngine: _updateDrawCache: {@inspectedPath, error}
       finally
         @_redrawAll = false
         @_dirtyDrawAreas = if remainingDirtyAreas?.length > 0

@@ -67,6 +67,8 @@ newEventCounterRig = (options={})->
       options.setup rig if options.setup
       rig.parent.on =
         pointerDown:  (e) => rig.eventSequence.push eventKey e
+        pointerAdd:   (e) => rig.eventSequence.push eventKey e
+        pointerRemove:(e) => rig.eventSequence.push eventKey e
         pointerUp:    (e) => rig.eventSequence.push eventKey e
         pointerMove:  (e) => rig.eventSequence.push eventKey e
         pointerClick: (e) => rig.eventSequence.push eventKey e
@@ -79,6 +81,8 @@ newEventCounterRig = (options={})->
 
       rig.child.on =
         pointerDown:  (e) => rig.eventSequence.push eventKey e
+        pointerAdd:   (e) => rig.eventSequence.push eventKey e
+        pointerRemove:(e) => rig.eventSequence.push eventKey e
         pointerUp:    (e) => rig.eventSequence.push eventKey e
         pointerMove:  (e) => rig.eventSequence.push eventKey e
         pointerClick: (e) => rig.eventSequence.push eventKey e
@@ -358,15 +362,15 @@ defineModule module, suite: ->
           ]
 
 
-  test "touch - two down inside, maintain focus even though initial touch is released outside", ->
+  test "multitouch - two down inside, maintain focus even though initial touch is released outside", ->
     newEventCounterRig
       events: (rig) ->
         rig.canvasElement.touchDown 100, rig.insidePoint
         rig.canvasElement.touchDown 200, rig.secondInsidePoint2
         rig.canvasElement.touchMove 100, rig.outsidePoint
-        rig.canvasElement.touchUp 100, rig.outsidePoint
+        rig.canvasElement.touchUp   100, rig.outsidePoint
         rig.canvasElement.touchMove 200, rig.outsidePoint
-        rig.canvasElement.touchUp 200, rig.outsidePoint
+        rig.canvasElement.touchUp   200, rig.outsidePoint
 
       tests: (rig) ->
         assert.eq rig.eventSequence,
@@ -374,12 +378,12 @@ defineModule module, suite: ->
             "child_focus_100"
             "parent_pointerDown_100"
             "child_pointerDown_100"
-            "parent_pointerDown_200"
-            "child_pointerDown_200"
+            "parent_pointerAdd_200"
+            "child_pointerAdd_200"
             "parent_pointerMove_100"
             "child_pointerMove_100"
-            "parent_pointerUp_100"
-            "child_pointerUp_100"
+            "parent_pointerRemove_100"
+            "child_pointerRemove_100"
             "parent_pointerMove_200"
             "child_pointerMove_200"
             "parent_pointerUp_200"

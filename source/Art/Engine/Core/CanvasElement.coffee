@@ -489,7 +489,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
           extractPointerEventProps domEvent
 
     @_domListener window, "mouseup", (domEvent)=>
-      if domEvent.button == 0 && @activePointers["mousePointer"]
+      if domEvent.button == 0 && @pointerEventManager.getActivePointer "mousePointer"
         domEvent.preventDefault()
         @mouseUp @_domEventLocation(domEvent),
           extractPointerEventProps domEvent
@@ -516,13 +516,17 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @touchDown changedTouch.identifier,
           @_domEventLocation changedTouch
           extractPointerEventProps domEvent
+      null
 
     @_domListener @_canvas, "touchmove",   (domEvent) =>
       domEvent.preventDefault()
+      @pointerEventManager.startMultitouchMoveEvents()
       for changedTouch in domEvent.changedTouches
         @pointerEventManager.pointerMove changedTouch.identifier,
           @_domEventLocation changedTouch
           extractPointerEventProps domEvent
+      @pointerEventManager.endMultitouchMoveEvents()
+      null
 
     @_domListener @_canvas, "touchend",    (domEvent) =>
       domEvent.preventDefault()
@@ -530,12 +534,14 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @touchUp changedTouch.identifier,
           @_domEventLocation changedTouch
           extractPointerEventProps domEvent
+      null
 
     @_domListener @_canvas, "touchcancel", (domEvent) =>
       domEvent.preventDefault()
       for changedTouch in domEvent.changedTouches
         @touchCancel changedTouch.identifier,
           extractPointerEventProps domEvent
+      null
 
     # NOTE: touchleave and touchenter are ignored
     #   Currently, touch events are handled with the assumption that the canvas element is fullscreen, so this definitly can be ignored.

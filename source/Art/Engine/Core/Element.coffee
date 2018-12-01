@@ -13,6 +13,8 @@ GlobalEpochCycle = require './GlobalEpochCycle'
 
 {isInfiniteResult} = require './EpochLayout/Infinity'
 
+{namedSizeLayouts, namedSizeLayoutsRaw} = require './NamedElementPropValues'
+
 {rgbColor, point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
 {namedPoints} = Point
 {floor, ceil} = Math
@@ -194,28 +196,6 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
   defaultSizeLayout = new PointLayout ps: 1
   defaultLocationLayout = new PointLayout 0
-
-
-  namedSizeLayoutsRaw =
-    parentSize:                               ps:1
-    childrenSize:                             cs:1
-    parentHeightSquare:                       hh:1, wh:1
-    parentWidthSquare:                        hw:1, ww:1
-    parentFitSquare:                          hh:1, wh:1, max: hw:1, ww: 1
-    childrenSizeMaxParentWidth:               cs:1, max: ww: 1
-    childrenSizeMaxParentHeight:              cs:1, max: hh: 1
-
-    parentHeightChildrenWidth:                hh:1, wcw:1
-    childrenWidthParentHeight:                hh:1, wcw:1
-
-    parentWidthChildrenHeight:                ww:1, hch:1
-    childrenHeightParentWidth:                ww:1, hch:1
-    parentWidthChildrenHeightMaxParentHeight: ww:1, hch:1, max: hh: 1
-    childrenHeightParentWidthMaxParentHeight: ww:1, hch:1, max: hh: 1
-
-    parentHeightChildrenWidthMaxParentWidth:  wcw:1, hh:1, max: ww:1
-
-  namedSizeLayouts = object namedSizeLayoutsRaw, (v) -> pointLayout v
 
   @getSizePointLayout: getSizePointLayout = (v, previousValue) ->
     if isString v
