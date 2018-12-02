@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Engine = require 'art-engine'
 
-{max, defineModule, log, inspect, inspectLean, nextTick, eq, merge, min} = Foundation
+{timeout,Promise, max, defineModule, log, inspect, inspectLean, nextTick, eq, merge, min} = Foundation
 {point, matrix} = Atomic
 {Element, CanvasElement} = Engine.Core
 
@@ -33,9 +33,9 @@ newEventRig = (options={})->
     name:"parent"
     size: 100
     child = new Element
-      name:"child"
+      name:     "child"
       location: spacing * 2
-      size: spacing * 10
+      size:     spacing * 10
       pointerEventPriority: options.childPointerEventPriority
 
   rig = log
@@ -46,7 +46,7 @@ newEventRig = (options={})->
     outsidePoint: point spacing
     outsidePoint2: point 0
     insidePoint: point spacing * 3
-    secondInsidePoint2: point spacing * 5
+    insidePoint2: point spacing * 5
 
   canvasElement.onNextReady()
   .then ->
@@ -58,8 +58,8 @@ newEventRig = (options={})->
   .then ->
     options.events? rig
     canvasElement.onNextReady()
-  .then ->
-    options.tests? rig
+  .then -> options.test? rig
+  .then -> options.tests? rig
 
 newEventCounterRig = (options={})->
   newEventRig merge options,
@@ -136,23 +136,33 @@ defineModule module, suite: ->
   test "mouseMove locations and deltas", ->
     count = 0
 
+    resolve = reject = null
+    donePromise = new Promise (a, b) ->
+      resolve = a
+      reject = b
+
     newEventRig
       setup: (rig) ->
         rig.child.on = mouseMove: (e)=>
           count++
-          if count == 1
-            assert.eq e.location, point()
-            assert.eq e.parentLocation, point 10
-          if count == 2
-            assert.eq e.delta, point 4, 5
-            assert.eq e.parentDelta, point 4, 5
+          log "mouseMove event #{e.totalDelta} #{e.delta}, #{e.location}, #{count}"
+          try
+            if count == 1
+              assert.eq e.location.add(rig.child.currentLocation), rig.insidePoint, "count 1 location"
+              assert.eq e.parentLocation, rig.insidePoint, "count 1 parentLocation"
+
+            if count == 2
+              assert.eq e.delta,        rig.insidePoint2.sub rig.insidePoint
+              assert.eq e.parentDelta,  rig.insidePoint2.sub rig.insidePoint
+              resolve()
+          catch e
+            reject e
 
       events: (rig) ->
-        rig.canvasElement.mouseMove point 10
-        rig.canvasElement.mouseMove point 14, 15
+        rig.canvasElement.mouseMove rig.insidePoint
+        rig.canvasElement.mouseMove rig.insidePoint2
 
-      test: (rig) ->
-        assert.eq count, 2
+      test: (rig) -> donePromise
 
   test "mouseMove outside to inside focused", ->
     newEventCounterRig
@@ -366,7 +376,7 @@ defineModule module, suite: ->
     newEventCounterRig
       events: (rig) ->
         rig.canvasElement.touchDown 100, rig.insidePoint
-        rig.canvasElement.touchDown 200, rig.secondInsidePoint2
+        rig.canvasElement.touchDown 200, rig.insidePoint2
         rig.canvasElement.touchMove 100, rig.outsidePoint
         rig.canvasElement.touchUp   100, rig.outsidePoint
         rig.canvasElement.touchMove 200, rig.outsidePoint
