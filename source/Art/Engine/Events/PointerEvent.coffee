@@ -47,6 +47,7 @@ defineModule module, class PointerEvent extends Event
       d
 
   @getter
+    numActivePointers:          -> @pointer.activePointers.length
     activePointers:             -> @pointer.activePointers
     stayedWithinDeadzone:       -> @pointer.stayedWithinDeadzone
     leftDeadzone:               -> !@stayedWithinDeadzone
@@ -84,22 +85,29 @@ defineModule module, class PointerEvent extends Event
 
     # Multitouch
     locations: ->
-      if @pointer.activePointers?.length > 1
-        for pointer in @pointer.activePointers
+      if @activePointers?.length > 1
+        for pointer in @activePointers
           pointer.locationIn @target
       else
         [@locationIn]
 
     firstLocations: ->
-      if @pointer.activePointers?.length > 1
-        for pointer in @pointer.activePointers
+      if @activePointers?.length > 1
+        for pointer in @activePointers
           pointer.firstLocationIn @target
       else
         [@firstLocation]
 
+    multitouchLeftDeadzone: ->
+      if @activePointers?.length > 1
+        for p in @activePointers when p.leftDeadzone
+          return true
+        false
+      else @leftDeadzone
+
     multitouchTransform: ->
-      if @pointer.activePointers?.length > 1
-        [p1, p2] = @pointer.activePointers
+      if @activePointers?.length > 1
+        [p1, p2] = @activePointers
         Matrix.multitouch(
           p1.firstLocationIn  @target
           p1.locationIn       @target
@@ -108,6 +116,21 @@ defineModule module, class PointerEvent extends Event
         )
       else
         Matrix.translate @totalDelta
+
+    multitouchParts: ->
+      if @activePointers?.length > 1
+        [p1, p2] = @activePointers
+        Matrix.multitouchParts(
+          p1.firstLocationIn  @target
+          p1.locationIn       @target
+          p2.firstLocationIn  @target
+          p2.locationIn       @target
+        )
+      else
+        translate: @totalDelta
+        rotate: 0
+        scale:  1
+
 
   toElementMatrix: (element) ->
     @target.getElementToElementMatrix(element)
