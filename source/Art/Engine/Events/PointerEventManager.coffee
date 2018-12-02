@@ -10,6 +10,7 @@
 
 {simpleBrowserInfo} = require('art-foundation').Browser
 
+MultitouchManager = require './MultitouchManager'
 Pointer = require './Pointer'
 PointerEvent = require './PointerEvent'
 KeyEvent = require './KeyEvent'
@@ -129,7 +130,7 @@ module.exports = class PointerEventManager extends BaseClass
 
     # the passive pointer is for the mouse when no buttons are down
     @mouse = new Pointer @, "mouse", point -1
-    @_activePointers = []
+    @multitouchManager = new MultitouchManager @
 
     @_capturingElement = null
     @_currentMousePath = []
@@ -155,10 +156,22 @@ module.exports = class PointerEventManager extends BaseClass
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
 
-  @getter "activePointers currentFocusPath",
+  @getter "currentFocusPath",
     focusedElement: -> peek @_currentFocusPath
     hasMouseCursor: -> true # should be false on touch-only device - can be used to speed things up
     currentMousePathClassNames: -> el.classPathName for el in @_currentMousePath
+
+    activePointers:     -> @multitouchManager.activePointers
+    firstActivePointer: -> @multitouchManager.firstActivePointer
+    numActivePointers:  -> @multitouchManager.numActivePointers
+
+  getActivePointer:     (id) -> @multitouchManager.getActivePointer id
+  addActivePointer:     (pointer) -> @multitouchManager.addActivePointer pointer
+  updateActivePointer:  (pointer) -> @multitouchManager.updateActivePointer pointer
+  removeActivePointer:  (id) ->
+    @multitouchManager.removeActivePointer id
+    if @numActivePointers == 0
+      @_pointerFocusPath = @_capturingElement = null
 
   startMultitouchMoveEvents: ->
     @_doingMultitouchMoveEvents = true
@@ -168,48 +181,11 @@ module.exports = class PointerEventManager extends BaseClass
     @_doingMultitouchMoveEvents =
     @_moveEventOccured = false
 
-  ##################################
-  # ActivePointers Management
-  ##################################
-  getActivePointerIndex: (id) ->
-    if @_activePointers.length > 0
-      for pointer, i in @_activePointers when id == pointer.id
-        return i
-    return null
-
-  getActivePointer: (id) ->
-    (index = @getActivePointerIndex id)? && @_activePointers[index]
-
-  addActivePointer: (pointer, forEvent) ->
-    unless @getActivePointer pointer.id
-      @_activePointers.push pointer
-      pointer
-    else
-      console.error "#{forEvent}-addActivePointer #{id}: already have active pointer for that id"
-      false
-
-  removeActivePointer: (id, forEvent) ->
-    if pointer = @getActivePointer id
-      @_activePointers = arrayWithoutValue @_activePointers, pointer
-
-      if @numActivePointers == 0
-        @_pointerFocusPath = @_capturingElement = null
-
-    else
-      console.error "#{forEvent}-removeActivePointer #{id}: no active pointer for that id"
-
-    pointer
-
-
-  @getter
-    firstActivePointer: -> @_activePointers[0]
-    numActivePointers: -> @_activePointers.length
-
   #################
   # element captures all new pointerEvents UNTIL all pointers are "up"
   capturePointerEvents: (element) ->
     elementsToCancel = arrayWithoutValue @_pointerFocusPath, element
-    for pointer in @_activePointers
+    for pointer in @activePointers
       @queuePointerEventForElements elementsToCancel, "pointerCancel", pointer
 
     @_capturingElement = element
@@ -580,7 +556,7 @@ module.exports = class PointerEventManager extends BaseClass
       @queuePointerEvents "pointerClick", pointer, props
       eventEpoch.flushEpochNow()
 
-    @removeActivePointer id, eventType
+    @removeActivePointer id
 
   mouseWheel: (location, props) ->
     @queueMouseEvents "mouseWheel", @mouse, props
@@ -594,18 +570,17 @@ module.exports = class PointerEventManager extends BaseClass
 
     @queuePointerEvents "pointerCancel", pointer, props
 
-    @removeActivePointer id, "pointerCancel"
+    @removeActivePointer id
 
   pointerMove: (id, location, props) ->
     eventEpoch.logEvent "pointerMove", id
 
-    unless (pointerIndex = @getActivePointerIndex id)?
+    unless pointer = @getActivePointer id
       return console.error "pointerMove(#{id}, #{location}): no active pointer for that id"
 
-    pointer = @_activePointers[pointerIndex]
     return unless !pointer.location.eq location
 
-    @_activePointers[pointerIndex] = pointer = pointer.moved location
+    @updateActivePointer pointer = pointer.moved location
 
     @queuePointerMoveInAndOutEvents pointer, props
 

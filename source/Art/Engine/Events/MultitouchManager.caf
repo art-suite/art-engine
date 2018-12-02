@@ -1,0 +1,32 @@
+import &StandardImport
+
+class MultitouchManager extends BaseClass
+  constructor: ->
+    @_activePointers = []
+
+  @getter
+    :activePointers
+    firstActivePointer: -> @_activePointers[0]
+    numActivePointers:  -> @_activePointers.length
+
+  ##################################
+    ActivePointers Management
+  ##################################
+
+  addActivePointer: (pointer) ->
+    unless @getActivePointer pointer.id
+      @_activePointers.push pointer
+      pointer
+
+  updateActivePointer: (pointer) ->
+    each p, i in @_activePointers when p.id == pointer.id
+      @_activePointers[i] = pointer
+
+  removeActivePointer: (id) ->
+    if pointer = @getActivePointer id
+      @_activePointers = arrayWithoutValue @_activePointers, pointer
+
+    pointer
+
+  getActivePointer: (id) ->
+    find pointer in @_activePointers when pointer.id == id

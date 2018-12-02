@@ -38,7 +38,7 @@ newEventRig = (options={})->
       size:     spacing * 10
       pointerEventPriority: options.childPointerEventPriority
 
-  rig = log
+  rig =
     eventSequence: []
     canvasElement: canvasElement
     parent: canvasElement

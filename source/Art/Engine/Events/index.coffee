@@ -6,6 +6,7 @@ module.exports
 .addModules
   GestureRecognizer:   require './GestureRecognizer'  
   KeyEvent:            require './KeyEvent'           
+  MultitouchManager:   require './MultitouchManager'  
   Pointer:             require './Pointer'            
   PointerEvent:        require './PointerEvent'       
   PointerEventManager: require './PointerEventManager'
