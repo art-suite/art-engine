@@ -6,4 +6,5 @@
   &TestHelper
   &ArtClassSystem
   &ArtStandardLib
+  &ArtTestbench
   test: (args...) -> global.test args...

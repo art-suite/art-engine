@@ -16,6 +16,7 @@ module.exports
   ElementPointerEvents:    require './ElementPointerEvents'   
   ElementStateEpoch:       require './ElementStateEpoch'      
   EpochedElementMixin:     require './EpochedElementMixin'    
+  MultitouchManager:       require './MultitouchManager'      
   StateEpochTestHelper:    require './StateEpochTestHelper'   
 require './Drawing'
 require './Element'

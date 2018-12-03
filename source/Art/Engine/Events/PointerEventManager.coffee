@@ -521,7 +521,7 @@ module.exports = class PointerEventManager extends BaseClass
     eventType = if @numActivePointers == 0 then "pointerDown" else "pointerAdd"
     eventEpoch.logEvent eventType, id
 
-    return unless @addActivePointer pointer = new Pointer @, id, location
+    @addActivePointer pointer = new Pointer @, id, location
 
     if @numActivePointers == 1 || !@_pointerFocusPath?
       @_pointerFocusPath = @pointerElementPath pointer
@@ -556,7 +556,7 @@ module.exports = class PointerEventManager extends BaseClass
       @queuePointerEvents "pointerClick", pointer, props
       eventEpoch.flushEpochNow()
 
-    @removeActivePointer id
+    @removeActivePointer pointer
 
   mouseWheel: (location, props) ->
     @queueMouseEvents "mouseWheel", @mouse, props
@@ -570,7 +570,7 @@ module.exports = class PointerEventManager extends BaseClass
 
     @queuePointerEvents "pointerCancel", pointer, props
 
-    @removeActivePointer id
+    @removeActivePointer pointer
 
   pointerMove: (id, location, props) ->
     eventEpoch.logEvent "pointerMove", id

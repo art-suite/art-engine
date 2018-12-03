@@ -1,0 +1,153 @@
+import &StandardImport
+Events extract MultitouchManager, Pointer
+
+##
+  Pointer(@pointerEventManager, id, location, lastLocation, firstLocation, stayedWithinDeadzone = true)->
+
+pointer = (id, location) ->
+  new Pointer null, id ? 0, location ? point0
+
+suite:
+  singleTouchBasics: ->
+    ChainedTest.setup ->
+      {}
+        mm = new MultitouchManager
+        p = pointer 0 point0
+
+    .tapTest "empty" ({mm})->
+      assert.eq [], mm.activePointers
+      assert.eq 0 mm.numActivePointers
+
+    .tapTest :addActivePointer ({mm, p})->
+      mm.addActivePointer p
+      assert.eq [p], mm.activePointers
+      assert.eq 1 mm.numActivePointers
+
+    .tapTest :updateActivePointer ({mm, p})->
+      mm.updateActivePointer p2 = p.moved point1
+      assert.neq p, p2
+      assert.eq [p2], mm.activePointers
+      assert.eq 1 mm.numActivePointers
+
+    .tapTest :removeActivePointer ({mm, p})->
+      mm.removeActivePointer p
+      assert.eq [], mm.activePointers
+      assert.eq 0 mm.numActivePointers
+
+  multitouchBasics: ->
+    ChainedTest.setup ->
+      {}
+        mm = new MultitouchManager
+        p1 = pointer 0 point0
+        p2 = pointer 1 point1
+
+    .tapTest "add 2 pointers" ({mm,p1,p2}) ->
+      mm.addActivePointer p1
+      mm.addActivePointer p2
+      assert.eq [p1, p2], mm.activePointers
+
+    .tapTest "remove 2 pointers" ({mm, p1, p2}) ->
+      mm.removeActivePointer p1
+      assert.eq [p2], mm.activePointers
+      mm.removeActivePointer p2
+      assert.eq [], mm.activePointers
+
+  multitouchTransform:
+    singleTouch: ->
+      ChainedTest.setup ->
+        {}
+          mm = new MultitouchManager
+          p1 = pointer 0 point0
+
+      .tapTest "add pointer" ({mm,p1}) ->
+        mm.addActivePointer p1
+
+      .tapTest "multitouchTransform" ({mm,p1}) ->
+        assert.eq matrix(), mm.multitouchTransform
+
+      .tapTest "move" ({mm,p1}) ->
+        mm.updateActivePointer p1.moved point1
+
+      .tapTest "multitouchTransform" ({mm,p1}) ->
+        assert.eq matrix().translate(point1), mm.multitouchTransform
+
+    multitouch: ->
+      test :scale ->
+        mm = new MultitouchManager
+        mm.addActivePointer p1 = pointer 1 point0
+        mm.addActivePointer p2 = pointer 2 point 0, 1
+        mm.updateActivePointer p2.moved point 0, 2
+        assert.eq Matrix.scale(2), mm.multitouchTransform
+
+      test :rotate ->
+        mm = new MultitouchManager
+        mm.addActivePointer p1 = pointer 1 point0
+        mm.addActivePointer p2 = pointer 2 point 0, 1
+        mm.updateActivePointer p2.moved point 1, 0
+        assert.eq Matrix.rotate(Math.PI/2), mm.multitouchTransform
+
+      test :translate ->
+        mm = new MultitouchManager
+        mm.addActivePointer p1 = pointer 1 point0
+        mm.addActivePointer p2 = pointer 2 point 0, 1
+        mm.updateActivePointer p1.moved point 1 1
+        mm.updateActivePointer p2.moved point 1 2
+        assert.eq Matrix.translate(point1), mm.multitouchTransform
+
+  ##
+    In the realworld, multitouch sequnces start
+    with a single-touch move, then a second touch is added
+    and more moves occur.
+    Then a touch is removed, and yet more move occurs.
+    Possibly, a touch is added
+    etc...
+
+  realworldMultitouch:
+    addingTouches: ->
+      ChainedTest.setup ->
+        mm: new MultitouchManager
+        p1: pointer 1 point0
+        p2: pointer 2 point 2 1
+
+      .tapTest "add first touch" ({mm,p1})->
+        mm.addActivePointer p1
+
+      .tapTest "move first touch" ({mm,p1})->
+        mm.updateActivePointer p1.moved point 1 1
+        assert.eq Matrix.translate(point1), mm.multitouchTransform
+
+      .tapTest "add second touch" ({mm,p1,p2})->
+        mm.addActivePointer p2
+        assert.eq Matrix.translate(point1), mm.multitouchTransform
+
+      .tapTest "move both touchs" ({mm,p1,p2})->
+        mm.updateActivePointer p1.moved point 2 2
+        mm.updateActivePointer p2.moved point 3 2
+        assert.eq Matrix.translate(point 2), mm.multitouchTransform
+
+      .tapTest "remove second touch" ({mm,p1,p2})->
+        mm extract multitouchTransform
+        mm.removeActivePointer p2
+        assert.eq multitouchTransform, mm.multitouchTransform
+
+    removingTouches: ->
+      ChainedTest.setup ->
+        mm: new MultitouchManager
+        p1: pointer 1 point 0 0
+        p2: pointer 2 point 0 1
+
+      .tapTest "add bouth touches" ({mm,p1,p2})->
+        mm.addActivePointer p1
+        mm.addActivePointer p2
+
+      .tapTest "move both touchs" ({mm,p1,p2})->
+        mm.updateActivePointer p1.moved point 0 -1
+        assert.eq
+          Matrix.scale 2
+          .translate point 0, -1
+          mm.multitouchTransform
+
+      .tapTest "remove second touch" ({mm,p1,p2})->
+        mm extract multitouchTransform
+        mm.removeActivePointer p2
+        assert.eq multitouchTransform, mm.multitouchTransform
