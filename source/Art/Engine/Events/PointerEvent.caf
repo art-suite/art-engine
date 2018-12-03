@@ -103,7 +103,7 @@ class PointerEvent extends Event
         !find p in @activePointers when !p.leftDeadzone
       else @leftDeadzone
 
-    multitouchTransformInAbsSpace: -> @multitouchManager.matrix
+    multitouchTransformInAbsSpace: -> @multitouchManager.multitouchTransform
     multitouchTransformInParent:   -> @multitouchTransformIn @target.parent
     multitouchTransform:           -> @multitouchTransformIn @target
 

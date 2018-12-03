@@ -42,7 +42,7 @@ class MultitouchManager extends BaseClass
       @scale
       @rotate
 
-    matrix: ->
+    multitouchTransform: ->
       switch @numActivePointers
       when 0 then matrix()
       when 1
@@ -66,8 +66,6 @@ class MultitouchManager extends BaseClass
         @firstActivePointer.location.average
           @secondActivePointer.location
 
-    multitouchTransform: -> @matrix
-
   moveToPointIn: ({absToElementMatrix}) ->
     absToElementMatrix.transform @moveToPoint
 
@@ -90,9 +88,8 @@ class MultitouchManager extends BaseClass
 
   addActivePointer: (pointer) ->
     unless @getActivePointer pointer.id
-      {matrix} = @
       @_activePointers.push pointer
-      @_correctMultitouchTracking matrix
+      @_correctMultitouchTracking @multitouchTransform
       if @numActivePointers > 1
         @_multitouchOccured = true
       pointer
@@ -103,9 +100,8 @@ class MultitouchManager extends BaseClass
 
   removeActivePointer: (id) ->
     if pointer = @getActivePointer id
-      {matrix} = @
       @_activePointers = arrayWithoutValue @_activePointers, pointer
-      @_correctMultitouchTracking matrix
+      @_correctMultitouchTracking @multitouchTransform
 
     pointer
 
@@ -121,4 +117,4 @@ class MultitouchManager extends BaseClass
     # @_translateCorrection = 0
 
   _correctMultitouchTracking: (correctMatrix) ->
-    @_correctionMatrix = correctMatrix.div @matrix
+    @_correctionMatrix = correctMatrix.div @multitouchTransform
