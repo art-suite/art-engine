@@ -68,3 +68,5 @@ defineModule module, class Pointer extends BaseClass
   firstLocationIn: (element) -> if element then element.absToElementMatrix.transform @firstLocation else @firstLocation
   deltaIn:         (element) -> if element then element.absToElementMatrix.transformDifference @location, @lastLocation else @location.sub @lastLocation
   totalDeltaIn:    (element) -> if element then element.absToElementMatrix.transformDifference @location, @firstLocation else @location.sub @firstLocation
+  @getter
+    totalDelta: -> @location.sub @firstLocation

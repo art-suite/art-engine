@@ -1,15 +1,13 @@
-{defineModule, inspect, clone, peek, first, merge, isNumber} = require 'art-standard-lib'
-{Event} = require 'art-events'
-{Matrix, point, rect, matrix} = require 'art-atomic'
+import &StandardImport, &ArtEvents
 
-arrayize = (single, array, defaultArray)->
-  if single then [single] else array || defaultArray || []
+arrayize = (single, arr, defaultArray)->
+  if single then [single] else arr || defaultArray || []
 
 transformedArray = (arrayOfPoints, matrix) ->
-  for p in arrayOfPoints
+  array p in arrayOfPoints
     matrix.transform p
 
-defineModule module, class PointerEvent extends Event
+class PointerEvent extends Event
   constructor: (type, pointer, propsOrTime) ->
     props = if isNumber propsOrTime
       log.warn "DEPRICATED: propsOrTime should always be props. Use: 'time: eventTime'"
@@ -23,21 +21,20 @@ defineModule module, class PointerEvent extends Event
 
   emptyObject = {}
   newEvent: (options = emptyObject)->
-    e = new PointerEvent(
+    e = new PointerEvent
       options.type    ? @type
       options.pointer ? @pointer
       options.time    ? @time
       options.props   ? @props
-    )
+
     e.timeStamp = @timeStamp
     e.target = options.target ? @target
     e
 
   getAngle = ({currentSize}, {x, y}) ->
-    Math.atan2(
+    Math.atan2
       y - currentSize.y / 2
       x - currentSize.x / 2
-    )
 
   getAngleDelta = (a1, a2) ->
     d = (a1 - a2) %% (Math.PI * 2)
@@ -83,54 +80,44 @@ defineModule module, class PointerEvent extends Event
     totalParentDelta:           -> @pointer.totalDeltaIn @target.parent
     totalParentParentDelta:     -> @pointer.totalDeltaIn @target.parent.parent
 
+    pointerEventManager: -> @pointer.pointerEventManager
+    multitouchManager: -> @pointerEventManager.multitouchManager
+
     # Multitouch
     locations: ->
       if @activePointers?.length > 1
-        for pointer in @activePointers
+        array pointer in @activePointers
           pointer.locationIn @target
       else
         [@locationIn]
 
     firstLocations: ->
       if @activePointers?.length > 1
-        for pointer in @activePointers
+        array pointer in @activePointers
           pointer.firstLocationIn @target
       else
         [@firstLocation]
 
     multitouchLeftDeadzone: ->
       if @activePointers?.length > 1
-        for p in @activePointers when p.leftDeadzone
-          return true
-        false
+        !find p in @activePointers when !p.leftDeadzone
       else @leftDeadzone
 
-    multitouchTransform: ->
-      if @activePointers?.length > 1
-        [p1, p2] = @activePointers
-        Matrix.multitouch(
-          p1.firstLocationIn  @target
-          p1.locationIn       @target
-          p2.firstLocationIn  @target
-          p2.locationIn       @target
-        )
-      else
-        Matrix.translate @totalDelta
+    multitouchTransformInAbsSpace: -> @multitouchManager.matrix
+    multitouchTransformInParent:   -> @multitouchTransformIn @target.parent
+    multitouchTransform:           -> @multitouchTransformIn @target
 
-    multitouchParts: ->
-      if @activePointers?.length > 1
-        [p1, p2] = @activePointers
-        Matrix.multitouchParts(
-          p1.firstLocationIn  @target
-          p1.locationIn       @target
-          p2.firstLocationIn  @target
-          p2.locationIn       @target
-        )
-      else
-        translate: @totalDelta
-        rotate: 0
-        scale:  1
+    multitouchParts:   -> @multitouchTransformPartsIn @target
 
+    multitouchOccured: -> @multitouchManager.multitouchOccured
+
+  multitouchTransformIn:      (element) -> @multitouchManager.multitouchTransformIn element
+  multitouchTransformPartsIn: (element) -> @multitouchManager.multitouchTransformPartsIn element
+
+  # multitouchTransformIn: ({absToElementMatrix}) ->
+  #   absToElementMatrix.invertAndMul
+  #     @multitouchTransformInAbsSpace
+  #     .mul absToElementMatrix
 
   toElementMatrix: (element) ->
     @target.getElementToElementMatrix(element)

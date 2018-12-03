@@ -1,21 +1,100 @@
 import &StandardImport
 
+multitouchTranslate = (a1, a2, b1, b2) ->
+  point
+    (b2.x + a2.x) / 2 - (b1.x + a1.x) / 2
+    (b2.y + a2.y) / 2 - (b1.y + a1.y) / 2
+
+multitouchVectors = (a1, a2, b1, b2) ->
+  if a1.neq(b1) && a2.neq(b2)
+    {}
+      v1 = b1.sub a1
+      v2 = b2.sub a2
+      v1m = v1.magnitudeSquared
+      v2m = v2.magnitudeSquared
+
+multitouchScale = (a1, a2, b1, b2) ->
+  if m = multitouchVectors a1, a2, b1, b2
+    Math.sqrt m.v2m / m.v1m
+  else
+    1
+
+multitouchRotate = (a1, a2, b1, b2) ->
+  if m = multitouchVectors a1, a2, b1, b2
+    m.v2.angle - m.v1.angle
+  else
+    0
+
 class MultitouchManager extends BaseClass
   constructor: ->
     @_activePointers = []
+    @_resetMultitouchTracking()
 
   @getter
+    :multitouchOccured
     :activePointers
-    firstActivePointer: -> @_activePointers[0]
-    numActivePointers:  -> @_activePointers.length
+    firstActivePointer:   -> @_activePointers[0]
+    secondActivePointer:  -> @_activePointers[1]
+    numActivePointers:    -> @_activePointers.length
 
-  ##################################
-    ActivePointers Management
-  ##################################
+    transformParts: -> {}
+      @translate
+      @scale
+      @rotate
+
+    matrix: ->
+      switch @numActivePointers
+      when 0 then matrix()
+      when 1
+        console.log @firstActivePointer.totalDelta
+        Matrix.translate @firstActivePointer.totalDelta
+      else
+        [p1, p2] = @activePointers
+        Matrix.multitouch
+          p1.firstLocation
+          p1.location
+          p2.firstLocation
+          p2.location
+
+      .mul @_correctionMatrix
+
+    moveToPoint: ->
+      switch @numActivePointers
+      when 0 then point0
+      when 1 then @firstActivePointer.location
+      else
+        @firstActivePointer.location.average
+          @secondActivePointer.location
+
+    multitouchTransform: -> @matrix
+
+  moveToPointIn: ({absToElementMatrix}) ->
+    absToElementMatrix.transform @moveToPoint
+
+  multitouchTransformIn: ({absToElementMatrix}) ->
+    absToElementMatrix.invertAndMul
+      @multitouchTransform
+      .mul absToElementMatrix
+
+  multitouchTransformPartsIn: (element) ->
+    m = @multitouchTransformIn element
+
+    p1 = @moveToPointIn element
+
+    rotate:     m.angle
+    scale:      m.exactScaler
+    translate:  p1.sub m.inverseTransform p1
+
+  getActivePointer: (id) ->
+    find pointer in @_activePointers when pointer.id == id
 
   addActivePointer: (pointer) ->
     unless @getActivePointer pointer.id
+      {matrix} = @
       @_activePointers.push pointer
+      @_correctMultitouchTracking matrix
+      if @numActivePointers > 1
+        @_multitouchOccured = true
       pointer
 
   updateActivePointer: (pointer) ->
@@ -24,9 +103,22 @@ class MultitouchManager extends BaseClass
 
   removeActivePointer: (id) ->
     if pointer = @getActivePointer id
+      {matrix} = @
       @_activePointers = arrayWithoutValue @_activePointers, pointer
+      @_correctMultitouchTracking matrix
 
     pointer
 
-  getActivePointer: (id) ->
-    find pointer in @_activePointers when pointer.id == id
+  ###############################
+    PRIVATE
+  ###############################
+
+  _resetMultitouchTracking: ->
+    @_correctionMatrix = matrix()
+    @_multitouchOccured = false
+    # @_translateCorrection = point0
+    # @_scaleCorrection     = 1
+    # @_translateCorrection = 0
+
+  _correctMultitouchTracking: (correctMatrix) ->
+    @_correctionMatrix = correctMatrix.div @matrix
