@@ -152,7 +152,6 @@ module.exports = class PointerEventManager extends BaseClass
   restoreFocus: ->
     if @_savedFocusedElement && !simpleBrowserInfo.touch
       if @_savedFocusedElement.canvasElement == @canvasElement
-        # log restoreFocus: document.activeElement
         @focus null, rootToElementPath @_savedFocusedElement
       @_savedFocusedElement = null
 
@@ -480,7 +479,6 @@ module.exports = class PointerEventManager extends BaseClass
     pointer ?= @firstActivePointer
 
     if focusPath[0] != @canvasElement
-      # log.warn "_updateFocusedPath - path invalid - DOES THIS EVER HAPPEN?"
       focusPath = @validatedFocusPath
 
     @_currentFocusPath = updatePath @_currentFocusPath, focusPath,
@@ -524,9 +522,10 @@ module.exports = class PointerEventManager extends BaseClass
     @addActivePointer pointer = new Pointer @, id, location
 
     if @numActivePointers == 1 || !@_pointerFocusPath?
+      @_capturingElement = null # can get set again after pointerUp clears it
       @_pointerFocusPath = @pointerElementPath pointer
       focusable = true
-      for el in @_pointerFocusPath = @pointerElementPath pointer when el.noFocus
+      for el in @_pointerFocusPath when el.noFocus
         focusable = false
         break
       @focus pointer, @_pointerFocusPath if focusable
@@ -535,7 +534,6 @@ module.exports = class PointerEventManager extends BaseClass
 
   # pointerUp - user activity cased this
   pointerUp: (id, props) ->
-
     # If there were other events queued for the current cycle, their handlers
     # may very will choose to lock cursor focus. BUT, if this happens AFTER
     # the steps in this method, then the cursor will get stuck in a focus-locked
@@ -575,8 +573,7 @@ module.exports = class PointerEventManager extends BaseClass
   pointerMove: (id, location, props) ->
     eventEpoch.logEvent "pointerMove", id
 
-    unless pointer = @getActivePointer id
-      return console.error "pointerMove(#{id}, #{location}): no active pointer for that id"
+    return unless pointer = @getActivePointer id
 
     return unless !pointer.location.eq location
 
