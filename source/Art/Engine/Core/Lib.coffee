@@ -10,6 +10,12 @@ module.exports =
   propsEq:        plainObjectsDeepEq
   shallowPropsEq: shallowEq
 
+  flushAllCaches: ->
+    {drawCacheManager} = require './Drawing/DrawCacheManager'
+    drawCacheManager.flushCache()
+    Neptune.Art.Canvas.MipmapCache.singleton.releaseAll()
+    null
+
   getArtEngineUsage: ->
     {drawCacheManager} = require './Drawing/DrawCacheManager'
     {cacheByteSize: drawCacheByteSize,

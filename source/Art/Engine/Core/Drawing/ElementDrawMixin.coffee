@@ -92,7 +92,7 @@ defineModule module, ->
             needsNormalizing = false
             for step in drawSteps
               {fill, outline, radius, color, colors, padding, shadow, to, from} = step
-              if radius ? fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step
+              if (radius ? fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step)?
                 needsNormalizing = true
                 break
             if needsNormalizing

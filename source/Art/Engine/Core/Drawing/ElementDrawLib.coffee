@@ -184,7 +184,7 @@ defineModule module, class ElementDrawLib
 
     padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
 
-    padding = padding && perimeter padding
+    padding = padding? && padding != false && perimeter padding
     fill = normalizeDrawProps fill
     outline = normalizeDrawProps outline
 
@@ -257,7 +257,9 @@ defineModule module, class ElementDrawLib
       dirtyDrawAreas
 
     else
-      areaToAdd = areaToAdd.roundOut snapTo, colorPrecision
+      areaToAdd =
+        areaToAdd
+        .roundOut snapTo, colorPrecision, 1
 
       if dirtyDrawAreas
 

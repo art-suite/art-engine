@@ -154,7 +154,7 @@ defineModule module, ->
 
     _addDirtyDrawArea: (dirtyArea = @drawArea, triggeredByChild) ->
       pixelsPerPoint = @getDevicePixelsPerPoint()
-      snapTo = 1/pixelsPerPoint
+      snapTo = 1 # 1/pixelsPerPoint
 
       @setDirtyDrawAreasChanged true if triggeredByChild
       @_dirtyDrawAreas = addDirtyDrawArea @_dirtyDrawAreas, dirtyArea, snapTo
