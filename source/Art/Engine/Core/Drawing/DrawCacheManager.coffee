@@ -3,7 +3,8 @@
   inspect, Map, timeout, remove, log, defineModule
   getEnv
 } = require 'art-standard-lib'
-{humanByteSize, isMobileBrowser} = (require 'art-foundation').Browser
+{humanByteSize, Browser} = (require 'art-foundation')
+{isMobileBrowser} = Browser
 {BaseClass} = require 'art-class-system'
 
 {

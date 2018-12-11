@@ -92,10 +92,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_absToDocumentMatrix =
     @_documentToAbsMatrix = null
 
+    @pointerEventManager = new PointerEventManager canvasElement:@
+
     @_attach @_getOrCreateCanvasElement options
     @engineStat = new EngineStat
 
-    @pointerEventManager = new PointerEventManager canvasElement:@
     self.canvasElement ||= @
 
   @getter "
