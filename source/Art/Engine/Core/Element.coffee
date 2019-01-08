@@ -903,6 +903,8 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         resolve results = @toBitmapSync options
         callback? results.bitmap, results.elementToBitmapMatrix
 
+  scrollOnscreen: -> @scrollOnScreen()
+
   scrollOnScreen: ->
     {parent} = @
     while parent
