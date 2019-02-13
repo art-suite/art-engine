@@ -90,6 +90,7 @@ defineModule module, ->
 
     logEvent: (name, id) ->
       now = currentSecond()
+      id ?= name
       @addSampleTime now
       colors =
         generateDrawCache: "green"
