@@ -200,9 +200,9 @@ defineModule module, class ScrollElement extends Element
     else
       @_spMinusTp = _scrollPosition - @trackingPositionFromPendingGeometry
 
-    @_updateOnScreenInfo oldChildrenOffset != @_childrenOffset
+    @_updateOnScreenInfo @_childrenOffset - oldChildrenOffset
 
-  _updateOnScreenInfo: (childrenOffsetChanged)->
+  _updateOnScreenInfo: (childrenOffsetDelta)->
     {isVertical, windowSize} = @
 
     focusedChild = @_pendingState._focusedChild
@@ -230,7 +230,7 @@ defineModule module, class ScrollElement extends Element
     firstOnScreenChildIndex = -1 if firstOnScreenChildIndex == children.length
 
     if (
-        childrenOffsetChanged ||
+        childrenOffsetDelta != 0 ||
         firstOnScreenChildIndex != @_firstOnScreenChildIndex ||
         lastOnScreenChildIndex  != @_lastOnScreenChildIndex ||
         focusedChildIndex       != @_focusedChildIndex ||
@@ -241,6 +241,7 @@ defineModule module, class ScrollElement extends Element
           @scrollRatio
           @childrenOffset
           @childrenSize
+          childrenOffsetDelta
           windowSize
           focusedChild
           firstOnScreenChildIndex
