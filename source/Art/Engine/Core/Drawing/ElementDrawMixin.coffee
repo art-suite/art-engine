@@ -673,9 +673,20 @@ defineModule module, ->
         else
           elementToTargetMatrix.getExactScaler()
 
+      originalCacheScale = cacheScale
       cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale
+      originalCacheSpaceDrawArea = cacheSpaceDrawArea
       while cacheSpaceDrawArea.area >= maxCanvasSize
         cacheSpaceDrawArea = elementSpaceDrawArea.mul cacheScale *= .75
+
+      if originalCacheSpaceDrawArea != cacheSpaceDrawArea
+        log.warn """
+          ArtEngine.Element #{@inspectedName}._updateDrawCache
+            maxCanvasSize:            #{maxCanvasSize}
+            cacheSpaceDrawArea.area:  #{originalCacheSpaceDrawArea.area}
+            cacheSpaceDrawArea:       #{originalCacheSpaceDrawArea}
+            cacheScale changed from #{originalCacheScale} to #{cacheScale}
+            """
 
       cacheSpaceDrawArea = cacheSpaceDrawArea.roundOut snapTo, colorPrecision
       # don't cache if too big
