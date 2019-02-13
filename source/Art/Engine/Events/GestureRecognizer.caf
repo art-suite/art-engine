@@ -1,0 +1,305 @@
+import &StandardImport
+
+minimumFlickPixelsPerSecond = 300  # pixels per second
+
+### TODO:
+  Multi-touch gesture recognizers
+
+### API DOC
+  USE:
+  myElement.on = createGestureRecognizer gestureRecognizers
+
+  TYPES:
+  gestureRecognizers: {}
+
+    Most keys just name each of your recognizers:
+
+      horizontal:         recognizerOptions*
+      vertical:           recognizerOptions*
+      rotate:             recognizerOptions*
+      myCustomRecognizer: recognizerOptions
+
+      *: these recognizer names are special
+
+        They have default 'recognize' functions, but otherwise you
+        can do whatever you want with them.
+
+    Some keys are reserved for 'fallback events':
+
+      pointerDown:
+      pointerClick:
+      pointerMove:
+      pointerUp:
+        These events only fire if a gesture hasn't been recognized yet.
+      pointerCancel:  (e) ->
+        Fires when a gesture is recognized OR if a natural
+        pointerCancel comes in before a gesture is recognized
+
+      Why specify pointer* handlers with the gestures?
+
+      All other Elements will get normal pointer* events up until the gesture is
+      recognized. Then, when it is, the other elements will get a pointerCancel
+      event and won't get any more pointer events until all pointers are
+      released.
+
+      This doesn't work on the Element with the gesture recognizer itself. It
+      still needs to receive natural pointer-events to drive the gesture. These
+      'fallback events' solve the problem. The pointer* handlers passed to the
+      gesture-recognizer work as-if they were handlers on another Element. They
+      will get the pointerCancel when the gesture is recognized and won't get
+      any events thereafter until all pointers are up.
+
+    You can also pass a flick handler in, as a top-level key. It gets called
+    regardless if a gesture was recognized or not. Individual recognizers can
+    ALSO specify a flick handler, which will only be called if they were
+    the recognized gesture
+
+    flick: (event) ->
+      IN: event:
+        cloned copy of the pointerDown <PointerEvent> which
+        triggered the flick
+        with these additional props:
+          flickDuration:  <Number>  seconds
+
+          flickDirection: <String>  :left :right :up or :down
+            derived from event.delta
+
+          flickSpeed:     <Number>  pixels/second
+            derived from event.delta and flickDuration
+
+      This is invoked if the very last movement was faster than
+      minimumFlickPixelsPerSecond. This is called AFTER the last move and
+      BEFORE any end, cancel or finally events.
+
+  recognizerOptions: {}
+
+    prepare: (event) ->
+      IN: event: pointerDown <PointerEvent>
+      Called AFTER pointerDown (logically, it's just an alias)
+
+    recognize: (event) ->
+      IN:   event: pointerMove <PointerEvent>
+      OUT:  <Boolean> true if the gesture was recognized
+
+      REQUIRED: A 'recognizer' is required unless the recognizer-name is
+      "horizontal" or  "vertical".
+
+      This gets called with every pointerMove until a gesture is recognized. If
+      true is returned, then the "begin" and "move" event-functions will be
+      immediatly invoked. Otherwise, if false is returned then this gesture will
+      not be "recognized" until the next pointerDown.
+
+      This will also get called on the _activeGesture, i.e. AFTER the gesture
+      was recoginzed, if we haven't yet 'captured' events:
+
+        Events are 'captured' the first time:
+          A) the pointer leftDeadzone AND
+          B) the _activeGesture.recognize() == true
+
+    EVENTS ONLY CALLED AFTER GESTURE HAS BEEN RECOGNIZED:
+
+    begin: (event) ->
+      IN: event: the original pointerDown <PointerEvent>
+
+      When the gesture is recognized, this is called with the original
+      pointerDown event.
+
+    move: (event) ->
+      IN: event: pointerMove <PointerEvent>
+
+      When the gesture is recognized, this is called with the pointerMove event
+      that triggered the recognition. This is then called with each additional
+      pointerMove no matter what it is.
+
+    flick: (event) ->
+      # SEE 'flick' above
+
+    cancel: (event) ->
+      IN: event: the pointerCancel <PointerEvent>
+
+      Called if the gesture is canceled
+
+    end: (event) ->
+      IN: event: the pointerUp <PointerEvent>
+
+      This is called with the pointerUp event, and the gesture "ends."
+
+    finally: (event) ->
+      IN: event: either a pointerUp or pointerCancel <PointerEvent>
+
+      Guaranteed to be called at the end of the gesture, assuming it was
+      recognized. It's called AFTER the cancel and end events.
+
+      Similar to a 'try finally'
+
+      TODO: Determine if it is called "at least once" or only once.
+
+    resume: (event) ->
+      IN: event: pointerDown <PointerEvent>
+      OUT: <Boolean> true if the gesture should resume
+
+      After this gesture has happend once, the next pointerDown event calls this
+      to see if the gesture should "resume." If true is returned, the event gets
+      immediatly 'recognized' as-if and all subsequent events get called as-if
+      it never stopped.
+
+        'prepare' gets called BEFORE
+        'resume'  gets called, and if it returns true:
+        'begin'   gets called AFTER
+        Then no other events until the next pointerEvent.
+
+      This is used in the ScrollElement to continually capture all touch events
+      while momentum-scrolling.
+
+class GestureRecognizer extends BaseClass
+  @createGestureRecognizer: (o)->
+    gr = new GestureRecognizer o
+    gr.getPointerHandlers()
+
+  @create: @createGestureRecognizer
+
+  constructor: (gestureRecognizers)->
+    @_nonGestureHandlers = object v in gestureRecognizers when v is Function
+    @_gestureRecognizers = object v in gestureRecognizers when v is Object
+
+    @_activeGesture = @_lastActiveGesture = @_startEvent = null
+    @_capturedEvents = false
+    @_lastPointerEventTime =
+    @_flickDuration = @_flickSpeed = 0
+    @_flickStartEvent =
+    @_flickVector = @_flickDirection = null
+
+    @setupDefaultRecognizers()
+
+    @_startEvent = null
+
+  setupDefaultRecognizers: ->
+    each v, k in @_gestureRecognizers
+      switch k
+      when :horizontal then v.recognize ||= (e) -> e.delta.absoluteAspectRatio > 1
+      when :vertical   then v.recognize ||= (e) -> e.delta.absoluteAspectRatio < 1
+      when :rotate
+        v.recognize ||= ({firstLocation, target, delta}) ->
+          startVector = firstLocation.sub target.currentSize.div(2)
+
+          # via dot-product
+          projectionTowardsCenterSquared = startVector.scalerProjectionSquared delta
+
+          # via Pythagoras
+          projectionTowardsRadialSquared = startVector.magnitudeSquared - projectionTowardsCenterSquared
+
+          projectionTowardsCenterSquared < projectionTowardsRadialSquared
+
+  @getter
+    pointerHandlers: ->
+      merge
+        @_nonGestureHandlers
+
+        pointerDown:  (e) =>
+          @_flickSpeed      = 0
+          @_capturedEvents  = false
+          @_startEvent      = clone e
+
+          @_lastPointerEventTime = e.timeStamp
+
+          @_nonGestureHandlers.pointerDown? e unless @_activeGesture
+          @_nonGestureHandlers.prepare?     e
+          @_resumeGesture                   e if @_lastActiveGesture?.resume? e
+
+        pointerMove:  (e) =>
+          @_flickForMove e
+          if @_activeGesture
+
+            if !@_capturedEvents &&
+                e.leftDeadzone
+                && e.target?.capturePointerEvents
+                && @_activeGesture.recognize e
+
+              e.target?.capturePointerEvents?()
+              @_capturedEvents = true
+
+            @_activeGesture.move? e
+          else
+            if @_startEvent
+              @_startGesture e
+              @_nonGestureHandlers.pointerCancel? e
+
+            else
+              @_nonGestureHandlers.pointerMove? e
+
+          @_lastPointerEventTime = e.timeStamp
+
+        pointerUp:     (e) =>
+          fireNonGestureEvents = false
+          @_flickForEnd e
+          if @_activeGesture
+
+            if e.leftDeadzone
+              @_activeGesture.end? e
+            else
+              @_activeGesture.cancel? e
+              fireNonGestureEvents = true
+
+            @_activeGesture.finally? e
+            @_activeGesture = null
+          else
+            fireNonGestureEvents = true
+
+          if fireNonGestureEvents
+            @_nonGestureHandlers.pointerUp? e
+            @_nonGestureHandlers.pointerClick? e
+
+        pointerClick: (e) => # ignored, handled internally
+
+        pointerCancel: (e) =>
+          if @_activeGesture
+            @_activeGesture.cancel? e
+            @_activeGesture.finally? e
+            @_activeGesture = null
+          else
+            @_nonGestureHandlers.pointerCancel? e
+          @_startEvent = null
+
+  _resumeGesture: (e) ->
+    e.target?.capturePointerEvents?()
+    @_activeGesture = @_lastActiveGesture
+    @_activeGesture.begin? @_startEvent
+
+  _startGesture: (e) ->
+    find v, k in @_gestureRecognizers when v.recognize? e
+      @_lastActiveGesture = @_activeGesture = v
+
+    if @_activeGesture
+      @_activeGesture.begin? @_startEvent
+      @_activeGesture.move? e
+
+  _flickForMove: (e) ->
+    e extract timeStamp, delta
+
+    if timeStamp > @_lastPointerEventTime &&
+        @_activeGesture?.flick ||
+        @_nonGestureHandlers.flick
+
+      @_flickStartEvent = e
+      @_flickSpeed = delta.getMagnitude() /
+        @_flickDuration = timeStamp - @_lastPointerEventTime
+
+      {x, y} = @_flickVector = delta
+      @_flickDirection =
+        if abs(x) > abs y
+              if x < 0 then :left else :right
+        else  if y < 0 then :up   else :down
+
+  _flickForEnd: (e) ->
+    if absGt @_flickSpeed, minimumFlickPixelsPerSecond
+      flickEvent =
+        clone @_flickStartEvent
+        .mergeInProps
+          flickDirection: @_flickDirection
+          flickSpeed:     @_flickSpeed
+          flickDuration:  @_flickDuration
+
+      @_flickStartEvent = null
+
+      @_activeGesture?.flick?     flickEvent
+      @_nonGestureHandlers.flick? flickEvent

@@ -20,7 +20,12 @@ class PointerEvent extends Event
   clone: -> @newEvent()
 
   emptyObject = {}
-  newEvent: (options = emptyObject)->
+  newEvent: (options)->
+    if options
+      log.warn "DEPRICATED: PointerEvent.newEvent(options); Use: mergeInto event.clone(), options"
+    else
+      options = emptyObject
+
     e = new PointerEvent
       options.type    ? @type
       options.pointer ? @pointer
