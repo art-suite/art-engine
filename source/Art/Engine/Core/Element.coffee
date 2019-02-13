@@ -1475,10 +1475,10 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       out
 
 
-  _layoutLocation:           (parentSize)-> @getPendingLocation().layout parentSize
+  _layoutLocation:           (parentSize)-> @getPendingLocation().layout parentSize, @getPendingCurrentSize()
 
-  _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize
-  _layoutLocationY:          (parentSize)-> @getPendingLocation().layoutY parentSize
+  _layoutLocationX:          (parentSize)-> @getPendingLocation().layoutX parentSize, @getPendingCurrentSize()
+  _layoutLocationY:          (parentSize)-> @getPendingLocation().layoutY parentSize, @getPendingCurrentSize()
 
   ##########################
   # EVENTS
