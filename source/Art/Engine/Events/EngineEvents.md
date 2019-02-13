@@ -23,3 +23,9 @@ These events are generated under certain combinations of the basic pointer event
 
 ## Layout
 * childrenFit / childrenDontFit: triggered by row or column childrenLayout when the children do not fit along the main axis
+
+## Animators
+* abort
+* start
+* done
+* update
