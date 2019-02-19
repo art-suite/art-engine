@@ -47,6 +47,7 @@ class CoreHelper
 
     count = 0
 
+    minValue = 0
     while 256 > minValue = getMinValueNotdone()
       each v, i in imageData when v == minValue # && v < minValue + 16
         out[i] = count

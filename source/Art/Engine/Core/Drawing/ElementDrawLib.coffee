@@ -230,26 +230,37 @@ defineModule module, class ElementDrawLib
       return i
 
   ###
-  IN:
-    dirtyDrawAreas: null or array of rectangles
-    areaToAdd: rectangle
-    snapTo: number (or undefined)
-      default: 1
-      suggested: 1 / devicePixelRatio
+    IN:
+      dirtyDrawAreas: null or array of rectangles
+      areaToAdd: rectangle
+      snapTo: number (or undefined)
+        default: 1
+        suggested: 1 / devicePixelRatio
 
-  NOTES:
-    areaToAdd is rounded out using: areaToAdd.roundOut snapTo, colorPrecision
+    NOTES:
+      areaToAdd is rounded out using: areaToAdd.roundOut snapTo, colorPrecision
 
-  OUT: null (only if areaToAdd.area is 0 AND dirtyDrawAreas is null
-  OR
-  OUT: array of rectangles
-    Guarantees:
-      All rectangles are mutually exclusive - they don't overlap each other at all
-      Each rectangle in IN:dirtyDrawAreas and areaToAdd has exactly one
-      rectangle in OUT which contains it.
+    OUT: null (only if areaToAdd.area is 0 AND dirtyDrawAreas is null
+    OR
+    OUT: array of rectangles
+      Guarantees:
+        All rectangles are mutually exclusive - they don't overlap each other at all
+        Each rectangle in IN:dirtyDrawAreas and areaToAdd has exactly one
+        rectangle in OUT which contains it.
 
-  NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
-  OPTIMIZED: creates at most 1 rectangle and 1 array
+    NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
+    OPTIMIZED: creates at most 1 rectangle and 1 array
+
+    2019 SBD:
+      areaToAdd =
+        areaToAdd
+        .roundOut snapTo, colorPrecision, 1 # <---
+
+      I had this roundOut set to expand by 1 because
+      I was getting a lot of render ghosts. But this
+      is just a hack fix and it breaks all kinds of tests.
+      I'm setting it back to 0 for right now until I get
+      the OTHER (unrelated) tests fixed.
   ###
   @addDirtyDrawArea: (dirtyDrawAreas, areaToAdd, snapTo) =>
 
@@ -259,7 +270,7 @@ defineModule module, class ElementDrawLib
     else
       areaToAdd =
         areaToAdd
-        .roundOut snapTo, colorPrecision, 1
+        .roundOut snapTo, colorPrecision, 0 #
 
       if dirtyDrawAreas
 
