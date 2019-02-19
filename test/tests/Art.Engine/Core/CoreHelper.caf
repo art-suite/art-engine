@@ -78,7 +78,11 @@ class CoreHelper
     downsampled = getDownsampledRedChannel bitmap, merge options, sliceAmount: expecting.length
     {testArea} = options
     testArea = rect testArea ? bitmap.size
-    log {} "#{message}": bitmap.clone(), size: bitmap.size, testArea
+    log {}
+      "#{message}": bitmap.clone()
+      size: bitmap.size
+      testArea
+
     assert.eq expecting.length, testArea.area, "#{message} - bitmap area (#{bitmap.size.area}) didn't match expecting-area (#{expecting.length})"
     if eq expecting, expecting2
       assert.eq
@@ -176,7 +180,7 @@ class CoreHelper
         bitmap
         bitmap.size
         expecting:  outputPixelData bitmap, expecting
-        actual---:  outputPixelData bitmap, redChannel
+        actual:     outputPixelData bitmap, redChannel
         message
       each v, i in expecting
         actual = redChannel[i]
