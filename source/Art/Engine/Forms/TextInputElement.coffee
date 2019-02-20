@@ -51,15 +51,17 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
     else undefined
 
   logEventErrors = (handlerMap) ->
-    object handlerMap, (handler, eventName) ->
-      (event) ->
-        try
-          handler event
-        catch error
-          log.error
-            message:  "Error in TextInputElement handler: #{eventName}"
-            error:    error
-          null
+    object handlerMap,
+      when: (handler) -> handler?
+      with: (handler, eventName) ->
+        (event) ->
+          try
+            handler event
+          catch error
+            log.error
+              message:  "Error in TextInputElement handler: #{eventName}"
+              error:    error
+            null
 
   constructor: (options = {}) ->
     @_focusEventsDisabled = false
@@ -74,7 +76,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       autocorrect:    normalizeAuto options.autoCorrect     ? options.autocorrect
       spellcheck:     if options.spellcheck? then "#{!!options.spellcheck}"
 
-    Factory = if props.type == "textarea"
+    Factory = if isTextarea = props.type == "textarea"
       delete props.type
       TextArea
     else
@@ -134,6 +136,9 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
 
               catch error
                 log TextInputElement: blurHandler: {error}
+
+        wheel: !isTextarea && (domEvent) =>
+          @canvasElement._handleDomWheelEvent domEvent
 
     super
 
