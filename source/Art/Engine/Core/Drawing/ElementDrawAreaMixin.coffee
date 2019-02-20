@@ -42,9 +42,9 @@ defineModule module, ->
     clipElementSpaceArea: (elementSpaceArea, into) ->
       if @clip
         if @padding
-          @paddedArea.intersect elementSpaceArea, into
+          @paddedArea.intersection elementSpaceArea, into
         else
-          @currentSize.intersect elementSpaceArea, into
+          @currentSize.intersection elementSpaceArea, into
 
       else if elementSpaceArea != into
         {x, y, w, h} = elementSpaceArea
