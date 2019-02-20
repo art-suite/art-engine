@@ -222,126 +222,134 @@ class ElementDrawLib
   ############################## HERE
 
 
-  # ### addDirtyDrawArea
-  #   IN:
-  #     dirtyDrawAreas: null or array of rectangles
-  #     areaToAdd: rectangle
-  #     snapTo: number (or undefined)
-  #       default: 1
-  #       suggested: 1 / devicePixelRatio
+  ### addDirtyDrawArea
+    IN:
+      dirtyDrawAreas: null or array of rectangles
+      areaToAdd: rectangle
+      snapTo: number (or undefined)
+        default: 1
+        suggested: 1 / devicePixelRatio
 
-  #   NOTES:
-  #     areaToAdd is rounded out using: areaToAdd.roundOut snapTo, colorPrecision
+    NOTES:
+      areaToAdd is rounded out using: areaToAdd.roundOut snapTo, colorPrecision
 
-  #   OUT: null (only if areaToAdd.area is 0 AND dirtyDrawAreas is null
-  #   OR
-  #   OUT: array of rectangles
-  #     Guarantees:
-  #       All rectangles are mutually exclusive - they don't overlap each other at all
-  #       Each rectangle in IN:dirtyDrawAreas and areaToAdd has exactly one
-  #       rectangle in OUT which contains it.
+    OUT: null (only if areaToAdd.area is 0 AND dirtyDrawAreas is null
+    OR
+    OUT: array of rectangles
+      Guarantees:
+        All rectangles are mutually exclusive - they don't overlap each other at all
+        Each rectangle in IN:dirtyDrawAreas and areaToAdd has exactly one
+        rectangle in OUT which contains it.
 
-  #   NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
-  #   OPTIMIZED: creates at most 1 rectangle and 1 array
-  # @addDirtyDrawArea: (dirtyDrawAreas, areaToAdd, snapTo) =>
+    NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
+    OPTIMIZED: creates at most 1 rectangle and 1 array
+  @addDirtyDrawArea: (dirtyDrawAreas, areaToAdd, snapTo) =>
 
-  #   if areaToAdd.area == 0
-  #     dirtyDrawAreas
+    if areaToAdd.area == 0
+      dirtyDrawAreas
 
-  #   else
-  #     areaToAdd =
-  #       areaToAdd
-  #       .roundOut snapTo, colorPrecision, 1
+    else
+      areaToAdd =
+        areaToAdd
+        .roundOut
+          snapTo
+          colorPrecision
+          0
+          ## 2019-SBD:
+            'expand' was set to 1 decrease in 'ghost trails'
+            But, it breaks a lot of tests. I'm trying it
+            back at 0 to see if we still have the ghosting
+            problems.
 
-  #     overlapCount = 0
-  #     alreadyContainedInDrawAreas = find area in dirtyDrawAreas
-  #       if area.contains areaToAdd
-  #         true
+      overlapCount = 0
+      alreadyContainedInDrawAreas = find area in dirtyDrawAreas
+        if area.contains areaToAdd
+          true
 
-  #       else
-  #         overlapCount++ if area.overlaps areaToAdd
-  #         false
+        else
+          overlapCount++ if area.overlaps areaToAdd
+          false
 
-  #     switch
-  #     when alreadyContainedInDrawAreas
-  #       dirtyDrawAreas
+      switch
+      when alreadyContainedInDrawAreas
+        dirtyDrawAreas
 
-  #     when overlapCount == 0
-  #       arrayWith dirtyDrawAreas, areaToAdd
+      when overlapCount == 0
+        arrayWith dirtyDrawAreas, areaToAdd
 
-  #     else
-  #       workingDirtyArea = areaToAdd.clone()
+      else
+        workingDirtyArea = areaToAdd.clone()
 
-  #       foundNewOverlap = true
-  #       triesLeft = dirtyDrawAreas.length + 1
-  #       # grow areaToAdd unil it contains all overlaps
+        foundNewOverlap = true
+        triesLeft = dirtyDrawAreas.length + 1
+        # grow areaToAdd unil it contains all overlaps
 
-  #       while foundNewOverlap && triesLeft-- >= 0
-  #         foundNewOverlap = false
-  #         each area in dirtyDrawAreas when workingDirtyArea.overlaps(area) && !workingDirtyArea.contains area
-  #           area.unionInto workingDirtyArea
-  #           foundNewOverlap = true
+        while foundNewOverlap && triesLeft-- >= 0
+          foundNewOverlap = false
+          each area in dirtyDrawAreas when workingDirtyArea.overlaps(area) && !workingDirtyArea.contains area
+            area.unionInto workingDirtyArea
+            foundNewOverlap = true
 
-  #       if triesLeft < 0
-  #         log.error formattedInspect lastAddDirtyDrawAreaFailure: {dirtyDrawAreas, triesLeft, areaToAdd, workingDirtyArea, snapTo}
-  #         global.lastAddDirtyDrawAreaFailure = {dirtyDrawAreas, areaToAdd, workingDirtyArea, snapTo}
+        if triesLeft < 0
+          log.error formattedInspect lastAddDirtyDrawAreaFailure: {dirtyDrawAreas, triesLeft, areaToAdd, workingDirtyArea, snapTo}
+          global.lastAddDirtyDrawAreaFailure = {dirtyDrawAreas, areaToAdd, workingDirtyArea, snapTo}
 
-  #       # get new array, with all overlaps removed - they are now represented by areaToAdd
-  #       dirtyDrawAreas = array area in dirtyDrawAreas when !area.overlaps workingDirtyArea
+        # get new array, with all overlaps removed - they are now represented by areaToAdd
+        dirtyDrawAreas = array area in dirtyDrawAreas when !area.overlaps workingDirtyArea
 
-  #       arrayWith dirtyDrawAreas, workingDirtyArea
+        arrayWith dirtyDrawAreas, workingDirtyArea
 
-  # ### addDirtyDrawArea
-  #   ## 2018-8-14
-  #     This is an easier-to-understand version of addDirtyDrawArea, though it is not
-  #     object-creation optimized.
-  #     I added this because I suspected the other version was buggy.
-  #     However, after lots of playing, this, clearly correct version, produced
-  #     the same results - which probably means the bug is elsewhere. Still...
-  #     since I haven't found the bug, I'm keeping this around.
-  #     The bugs are:
-  #         Zo initial fade screen has a moment where the blue is almost gone and
-  #         the rest of the screen draws and the result is everal white rectangles
-  #         - just for a milisecond...
-  #     The other bug is the zo stream manager - dragging a pile of posts around
-  #     sometimes results in an actual left-behind glitch which doesn't update until
-  #     something else overlaps it.
+  ### addDirtyDrawArea
+    ## 2018-8-14
+      This is an easier-to-understand version of addDirtyDrawArea, though it is not
+      object-creation optimized.
+      I added this because I suspected the other version was buggy.
+      However, after lots of playing, this, clearly correct version, produced
+      the same results - which probably means the bug is elsewhere. Still...
+      since I haven't found the bug, I'm keeping this around.
+      The bugs are:
+          Zo initial fade screen has a moment where the blue is almost gone and
+          the rest of the screen draws and the result is everal white rectangles
+          - just for a milisecond...
+      The other bug is the zo stream manager - dragging a pile of posts around
+      sometimes results in an actual left-behind glitch which doesn't update until
+      something else overlaps it.
 
-  #   @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea, snapTo) =>
-  #     if dirtyArea.area > 0
-  #       dirtyArea = dirtyArea.roundOut snapTo, colorPrecision if snapTo?
-  #       @_addDirtyDrawArea dirtyDrawAreas, dirtyArea
-  #     else
-  #       dirtyDrawAreas
+    @addDirtyDrawArea: (dirtyDrawAreas, dirtyArea, snapTo) =>
+      if dirtyArea.area > 0
+        dirtyArea = dirtyArea.roundOut snapTo, colorPrecision if snapTo?
+        @_addDirtyDrawArea dirtyDrawAreas, dirtyArea
+      else
+        dirtyDrawAreas
 
-  #   @_addDirtyDrawArea: (dirtyDrawAreas, dirtyArea) =>
+    @_addDirtyDrawArea: (dirtyDrawAreas, dirtyArea) =>
 
-  #     if dirtyDrawAreas
-  #       if false # brute force
-  #         for area in dirtyDrawAreas
-  #           dirtyArea = dirtyArea.union area
-  #         for area in dirtyDrawAreas
-  #           throw new Error "not covered" unless dirtyArea.contains area
-  #         [dirtyArea]
+      if dirtyDrawAreas
+        if false # brute force
+          for area in dirtyDrawAreas
+            dirtyArea = dirtyArea.union area
+          for area in dirtyDrawAreas
+            throw new Error "not covered" unless dirtyArea.contains area
+          [dirtyArea]
 
-  #       else
-  #         if (i = findOverlappingArea dirtyDrawAreas, dirtyArea)?
-  #           area = dirtyDrawAreas[i]
-  #           if area.contains dirtyArea
-  #             dirtyDrawAreas
+        else
+          if (i = findOverlappingArea dirtyDrawAreas, dirtyArea)?
+            area = dirtyDrawAreas[i]
+            if area.contains dirtyArea
+              dirtyDrawAreas
 
-  #           else
-  #             @_addDirtyDrawArea(
-  #               arrayWithout dirtyDrawAreas, i
-  #               area.union dirtyArea
-  #             )
+            else
+              @_addDirtyDrawArea(
+                arrayWithout dirtyDrawAreas, i
+                area.union dirtyArea
+              )
 
-  #         else
-  #           dirtyDrawAreas.push dirtyArea
-  #           dirtyDrawAreas
+          else
+            dirtyDrawAreas.push dirtyArea
+            dirtyDrawAreas
 
-  #     else
-  #       [dirtyArea]
+      else
+        [dirtyArea]
 
   @partitionAreasByInteresection: (partitioningArea, areas) ->
     insideAreas = outsideAreas = null
