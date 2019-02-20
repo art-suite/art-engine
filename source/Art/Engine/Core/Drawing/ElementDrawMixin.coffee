@@ -91,7 +91,7 @@ defineModule module, ->
             drawSteps = compactFlatten drawSteps
             needsNormalizing = false
             for step in drawSteps
-              {fill, outline, radius, color, colors, padding, shadow, to, from} = step
+              {fill, outline, radius, color, colors, padding, to, from} = step
               if (radius ? fill ? outline ? color ? colors ? padding ? to ? from ? looksLikeColor step)?
                 needsNormalizing = true
                 break
