@@ -83,7 +83,7 @@ module.exports = class FlexLayout
     flexChildren = null
 
     for child, i in inFlowChildren
-      if child.getPendingSize()[mainAxisRelativeTestFunction]()
+      if isFlexChild = child.getPendingSize()[mainAxisRelativeTestFunction]()
         currentSize = child._layoutSize elementSizeForChildren, point0
         (flexChildren ?= []).push child
         childFlexWeight = child.getPendingLayoutWeight()
@@ -104,7 +104,7 @@ module.exports = class FlexLayout
         else
           maxCrossSize = max maxCrossSize, currentSize[crossCoordinate]
 
-      margin = layoutMargin child, elementSizeForChildren, element
+      margin = layoutMargin child, elementSizeForChildren, element, !isFlexChild
 
       if i > 0
         mainChildrenSize += effectivePrevMargin = combineMargins lastChildsNextMargin, margin[previousMargin]

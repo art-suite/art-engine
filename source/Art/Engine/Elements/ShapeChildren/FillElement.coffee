@@ -15,11 +15,11 @@ module.exports = createWithPostCreate class FillElement extends ShadowableElemen
     preFilteredBaseDrawArea: (pending) ->
       @getParent(pending).getPreFilteredBaseDrawArea pending
 
-  getNormalizedShadow: (pending) ->
+  getNormalizedCanvasShadow: (pending) ->
     if @getShadow pending
       super
     else
-      @getParent(pending)?.getNormalizedShadow pending
+      @getParent(pending)?.getNormalizedCanvasShadow pending
 
   ###
   NOTE:

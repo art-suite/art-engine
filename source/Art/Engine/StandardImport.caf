@@ -1,0 +1,4 @@
+&ArtStandardLib.mergeWithSelf
+  &ArtClassSystem
+  &ArtAtomic
+  &ArtCanvas

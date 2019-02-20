@@ -6,7 +6,9 @@ module.exports
 .includeInNamespace require './Engine'
 .addModules
   Config:         require './Config'        
+  DefaultProps:   require './DefaultProps'  
   FullScreenApp:  require './FullScreenApp' 
+  NormalizeProps: require './NormalizeProps'
   StandardImport: require './StandardImport'
 require './Animation'
 require './Core'

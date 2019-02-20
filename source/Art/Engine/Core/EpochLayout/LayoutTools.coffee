@@ -12,12 +12,18 @@ module.exports = class LayoutTools extends BaseClass
   @nearInfinityResult: nearInfinityResult
   @isInfiniteResult: isInfiniteResult
 
-  @layoutMargin: (element, parentSize, parentElement) ->
+  @layoutMargin: (element, parentSize, parentElement, boundMargins) ->
     margin = element.getPendingMargin() || parentElement?.getPendingChildrenMargins()
-    element._setMarginFromLayout perimeter if isFunction margin
-      margin parentSize
-    else
-      margin || perimeter0
+    margin = perimeter(
+      if isFunction margin
+        margin parentSize
+      else
+        margin || perimeter0
+    )
+    if boundMargins
+      {w, h} = element.getPendingCurrentSize()
+      margin = margin.minWH w, h
+    element._setMarginFromLayout margin
 
   @layoutPadding: (element, parentSize) ->
     padding = element.getPendingPadding()

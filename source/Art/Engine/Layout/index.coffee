@@ -3,6 +3,7 @@
 
 module.exports = require './namespace'
 module.exports
+.includeInNamespace require './Layout'
 .addModules
   InterpolatedPointLayout: require './InterpolatedPointLayout'
   PointLayout:             require './PointLayout'            

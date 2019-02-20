@@ -85,11 +85,11 @@ suite:
       render: ->
         Element
           size: cs:1
-          childrenLayout: "column"
-          childrenMargins: 10
-          RectangleElement color:"red",   size: 10
-          RectangleElement color:"green", size: 30
-          RectangleElement color:"blue",  size: 60
+          childrenLayout:   :column
+          childrenMargins:  10
+          RectangleElement color: :red     size: 10
+          RectangleElement color: :green   size: 30
+          RectangleElement color: :blue    size: 60
 
       test: (root)->
         assert.eq root.currentSize, point 60, 120
@@ -101,39 +101,39 @@ suite:
             point 0 60
         root.childrenMargins = 20
         root.onNextReady ->
-          assert.eq root.currentSize, point 60, 140
+          assert.eq root.currentSize, point 60, 135
           assert.eq
             array c in root.children with c.currentLocation
             []
               point 0   0
-              point 0  30
-              point 0  80
+              point 0  25
+              point 0  75
 
     renderTest
       "" with override
       render: ->
         Element
           size: cs:1
-          childrenLayout: "column"
-          childrenMargins: 10
-          RectangleElement color:"red",   size: 10
-          RectangleElement color:"green", size: 30
-          RectangleElement color:"blue",  size: 60, margin: 90
+          childrenLayout:   :column
+          childrenMargins:  10
+          RectangleElement  color: :red     size: 10
+          RectangleElement  color: :green   size: 30
+          RectangleElement  color: :blue    size: 60  margin: 60
 
       test: (root)->
-        assert.eq root.currentSize, point 60, 160
+        assert.eq root.currentSize, point 60, 145
         assert.eq
           array c in root.children with c.currentLocation
           []
             point 0   0
             point 0  20
-            point 0 100
+            point 0  85
         root.childrenMargins = 20
         root.onNextReady ->
-          assert.eq root.currentSize, point 60, 175
+          assert.eq root.currentSize, point 60, 155
           assert.eq
             array c in root.children with c.currentLocation
             []
               point 0   0
-              point 0  30
-              point 0 115
+              point 0  25
+              point 0  95

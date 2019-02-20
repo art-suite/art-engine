@@ -1,0 +1,21 @@
+import &StandardImport, &Layout
+
+&DefaultProps extract
+  shadow as defaultShadow
+
+class NormalizeProps
+  @normalizeShadow: (v) ->
+    switch
+    when v == true then defaultShadow
+    when v?
+      {color, offset, blur} = v
+      blur:   blur            ? defaultShadow.blur
+      color:  rgbColor color  ? defaultShadow.color
+      offset:
+        if offset?
+          if offset instanceof PointLayoutBase
+            offset
+          else
+            new PointLayout offset
+        else
+          defaultShadow.offset

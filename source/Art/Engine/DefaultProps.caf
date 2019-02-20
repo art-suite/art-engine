@@ -1,0 +1,6 @@
+import &StandardImport, &Layout
+
+shadow:
+  blur:   4
+  offset: new PointLayout y: 2
+  color:  rgbColor #0007
