@@ -1,0 +1,408 @@
+import &StandardImport
+
+HtmlCanvas = &ArtFoundation.Browser.DomElementFactories.Canvas
+
+eventKey = (e)->
+  key = "" #{e.target.name}_#{e.type}_#{e.pointer.id}
+
+{pointerDeadZone} = Neptune.Art.Engine.Events.Pointer
+spacing = max 5, 1 + pointerDeadZone
+
+newEventRig = (options={})->
+  canvasElement = new CanvasElement
+    canvas: HtmlCanvas()
+    noHtmlCanvasElement: true
+    key:  :parent
+    size: 100
+    child = new Element
+      key:      :child
+      location: spacing * 2
+      size:     spacing * 10
+      pointerEventPriority: options.childPointerEventPriority
+
+  rig =
+    eventSequence: []
+    canvasElement:  canvasElement
+    parent:         canvasElement
+    child:          child
+    outsidePoint:   point spacing
+    outsidePoint2:  point 0
+    insidePoint:    point spacing * 3
+    insidePoint2:   point spacing * 5
+
+  canvasElement.onNextReady()
+  .then -> canvasElement.blur()
+  .then -> canvasElement.onNextReady()
+  .then -> options.setup? rig
+  .then -> canvasElement.onNextReady()
+  .then -> options.events? rig
+  .then -> canvasElement.onNextReady()
+  .then -> options.test? rig
+  .then -> options.tests? rig
+
+newEventCounterRig = (options={})->
+  newEventRig merge options,
+    setup: (rig)->
+      options.setup rig if options.setup
+      rig.parent.on = object in eventTypes =
+          :pointerDown
+          :pointerAdd
+          :pointerRemove
+          :pointerUp
+          :pointerMove
+          :pointerClick
+          :mouseMove
+          :mouseMove
+          :mouseIn
+          :mouseOut
+          :blur
+          :focus
+        (e) => rig.eventSequence.push eventKey e
+
+      rig.child.on = object in eventTypes
+        (e) => rig.eventSequence.push eventKey e
+
+suite:
+  main: ->
+    test "Basic pointerDown" ->
+      new Promise (resolve) ->
+        top = new CanvasElement
+          canvas:               HtmlCanvas()
+          noHtmlCanvasElement:  true
+          on: pointerDown:      resolve
+        .onNextReady ->
+          top.mouseDown point()
+
+
+    test "basic mouseMove" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseMove point 10, 9
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+
+
+    test "mouseMove around, but not over child", ->
+      newEventCounterRig
+        events: (rig) ->
+          points = []
+            point spacing * 2, spacing * 2 - 1
+            point spacing * 2 - 1, spacing * 2
+            point spacing * 2, spacing * 12
+            point spacing * 12, spacing * 12
+
+          array p in points
+            rig.canvasElement.mouseMove p
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_mouseMove_mouse
+            :parent_mouseMove_mouse
+            :parent_mouseMove_mouse
+
+    test "mouseMove locations and deltas", ->
+      count = 0
+
+      resolve = reject = null
+      donePromise = new Promise (a, b) ->
+        resolve = a
+        reject = b
+
+      newEventRig
+        setup: (rig) ->
+          rig.child.on = mouseMove: (e)=>
+            count++
+            log "mouseMove event #{e.totalDelta} #{e.delta}, #{e.location}, #{count}"
+            try
+              if count == 1
+                assert.eq e.location.add(rig.child.currentLocation), rig.insidePoint, "count 1 location"
+                assert.eq e.parentLocation, rig.insidePoint, "count 1 parentLocation"
+
+              if count == 2
+                assert.eq e.delta,        rig.insidePoint2.sub rig.insidePoint
+                assert.eq e.parentDelta,  rig.insidePoint2.sub rig.insidePoint
+                resolve()
+            catch e
+              reject e
+
+        events: (rig) ->
+          rig.canvasElement.mouseMove rig.insidePoint
+          rig.canvasElement.mouseMove rig.insidePoint2
+
+        test: (rig) -> donePromise
+
+    test "mouseMove outside to inside focused", ->
+      newEventCounterRig
+        events: (rig) ->
+          assert.true   rig.canvasElement.focused, "" canvasElement should be focused
+          assert.false  rig.child.focused,         "" child element should not be focused
+          rig.canvasElement.mouseDown      rig.outsidePoint
+          rig.canvasElement.mouseMove      rig.insidePoint
+          rig.canvasElement.mouseUp        rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+            :parent_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :parent_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :parent_pointerUp_mousePointer
+
+    test "mouseDown triggers implicit move" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown      rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+
+    test "mouseDown mouseUp triggers click" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown    rig.outsidePoint
+          rig.canvasElement.mouseUp      rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+            :parent_pointerUp_mousePointer
+            :parent_pointerClick_mousePointer
+
+    test "mouseDown mouseUp after deadZone(#{pointerDeadZone}) move triggers click" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown   rig.outsidePoint
+          rig.canvasElement.mouseUp     rig.outsidePoint.add point pointerDeadZone, 0
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+            :parent_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :parent_pointerUp_mousePointer
+            :parent_pointerClick_mousePointer
+
+    test "mouseDown mouseUp after non-deadZone(#{pointerDeadZone}) move doesn't trigger click", ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown   rig.outsidePoint
+          rig.canvasElement.mouseUp     rig.outsidePoint.add point pointerDeadZone + 1, 0
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+            :parent_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :parent_pointerUp_mousePointer
+
+    test "mouseUp triggers implicit move", ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown      rig.outsidePoint
+          rig.canvasElement.mouseUp        rig.outsidePoint2
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :parent_pointerDown_mousePointer
+            :parent_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :parent_pointerUp_mousePointer
+
+    test "mouseMove inside to outside focused" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseDown      rig.insidePoint
+          rig.canvasElement.mouseUp        rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_mouseIn_mouse
+            :child_mouseIn_mouse
+            :parent_mouseMove_mouse
+            :child_mouseMove_mouse
+            :child_focus_mousePointer
+            :parent_pointerDown_mousePointer
+            :child_pointerDown_mousePointer
+            :parent_pointerMove_mousePointer
+            :child_pointerMove_mousePointer
+            :parent_mouseMove_mouse
+            :child_mouseMove_mouse
+            :parent_pointerUp_mousePointer
+            :child_pointerUp_mousePointer
+            :child_mouseOut_mouse
+
+    test "mouseMove outside to inside not focused" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.mouseMove rig.outsidePoint
+          rig.canvasElement.mouseMove rig.insidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence,
+            [
+              "parent_mouseIn_mouse"
+              "parent_mouseMove_mouse"
+              "child_mouseIn_mouse"
+              "parent_mouseMove_mouse"
+              "child_mouseMove_mouse"
+            ]
+
+
+    test "touchDown inside" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.touchDown 100, rig.insidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :child_focus_100
+            :parent_pointerDown_100
+            :child_pointerDown_100
+
+    test "touchDown inside with child.pointerEventPriority = 1" ->
+      newEventCounterRig
+        childPointerEventPriority: 1
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.insidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :child_focus_100
+            :child_pointerDown_100
+            :parent_pointerDown_100
+
+    test "touchDown, touchMove, touchUp all outside" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.outsidePoint
+          rig.canvasElement.touchMove 100 rig.outsidePoint2
+          rig.canvasElement.touchUp   100 rig.outsidePoint2
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_pointerDown_100
+            :parent_pointerMove_100
+            :parent_pointerUp_100
+
+    test "touchUp triggers implicit move" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.outsidePoint
+          rig.canvasElement.touchUp   100 rig.outsidePoint2
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :parent_pointerDown_100
+            :parent_pointerMove_100
+            :parent_pointerUp_100
+
+    test "multitouch - two down inside, maintain focus even though initial touch is released outside" ->
+      newEventCounterRig
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.insidePoint
+          rig.canvasElement.touchDown 200 rig.insidePoint2
+          rig.canvasElement.touchMove 100 rig.outsidePoint
+          rig.canvasElement.touchUp   100 rig.outsidePoint
+          rig.canvasElement.touchMove 200 rig.outsidePoint
+          rig.canvasElement.touchUp   200 rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence,
+            []
+              :child_focus_100
+              :parent_pointerDown_100
+              :child_pointerDown_100
+              :parent_pointerAdd_200
+              :child_pointerAdd_200
+              :parent_pointerMove_100
+              :child_pointerMove_100
+              :parent_pointerRemove_100
+              :child_pointerRemove_100
+              :parent_pointerMove_200
+              :child_pointerMove_200
+              :parent_pointerUp_200
+              :child_pointerUp_200
+
+  capturePointerEvents: ->
+    test "baseline w/o capture" ->
+      newEventCounterRig
+
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.insidePoint
+          rig.canvasElement.onNextReady ->
+            # rig.child.capturePointerEvents()
+            rig.canvasElement.touchUp 100 rig.outsidePoint2
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :child_focus_100
+            :parent_pointerDown_100
+            :child_pointerDown_100
+            :parent_pointerMove_100
+            :child_pointerMove_100
+            :parent_pointerUp_100
+            :child_pointerUp_100
+
+    test "baseline w capture" ->
+      newEventCounterRig
+
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.insidePoint
+          rig.canvasElement.onNextReady ->
+            rig.child.capturePointerEvents()
+            rig.canvasElement.touchUp 100 rig.outsidePoint2
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence, []
+            :child_focus_100
+            :parent_pointerDown_100
+            :child_pointerDown_100
+            :child_pointerMove_100
+            :child_pointerUp_100
+
+    test "capturePointerEvents auto uncapture after touchUp" ->
+      newEventCounterRig
+
+        events: (rig) ->
+          rig.canvasElement.touchDown 100 rig.insidePoint
+          rig.canvasElement.onNextReady ->
+            rig.child.capturePointerEvents()
+            assert.true   rig.child.pointerEventsCaptured
+
+            rig.canvasElement.touchUp   100 rig.outsidePoint2
+            assert.false  rig.child.pointerEventsCaptured
+
+            rig.canvasElement.touchDown 100 rig.outsidePoint
+
+        tests: (rig) ->
+          assert.eq rig.eventSequence,[]
+            # same as "capturePointerEvents basic" test above
+            :child_focus_100
+            :parent_pointerDown_100
+            :child_pointerDown_100
+            :child_pointerMove_100
+            :child_pointerUp_100
+
+            # new event not in "capturePointerEvents basic" test above;
+            # Pointer events no longer captured by child.
+            :child_blur_100
+            :parent_pointerDown_100

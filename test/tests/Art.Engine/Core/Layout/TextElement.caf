@@ -91,7 +91,7 @@ suite:
         areaAccuracy = log((area.size.sub autoCropRectangle.size).abs).max()
         element extract drawArea
         log {area, drawArea, autoCropRectangle, areaAccuracy}
-        assert.lt areaAccuracy, 2, :areaAccuracy
+        assert.lt areaAccuracy, 3, :areaAccuracy # how many pixels between actual area and autoCropRectangle?
         assert.neq drawArea, area
         assert.true drawArea.contains area.expand .5
         assert.true area.expand(15).contains drawArea

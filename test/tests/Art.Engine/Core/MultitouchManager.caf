@@ -111,8 +111,9 @@ suite:
         mm = new MultitouchManager
         mm.addActivePointer p1 = pointer 1 point0
         mm.addActivePointer p2 = pointer 2 point 0, 1
+        assert.eq matrix(), mm.multitouchTransform
         mm.updateActivePointer p2.moved point 1, 0
-        assert.eq Matrix.rotate(Math.PI/2), mm.multitouchTransform
+        assert.eq Matrix.rotate(-Math.PI/2), mm.multitouchTransform
 
       test :translate ->
         mm = new MultitouchManager
@@ -169,7 +170,7 @@ suite:
         mm.addActivePointer p2
 
       .tapTest "move both touchs" ({mm,p1,p2})->
-        mm.updateActivePointer p1.moved point 0 -1
+        mm.updateActivePointer p1.moved point 0, -1
         assert.eq
           Matrix.scale 2
           .translate point 0, -1
@@ -182,14 +183,15 @@ suite:
     scaleMove: ->
       ChainedTest.setup ->
         mm: new MultitouchManager
-        p1: pointer 1 point 0 -1
+        p1: pointer 1 point 0, -1
         p2: pointer 2 point 0 1
 
       .tapTest "add first touch" ({mm,p1,p2})->
         mm.addActivePointer p1
 
       .tapTest "move to move" ({mm,p1,p2})->
-        mm.updateActivePointer p1.moved point 0 0
+        mm.updateActivePointer pMoved = p1.moved point 0 0
+        log {} p1, pMoved
         assert.eq Matrix.translate(point 0 1), mm.multitouchTransform
 
       .tapTest "add second touch" ({mm,p1,p2})->

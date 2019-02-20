@@ -89,7 +89,7 @@ suite:
             location: :centerCenter
             angle:    Math.PI / 4
             bitmap:   portraitBitmap
-        -10 -10 65 65
+        -10, -10, 65, 65
 
     regressions: ->
       portraitBitmap = makeTestBitmap()
