@@ -154,41 +154,45 @@ class ElementDrawLib
       else
         drawProps
 
-  # @normalizeDrawStep: (step) ->
-  #   switch
-  #   when looksLikeColor step
-  #     fill: normalizeDrawProps color: step
-  #   when !isPlainObject step
-  #     step
-  #   else
-  #     step extract
-  #       fill, shadow, outline, radius, color, colors, padding, rectangle, circle, shape
-  #       to    as toOption
-  #       from  as fromOption
+  @normalizeDrawStep: (step) ->
+    switch
+    when looksLikeColor step
+      fill: normalizeDrawProps color: step
+    when !isPlainObject step
+      step
+    else
+      step extract
+        fill, shadow, outline, radius, color, colors
+        padding, rectangle, circle, shape
+        to    as toOption
+        from  as fromOption
 
-  #     if color ? colors ? toOption ? fromOption ? shadow
-  #       fill = merge normalizeDrawProps {to:toOption, from:fromOption, color, colors, shadow}
-  #       step = objectWithout step, :color :colors :to :from :shadow
+      if color ? colors ? toOption ? fromOption ? shadow
+        fill = merge normalizeDrawProps {}
+          color, colors, shadow
+          to:   toOption
+          from: fromOption
+        step = objectWithout step, :color :colors :to :from :shadow
 
-  #     if radius?
-  #       rectangle = if isRect rectangle
-  #         {radius, area: rectangle}
-  #       else if isPlainObject rectangle
-  #         r = merge rectangle
-  #         r.radius = radius
-  #         r
-  #       else {radius}
+      if radius?
+        rectangle = if isRect rectangle
+          {} radius, area: rectangle
+        else if isPlainObject rectangle
+          r = merge rectangle
+          r.radius = radius
+          r
+        else {radius}
 
-  #     padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
+      padding ?= circle?.padding ? rectangle?.padding ? shape?.padding
 
-  #     padding = padding? && padding != false && perimeter padding
-  #     fill = normalizeDrawProps fill
-  #     outline = normalizeDrawProps outline
+      padding = padding? && padding != false && perimeter padding
+      fill = normalizeDrawProps fill
+      outline = normalizeDrawProps outline
 
-  #     if padding != step.padding || fill != step.fill || outline != step.outline || rectangle != step.rectangle
-  #       merge step, {fill, outline, padding, rectangle}
-  #     else
-  #       step
+      if padding != step.padding || fill != step.fill || outline != step.outline || rectangle != step.rectangle
+        merge step, {} fill, outline, padding, rectangle
+      else
+        step
 
   @validateDrawAreas: (newDrawAreas, oldDrawAreas, addedDrawArea) ->
     areasToTest = compactFlatten [oldDrawAreas, addedDrawArea]
