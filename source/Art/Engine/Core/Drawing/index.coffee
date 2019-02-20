@@ -9,4 +9,5 @@ module.exports
   DrawEpoch:            require './DrawEpoch'           
   ElementDrawAreaMixin: require './ElementDrawAreaMixin'
   ElementDrawLib:       require './ElementDrawLib'      
+  ElementDrawLib2:      require './ElementDrawLib2'     
   ElementDrawMixin:     require './ElementDrawMixin'    

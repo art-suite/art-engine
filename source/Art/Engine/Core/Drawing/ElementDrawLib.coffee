@@ -13,6 +13,7 @@ defaultMiterLimit = 3
 defaultLineWidth = 1
 defaultOffset = pointLayout y: 2
 
+
 defineModule module, class ElementDrawLib
   @colorPrecision:  colorPrecision = 1/256
 
@@ -380,3 +381,5 @@ defineModule module, class ElementDrawLib
         (outsideAreas?=[]).push area
 
     {insideAreas, outsideAreas}
+
+  mergeInto @, require './ElementDrawLib2'
