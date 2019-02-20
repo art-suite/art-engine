@@ -495,17 +495,19 @@ module.exports = createWithPostCreate class CanvasElement extends Element
         @mouseUp @_domEventLocation(domEvent),
           extractPointerEventProps domEvent
 
+  _handleDomWheelEvent: (domEvent)->
+    domEvent.preventDefault()
+    @mouseWheel @_domEventLocation(domEvent),
+      merge null,
+        extractPointerEventProps domEvent
+        deltaMode: switch domEvent.deltaMode
+          when 0 then "pixel"
+          when 1 then "line"
+          when 2 then "page"
+        select domEvent, "deltaX", "deltaY", "deltaZ"
+
   _attachPointerWheelListeners: ->
-    @_domListener @_canvas, "wheel", (domEvent)=>
-      domEvent.preventDefault()
-      @mouseWheel @_domEventLocation(domEvent),
-        merge null,
-          extractPointerEventProps domEvent
-          deltaMode: switch domEvent.deltaMode
-            when 0 then "pixel"
-            when 1 then "line"
-            when 2 then "page"
-          select domEvent, "deltaX", "deltaY", "deltaZ"
+    @_domListener @_canvas, "wheel", (domEvent) => @_handleDomWheelEvent domEvent
 
   _attachPointerTouchListeners: ->
     @_domListener @_canvas, "touchstart",  (domEvent) =>
