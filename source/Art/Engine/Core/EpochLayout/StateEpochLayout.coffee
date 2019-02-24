@@ -243,7 +243,7 @@ module.exports = class StateEpochLayout extends BaseClass
       #   inFlow: false -> finalPass
       # And do it smart - don't create new arrays if all children are inFlow, the default.
       for child, childI in pendingChildren
-        if child.getPendingInFlow() && (childrenLayout || childIsAllowedToAffectParentSize child)
+        if child.getPendingInFlow() && (childrenLayout || childIsAllowedToAffectParentSize child) && child.getPendingVisible()
           firstPassChildren.push child if finalPassChildren
         else
           unless finalPassChildren
