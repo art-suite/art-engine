@@ -714,7 +714,7 @@ defineModule module, ->
       @_drawCacheToElementMatrix = d2eMatrix
       @_elementToDrawCacheMatrix = @_drawCacheToElementMatrix.inv
 
-      thrwo new Error "why no elementToTargetMatrix?" unless elementToTargetMatrix
+      throw new Error "why no elementToTargetMatrix?" unless elementToTargetMatrix
       clippedElementSpaceDrawArea = elementToTargetMatrix.inv.transformBoundingRect(targetSpaceDrawArea).roundOut(snapTo, colorPrecision).intersection elementSpaceDrawArea
 
       remainingDirtyAreas = null
