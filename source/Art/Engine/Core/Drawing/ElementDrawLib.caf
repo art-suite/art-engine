@@ -254,12 +254,14 @@ class ElementDrawLib
         .roundOut
           snapTo
           colorPrecision
-          0
+          1
           ## 2019-SBD:
             'expand' was set to 1 decrease in 'ghost trails'
             But, it breaks a lot of tests. I'm trying it
             back at 0 to see if we still have the ghosting
             problems.
+
+            2019-SBD-Later: Yup, still have ghosts in chrome
 
       overlapCount = 0
       alreadyContainedInDrawAreas = find area in dirtyDrawAreas
