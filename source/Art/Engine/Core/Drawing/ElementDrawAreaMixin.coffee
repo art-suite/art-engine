@@ -169,6 +169,6 @@ defineModule module, ->
     ###
     _clipInPlace: (elementSpaceArea) ->
       if @clip
-        @currentSize.intersectInto elementSpaceArea
+        @currentSize.intersection elementSpaceArea, elementSpaceArea
       else
         elementSpaceArea

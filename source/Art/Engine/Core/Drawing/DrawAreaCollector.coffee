@@ -89,7 +89,7 @@ defineModule module, ->
 
       out = switch compositeModeMap[compositeMode]
         # new drawArea is the intersection (alphaMask)
-        when "destination-in", "source-in"    then reducesDrawArea = true; sourceDrawArea.intersectInto @targetDrawArea
+        when "destination-in", "source-in"    then reducesDrawArea = true; sourceDrawArea.intersection @targetDrawArea, @targetDrawArea
 
         # new drawArea is only sourceDrawArea (inverseAlphaMask)
         when "destination-atop", "source-out" then reducesDrawArea = true; sourceDrawArea
