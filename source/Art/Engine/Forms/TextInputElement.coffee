@@ -100,7 +100,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         textAlign:        options.align || "left"
         verticalAlign:    "bottom"
 
-      on: logEventErrors
+      on: merge
         cut:      (keyboardEvent) => @delayedCheckIfValueChanged()
         paste:    (keyboardEvent) => @delayedCheckIfValueChanged()
         drop:     (keyboardEvent) => @delayedCheckIfValueChanged()
@@ -137,7 +137,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
               catch error
                 log TextInputElement: blurHandler: {error}
 
-        wheel: !isTextarea && (domEvent) =>
+        wheel: unless isTextarea then (domEvent) =>
           @canvasElement._handleDomWheelEvent domEvent
 
     super
