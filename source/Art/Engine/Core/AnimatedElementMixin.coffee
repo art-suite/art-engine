@@ -14,6 +14,7 @@
 
 processedAnimators = null
 _addAnimator = (prop, options) =>
+  return unless options
   processedAnimators ||= {}
   if match = prop.match /^_(.*)/
     internalName = prop
