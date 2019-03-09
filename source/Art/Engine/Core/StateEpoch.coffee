@@ -1,20 +1,18 @@
 'use strict';
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-StateEpochLayout = require './EpochLayout/StateEpochLayout'
-{point, Point} = Atomic
 {
   log
   requestAnimationFrame
   longestCommonSubsequence
   select
   inspect
-  Epoch
   globalCount
   defineModule
-} = Foundation
+} = require 'art-standard-lib'
+{EpochClass} = require 'art-epoched-state'
+StateEpochLayout = require './EpochLayout/StateEpochLayout'
+{point, Point} = require 'art-atomic'
 
-isMobileBrowser = Foundation.Browser.isMobileBrowser()
+{simpleBrowserInfo} = require 'art-browser-tools'
 
 childrenDrawUnchanged = (before, after) ->
   window.lcs = longestCommonSubsequence before, after
@@ -25,7 +23,7 @@ childrenDrawChanged = (before, after) ->
   else
     after
 
-defineModule module, class StateEpoch extends Epoch
+defineModule module, class StateEpoch extends EpochClass
   @singletonClass()
 
   @_stateEpochLayoutInProgress: false
@@ -244,7 +242,7 @@ defineModule module, class StateEpoch extends Epoch
     el._drawAreaChanged() for el in changingElements when el.__drawAreaChanged
 
     # recompute cursor and pointer paths
-    @recomputeMousePathAndCursor changingElements unless isMobileBrowser
+    @recomputeMousePathAndCursor changingElements unless simpleBrowserInfo.touch
 
     # do second pass of drawDirtyArea computation
     @informAncestorsElementNeedsRedrawing el for el in drawChangedElements

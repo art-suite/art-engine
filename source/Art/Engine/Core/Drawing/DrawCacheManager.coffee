@@ -4,7 +4,7 @@
   getEnv
 } = require 'art-standard-lib'
 {humanByteSize, Browser} = (require 'art-foundation')
-{isMobileBrowser} = Browser
+{getIsMobileBrowser} = Browser
 {BaseClass} = require 'art-class-system'
 
 {
@@ -88,7 +88,7 @@ defineModule module, class DrawCacheManager extends BaseClass
   constructor: ->
     super
     @_currentFrameNumber = 0
-    @_maxCacheByteSize = 1024 * 1024 * if isMobileBrowser() then 64 else 128
+    @_maxCacheByteSize = 1024 * 1024 * if getIsMobileBrowser() then 64 else 128
     @_bitmapsCreated = 0
 
     @_initCache()

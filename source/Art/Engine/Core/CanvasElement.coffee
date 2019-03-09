@@ -39,7 +39,7 @@ EngineStat= require './EngineStat'
 {createWithPostCreate} = require 'art-class-system'
 {Browser} = require 'art-foundation'
 
-{nativeAppDetect, iPadDetect, iOSDetect, isMobileBrowser, getOrientationAngle} = Browser
+{getOrientationAngle, simpleBrowserInfo} = Browser
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
 {rgbColor, hslColor, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
@@ -578,7 +578,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       @keyUpEvent keyboardEvent
 
   _enableHtmlFocusOnCanvas: ->
-    unless isMobileBrowser()
+    unless simpleBrowserInfo.touch
       @_canvas.tabIndex = "-1"
       @_canvas.contentEditable = true
 
