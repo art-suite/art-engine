@@ -54,6 +54,7 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   formattedInspect
   object
   toInspectedObjects
+  customCompactFlatten
 } = require './StandardImport'
 
 stats = clone zeroedStats =
@@ -476,7 +477,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       default: noChildren = []
       setter: (newChildren, oldChildren) ->
         @__drawPropertiesChanged = true # TODO - this is a hack-fix; is this the right way to do this?
-        newChildren = compactFlatten newChildren, keepIfRubyTrue
+        newChildren = customCompactFlatten newChildren, keepIfRubyTrue
         firstTimeSettingChildren = oldChildren == noChildren
 
         @_filterChildren = null
