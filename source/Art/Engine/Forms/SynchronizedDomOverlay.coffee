@@ -30,6 +30,11 @@ module.exports = class SynchronizedDomOverlay extends Element
 
     @onNextReady => @_attachDomElement()
 
+  @concreteProperty
+    captureWheelEvents:
+      preprocess: (v) -> !!v
+      default: false
+
   #################
   # OVERRIDES
   #################
@@ -132,6 +137,7 @@ module.exports = class SynchronizedDomOverlay extends Element
     {top, left, width, height} = htmlCanvasElement.style
     htmlCanvasElement.parentElement.appendChild @_domElementWrapper = Div
       style: {top, left, width, height, overflow: "hidden", position: "absolute"}
+      if @captureWheelEvents then on: wheel: (domEvent) => @canvasElement._handleDomWheelEvent domEvent
       @_domElement
 
     @queueEvent "domElementAttached"
