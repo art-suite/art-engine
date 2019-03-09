@@ -1,6 +1,12 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
-{defineModule, log, object, merge, select, inspect, wordsArray, timeout, max} = require 'art-standard-lib'
+{
+  defineModule, log, object, merge, select, inspect, wordsArray, timeout, max
+  isNumber
+} = require 'art-standard-lib'
 {rgbColor, point} = require 'art-atomic'
+
+{Layout:ArtTextLayout} = require 'art-text'
+defaultLeading = ArtTextLayout.defaultLayoutOptions.leading
 
 Foundation = require 'art-foundation'
 {iOSDetect} = Foundation.Browser
@@ -24,6 +30,16 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   # TODO: these need to become ElementProperties that update the DOMElement when changed.
   defaultFontSize = 16
   @concreteProperty
+    leading:
+      preprocess: (v) ->
+        if isNumber v
+          v
+        else
+          defaultLeading
+
+      postSetter: (v) ->
+        @domElement?.style.lineHeight = "#{v * 100 | 0}%"
+
     placeholder:  postSetter: (v) -> @domElement?.placeholder = v ? ""
     maxLength:    postSetter: (v) -> @domElement?.maxLength   = v ? null
     fontFamily:   "sans-serif", postSetter: (v) -> @domElement?.fontFamily  = v ? "sans-serif"
@@ -99,6 +115,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
         padding:          "0"
         textAlign:        options.align || "left"
         verticalAlign:    "bottom"
+        lineHeight:       "#{(options.leading || defaultLeading)*100 | 0}%"
 
       on: merge
         cut:      (keyboardEvent) => @delayedCheckIfValueChanged()
