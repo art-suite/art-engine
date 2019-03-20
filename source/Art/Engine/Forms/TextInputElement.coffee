@@ -273,6 +273,9 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
     selectionStart: (v)-> @domElement.selectionStart = v
     selectionEnd: (v)-> @domElement.selectionEnd = v
 
+  moveCursorToEnd: ->
+    @selectionEnd = @selectionStart = @domElement.value.length
+
   insertAtCursor: (insertValue) ->
     if @domElement.selectionStart || @domElement.selectionStart == '0'
       {value, selectionStart, selectionEnd} = @domElement
