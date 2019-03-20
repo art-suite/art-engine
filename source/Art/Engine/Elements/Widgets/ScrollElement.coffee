@@ -364,18 +364,41 @@ defineModule module, class ScrollElement extends Element
   ###################
   scrollToTop: -> @animateToValidScrollPosition @childrenSize
   scrollToBottom: -> @animateToValidScrollPosition -@childrenSize
-  scrollToChild: (child) -> @scrollToArea child.getClippedDrawAreaInAncestor @
-
-  scrollToArea: (area) ->
-
-    if @isHorizontal
-      rangeStart  = area.left
-      rangeEnd    = area.right
-      windowSize  = @getCurrentSize().x
+  scrollToChild: (child, center) ->
+    if center
+      @centerArea child.getLogicalAreaInAncestor @
     else
-      rangeStart  = area.top
-      rangeEnd    = area.bottom
-      windowSize  = @getCurrentSize().y
+      @scrollAreaOnscreen child.getLogicalAreaInAncestor @
+
+  scrollAreaOnscreen: (area) ->
+    {windowSize} = @
+
+    rangeStart  = @getAreaStart area
+    rangeEnd    = @getAreaEnd area
+
+    if rangeStart < 0
+      @animateToValidScrollPosition -rangeStart
+
+    else if rangeEnd > windowSize
+      @animateToValidScrollPosition max -rangeStart, windowSize - rangeEnd
+
+  getAreaStart: (area) ->
+    if @isHorizontal
+      area.left
+    else
+      area.top
+
+  getAreaEnd: (area) ->
+    if @isHorizontal
+      area.right
+    else
+      area.bottom
+
+  centerArea: (area) ->
+    {windowSize} = @
+
+    rangeStart  = @getAreaStart area
+    rangeEnd    = @getAreaEnd area
 
     @animateToValidScrollPosition -(
       min(
