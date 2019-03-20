@@ -721,6 +721,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
 
     # OUT: rectangle
+    # TODO: shouldn't this take into account transofmrations???
     logicalAreaInParentSpace: (pending, into) ->
       {_axis, _currentSize} = @getState pending
 
@@ -904,12 +905,12 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         resolve results = @toBitmapSync options
         callback? results.bitmap, results.elementToBitmapMatrix
 
-  scrollOnscreen: -> @scrollOnScreen()
+  scrollOnscreen: (center) -> @scrollOnScreen center
 
-  scrollOnScreen: ->
+  scrollOnScreen: (center) ->
     {parent} = @
     while parent
-      parent.scrollToChild? @
+      parent.scrollToChild? @, center
       {parent} = parent
 
   toBitmap: (options) ->
