@@ -14,7 +14,6 @@
 
 processedAnimators = null
 _addAnimator = (prop, options) =>
-  return unless options
   processedAnimators ||= {}
   if match = prop.match /^_(.*)/
     internalName = prop
@@ -40,7 +39,7 @@ _addAnimators = (v) ->
   else if isPlainArray v
     _addAnimators el for el in v
   else
-    _addAnimator prop, options for prop, options of v
+    _addAnimator prop, options for prop, options of v when options
 
 module.exports = (superClass) -> class AnimatedElementMixin extends superClass
 
