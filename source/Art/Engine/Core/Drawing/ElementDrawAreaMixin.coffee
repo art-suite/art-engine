@@ -115,6 +115,10 @@ defineModule module, ->
 
         drawArea ? @drawArea
 
+      logicalAreaInAncestor: (ancestor) ->
+        (@getElementToElementMatrix ancestor)
+        .transformBoundingRect @logicalArea
+
     # overridden by some children (Ex: Filter)
     _drawAreaChanged: ->
       if @_elementSpaceDrawArea
