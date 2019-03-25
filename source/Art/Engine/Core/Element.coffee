@@ -905,12 +905,14 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
         resolve results = @toBitmapSync options
         callback? results.bitmap, results.elementToBitmapMatrix
 
-  scrollOnscreen: (center) -> @scrollOnScreen center
+  # IN: center: T/F, onlyScrollDirection: null, "horizontal" or "vertical"
+  scrollOnscreen: (center, onlyScrollDirection) -> @scrollOnScreen center, onlyScrollDirection
 
-  scrollOnScreen: (center) ->
+  # IN: center: T/F, onlyScrollDirection: null, "horizontal" or "vertical"
+  scrollOnScreen: (center, onlyScrollDirection) ->
     {parent} = @
     while parent
-      parent.scrollToChild? @, center
+      parent.scrollToChild? @, center, onlyScrollDirection
       {parent} = parent
 
   toBitmap: (options) ->

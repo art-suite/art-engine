@@ -364,7 +364,10 @@ defineModule module, class ScrollElement extends Element
   ###################
   scrollToTop: -> @animateToValidScrollPosition @childrenSize
   scrollToBottom: -> @animateToValidScrollPosition -@childrenSize
-  scrollToChild: (child, center) ->
+  scrollToChild: (child, center, onlyScrollDirection) ->
+    switch onlyScrollDirection
+      when "horizontal" then return unless @isHorizontal
+      when "vertical"   then return unless @isVertical
     if center
       @centerArea child.getLogicalAreaInAncestor @
     else
