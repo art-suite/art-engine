@@ -66,6 +66,7 @@ minimumFlickPixelsPerSecond = 300  # pixels per second
 
           flickSpeed:     <Number>  pixels/second
             derived from event.delta and flickDuration
+            last-movement-magnitude / flickDuration
 
       This is invoked if the very last movement was faster than
       minimumFlickPixelsPerSecond. This is called AFTER the last move and

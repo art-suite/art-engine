@@ -436,6 +436,7 @@ module.exports = class PersistantAnimator extends EventedMixin BaseClass
   getPreprocessedFromVoid: (@_element, baseValue) ->
     @_element.preprocessProperty @_prop, @fromVoid, baseValue
 
+  # OUT: return the new value for the current frame
   animate: ->
     if @_animate
       @_animate @
