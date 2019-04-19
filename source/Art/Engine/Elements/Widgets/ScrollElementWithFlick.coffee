@@ -3,6 +3,7 @@ Atomic = require 'art-atomic'
 {EventEpoch} = require 'art-events'
 Element = require '../../Core/Element'
 GestureRecognizer = require '../../Events/GestureRecognizer'
+ScrollElementAnimator = require './ScrollElementAnimator'
 
 { log, inspect, currentSecond, bound, round,
   first, last, peek
@@ -415,8 +416,12 @@ defineModule module, class ScrollElementWithFlick extends Element
       )
     )
 
-  # @getter
-  #   internalAnimators: ->
+  @getter
+    internalAnimators: ->
+      @_scrollAnimator ?= new ScrollElementAnimator "scrollPosition", scrollElement: @
+      log "internalAnimators GOGO": @_scrollAnimator
+      scrollPosition: @_scrollAnimator
+      # {}
   #     @_velocity = 0
   #     @_animationMode = "tracking" # "toValue" "physics"
 
@@ -447,8 +452,10 @@ defineModule module, class ScrollElementWithFlick extends Element
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
-    # switch to toValue animating
-    @scrollPosition = @boundSp scrollPosition + desiredOffset
+    unless @_scrollAnimator.active
+      @_scrollAnimator.animateToValidScrollPosition scrollPosition + desiredOffset
+    # else
+    #   log not: animateToValidScrollPosition: @_scrollAnimator
 
   setFirstElementPosition: (fp)->
     @scrollPosition = @boundSp @fp2sp fp
@@ -483,8 +490,12 @@ defineModule module, class ScrollElementWithFlick extends Element
 
       createGestureRecognizer
         custom:
-          flick: ({props:{flickDirection, flickSpeed}}) ->
-            log {flickDirection, flickSpeed}
+          flick: ({props:{flickDirection, flickSpeed}}) =>
+
+            switch flickDirection
+              when "up"   then @_scrollAnimator.addVelocity -flickSpeed
+              when "down" then @_scrollAnimator.addVelocity flickSpeed
+
             # scrollAnimator = @getScrollAnimator()
             # scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
 
