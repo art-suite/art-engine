@@ -1,4 +1,3 @@
-
 Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 {EventEpoch} = require 'art-events'
@@ -35,7 +34,7 @@ animatorSpringFriction = 25
 flickSpeedMultiplier = 1
 
 ###
-ScrollElementWithFlick
+ScrollElement
 
 guarantee:
   Will never scroll more than one "windowSize" per frame.
@@ -309,9 +308,9 @@ defineModule module, class ScrollElementWithFlick extends Element
   This part is confusing - end-tracking is rather different than start/child tracking:
 
     tracking:
-      start/null: the start of firstChild   is pinned relative to the start of ScrollElementWithFlick
-      child:      the start of focusedChild is pinned relative to the start of ScrollElementWithFlick
-      end:        the end   of lastChild    is pinned relative to the end   of ScrollElementWithFlick
+      start/null: the start of firstChild   is pinned relative to the start of ScrollElement
+      child:      the start of focusedChild is pinned relative to the start of ScrollElement
+      end:        the end   of lastChild    is pinned relative to the end   of ScrollElement
 
     startPosition: top/left
     endPosition: bottom/right
@@ -359,6 +358,10 @@ defineModule module, class ScrollElementWithFlick extends Element
 
   boundSp: (sp) ->
     @fp2sp @boundFp @sp2fp sp
+
+  @getter
+    minScrollPosition: -> @boundSp -@childrenSize
+    maxScrollPosition: -> @boundSp @childrenSize
 
   ###################
   ###################
@@ -412,18 +415,40 @@ defineModule module, class ScrollElementWithFlick extends Element
       )
     )
 
+  # @getter
+  #   internalAnimators: ->
+  #     @_velocity = 0
+  #     @_animationMode = "tracking" # "toValue" "physics"
+
+  #     scrollPosition:
+  #       animate: (persistantAnimator) =>
+  #         # {currentValue, toValue, element, frameSeconds, state, options} = persistantAnimator
+  #         ###
+  #         we basically need 3 modes:
+
+  #         * tracking - no animations; this is the default mode
+  #         * animating-to-value: still use the same basic physics, but guarantee we reach the toValue exactly
+  #         * physics:
+  #           just uses @_velocity and basic physics
+  #         ###
+  #         switch @_animationMode
+  #           when "tracking" then persistantAnimator.stop()
+  #           when "toValue" then
+  #             easeInQuad
+  #         persistantAnimator.stop() # do this is 'tracking'
+
+  #       on:
+  #         state: =>
+  #           @_animating = true
+  #         done: =>
+  #           @_animating = false
+  #           @animators = originialAnimators
+
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
-    boundedScrollPosition = @boundSp scrollPosition + desiredOffset
-    if boundedScrollPosition != scrollPosition && !@_animating
-      @_animating = true
-      @animators = merge originialAnimators = @animators,
-        scrollPosition: on: done: =>
-          @_animating = false
-          @animators = originialAnimators
-
-      @scrollPosition = boundedScrollPosition
+    # switch to toValue animating
+    @scrollPosition = @boundSp scrollPosition + desiredOffset
 
   setFirstElementPosition: (fp)->
     @scrollPosition = @boundSp @fp2sp fp
@@ -443,12 +468,27 @@ defineModule module, class ScrollElementWithFlick extends Element
   # Gestures & Event Handlers
   ###################
   # attach scrolling event handlers on init and whenever handlers change
+
+  @getter
+    activeScrollAnimator: -> @_scrollAnimator
+    scrollAnimator: ->
+      # maximumVelocity is one full window-length per frame at 60fps
+      # I'm dividing by two to make sure we don't move so fast that we attempt to show pages that aren't ready yet
+      maximumVelocity = @windowSize * 60 / 2
+      @_scrollAnimator ||= @startAnimator new ScrollAnimator @, maximumVelocity
+
   preprocessEventHandlers: (handlerMap) ->
     merge @_externalHandlerMap = handlerMap,
       mouseWheel:     @mouseWheelEvent.bind @
 
       createGestureRecognizer
         custom:
+          flick: ({props:{flickDirection, flickSpeed}}) ->
+            log {flickDirection, flickSpeed}
+            # scrollAnimator = @getScrollAnimator()
+            # scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
+
+
           resume:     @gestureResume.bind @
           recognize:  @gestureRecognize.bind @
           begin:      @gestureBegin.bind @
