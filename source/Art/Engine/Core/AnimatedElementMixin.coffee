@@ -56,9 +56,16 @@ module.exports = (superClass) -> class AnimatedElementMixin extends superClass
       preprocess: (v) ->
         processedAnimators = null
 
+        if a = @internalAnimators
+          log "adding internalAnimators"
+          _addAnimators a
         _addAnimators v
 
         processedAnimators
+
+  @getter
+    # <override this for Elements with custom animators>
+    internalAnimators: ->
 
   ######################
   # PRIVATE

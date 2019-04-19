@@ -419,7 +419,9 @@ module.exports = class PersistantAnimator extends EventedMixin BaseClass
       OUT: toValue
       EFFECT: stops the animator
     ###
-    stop: -> @_stop ||= => @_active = false; @_toValue
+    stop: -> @_boundStop ?= => @_stop()
+
+  _stop: -> @_active = false; @_toValue
 
   # OUT: promise.then -> animation done
   startToVoidAnimation: (@_element)->

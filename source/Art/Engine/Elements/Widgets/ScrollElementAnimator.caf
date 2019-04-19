@@ -1,0 +1,76 @@
+import &StandardImport, &Animation
+animatorBreakingFriction = 3
+animatorSpringConstant = 300
+animatorSpringFriction = 25
+
+class ScrollElementAnimator extends PersistantAnimator
+
+  constructor: ->
+    @_velocity  = 0
+    @_tracking = true
+    @_springConstant = 0
+    @_frictionConstant = 0
+    ###
+      modes:
+        friction:     friction only
+        spring:       friction + spring attached to targetScrollPosition
+        tracking:     direct tracking, no physics
+
+  @property
+    :tracking
+    :springConstant
+    :frictionConstant
+    :velocity
+
+  boundSp: (scrollPosition) -> @scrollElement.boundSp scrollPosition
+
+  addVelocity: (v) ->
+    @_velocity += v
+    @tracking = false
+    @springConstant   = 0
+    @frictionConstant = animatorBreakingFriction
+    @element.scrollPosition += 10 # any change just to trigger the animation
+
+  animateToValidScrollPosition: (scrollPosition = @element.scrollPosition) ->
+    @tracking = false
+    @springConstant   = animatorSpringConstant
+    @frictionConstant = animatorSpringFriction
+    @element.scrollPosition = @boundSp @element.scrollPosition
+
+  _stop: ->
+    @tracking = true
+    @velocity = 0
+    super
+
+  animate: ->
+    @ extract
+      springConstant
+      frictionConstant
+      tracking
+      frameSeconds
+      toValue as targetScrollPosition
+      currentValue as scrollPosition
+
+    if tracking
+      @stop()
+
+    else
+      # PHYSICS
+
+      acceleration =
+        @_velocity * -frictionConstant +
+          targetScrollPosition - scrollPosition
+          * springConstant
+
+      @_velocity      += acceleration * frameSeconds
+      scrollPosition  += @_velocity   * frameSeconds
+
+      if springConstant == 0 && scrollPosition != @boundSp scrollPosition
+        # went past the end, attach the spring to the boundedScrollPosition and "animate to valid scrollPosition"
+        @animateToValidScrollPosition scrollPosition
+
+      else if @velocityIsSlow() && 1 >= abs scrollPosition - targetScrollPosition
+        # stop if slow and within 1 pixel of the targetScrollPosition
+        @stop()
+
+      scrollPosition
