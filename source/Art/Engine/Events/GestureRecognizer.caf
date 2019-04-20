@@ -72,6 +72,10 @@ minimumFlickPixelsPerSecond = 300  # pixels per second
       minimumFlickPixelsPerSecond. This is called AFTER the last move and
       BEFORE any end, cancel or finally events.
 
+    # triggers shortly after gesture started if there wasn't a flick
+    didNotImmediatelyFlick: (event) ->
+      IN: event: pointerDownEvent
+
   recognizerOptions: {}
 
     prepare: (event) ->
@@ -172,6 +176,7 @@ class GestureRecognizer extends BaseClass
 
     @setupDefaultRecognizers()
 
+    @_noFlickYet =
     @_startEvent = null
 
   setupDefaultRecognizers: ->
@@ -200,6 +205,14 @@ class GestureRecognizer extends BaseClass
           @_flickSpeed      = 0
           @_capturedEvents  = false
           @_startEvent      = clone e
+          @_noFlickYet = true
+
+          if didNotImmediatelyFlick = @_nonGestureHandlers?.didNotImmediatelyFlick
+            @_downAt = currentSecond()
+            timeout 60 ->
+              if @_noFlickYet
+                log :didNotImmediatelyFlick
+                didNotImmediatelyFlick e
 
           @_lastPointerEventTime = e.timeStamp
 
@@ -245,6 +258,8 @@ class GestureRecognizer extends BaseClass
             @_activeGesture = null
           else
             fireNonGestureEvents = true
+
+          @_nonGestureHandlers.finally? e
 
           if fireNonGestureEvents
             @_nonGestureHandlers.pointerUp? e
@@ -302,5 +317,7 @@ class GestureRecognizer extends BaseClass
 
       @_flickStartEvent = null
 
+      log "" flick #{@_flickDirection} #{} currentSecond() - @_downAt
+      @_noFlickYet = false
       @_activeGesture?.flick?     flickEvent
       @_nonGestureHandlers.flick? flickEvent
