@@ -1,6 +1,6 @@
 import &StandardImport, &Animation
 animatorBreakingFriction = 3
-animatorOutOfBoundsBreakingFriction = 12
+animatorOutOfBoundsBreakingFriction = 15
 animatorSpringConstant = 200
 animatorSpringFriction = 25
 
@@ -37,13 +37,10 @@ class ScrollElementAnimator extends PersistantAnimator
 
   @setter
     scrollPosition: (v) ->
-      log "ScrollElementAnimator set scrollPosition: #{v}"
       @scrollElement.scrollPosition = v
 
   freeze: ->
     if @active
-      log "freezing!!!!!!!!!!!! #{@currentValue} #{@scrollPosition}"
-      # @frozen = true
       @_velocity = @_springConstant = @_frictionConstant = 0
       v = @scrollPosition
       @scrollPosition = @_toValue = v # this actually tells ArtEngine where we are is where we want to be
@@ -52,16 +49,12 @@ class ScrollElementAnimator extends PersistantAnimator
   boundSp: (scrollPosition) ->  @scrollElement.boundSp scrollPosition
 
   addVelocity: (v) ->
-    log "addVelocity #{v}"
-    # @frozen = false
     @velocity += v
     @springConstant   = 0
     @frictionConstant = animatorBreakingFriction
     @scrollPosition += 10 # any change just to trigger the animation
 
   animateToValidScrollPosition: (scrollPosition = @scrollPosition) ->
-    log "animateToValidScrollPosition: #{@boundSp scrollPosition} #{@velocity} #{@currentValue} #{@scrollPosition}"
-    # @frozen = false
     @springConstant   = animatorSpringConstant
     @frictionConstant = animatorSpringFriction
     @scrollPosition = @_toValue = @boundSp scrollPosition
@@ -79,10 +72,9 @@ class ScrollElementAnimator extends PersistantAnimator
       toValue as targetScrollPosition
       currentValue as scrollPosition
 
-    log "lala #{@velocity} #{@toValue} - #{@currentValue} - #{@scrollPosition} / #{@frameSeconds} / #{@animationSeconds}"
-    if tracking # || @frozen
-      # log "frozen stop" if @frozen
-      # @frozen = false
+    frameSeconds = min frameSeconds, 1/15 # stop things from getting too crazy
+
+    if tracking
       @stop()
 
     else

@@ -28,12 +28,6 @@ ScrollElementAnimator = require './ScrollElementAnimator'
 {eventEpoch} = EventEpoch
 {createGestureRecognizer} = GestureRecognizer
 
-brakingFactor = 3
-minimumFlickVelocity = 300  # pixels per second
-animatorSpringConstant = 300
-animatorSpringFriction = 25
-flickSpeedMultiplier = 1
-
 ###
 ScrollElement
 
@@ -63,10 +57,10 @@ defineModule module, class ScrollElementWithFlick extends Element
     focusedChild: default: null
 
     track:
-      default: "start"
-      validate: (v) -> !!legalTrackingValues[v]
+      default:    "start"
+      validate:   (v) -> !!legalTrackingValues[v]
       preprocess: (v) -> legalTrackingValues[v]
-    tracking:           default: null
+    tracking:     default: null
 
     scrollPosition:
       default: 0
@@ -119,7 +113,6 @@ defineModule module, class ScrollElementWithFlick extends Element
     unless @_validScrollPositionCheckScheduled || !@_gesturePending || @_scrollAnimator.active
       @_validScrollPositionCheckScheduled = true
       timeout 250, =>
-        log "scheduleValidScrollPositionCheck: @_gesturePending: #{@_gesturePending}, @_scrollAnimator.active: #{@_scrollAnimator.active}"
         if !@_gesturePending && !@_scrollAnimator.active
           @animateToValidScrollPosition()
         @_validScrollPositionCheckScheduled = false
@@ -424,15 +417,13 @@ defineModule module, class ScrollElementWithFlick extends Element
   @getter
     internalAnimators: ->
       @_scrollAnimator ?= new ScrollElementAnimator "scrollPosition", scrollElement: @
-      log "internalAnimators GOGO": @_scrollAnimator
       scrollPosition: @_scrollAnimator
 
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
-    log "animateToValidScrollPosition #{scrollPosition} + #{desiredOffset}"
+
     unless @_scrollAnimator.active
-      log "animateToValidScrollPosition #{scrollPosition} + #{desiredOffset} GOGO"
       @_scrollAnimator.animateToValidScrollPosition scrollPosition + desiredOffset
 
   setFirstElementPosition: (fp)->
@@ -467,16 +458,9 @@ defineModule module, class ScrollElementWithFlick extends Element
       mouseWheel:     @mouseWheelEvent.bind @
 
       createGestureRecognizer
-        didNotImmediatelyFlick: (e) =>
-          log "WTF1a freeze"
-          @_scrollAnimator.freeze()
-          # @gestureBegin e
-          # @gestureMove e
-          # @_gestureScrollStartPosition = @_gestureScrollPosition =
-          log "WTF2"
-        prepare: => log "prepare"; @_gesturePending = true
+        didNotImmediatelyFlick: (e) => @_scrollAnimator.freeze()
+        prepare: => @_gesturePending = true
         finally: =>
-          log "finally! something"
           @animateToValidScrollPosition()
           @_gesturePending = false
 
@@ -488,15 +472,9 @@ defineModule module, class ScrollElementWithFlick extends Element
               when "up"   then @_scrollAnimator.addVelocity -flickSpeed
               when "down" then @_scrollAnimator.addVelocity flickSpeed
 
-            # scrollAnimator = @getScrollAnimator()
-            # scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
-
-
-          # resume:       @gestureResume.bind @
           recognize:    @gestureRecognize.bind @
           begin:        @gestureBegin.bind @
           move:         @gestureMove.bind @
-          # end:          @gestureEnd.bind @
           cancel:       @gestureCancel.bind @
 
   mouseWheelEvent: (event) =>
@@ -504,9 +482,8 @@ defineModule module, class ScrollElementWithFlick extends Element
     {windowSize, tracking} = @
 
     scrollValue = if @isVertical
-      event.props.deltaY || 0
-    else
-      event.props.deltaX || 0
+          event.props.deltaY || 0
+    else  event.props.deltaX || 0
 
     switch event.props.deltaMode
       when "line" then scrollValue *= 16
@@ -520,11 +497,11 @@ defineModule module, class ScrollElementWithFlick extends Element
       @animateToValidScrollPosition()
 
   _initGestureProps: ->
-    @_flicked = false
-    @_pointerStartPosition = 0
+    @_flicked               = false
+    @_pointerStartPosition  = 0
     @_pointerReferenceFrame = null
-    @_lastPointerEventTime = null
-    @_flickSpeed = 0
+    @_lastPointerEventTime  = null
+    @_flickSpeed            = 0
 
   pageDown: -> @animateToValidScrollPosition -@windowSize
   pageUp:   -> @animateToValidScrollPosition @windowSize
@@ -533,34 +510,25 @@ defineModule module, class ScrollElementWithFlick extends Element
 
   getMainCoordinate: (pnt) ->
     if @isVertical
-      pnt.y
-    else
-      pnt.x
+          pnt.y
+    else  pnt.x
 
   gestureRecognize: ({delta}) ->
     if @isVertical
-      1 > delta.absoluteAspectRatio
-    else
-      1 < delta.absoluteAspectRatio
+          1 > delta.absoluteAspectRatio
+    else  1 < delta.absoluteAspectRatio
 
   gestureBegin:   (e) ->
-    log "gestureBegin"
     scrollPosition = @getPendingScrollPosition()
     @_gestureScrollStartPosition = @_gestureScrollPosition =
       if scrollPosition != boundedSp = @boundSp scrollPosition
-        log "inverseOverScrollTransformation"
         boundedSp + inverseOverScrollTransformation scrollPosition - boundedSp, @_windowSize
       else scrollPosition
 
   gestureResume:  (e) ->
   gestureMove:    (e) ->
-    log "gestureMove #{@getMainCoordinate e.delta}"
     scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
     @scrollPosition =
       if scrollPosition != boundedSp = @boundSp scrollPosition
         boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
       else scrollPosition
-
-  # gestureEnd:     (e) ->
-  #   log "gestureEnd"
-  #   @animateToValidScrollPosition()
