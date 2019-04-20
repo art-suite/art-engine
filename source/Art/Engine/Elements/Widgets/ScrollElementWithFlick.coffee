@@ -81,7 +81,7 @@ defineModule module, class ScrollElementWithFlick extends Element
 
     @_animating = false
 
-    @_gestureActive = false
+    @_gesturePending = false
     @_validScrollPositionCheckScheduled = false
     @_inFlowChildren = null
     @_childrenOffset = 0
@@ -109,13 +109,18 @@ defineModule module, class ScrollElementWithFlick extends Element
 
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
-    Math.atan(scrollPosition / maxBeyond ) * (2 / Math.PI) * maxBeyond
+    Math.atan(scrollPosition / maxBeyond) * (maxBeyond * 2 / Math.PI)
+
+  inverseOverScrollTransformation = (scrollPosition, windowSize) ->
+    maxBeyond = windowSize / 3
+    maxBeyond * Math.tan(scrollPosition / (maxBeyond * 2 / Math.PI))
 
   scheduleValidScrollPositionCheck: ->
-    unless @_validScrollPositionCheckScheduled
+    unless @_validScrollPositionCheckScheduled || !@_gesturePending || @_scrollAnimator.active
       @_validScrollPositionCheckScheduled = true
       timeout 250, =>
-        if !@_gestureActive
+        log "scheduleValidScrollPositionCheck: @_gesturePending: #{@_gesturePending}, @_scrollAnimator.active: #{@_scrollAnimator.active}"
+        if !@_gesturePending && !@_scrollAnimator.active
           @animateToValidScrollPosition()
         @_validScrollPositionCheckScheduled = false
 
@@ -168,7 +173,7 @@ defineModule module, class ScrollElementWithFlick extends Element
     scrolledPastStart = mainChildrenOffset >= 0
     scrolled          = @_scrollPosition != _scrollPosition
 
-    if Math.abs(_scrollPosition - @boundSp _scrollPosition) > 1/256
+    if 1/256 < Math.abs _scrollPosition - @boundSp _scrollPosition
       @scheduleValidScrollPositionCheck()
 
     # update _tracking
@@ -421,41 +426,14 @@ defineModule module, class ScrollElementWithFlick extends Element
       @_scrollAnimator ?= new ScrollElementAnimator "scrollPosition", scrollElement: @
       log "internalAnimators GOGO": @_scrollAnimator
       scrollPosition: @_scrollAnimator
-      # {}
-  #     @_velocity = 0
-  #     @_animationMode = "tracking" # "toValue" "physics"
-
-  #     scrollPosition:
-  #       animate: (persistantAnimator) =>
-  #         # {currentValue, toValue, element, frameSeconds, state, options} = persistantAnimator
-  #         ###
-  #         we basically need 3 modes:
-
-  #         * tracking - no animations; this is the default mode
-  #         * animating-to-value: still use the same basic physics, but guarantee we reach the toValue exactly
-  #         * physics:
-  #           just uses @_velocity and basic physics
-  #         ###
-  #         switch @_animationMode
-  #           when "tracking" then persistantAnimator.stop()
-  #           when "toValue" then
-  #             easeInQuad
-  #         persistantAnimator.stop() # do this is 'tracking'
-
-  #       on:
-  #         state: =>
-  #           @_animating = true
-  #         done: =>
-  #           @_animating = false
-  #           @animators = originialAnimators
 
   animateToValidScrollPosition: (desiredOffset = 0)->
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
+    log "animateToValidScrollPosition #{scrollPosition} + #{desiredOffset}"
     unless @_scrollAnimator.active
+      log "animateToValidScrollPosition #{scrollPosition} + #{desiredOffset} GOGO"
       @_scrollAnimator.animateToValidScrollPosition scrollPosition + desiredOffset
-    # else
-    #   log not: animateToValidScrollPosition: @_scrollAnimator
 
   setFirstElementPosition: (fp)->
     @scrollPosition = @boundSp @fp2sp fp
@@ -489,7 +467,21 @@ defineModule module, class ScrollElementWithFlick extends Element
       mouseWheel:     @mouseWheelEvent.bind @
 
       createGestureRecognizer
+        didNotImmediatelyFlick: (e) =>
+          log "WTF1a freeze"
+          @_scrollAnimator.freeze()
+          # @gestureBegin e
+          # @gestureMove e
+          # @_gestureScrollStartPosition = @_gestureScrollPosition =
+          log "WTF2"
+        prepare: => log "prepare"; @_gesturePending = true
+        finally: =>
+          log "finally! something"
+          @animateToValidScrollPosition()
+          @_gesturePending = false
+
         custom:
+
           flick: ({props:{flickDirection, flickSpeed}}) =>
 
             switch flickDirection
@@ -500,12 +492,12 @@ defineModule module, class ScrollElementWithFlick extends Element
             # scrollAnimator.addVelocity @_flickSpeed * @_flickDirection * flickSpeedMultiplier
 
 
-          resume:     @gestureResume.bind @
-          recognize:  @gestureRecognize.bind @
-          begin:      @gestureBegin.bind @
-          move:       @gestureMove.bind @
-          end:        @gestureEnd.bind @
-          cancel:     @gestureCancel.bind @
+          # resume:       @gestureResume.bind @
+          recognize:    @gestureRecognize.bind @
+          begin:        @gestureBegin.bind @
+          move:         @gestureMove.bind @
+          # end:          @gestureEnd.bind @
+          cancel:       @gestureCancel.bind @
 
   mouseWheelEvent: (event) =>
     @_mostRecentMouseWheelEvent = event
@@ -537,9 +529,7 @@ defineModule module, class ScrollElementWithFlick extends Element
   pageDown: -> @animateToValidScrollPosition -@windowSize
   pageUp:   -> @animateToValidScrollPosition @windowSize
 
-  gestureCancel: ->
-    @_gestureActive = false
-    @scrollPosition = @_gestureScrollStartPosition
+  gestureCancel: -> @scrollPosition = @_gestureScrollStartPosition
 
   getMainCoordinate: (pnt) ->
     if @isVertical
@@ -553,14 +543,24 @@ defineModule module, class ScrollElementWithFlick extends Element
     else
       1 < delta.absoluteAspectRatio
 
-  gestureBegin:   (e) -> @_gestureActive = true; @_gestureScrollStartPosition =  @_gestureScrollPosition = @getPendingScrollPosition()
+  gestureBegin:   (e) ->
+    log "gestureBegin"
+    scrollPosition = @getPendingScrollPosition()
+    @_gestureScrollStartPosition = @_gestureScrollPosition =
+      if scrollPosition != boundedSp = @boundSp scrollPosition
+        log "inverseOverScrollTransformation"
+        boundedSp + inverseOverScrollTransformation scrollPosition - boundedSp, @_windowSize
+      else scrollPosition
+
   gestureResume:  (e) ->
   gestureMove:    (e) ->
+    log "gestureMove #{@getMainCoordinate e.delta}"
     scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
-    @scrollPosition = if scrollPosition != boundedSp = @boundSp scrollPosition
-      boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
-    else scrollPosition
+    @scrollPosition =
+      if scrollPosition != boundedSp = @boundSp scrollPosition
+        boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
+      else scrollPosition
 
-  gestureEnd:     (e) ->
-    @_gestureActive = false
-    @animateToValidScrollPosition()
+  # gestureEnd:     (e) ->
+  #   log "gestureEnd"
+  #   @animateToValidScrollPosition()

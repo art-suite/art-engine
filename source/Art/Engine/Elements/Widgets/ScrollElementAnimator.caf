@@ -1,5 +1,6 @@
 import &StandardImport, &Animation
 animatorBreakingFriction = 3
+animatorOutOfBoundsBreakingFriction = 12
 animatorSpringConstant = 200
 animatorSpringFriction = 25
 
@@ -8,25 +9,19 @@ class ScrollElementAnimator extends PersistantAnimator
   constructor: (__, options)->
     @_scrollElement = options.scrollElement
     @_velocity  = 0
-    @_tracking = true
     @_springConstant = 0
     @_frictionConstant = 0
-    ###
-      modes:
-        friction:     friction only
-        spring:       friction + spring attached to targetScrollPosition
-        tracking:     direct tracking, no physics
 
   @property
-    :tracking
     :springConstant
     :frictionConstant
     :velocity
 
   @getter
     :scrollElement
-    hasSpring: -> !floatEq0 @_springConstant
-    hasVelocity: -> !floatEq0 @velocity
+    tracking:     -> floatEq0 @_frictionConstant
+    hasSpring:    -> !floatEq0 @_springConstant
+    hasVelocity:  -> !floatEq0 @velocity
     active: ->
       @hasVelocity
       || @hasSpring &&
@@ -37,50 +32,45 @@ class ScrollElementAnimator extends PersistantAnimator
     inspectedObjects: ->
       ScrollElementAnimator: {}
         scrollElement: @scrollElement.inspectedName
-        @tracking
         @velocity, @springConstant, @frictionConstant
         @scrollPosition
 
   @setter
-    scrollPosition: (v) ->      @scrollElement.scrollPosition = v
+    scrollPosition: (v) ->
+      log "ScrollElementAnimator set scrollPosition: #{v}"
+      @scrollElement.scrollPosition = v
+
+  freeze: ->
+    if @active
+      log "freezing!!!!!!!!!!!! #{@currentValue} #{@scrollPosition}"
+      # @frozen = true
+      @_velocity = @_springConstant = @_frictionConstant = 0
+      v = @scrollPosition
+      @scrollPosition = @_toValue = v # this actually tells ArtEngine where we are is where we want to be
+      @_deactivate()
 
   boundSp: (scrollPosition) ->  @scrollElement.boundSp scrollPosition
 
   addVelocity: (v) ->
-    @_velocity += v
-    @tracking = false
+    log "addVelocity #{v}"
+    # @frozen = false
+    @velocity += v
     @springConstant   = 0
     @frictionConstant = animatorBreakingFriction
     @scrollPosition += 10 # any change just to trigger the animation
 
   animateToValidScrollPosition: (scrollPosition = @scrollPosition) ->
-    # log.warn :animateToValidScrollPosition0
-    # log animateToValidScrollPosition1: @
-    @tracking         = false
+    log "animateToValidScrollPosition: #{@boundSp scrollPosition} #{@velocity} #{@currentValue} #{@scrollPosition}"
+    # @frozen = false
     @springConstant   = animatorSpringConstant
     @frictionConstant = animatorSpringFriction
-    # log animateToValidScrollPosition2: @
-    #   unbound:  scrollPosition
-    #   bound:    @boundSp scrollPosition
     @scrollPosition = @_toValue = @boundSp scrollPosition
 
   _stop: ->
-    @tracking = true
-    @velocity = 0
-    @springConstant = 0
-    @frictionConstant = 0
+    @velocity = @springConstant = @frictionConstant = 0
     super
-
-  animateAbsoluteTime: ->
-    super
-
 
   animate: ->
-    # log {}
-    #   @stop()
-    #   @toValue
-    # @toValue
-    # @stop()
     @ extract
       springConstant
       frictionConstant
@@ -89,20 +79,22 @@ class ScrollElementAnimator extends PersistantAnimator
       toValue as targetScrollPosition
       currentValue as scrollPosition
 
-    if tracking
+    log "lala #{@velocity} #{@toValue} - #{@currentValue} - #{@scrollPosition} / #{@frameSeconds} / #{@animationSeconds}"
+    if tracking # || @frozen
+      # log "frozen stop" if @frozen
+      # @frozen = false
       @stop()
 
     else
+      @ extract velocityIsSlow
       # PHYSICS
       scrollPositionValid = float32Eq
         scrollPosition
         boundScrollPosition = @boundSp scrollPosition
 
-      if !@hasSpring && @hasVelocity && !scrollPositionValid
-        # log :hasSpringAndVelocityAndInvalid
-        # if 0 < @_velocity *
-        #     boundScrollPosition - scrollPosition
-        frictionConstant *= 3
+      if !@hasSpring && !scrollPositionValid
+        # out of bounds, slow down!
+        frictionConstant = animatorOutOfBoundsBreakingFriction
 
       acceleration =
         @_velocity * -frictionConstant +
@@ -117,18 +109,12 @@ class ScrollElementAnimator extends PersistantAnimator
           if 1 >= abs scrollPosition - targetScrollPosition
             # stop if slow and within 1 pixel of the targetScrollPosition
             scrollPosition = @stop()
-            # log stoppingSpringAt: {}
-            #   @currentValue
-            #   @toValue
-            #   scrollPosition
-            #   bound: @boundSp scrollPosition
 
         else
           if !scrollPositionValid
             # went past the end, attach the spring to the boundScrollPosition and "animate to valid scrollPosition"
             @animateToValidScrollPosition scrollPosition
-          else
-            # log stoppingFromFriction: {} scrollPosition
-            @stop()
+
+          else @stop()
 
       scrollPosition
