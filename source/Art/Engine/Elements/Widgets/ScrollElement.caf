@@ -171,7 +171,7 @@ class ScrollElement extends Element
     rangeStart  = @_getAreaStart area
     rangeEnd    = @_getAreaEnd area
 
-    @animateToValidScrollPosition -
+    @animateToValidScrollPosition
       -min
         # scroll area to middle of view
         rangeStart + rangeEnd - windowSize
