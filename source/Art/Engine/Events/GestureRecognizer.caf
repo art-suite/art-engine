@@ -1,6 +1,7 @@
 import &StandardImport
 
 minimumFlickPixelsPerSecond = 300  # pixels per second
+didNotImmediatelyFlickDelay = 90
 
 ### TODO:
   Multi-touch gesture recognizers
@@ -170,7 +171,7 @@ class GestureRecognizer extends BaseClass
     @_activeGesture = @_lastActiveGesture = @_startEvent = null
     @_capturedEvents = false
     @_lastPointerEventTime =
-    @_flickDuration = @_flickSpeed = 0
+    @_lastFlickTime = @_flickDuration = @_flickSpeed = 0
     @_flickStartEvent =
     @_flickVector = @_flickDirection = null
 
@@ -209,9 +210,9 @@ class GestureRecognizer extends BaseClass
 
           if didNotImmediatelyFlick = @_nonGestureHandlers?.didNotImmediatelyFlick
             @_downAt = currentSecond()
-            timeout 60 ->
+            timeout didNotImmediatelyFlickDelay, ->
               if @_noFlickYet
-                log :didNotImmediatelyFlick
+                # log :didNotImmediatelyFlick
                 didNotImmediatelyFlick e
 
           @_lastPointerEventTime = e.timeStamp
@@ -314,10 +315,12 @@ class GestureRecognizer extends BaseClass
           flickDirection: @_flickDirection
           flickSpeed:     @_flickSpeed
           flickDuration:  @_flickDuration
+          secondsSinceLastFlick: @_lastFlickTime? && e.timeStamp - @_lastFlickTime
 
+      @_lastFlickTime = e.timeStamp
       @_flickStartEvent = null
 
-      log "" flick #{@_flickDirection} #{} currentSecond() - @_downAt
+      # log "" flick #{@_flickDirection} #{} currentSecond() - @_downAt
       @_noFlickYet = false
       @_activeGesture?.flick?     flickEvent
       @_nonGestureHandlers.flick? flickEvent

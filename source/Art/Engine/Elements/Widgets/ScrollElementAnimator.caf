@@ -42,13 +42,13 @@ class ScrollElementAnimator extends PersistantAnimator
   freeze: ->
     if @active
       @_velocity = @_springConstant = @_frictionConstant = 0
-      v = @scrollPosition
-      @scrollPosition = @_toValue = v # this actually tells ArtEngine where we are is where we want to be
+      @scrollElement._freeze()
       @_deactivate()
 
   boundSp: (scrollPosition) ->  @scrollElement.boundSp scrollPosition
 
   addVelocity: (v) ->
+    # log "" addVelocity: #{@velocity} + #{v} = #{} @velocity + v
     @velocity += v
     @springConstant   = 0
     @frictionConstant = animatorBreakingFriction

@@ -13,7 +13,7 @@ import &StandardImport, &Core, &Events.GestureRecognizer, {} &ScrollElementAnima
     scrollingActive:
     scrollUpdate:
 
-class ScrollElementWithFlick extends Element
+class ScrollElement extends Element
 
   legalTrackingValues =
     top:    :start
@@ -72,11 +72,14 @@ class ScrollElementWithFlick extends Element
 
   overScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
-    Math.atan(scrollPosition / maxBeyond) * (maxBeyond * 2 / Math.PI)
+    * 2 / Math.PI
+    * Math.atan scrollPosition / maxBeyond
 
   inverseOverScrollTransformation = (scrollPosition, windowSize) ->
     maxBeyond = windowSize / 3
-    maxBeyond * Math.tan(scrollPosition / (maxBeyond * 2 / Math.PI))
+    * Math.tan
+      scrollPosition
+      / maxBeyond * 2 / Math.PI
 
   scheduleValidScrollPositionCheck: ->
     unless @_validScrollPositionCheckScheduled || !@_gesturePending || @_scrollAnimator.active
@@ -92,10 +95,10 @@ class ScrollElementWithFlick extends Element
     wasntTracking     = !@_pendingState._tracking
 
     # start using the perferred tracking if children stop fitting in the view
-    if wasntTracking && !contentFits && "end" == @_pendingState._tracking = @_pendingState._track
+    if wasntTracking && !contentFits && :end == @_pendingState._tracking = @_pendingState._track
       @_spMinusTp -= mainElementSizeForChildren
 
-    else if windowSizeChanged && @_pendingState._tracking == "end"
+    else if windowSizeChanged && @_pendingState._tracking == :end
       @_spMinusTp += @_windowSize - mainElementSizeForChildren
 
     @_windowSize      = mainElementSizeForChildren
@@ -378,7 +381,9 @@ class ScrollElementWithFlick extends Element
           @animateToValidScrollPosition()
 
       createGestureRecognizer
-        didNotImmediatelyFlick: (e) -> @_scrollAnimator.freeze()
+        didNotImmediatelyFlick: (e) ->
+          # log :didNotImmediatelyFlick
+          @_scrollAnimator.freeze()
         prepare: -> @_gesturePending = true
         finally: ->
           @animateToValidScrollPosition()
@@ -386,8 +391,8 @@ class ScrollElementWithFlick extends Element
 
         custom:
 
-          flick: ({props:{flickDirection, flickSpeed}}) ->
-
+          flick: ({props:{flickDirection, flickSpeed, secondsSinceLastFlick}}) ->
+            log "" flickDirection #{flickSpeed} #{secondsSinceLastFlick} (#{@_scrollAnimator.velocity})
             switch flickDirection
               when "up"   then @_scrollAnimator.addVelocity -flickSpeed
               when "down" then @_scrollAnimator.addVelocity flickSpeed
@@ -397,21 +402,39 @@ class ScrollElementWithFlick extends Element
                   1 > delta.absoluteAspectRatio
             else  1 < delta.absoluteAspectRatio
 
-          cancel:  -> @scrollPosition = @_gestureScrollStartPosition
-
-          begin:   (e) ->
-            scrollPosition = @getPendingScrollPosition()
-            @_gestureScrollStartPosition = @_gestureScrollPosition =
-              if scrollPosition != boundedSp = @boundSp scrollPosition
-                boundedSp + inverseOverScrollTransformation scrollPosition - boundedSp, @_windowSize
-              else scrollPosition
+          begin: -> @_beginGestureAt @getPendingScrollPosition()
 
           move:    (e) ->
+            # log "move #{@_focusedChildIndex}: #{e.delta}"
             scrollPosition = @_gestureScrollPosition += @getMainCoordinate e.delta
-            @scrollPosition =
+            scrollPosition =
               if scrollPosition != boundedSp = @boundSp scrollPosition
                 boundedSp + overScrollTransformation scrollPosition - boundedSp, @_windowSize
               else scrollPosition
+            log "move2 #{@_focusedChildIndex}: #{scrollPosition}"
+            @scrollPosition = scrollPosition
+
+          resume: (e) ->
+            if @_scrollAnimator.active
+              log "active #{@_focusedChildIndex}: #{@currentValue} #{@getPendingScrollPosition()}"
+              # timeout 16 ->
+              #   log :timeoutBegin
+              #   begin e
+              true
+
+          cancel:  ->
+            # log :cancel
+            @scrollPosition = @_gestureScrollStartPosition
+
+  _beginGestureAt: (scrollPosition) ->
+    log "_beginGestureAt #{@_focusedChildIndex}: #{scrollPosition}"
+    @_gestureScrollStartPosition = @_gestureScrollPosition =
+      if scrollPosition != boundedSp = @boundSp scrollPosition
+        boundedSp + inverseOverScrollTransformation scrollPosition - boundedSp, @_windowSize
+      else scrollPosition
+
+  _freeze: (scrollPosition = @scrollPosition) ->
+    @_beginGestureAt @scrollPosition = scrollPosition # this actually tells ArtEngine where we are is where we want to be
 
   #################
     GET INFO

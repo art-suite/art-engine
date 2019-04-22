@@ -4,7 +4,6 @@
 module.exports = require './namespace'
 module.exports
 .addModules
-  PagingScrollElement:    require './PagingScrollElement'   
-  ScrollElement:          require './ScrollElement'         
-  ScrollElementAnimator:  require './ScrollElementAnimator' 
-  ScrollElementWithFlick: require './ScrollElementWithFlick'
+  PagingScrollElement:   require './PagingScrollElement'  
+  ScrollElement:         require './ScrollElement'        
+  ScrollElementAnimator: require './ScrollElementAnimator'

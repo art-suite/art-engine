@@ -67,6 +67,11 @@ module.exports = (superClass) -> class AnimatedElementMixin extends superClass
   @getter
     internalAnimators: ->
 
+  constructor: (options) ->
+    super
+    if _ia = @internalAnimators
+      @setAnimators options?.animators
+
   ######################
   # PRIVATE
   ######################
