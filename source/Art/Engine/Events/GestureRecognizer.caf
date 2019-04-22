@@ -171,8 +171,10 @@ class GestureRecognizer extends BaseClass
     @_activeGesture = @_lastActiveGesture = @_startEvent = null
     @_capturedEvents = false
     @_lastPointerEventTime =
-    @_lastFlickTime = @_flickDuration = @_flickSpeed = 0
+    @_flickDuration = @_flickSpeed = 0
+
     @_flickStartEvent =
+    @_lastFlickTime =
     @_flickVector = @_flickDirection = null
 
     @setupDefaultRecognizers()
@@ -315,7 +317,9 @@ class GestureRecognizer extends BaseClass
           flickDirection: @_flickDirection
           flickSpeed:     @_flickSpeed
           flickDuration:  @_flickDuration
-          secondsSinceLastFlick: @_lastFlickTime? && e.timeStamp - @_lastFlickTime
+          secondsSinceLastFlick:
+            if @_lastFlickTime? && 0 < e.timeStamp - @_lastFlickTime
+              e.timeStamp - @_lastFlickTime
 
       @_lastFlickTime = e.timeStamp
       @_flickStartEvent = null

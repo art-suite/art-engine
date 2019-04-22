@@ -1,5 +1,5 @@
 import &StandardImport, &Animation
-animatorBreakingFriction = 3
+animatorBreakingFriction = 2
 animatorOutOfBoundsBreakingFriction = 15
 animatorSpringConstant = 200
 animatorSpringFriction = 25
@@ -82,7 +82,7 @@ class ScrollElementAnimator extends PersistantAnimator
       # PHYSICS
       scrollPositionValid = float32Eq
         scrollPosition
-        boundScrollPosition = @boundSp scrollPosition
+        @boundSp scrollPosition
 
       if !@hasSpring && !scrollPositionValid
         # out of bounds, slow down!
