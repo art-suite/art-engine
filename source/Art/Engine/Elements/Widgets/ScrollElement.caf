@@ -232,8 +232,6 @@ class ScrollElement extends Element
             else
               @_flickAcceleratorMultiplier = defaultFlickAcceleratorMultiplier
 
-            log "flickMultiplier #{flickMultiplier}"
-
             switch flickDirection
               when :up    then @_scrollAnimator.addVelocity -flickSpeed
               when :down  then @_scrollAnimator.addVelocity flickSpeed
