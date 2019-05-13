@@ -1,0 +1,8 @@
+&ArtEngine
+
+&ArtTestbench/testing
+.init
+  defineTests: ->
+    &ArtEngine.Core.Drawing.ElementDrawLib.disableChromeBugExpandDrawAreaPatch()
+
+    &tests

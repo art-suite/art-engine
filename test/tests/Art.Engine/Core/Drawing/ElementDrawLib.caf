@@ -157,6 +157,7 @@ suite:
           oldDrawAreas
           addDrawArea
           snapTo
+        log {} computedNewDrawAreas, oldDrawAreas, addDrawArea, snapTo
         assert.eq computedNewDrawAreas.length, newDrawAreas.length
         each area, i in computedNewDrawAreas
           newDrawArea = newDrawAreas[i]

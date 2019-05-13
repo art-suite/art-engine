@@ -243,6 +243,14 @@ class ElementDrawLib
 
     NO SIDE-EFFECTS: does not mutate dirtyDrawAreas or areaToAdd
     OPTIMIZED: creates at most 1 rectangle and 1 array
+  @chromeBugExpandDirtyDrawAreas: 1
+  # Neptune.Art.Engine.Core.Drawing.ElementDrawLib
+  ## 2019-SBD:
+    'expand' was set to 1 to decrease 'ghost trails' in Chrome
+    Safari seems to be fine. It seems to be a retina-screen bug.
+
+  @disableChromeBugExpandDrawAreaPatch: => @chromeBugExpandDirtyDrawAreas = 0
+
   @addDirtyDrawArea: (dirtyDrawAreas, areaToAdd, snapTo) =>
 
     if areaToAdd.area == 0
@@ -254,15 +262,7 @@ class ElementDrawLib
         .roundOut
           snapTo
           colorPrecision
-          1
-          ## 2019-SBD:
-            'expand' was set to 1 decrease in 'ghost trails'
-            But, it breaks a lot of tests. I'm trying it
-            back at 0 to see if we still have the ghosting
-            problems.
-
-            2019-SBD-Later: Yup, still have ghosts in chrome
-
+          @chromeBugExpandDirtyDrawAreas
       overlapCount = 0
       alreadyContainedInDrawAreas = find area in dirtyDrawAreas
         if area.contains areaToAdd

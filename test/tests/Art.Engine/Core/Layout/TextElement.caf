@@ -30,7 +30,7 @@ suite:
       render: -> TextElement
         text: "D"
         fontSize: 60
-        size: cs: 1
+        size: :childrenSize
         RectangleElement color: "red"
         FillElement()
 
@@ -124,6 +124,20 @@ suite:
           element.children[1].drawArea.h
 
   regressions: ->
+    renderTest
+      "FillElement and internal ShadowElement"
+      render: ->
+        TextElement
+          fontSize: 100
+          text: :Yummy
+          size: :childrenSize
+          FillElement color: :red :orange :yellow
+
+          ShadowElement
+            inverted:       true
+            compositeMode:  :sourceTopInTarget
+            location:       point 0, -5
+
 
     renderTest
       "empty-string regression"
