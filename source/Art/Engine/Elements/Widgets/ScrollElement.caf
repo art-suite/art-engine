@@ -233,8 +233,10 @@ class ScrollElement extends Element
               @_flickAcceleratorMultiplier = defaultFlickAcceleratorMultiplier
 
             switch flickDirection
-              when :up    then @_scrollAnimator.addVelocity -flickSpeed
-              when :down  then @_scrollAnimator.addVelocity flickSpeed
+              when :up    then @isVertical    && @_scrollAnimator.addVelocity -flickSpeed
+              when :down  then @isVertical    && @_scrollAnimator.addVelocity flickSpeed
+              when :left  then @isHorizontal  && @_scrollAnimator.addVelocity -flickSpeed
+              when :right then @isHorizontal  && @_scrollAnimator.addVelocity flickSpeed
 
           recognize: ({delta}) ->
             if @isVertical
