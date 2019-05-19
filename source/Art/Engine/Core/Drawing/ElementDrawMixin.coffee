@@ -1,7 +1,7 @@
 'use strict';
 {
 
-  compactFlatten, objectWithout, defineModule, formattedInspect, clone, max,
+  compactFlattenFast, objectWithout, defineModule, formattedInspect, clone, max,
   isFunction, log, object, isNumber, isArray, isPlainObject, isString, each,
   isPlainObject, merge, mergeInto
   float32Eq
@@ -88,7 +88,7 @@ defineModule module, ->
         preprocess: (drawSteps) ->
           if drawSteps?
             drawSteps = [drawSteps] unless isArray drawSteps
-            drawSteps = compactFlatten drawSteps
+            drawSteps = compactFlattenFast drawSteps
             needsNormalizing = false
             for step in drawSteps
               {fill, outline, radius, color, colors, padding, to, from} = step

@@ -195,10 +195,10 @@ class ElementDrawLib
         step
 
   @validateDrawAreas: (newDrawAreas, oldDrawAreas, addedDrawArea) ->
-    areasToTest = compactFlatten [oldDrawAreas, addedDrawArea]
+    areasToTest = compactFlattenFast [oldDrawAreas, addedDrawArea]
 
     # all areasToTest are contained by at least one area in newDrawAreas
-    each area in compactFlatten [] oldDrawAreas, addedDrawArea
+    each area in compactFlattenAllFast oldDrawAreas, addedDrawArea
       unless find newDrawArea in newDrawAreas when newDrawArea.contains area
         log formattedInspect validateDrawAreasFail: global.validateDrawAreasFail = {newDrawAreas, oldDrawAreas, addedDrawArea}
         throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"

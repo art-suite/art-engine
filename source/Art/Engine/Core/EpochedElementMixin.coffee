@@ -5,7 +5,8 @@
   merge
   mergeInto
   capitalize
-  compactFlatten
+  compactFlattenFast
+  compactFlattenAllFast
   isNumber
   isFunction
   shallowEq
@@ -553,12 +554,12 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
   @_generateSetPropertyDefaults: ->
     propertyInitializerList = @getPropertyInitializerList()
     metaProperties = @getMetaProperties()
-    functionString = compactFlatten([
-      "(function(options) {"
-      "var _pendingState = this._pendingState;"
-      # "var propertyInitializerList = this.propertyInitializerList;"
-      # "var propertyInitializerDefaultValuesList = this.propertyInitializerDefaultValuesList;"
-      "var metaProperties = this.metaProperties;"
+    functionString = compactFlattenAllFast(
+      """
+      (function(options) {
+      var _pendingState = this._pendingState;
+      var metaProperties = this.metaProperties;
+      """
       for [k, v, externalName], i in propertyInitializerList
 
         value = if (defaultOverride = @::[defaultName = "default" + capitalize externalName]) != undefined
@@ -579,7 +580,7 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
       # for externalName, {setterName, virtual} of metaProperties when virtual
       #   "if (options.#{externalName} != undefined) this.#{setterName}(options.#{externalName});"
       "})"
-    ]).join "\n"
+    ).join "\n"
     eval functionString
 
   _initProperties: (options) ->

@@ -31,7 +31,7 @@ GlobalEpochCycle = require './GlobalEpochCycle'
   inspect, inspectLean
   clone, time, plainObjectsDeepEq, shallowEq, Unique,
   compact
-  compactFlatten, keepIfRubyTrue, log, insert, remove, merge, max, min,
+  keepIfRubyTrue, log, insert, remove, merge, max, min,
   arrayWithoutValue, minimumOrderedOverlappingMerge
   isPlainObject
   isPlainArray
@@ -99,12 +99,12 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
 
     @_propertiesInitialized = false
 
-    if arguments.length == 2 && children && children.constructor == Array
-      @setChildren children if children.length > 0
-    else if arguments.length > 1
-      childrenArray = new Array arguments.length - 1
-      childrenArray[i-1] = arguments[i] for i in [1...arguments.length] by 1
-      @setChildren childrenArray
+    if children?
+      @setChildren children
+    # else if arguments.length > 1
+    #   childrenArray = new Array arguments.length - 1
+    #   childrenArray[i-1] = arguments[i] for i in [1...arguments.length] by 1
+    #   @setChildren childrenArray
 
     @_propertiesInitialized = true
 
