@@ -9,12 +9,12 @@ eventKey = (e)->
 spacing = max 5, 1 + pointerDeadZone
 
 newEventRig = (options={})->
-  canvasElement = new CanvasElement
+  canvasElement = CanvasElement
     canvas: HtmlCanvas()
     noHtmlCanvasElement: true
     key:  :parent
     size: 100
-    child = new Element
+    child = Element
       key:      :child
       location: spacing * 2
       size:     spacing * 10
@@ -66,7 +66,7 @@ suite:
   main: ->
     test "Basic pointerDown" ->
       new Promise (resolve) ->
-        top = new CanvasElement
+        top = CanvasElement
           canvas:               HtmlCanvas()
           noHtmlCanvasElement:  true
           on: pointerDown:      resolve

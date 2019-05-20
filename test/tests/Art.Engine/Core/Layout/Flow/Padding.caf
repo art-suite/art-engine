@@ -9,8 +9,8 @@ suite: ->
         padding: 10
         childrenLayout: "flow"
         name: "parent"
-        new RectangleElement color: "blue", size:45
-        new RectangleElement color: "red", size:45
+        RectangleElement color: "blue", size:45
+        RectangleElement color: "red", size:45
 
     test: (root) ->
       [r1, r2] = root.children

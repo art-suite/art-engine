@@ -4,19 +4,18 @@ Engine = require 'art-engine'
 
 {defineModule, inspect, log, bound, flatten, first, second, last} = Foundation
 {point, point0, rect, Matrix, matrix} = Atomic
-{Element, RectangleElement, PagingScrollElement} = Engine
+{Element, RectangleElement, PagingScrollElement} = require 'art-engine/Factories'
 
 newPage = (pageNumber, height = 10) ->
-  new Element key:"page#{pageNumber}", size: ww:1, h:height
+  Element key:"page#{pageNumber}", size: ww:1, h:height
 
 newPseWithPages = (heights = 10, numPages = 3)->
-  new Element
+  Element
     size: containerHeight = 100
-    self.pse = new PagingScrollElement null,
+    self.pse = PagingScrollElement null,
       for i in [0...numPages] by 1
         newPage i, heights
   pse
-
 
 defineModule module, suite:
 
@@ -24,9 +23,9 @@ defineModule module, suite:
     test "basic structure", ->
       (pse = newPseWithPages())
       .onNextReady =>
-        assert.eq 1, pse.children.length
+        assert.eq 1, pse.children.length, "first"
         scrollElement = pse.children[0]
-        assert.eq 2, scrollElement.children.length
+        assert.eq 2, scrollElement.children.length, "second"
         [before, after] = scrollElement.children
         assert.eq 0, before.children.length
         assert.eq 3, after.children.length
@@ -88,7 +87,7 @@ defineModule module, suite:
 
 
   _updateReferenceFrame: ->
-    test "new PSE - referenceFrame.page == first page", ->
+    test "PSE - referenceFrame.page == first page", ->
       (pse = newPseWithPages(40))
       .onNextReady =>
         [page0, page1, page2] = pse.pages
@@ -177,7 +176,7 @@ defineModule module, suite:
             assert.eq pse.referenceFrame, referenceFrame
 
 
-      test "adding page before should change referenceFrame to the new page", ->
+      test "adding page before should change referenceFrame to the page", ->
         pse = newPseWithPages 40
         pse.onNextReady =>
           assert.eq true, pse.atStart
@@ -286,7 +285,7 @@ defineModule module, suite:
 
 
     atEnd: ->
-      test "adding page after last should change referenceFrame to the new page", ->
+      test "adding page after last should change referenceFrame to the page", ->
         pse = newPseWithPages 40
         pse.onNextReady =>
           pse.jumpToEnd()

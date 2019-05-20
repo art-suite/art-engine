@@ -6,7 +6,7 @@ StateEpochTestHelper = require '../../Core/StateEpochTestHelper'
 
 {defineModule, inspect, log, min, isNumber, isPlainObject, merge} = Foundation
 {point, matrix, Matrix, Point, rect, point1} = Atomic
-{Element, RectangleElement, FillElement, TextElement, Shapes} = Engine
+{Element, RectangleElement, FillElement, TextElement, Shapes} = require 'art-engine/Factories'
 {drawTest, drawTest2, drawTest3} =  Helper
 {pow} = Math
 
@@ -49,7 +49,7 @@ layoutTester = (element, tests) ->
 defineModule module, suite:
   basics: ->
     stateEpochTest "Layout basic", ->
-      textElement = new TextElement size: "childrenSize", text:"foo"
+      textElement = TextElement size: "childrenSize", text:"foo"
       ->
         assert.eq textElement.currentSize.rounded, point 21, 12
         textElement.setText "foobar"
@@ -57,7 +57,7 @@ defineModule module, suite:
           assert.eq textElement.currentSize.rounded, point 42, 12
 
     stateEpochTest "Layout textualBaseline", ->
-      textElement = new TextElement size: "childrenSize", text:"foo", layoutMode: "textualBaseline"
+      textElement = TextElement size: "childrenSize", text:"foo", layoutMode: "textualBaseline"
       ->
         assert.eq textElement.currentSize.rounded, point 21, 12
         textElement.setText "foobar"
@@ -65,7 +65,7 @@ defineModule module, suite:
           assert.eq textElement.currentSize.rounded, point 42, 12
 
     stateEpochTest "Layout with axis: .5 (basic)", ->
-      textElement = new TextElement size: "childrenSize", text:"foo", axis: .5, location: 123
+      textElement = TextElement size: "childrenSize", text:"foo", axis: .5, location: 123
       ->
         assert.eq textElement.currentLocation, point 123, 123
         textElement.setText "foobar"
@@ -73,8 +73,8 @@ defineModule module, suite:
           assert.eq textElement.currentLocation, point 123, 123
 
     stateEpochTest "Layout with axis: .5, location: ps:.5", ->
-      new Element size: 246,
-        textElement = new TextElement size: "childrenSize", text:"foo", axis: .5, location: ps:.5
+      Element size: 246,
+        textElement = TextElement size: "childrenSize", text:"foo", axis: .5, location: ps:.5
       ->
         assert.eq textElement.currentLocation, point 123, 123
         assert.eq textElement.currentSize.rounded, point 21, 12
@@ -86,26 +86,26 @@ defineModule module, suite:
     drawTest3 "TEXT layoutMode: textual",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement
+        TextElement
           color:"red", text:"Thing()", fontSize:48
-          new RectangleElement color: "#0003"
-          new FillElement()
+          RectangleElement color: "#0003"
+          FillElement()
 
     drawTest3 "layoutMode: textualBaseline",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement
+        TextElement
           color:"red"
           text:"Thing()\nThang"
           fontSize:48
           layoutMode: "textualBaseline"
-          new RectangleElement color: "#0003"
-          new FillElement()
+          RectangleElement color: "#0003"
+          FillElement()
 
     drawTest3 "layoutMode: textualBaseline with word-wrap",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement
+        TextElement
           size:
             w: (ps, cs) -> min 100, cs.w
             hch:1
@@ -113,26 +113,26 @@ defineModule module, suite:
           text:"I am a dog."
           fontSize:32
           layoutMode: "textualBaseline"
-          new RectangleElement color: "#0003"
-          new FillElement()
+          RectangleElement color: "#0003"
+          FillElement()
 
     drawTest3 "compositeMode",
       stagingBitmapsCreateShouldBe: 1
       element: ->
-        new Element {},
-          new RectangleElement size: {w: 40, h: 60}, color:"red"
-          new RectangleElement size: {w: 40, h: 60}, location:point(40,0), color:"blue"
-          new TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
+        Element {},
+          RectangleElement size: {w: 40, h: 60}, color:"red"
+          RectangleElement size: {w: 40, h: 60}, location:point(40,0), color:"blue"
+          TextElement color:"#0f0", fontSize:50, text:"test", compositeMode:"add"
 
     drawTest3 "opacity",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement color:"red", fontSize:50, text:"test", opacity:.5
+        TextElement color:"red", fontSize:50, text:"test", opacity:.5
 
     drawTest3 "all options",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement
+        TextElement
           color:      "green"
           text:       "Dude!"
           fontSize:   40
@@ -146,9 +146,9 @@ defineModule module, suite:
     drawTest3 "children",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new TextElement color:"red", fontSize:50, text:"test",
-          new FillElement
-          new RectangleElement
+        TextElement color:"red", fontSize:50, text:"test",
+          FillElement()
+          RectangleElement
             color:"#70F7"
             axis:point(.5)
             location: ps: .5
@@ -158,45 +158,45 @@ defineModule module, suite:
     drawTest3 "children with mask",
       stagingBitmapsCreateShouldBe: 2
       element: ->
-        new TextElement color:"red", fontSize:50, text:"test",
-          new RectangleElement
+        TextElement color:"red", fontSize:50, text:"test",
+          RectangleElement
             color:"#F0F"
             axis: .5
             location: ps: .5
             size: w:60, h:60
             angle: Math.PI * .3
-          new FillElement isMask:true
+          FillElement isMask:true
 
     drawTest3 "basic",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new Element
+        Element
           size: w:100, hch:1
-          new RectangleElement color: "#fcc"
-          new TextElement color:"red", text:"That darn quick, brown fox. He always gets away!", fontSize:16, size: wpw:1
+          RectangleElement color: "#fcc"
+          TextElement color:"red", text:"That darn quick, brown fox. He always gets away!", fontSize:16, size: wpw:1
 
     drawTest3 "centered-aligned",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new Element
+        Element
           size: w:100, hch:1
-          new RectangleElement color: "#fcc"
-          new TextElement color:"red", text:"That!", fontSize:16, align: "center", size: wpw:1
+          RectangleElement color: "#fcc"
+          TextElement color:"red", text:"That!", fontSize:16, align: "center", size: wpw:1
 
     drawTest3 "right-aligned",
       stagingBitmapsCreateShouldBe: 0
       element: ->
-        new Element
+        Element
           size: w:100, hch:1
-          new RectangleElement color: "#fcc"
-          new TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
+          RectangleElement color: "#fcc"
+          TextElement color:"red", text:"That!", fontSize:16, align: "right", size: wpw:1
 
     test "flow two paragraphTexts", ->
-      e = new Element
+      e = Element
         size: w:200, hch:1
         childrenLayout: "flow"
-        e1 = new TextElement color:"red", size:"childrenSize", text:"This is going to be great, don't you think?", fontSize:32
-        e2 = new TextElement color:"red", size:"childrenSize", text:"-------", fontSize:32
+        e1 = TextElement color:"red", size:"childrenSize", text:"This is going to be great, don't you think?", fontSize:32
+        e2 = TextElement color:"red", size:"childrenSize", text:"-------", fontSize:32
       e1.onNextReady()
       .then ->
         e.toBitmapBasic {}
@@ -205,15 +205,15 @@ defineModule module, suite:
         assert.neq e1.currentLocation, e2.currentLocation
 
     test "drawArea", ->
-      el = new TextElement size: "childrenSize", text:"hi", fontSize:16, align: "center", size: w:300
+      el = TextElement size: "childrenSize", text:"hi", fontSize:16, align: "center", size: w:300
       el.onNextReady ->
         assert.within el.elementSpaceDrawArea.right, 150, 300
 
     test "drawArea width wordWrap", ->
       el =
-        new Element
+        Element
           size: w:100, hch:1
-          new TextElement
+          TextElement
             text:"The quick brown fox jumped over the lazy dog."
             size: wpw:1, hch:1
       el.onNextReady ->
@@ -225,14 +225,14 @@ defineModule module, suite:
   "as shape": ->
     drawTest3 "gradient",
       element: ->
-        new TextElement
+        TextElement
           colors: ["red", "yellow"]
           text: "Red-yellow gradient."
           fontSize: 32
 
     drawTest3 "shadow",
       element: ->
-        new TextElement
+        TextElement
           color: "red"
           shadow: blur: 2, color: "#0005", offset: y: 2
           text: "Shadow"
@@ -294,7 +294,7 @@ defineModule module, suite:
             drawTest3 "align: '#{value}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
-                new TextElement
+                TextElement
                   size: pts: 100
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
@@ -314,14 +314,14 @@ defineModule module, suite:
             drawTest3 "align: '#{value}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
-                new TextElement
+                TextElement
                   size:     w:200, hch:1
                   padding:  h:20, v:10
                   color:    "red"
                   text:     "The quick brown fox jumped over the lazy dog."
                   fontSize: 16
                   align:    value
-                  new FillElement() # IMPORTANT FOR THIS TEST - DONT REMOVE
+                  FillElement() # IMPORTANT FOR THIS TEST - DONT REMOVE
               test: (element) -> layoutTester element, result
 
       "width change in second layout pass should update alignments": ->
@@ -335,9 +335,9 @@ defineModule module, suite:
             drawTest3 "align: '#{align}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
-                new Element
+                Element
                   size: w:150, hch: 1
-                  new TextElement
+                  TextElement
                     fontSize: 17.5
                     fontFamily: "'HelveticaNeue-Light', sans-serif"
                     color: "red"
@@ -346,8 +346,8 @@ defineModule module, suite:
                     align: align
                     padding: bottom: 9
                     leading: 1.1
-                    new RectangleElement color: "#0002"
-                    new FillElement
+                    RectangleElement color: "#0002"
+                    FillElement()
 
               test: (element) -> layoutTester element.children[0], result
 
@@ -356,16 +356,16 @@ defineModule module, suite:
             margin: 10
             color: "red"
             text: "MMMM! Rajas!"
-          el = new Element
+          el = Element
             size: w:150, h: 50
             childrenLayout: "column"
-            new RectangleElement inFlow: false, color: "#eee"
-            c1 = new TextElement merge(sharedProps, size: cs: 1, max: ww: 1),
-              new RectangleElement color: "#0002"
-              new FillElement
-            c2 = new TextElement merge(sharedProps, size: cs: 1),
-              new RectangleElement color: "#0002"
-              new FillElement
+            RectangleElement inFlow: false, color: "#eee"
+            c1 = TextElement merge(sharedProps, size: cs: 1, max: ww: 1),
+              RectangleElement color: "#0002"
+              FillElement()
+            c2 = TextElement merge(sharedProps, size: cs: 1),
+              RectangleElement color: "#0002"
+              FillElement()
           el.toBitmapBasic()
           .then (bitmap) ->
             log shouldBeSame: bitmap
@@ -405,12 +405,12 @@ defineModule module, suite:
             drawTest3 "align: '#{value}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
-                new TextElement
+                TextElement
                   size: w:50, h:100
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
-                  new RectangleElement color: "#0002"
-                  new FillElement()
+                  RectangleElement color: "#0002"
+                  FillElement()
               test: (element) -> layoutFragmentTester element, result
 
       "layout ww:1, hch:1": ->
@@ -427,12 +427,12 @@ defineModule module, suite:
             drawTest3 "align: '#{value}'",
               stagingBitmapsCreateShouldBe: 0
               element: ->
-                new TextElement
+                TextElement
                   size: w:100, hch:1
                   align: value
                   color:"red", text:"The quick brown fox jumped over the lazy dog.", fontSize:16
-                  new RectangleElement color: "#0002"
-                  new FillElement()
+                  RectangleElement color: "#0002"
+                  FillElement()
               test: (element) -> layoutFragmentTester element, result
 
     "one line, cs: 1 should mean alignment has no effect": ->
@@ -449,12 +449,12 @@ defineModule module, suite:
           drawTest3 "align: '#{value}'",
             stagingBitmapsCreateShouldBe: 0
             element: ->
-              new TextElement
+              TextElement
                 size: cs:1
                 align: value
                 color:"red", text:"Thingy", fontSize:16
-                new RectangleElement color: "#0002"
-                new FillElement()
+                RectangleElement color: "#0002"
+                FillElement()
             test: (element) -> layoutFragmentTester element, result
 
     "layoutMode: tight": ->
@@ -473,7 +473,7 @@ defineModule module, suite:
         textLocationOffset - the offsets to add to logicalLocation to get the coordinates to pass to Canvas for drawing
         drawAreaOffset - add to logicalLocation to get the drawArea location
         drawAreaSize - size of the draw area
-      I'm thinking of making a new object for Fragments. Then I can package most the logic
+      I'm thinking of making a object for Fragments. Then I can package most the logic
       for managing those values as X/Y Number-value-members.
 
       ###
@@ -503,11 +503,11 @@ defineModule module, suite:
           drawTest3 "align: '#{value}'",
             stagingBitmapsCreateShouldBe: 0
             element: ->
-              new TextElement
+              TextElement
                 layoutMode: "tight0"
                 size: pts: 100
                 align: value
                 color:"red", text:"(Q)", fontSize:32
-                new RectangleElement color: "#0002"
-                new FillElement()
+                RectangleElement color: "#0002"
+                FillElement()
             test: (element) -> layoutFragmentTester element, result

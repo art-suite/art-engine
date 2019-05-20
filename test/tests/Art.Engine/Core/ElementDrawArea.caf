@@ -1,4 +1,4 @@
-import &ArtStandardLib, &ArtAtomic, Neptune.Art.Engine
+import &StandardImport
 
 test = (a, f) -> global.test a, f
 
@@ -7,18 +7,18 @@ test = (a, f) -> global.test a, f
 suite:
   basic: ->
     stateEpochTest "basic parentSpaceDrawArea", ->
-      o = new Element size: 400 drawOrder: :red
+      o = Element size: 400 drawOrder: :red
       ->
         assert.eq o.elementSpaceDrawArea, rect 0, 0, 400, 400
         assert.eq o.parentSpaceDrawArea,  rect 0, 0, 400, 400
 
     stateEpochTest "default elementSpaceDrawArea with draw", ->
-      o = new Element drawOrder: :red
+      o = Element drawOrder: :red
       ->
         assert.eq o.elementSpaceDrawArea, rect 0, 0, 100, 100
 
     stateEpochTest "default elementSpaceDrawArea", ->
-      o = new Element
+      o = Element()
       ->
         assert.eq o.elementSpaceDrawArea, rect()
 
@@ -37,18 +37,18 @@ suite:
         blur:     20
         offset:   y: 5
 
-      e = new Element
+      e = Element
         size: 100
         clip: true
-        o = new Element
+        o = Element
           size: 100
           axis: .5
           location: ps: .5
           angle: (Math.PI/180) * -5
-          new RectangleElement color: "green", shadow: standardShadowProps
-          needsStagingElement = new Element
+          RectangleElement color: "green", shadow: standardShadowProps
+          needsStagingElement = Element
             clip: true
-            new TextElement m standardTextProps, text: "hi!"
+            TextElement m standardTextProps, text: "hi!"
 
       ->
         assert.eq o.elementSpaceDrawArea, rect -20, -15, 140, 140
@@ -56,17 +56,17 @@ suite:
 
   children: ->
     stateEpochTest "with no mask and children", ->
-      o = new Element
+      o = Element
         location: point(50,60), size: 400
-        new Element location:point(100,200), size: 400 drawOrder: :red
+        Element location:point(100,200), size: 400 drawOrder: :red
       ->
         assert.eq o.elementSpaceDrawArea, rect 100, 200, 400, 400
         assert.eq o.parentSpaceDrawArea,  rect 150, 260, 400, 400
 
     stateEpochTest "child moves", ->
-      p = new Element
+      p = Element
         size:400
-        c = new Element size:23, location:45, drawOrder: :red
+        c = Element size:23, location:45, drawOrder: :red
       ->
         assert.eq p.elementSpaceDrawArea, rect 45, 45, 23, 23
         c.location = 67
@@ -74,20 +74,20 @@ suite:
           assert.eq p.elementSpaceDrawArea, rect 67, 67, 23, 23
 
     stateEpochTest "child added", ->
-      p = new Element
+      p = Element
         size:400
-        c = new Element size: 23, location: 45 drawOrder: :red
+        c = Element size: 23, location: 45 drawOrder: :red
       ->
         assert.eq p.elementSpaceDrawArea, rect 45, 45, 23, 23
-        p.addChild new Element size:78, location: 89 drawOrder: :red
+        p.addChild Element size:78, location: 89 drawOrder: :red
         ->
           assert.eq p.elementSpaceDrawArea, rect 45, 45, 122, 122
 
     stateEpochTest "child removed", ->
-      p = new Element
+      p = Element
         size:400
-        new Element size: 23, location: 45 drawOrder: :red
-        c = new Element size: 78, location: 89 drawOrder: :red
+        Element size: 23, location: 45 drawOrder: :red
+        c = Element size: 78, location: 89 drawOrder: :red
       ->
         assert.eq p.elementSpaceDrawArea, rect 45, 45, 122, 122
         c.parent = null
@@ -95,11 +95,11 @@ suite:
           assert.eq p.elementSpaceDrawArea, rect 45, 45, 23, 23
 
     stateEpochTest "grandchild effects grandparent", ->
-      gp = new Element
+      gp = Element
         {}
-        p = new Element
+        p = Element
           {}
-          c = new Element size:23, location:45 drawOrder: :red
+          c = Element size:23, location:45 drawOrder: :red
       ->
         assert.eq gp.elementSpaceDrawArea, rect 45, 45, 23, 23
         c.location = 12
@@ -107,21 +107,21 @@ suite:
           assert.eq gp.elementSpaceDrawArea, rect 12, 12, 23, 23
 
     stateEpochTest "with mask and children outside mask", ->
-      o = new Element
+      o = Element
         location:point(50,60), size: 400
-        new Element location:point(100,200), size: 400 drawOrder: :red
-        new Element isMask:true drawOrder: :red
+        Element location:point(100,200), size: 400 drawOrder: :red
+        Element isMask:true drawOrder: :red
 
       ->
         assert.eq o.elementSpaceDrawArea, rect 100, 200, 300, 200
         assert.eq o.parentSpaceDrawArea,  rect 150, 260, 300, 200
 
     stateEpochTest "with some masked and some unmasked children", ->
-      o = new Element
+      o = Element
         location:point(50,60), size: 400
-        new Element location:point(100,200), size: 400 drawOrder: :red
-        new Element compositeMode:"alphaMask" drawOrder: :red
-        new Element location:point(-100,-200), size: 40 drawOrder: :red
+        Element location:point(100,200), size: 400 drawOrder: :red
+        Element compositeMode:"alphaMask" drawOrder: :red
+        Element location:point(-100,-200), size: 40 drawOrder: :red
 
       ->
         assert.eq o.parentSpaceDrawArea, rect 50-100, 60-200, 500, 600
@@ -129,17 +129,17 @@ suite:
 
   transforms: ->
     stateEpochTest "with intersting transformation matrix", ->
-      o = new Element size: 400 drawOrder: :red
+      o = Element size: 400 drawOrder: :red
       ->
         m = Matrix.rotate Math.PI/4
         assert.eq o.getDrawAreaIn(m).roundOut(), rect -283, 0, 566, 566
 
   outline: ->
     stateEpochTest "with outline", ->
-      o = new RectangleElement
+      o = RectangleElement
         color: #ff0
         size: 50
-        outline = new OutlineElement
+        outline = OutlineElement
           lineWidth:20
           lineJoin: "round"
 
@@ -149,50 +149,50 @@ suite:
   padding:
     elementSpace: ->
       test "positive", ->
-        new Element
+        Element
           size: 50, padding: 10
-          new Element drawOrder: :red
+          Element drawOrder: :red
         .onNextReady (element) ->
           assert.eq element.elementSpaceDrawArea, rect 30
 
       test "negative", ->
-        new Element
+        Element
           size: 50, padding: -10
-          new Element drawOrder: :red
+          Element drawOrder: :red
         .onNextReady (element) ->
           assert.eq element.elementSpaceDrawArea, rect 70
 
     parentSpace: ->
       test "positive", ->
-        new Element
+        Element
           size: 50
-          new Element
+          Element
             padding: 10
-            new Element drawOrder: :red
+            Element drawOrder: :red
         .onNextReady (parent) ->
           assert.eq parent.elementSpaceDrawArea, rect 10, 10, 30, 30
 
       test "negative", ->
-        new Element
+        Element
           size: 50
-          new Element
+          Element
             padding: -10
-            new Element drawOrder: :red
+            Element drawOrder: :red
         .onNextReady (parent) ->
           assert.eq parent.elementSpaceDrawArea, rect -10, -10, 70, 70
 
   regressions: ->
     test "drawing, caching and drawArea", ->
-      parent = new Element
+      parent = Element
         key: :parent
         size: 4
         clip: true
-        new RectangleElement color: #480
-        child = new Element
+        RectangleElement color: #480
+        child = Element
           key: :child
           cacheDraw: true
           location: x: 2
-          new RectangleElement color: #8ff
+          RectangleElement color: #8ff
       parent.toBitmapBasic()
       .then (bitmap)->
         assert.eq child.elementSpaceDrawArea, rect 0, 0, 4, 4
@@ -202,24 +202,24 @@ suite:
         assert.eq child.elementSpaceDrawArea, rect 0, 0, 4, 4
 
     test "over padding should not have negative clipping", ->
-      new Element
+      Element
         size: 2
         location: 1
         padding: right: 3
         clip: true
-        new RectangleElement color: #fff, location: -1, size: 4
+        RectangleElement color: #fff, location: -1, size: 4
       .onNextReady (e) ->
         assert.eq e.paddedArea, rect(0, 0, 0, 2), "paddedArea"
         assert.eq e.elementSpaceDrawArea, rect 0, 0, 0, 2
 
     test "huh", ->
-      new RectangleElement
+      RectangleElement
         radius: 10
         clip: true
         size: w: 389.5, h: 232.75
         childrenLayout: "column"
-        new RectangleElement size: h: 38
-        new RectangleElement()
+        RectangleElement size: h: 38
+        RectangleElement()
       .onNextReady (e) ->
         assert.eq e.drawArea.size, e.currentSize
         # assert.eq e.elementSpaceDrawArea, rect 0, 0, 0, 2

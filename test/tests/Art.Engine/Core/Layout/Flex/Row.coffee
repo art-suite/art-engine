@@ -8,18 +8,18 @@ StateEpochTestHelper = require '../../StateEpochTestHelper'
 {point, matrix, Matrix} = Atomic
 {stateEpochTest, drawAndTestElement, renderTest} = StateEpochTestHelper
 
-{Element, TextElement, RectangleElement, Layout} = Engine
-{LinearLayout} = Layout
+{Element, TextElement, RectangleElement} = require 'art-engine/Factories'
+{LinearLayout} = Engine.Layout
 
 module.exports = suite:
   basic: ->
     drawAndTestElement "basic row layout", ->
-      element: root = new Element
+      element: root = Element
         size: 100
         childrenLayout: "row"
-        new RectangleElement color:"red",   size: 30
-        new RectangleElement color:"green", size: 50
-        new RectangleElement color:"blue",  size: 40
+        RectangleElement color:"red",   size: 30
+        RectangleElement color:"green", size: 50
+        RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50), point(40)]
@@ -28,12 +28,12 @@ module.exports = suite:
 
     drawAndTestElement "last/only child should have its location layout inside the remaining padded space", ->
       element: root =
-        new Element # button
+        Element # button
           size: 100
           padding: 10
           childrenLayout: "row"
           drawOrder: "#0707"
-          centeredChild = new RectangleElement
+          centeredChild = RectangleElement
             size: hh:1, w:50
             location: ps: .5
             axis: .5
@@ -44,23 +44,23 @@ module.exports = suite:
 
     drawAndTestElement "regression - row - size should be: 100, 30", ->
       element: root =
-        new Element
+        Element
           size: w:100, hch: 1
           childrenLayout: "row"
-          new Element
+          Element
             size: ww:1, hch:1
-            new RectangleElement color:"black", size: ww:1, h:30
+            RectangleElement color:"black", size: ww:1, h:30
 
       test: ->
         assert.eq root.currentSize, point 100, 30
 
     drawAndTestElement "row layout with variable width child", ->
-      element: root = new Element
+      element: root = Element
         size: 100
         childrenLayout: "row"
-        new RectangleElement color:"red",   size: 30
-        new RectangleElement color:"green", size: wpw:1, h:50
-        new RectangleElement color:"blue",  size: 40
+        RectangleElement color:"red",   size: 30
+        RectangleElement color:"green", size: wpw:1, h:50
+        RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(30, 50), point(40)]
@@ -68,11 +68,11 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     drawAndTestElement "row layout with two same but variable width children", ->
-      element: root = new Element
+      element: root = Element
         size: w:100, hch:1
         childrenLayout: "row"
-        new RectangleElement color:"red",   size: ww:1, h:30
-        new RectangleElement color:"green", size: ww:1, h:50
+        RectangleElement color:"red",   size: ww:1, h:30
+        RectangleElement color:"green", size: ww:1, h:50
 
       test: ->
         assert.eq root.currentSize, point 100, 50
@@ -82,11 +82,11 @@ module.exports = suite:
 
 
     drawAndTestElement "two children with different layoutWeight", ->
-      element: root = new Element
+      element: root = Element
         size: 99
         childrenLayout: "row"
-        new RectangleElement color:"red",   layoutWeight: 2, size: ww:1, h:30
-        new RectangleElement color:"green",                  size: ww:1, h:50
+        RectangleElement color:"red",   layoutWeight: 2, size: ww:1, h:30
+        RectangleElement color:"green",                  size: ww:1, h:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(66, 30), point(33, 50)]
@@ -94,11 +94,11 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     drawAndTestElement "two different but variable width children", ->
-      element: root = new Element
+      element: root = Element
         size: 100
         childrenLayout: "row"
-        new RectangleElement color:"red",   size: wpw:1.5, h:30
-        new RectangleElement color:"green", size: wpw:.5, h:50
+        RectangleElement color:"red",   size: wpw:1.5, h:30
+        RectangleElement color:"green", size: wpw:.5, h:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(75, 30), point(25, 50)]
@@ -107,14 +107,14 @@ module.exports = suite:
 
   dynamics: ->
     drawAndTestElement "remove element", ->
-      element: root = new Element
+      element: root = Element
         size: w: 200, hch: 1
         childrenLayout: "row"
         children = [
-          new RectangleElement color:"red",   size: 50
-          testElement = new RectangleElement color:"green"
-          new RectangleElement color:"blue",  size: 50
-          new RectangleElement color:"yellow",  size: 50
+          RectangleElement color:"red",   size: 50
+          testElement = RectangleElement color:"green"
+          RectangleElement color:"blue",  size: 50
+          RectangleElement color:"yellow",  size: 50
         ]
 
       test: ->
@@ -124,7 +124,7 @@ module.exports = suite:
         .then (bitmap)->
           log bitmap
           assert.eq testElement.currentSize, point 100, 50
-          root.children = arrayWith root.children, new RectangleElement color:"orange",  size: 50
+          root.children = arrayWith root.children, RectangleElement color:"orange",  size: 50
           root.toBitmapBasic()
         .then (bitmap)->
           log bitmap
@@ -132,29 +132,29 @@ module.exports = suite:
 
   circularDependencies: ->
     drawAndTestElement "two flexible children, one indirectly dependent on the other's height, should resolve to 50", ->
-      element: root = new Element
+      element: root = Element
         size: w:100, hch:1
         childrenLayout: "row"
-        new RectangleElement color:"red",   size: ww:1, h:50
-        new RectangleElement color:"green", size: ww:1, hh:1
+        RectangleElement color:"red",   size: ww:1, h:50
+        RectangleElement color:"green", size: ww:1, hh:1
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(50), point(50)]
         assert.eq locations = (c.currentLocation.x for c in root.children), [0, 50]
 
     drawAndTestElement "parent padding should not effect childrenLayout", ->
-      element: root = new Element
+      element: root = Element
         size: w:100, hch:1
         padding: v:10
         childrenLayout: "row"
 
-        new RectangleElement key:"re", color: "cyan", inFlow: false
+        RectangleElement key:"re", color: "cyan", inFlow: false
 
-        firstElement = new RectangleElement
+        firstElement = RectangleElement
           size: w:50, hh:1
           color: "green"
 
-        secondElement = new RectangleElement
+        secondElement = RectangleElement
           size: w:50, h:40
           color: "blue"
 
@@ -163,21 +163,21 @@ module.exports = suite:
 
     renderTest "child indirectly affects siblings height - base case without childrenLayout",
       render: ->
-        new Element
+        Element
           key: "rootElement"
           size: w: 220, hch: 1
           padding: 10
 
-          new RectangleElement color: "cyan", inFlow: false
+          RectangleElement color: "cyan", inFlow: false
 
-          new Element
+          Element
             size: wcw:1, hh:1
-            new RectangleElement color: "green", size: w:20, hh:1
+            RectangleElement color: "green", size: w:20, hh:1
 
-          new Element
+          Element
             size: ww:1, h:40
             padding: v: 10
-            new RectangleElement color: "blue"
+            RectangleElement color: "blue"
 
       test: (element) ->
         assert.eq(
@@ -186,24 +186,24 @@ module.exports = suite:
         )
 
     drawAndTestElement "child indirectly affects siblings height - with childrenLayout-row", ->
-      element: root = new Element
+      element: root = Element
         key:"rootElement"
         size: w:220, hch:1
         padding: 10
         childrenLayout: "row"
 
-        new RectangleElement key:"re", color: "cyan", inFlow: false
+        RectangleElement key:"re", color: "cyan", inFlow: false
 
-        firstElement = new Element
+        firstElement = Element
           key: "firstElement"
           size: wcw:1, hh:1
-          new RectangleElement key:"fe", color: "green", size: w:20, hh:1
+          RectangleElement key:"fe", color: "green", size: w:20, hh:1
 
-        secondElement = new Element
+        secondElement = Element
           key: "secondElement"
           size: ww:1, h:40
           padding: v: 10
-          new RectangleElement key:"se", color: "blue"
+          RectangleElement key:"se", color: "blue"
 
       test: ->
         assert.eq sizes = (c.currentSize.x for c in root.children), [200, 20, 180]
@@ -211,14 +211,14 @@ module.exports = suite:
 
   alignment: ->
     drawAndTestElement "alignment and margins", ->
-      element: root = new Element
+      element: root = Element
         size: w: 100, h: 20
         childrenLayout: "row"
         childrenAlignment: "center"
-        new RectangleElement inFlow: false, color: "#aaa"
-        a = new RectangleElement size: 20, color: "#f00", margin: 10
-        b = new RectangleElement size: 20, color: "#ff0", margin: 10
-        c = new RectangleElement size: 20, color: "#0f0", margin: 10
+        RectangleElement inFlow: false, color: "#aaa"
+        a = RectangleElement size: 20, color: "#f00", margin: 10
+        b = RectangleElement size: 20, color: "#ff0", margin: 10
+        c = RectangleElement size: 20, color: "#0f0", margin: 10
 
       test: ->
         assert.eq a.currentLocation.x, 10
@@ -240,13 +240,13 @@ module.exports = suite:
       }
       do (alignment, locations) =>
         drawAndTestElement "align: '#{alignment}'", ->
-          element: root = new Element
+          element: root = Element
             size: h: 120, w:220
             padding: 10
             childrenLayout: "row"
             childrenAlignment: alignment
-            new RectangleElement color:"red",   size: 30
-            new RectangleElement color:"green", size: 50
-            new RectangleElement color:"blue",  size: 40
+            RectangleElement color:"red",   size: 30
+            RectangleElement color:"green", size: 50
+            RectangleElement color:"blue",  size: 40
 
           test: -> assert.eq locations, (c.currentLocation for c in root.children)

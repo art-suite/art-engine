@@ -1,14 +1,14 @@
-import &ArtStandardLib, &source/Art/Engine
+import &StandardImport
 
 {testDownsampledRedChannelEq, testCompactRedChannelEq} = &CoreHelper
 
 suite: ->
   testDownsampledRedChannelEq
     "drawing rectangles"
-    new Element
+    Element
       size: 4
-      new RectangleElement color: #000, size: 4
-      new RectangleElement color: #fff, location: 1, size: 3
+      RectangleElement color: #000, size: 4
+      RectangleElement color: #fff, location: 1, size: 3
     compactFlatten []
       0 0 0 0
       0 7 7 7
@@ -17,10 +17,10 @@ suite: ->
 
   testDownsampledRedChannelEq
     "unconstrained drawing"
-    new Element
+    Element
       size: 2, location: 1
-      new RectangleElement size: 2, color: "#700"
-      new RectangleElement size: 2, location: 1, color: "#f00"
+      RectangleElement size: 2, color: "#700"
+      RectangleElement size: 2, location: 1, color: "#f00"
 
     compactFlatten []
       3 3 0
@@ -29,13 +29,13 @@ suite: ->
 
   testDownsampledRedChannelEq
     "aligned rectangle mask drawing"
-    new Element
+    Element
       size: 2
       key: :parent
       location: 1
-      new RectangleElement key: "armd1", size: 2,   color:  #700
-      new RectangleElement key: "armd2", size: 10,  color:  #f00, location: 1
-      new RectangleElement key: "armd3", size: 2,   isMask: true
+      RectangleElement key: "armd1", size: 2,   color:  #700
+      RectangleElement key: "armd2", size: 10,  color:  #f00, location: 1
+      RectangleElement key: "armd3", size: 2,   isMask: true
 
     []
       3 3
@@ -43,20 +43,20 @@ suite: ->
 
   testCompactRedChannelEq
     "rotated rectangle"
-    new Element
+    Element
       size: 6
-      new RectangleElement color: :black
-      new Element
+      RectangleElement color: :black
+      Element
         location: ps: .5
         size:     ps: 2/3
         axis:     .5
         angle:    Math.PI/4
         layoutPixelSnap: false
-        new RectangleElement color: #700
-        new RectangleElement
+        RectangleElement color: #700
+        RectangleElement
           color:    #f00
           location: ps: .5
-        new RectangleElement isMask: true
+        RectangleElement isMask: true
 
     compactFlatten []
       0 0 1 1 0 0

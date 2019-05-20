@@ -32,10 +32,10 @@ define [
           assert.eq parent.children, [child]
 
       stateEpochTest "delarative Element structure creation", ->
-        a = new Element null,
-          new Element location: 10, size: 50,
-            new Element size: 50
+        a = new Element null, [
+          new Element location: 10, size: 50, [new Element size: 50]
           new Element location: 40, size: 20
+        ]
 
         ->
           assert.eq a.children.length, 2

@@ -6,11 +6,13 @@ module.exports = suite:
   "legal values": ->
     test "animators: 'opacity'", ->
       e = new Element animators: 'opacity'
-      e.onNextReady -> assert.ok e.animators._opacity instanceof PersistantAnimator
+      e.onNextReady ->
+        log animators: e.animators
+        assert.ok e.animators._opacity instanceof PersistantAnimator
 
     test "animators: opacity: null", ->
       e = new Element animators: opacity: null
-      e.onNextReady -> assert.ok e.animators._opacity instanceof PersistantAnimator
+      e.onNextReady -> assert.doesNotExist e.animators
 
     test "animators: opacity: ->", ->
       new Promise (resolve) ->
@@ -307,24 +309,19 @@ module.exports = suite:
           e = new Element
             key: "child with toVoid"
             on: parentChanged: ->
-              log "parentChanged 1"
               unless e.parent
-                log "parentChanged 2 - no parent"
                 assert.eq true, animationDone
                 resolve()
             animators: opacity:
               to: 0
               on:
                 start: ->
-                  log "start"
                   assert.eq e.opacity, 1, "1 at start"
                   assert.eq e.parent.key, parentName
                 done: ->
-                  log "done"
                   animationDone = true
                   assert.eq e.opacity, 0, "0 at done"
                 update: ->
-                  log "update"
                   assert.eq e.parent.key, parentName
                   assert.ok e.opacity > 0
                   assert.ok e.opacity < 1
@@ -352,9 +349,6 @@ module.exports = suite:
                   startTime = currentSecond()
                   assert.eq e.size.layout(), point(10), "at start"
                 done: ->
-                  log
-                    updateCount: updateCount
-                    frameRate: updateCount / (currentSecond() - startTime)
                   assert.eq e.size.layout(), point(50), "at start"
                   resolve()
                 update: ->
@@ -383,9 +377,6 @@ module.exports = suite:
                   assert.eq e.size.layout(), point(50), "at start"
                   assert.eq e.parent.key, parentName
                 done: ->
-                  log
-                    updateCount: updateCount
-                    frameRate: updateCount / (currentSecond() - startTime)
                   animationDone = true
                   assert.eq e.size.layout(), point(10), "at start"
                 update: ->

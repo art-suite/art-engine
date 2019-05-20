@@ -3,14 +3,14 @@ import &StandardImport
 suite:
   overdraw: ->
     test "overdraw", ->
-      el = new Element
+      el = Element
         cacheDraw: true
         size: point 4, 2
-        new RectangleElement
+        RectangleElement
           color: "#800"
           size: ps: 1, plus: 2
           location: -1
-        new RectangleElement color:"#444"
+        RectangleElement color:"#444"
 
       el.toBitmapWithInfo {}
       .then ({bitmap}) ->
@@ -28,15 +28,15 @@ suite:
 
   partialUpdate: ->
     test "clipping limits dirty redraw", ->
-      el = new Element
+      el = Element
         size: 4
         stage: true
-        new RectangleElement color: "#480"
-        new Element
+        RectangleElement color: "#480"
+        Element
           location: x: 1
           size: 1
           clip: true
-          e = new RectangleElement size: 2, color: "#8ff"
+          e = RectangleElement size: 2, color: "#8ff"
       el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw clipping", el, []
@@ -56,12 +56,12 @@ suite:
           0 0 0 0
 
     test "TextElement alignment redraws both before and after areas", ->
-      el = new Element
+      el = Element
         stage: true
         clip: true
         size: w: 6, h: 2
-        new RectangleElement color: "#480"
-        e = new TextElement
+        RectangleElement color: "#480"
+        e = TextElement
           padding: 1
           size: ps: 1
           fontSize: 1

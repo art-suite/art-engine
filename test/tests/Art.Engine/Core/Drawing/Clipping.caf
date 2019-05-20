@@ -1,18 +1,18 @@
-import &ArtStandardLib, &source/Art/Engine
+import &StandardImport
 
 {testDownsampledRedChannelEq, testCompactRedChannelEq} = &CoreHelper
 
 suite: ->
   testDownsampledRedChannelEq
     "basic clipping"
-    new Element
+    Element
       size: 4
-      new RectangleElement color: #000, size: 4
-      new Element
+      RectangleElement color: #000, size: 4
+      Element
         size: 2
         location: 1
         clip: true
-        new RectangleElement color: #fff, location: -1, size: 4
+        RectangleElement color: #fff, location: -1, size: 4
     compactFlatten []
       0 0 0 0
       0 7 7 0
@@ -21,15 +21,15 @@ suite: ->
 
   testDownsampledRedChannelEq
     "padding with non-zero clipping"
-    new Element
+    Element
       size: 4
-      new RectangleElement color: #000, size: 4
-      new Element
+      RectangleElement color: #000, size: 4
+      Element
         size: 2
         location: 1
         padding: right: 1
         clip: true
-        new RectangleElement color: #fff, location: -1, size: 4
+        RectangleElement color: #fff, location: -1, size: 4
     compactFlatten []
       0 0 0 0
       0 7 0 0
@@ -38,15 +38,15 @@ suite: ->
 
   testDownsampledRedChannelEq
     "negative padding"
-    new Element
+    Element
       size: 4
-      new RectangleElement color: #000, size: 4
-      new Element
+      RectangleElement color: #000, size: 4
+      Element
         size: 2
         location: 1
         padding: right: -1
         clip: true
-        new RectangleElement color: #fff, location: -1, size: 4
+        RectangleElement color: #fff, location: -1, size: 4
     compactFlatten []
       0 0 0 0
       0 7 7 7
@@ -55,15 +55,15 @@ suite: ->
 
   testDownsampledRedChannelEq
     "over padding should not have negative clipping"
-    new Element
+    Element
       size: 4
-      new RectangleElement color: #000, size: 4
-      new Element
+      RectangleElement color: #000, size: 4
+      Element
         size: 2
         location: 1
         padding: right: 3
         clip: true
-        new RectangleElement color: #fff, location: -1, size: 4
+        RectangleElement color: #fff, location: -1, size: 4
     compactFlatten []
       0 0 0 0
       0 0 0 0

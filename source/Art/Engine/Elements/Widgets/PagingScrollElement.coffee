@@ -950,8 +950,10 @@ defineModule module, class PagingScrollElement extends AnimatorSupport Element
     @_scrollContents ||= new Element
       key: "scrollContents"
       receivePointerEvents: "passToChildren"
-      @_pagesBeforeBaselineWrapper = new Element key:"pagesBeforeBaseline"
-      @_pagesAfterBaselineWrapper  = new Element key:"pagesAfterBaseline"
+      [
+        @_pagesBeforeBaselineWrapper = new Element key:"pagesBeforeBaseline"
+        @_pagesAfterBaselineWrapper  = new Element key:"pagesAfterBaseline"
+      ]
 
     if scrollMode == "horizontal"
       commonSizeLayout = hh:1, wcw:1

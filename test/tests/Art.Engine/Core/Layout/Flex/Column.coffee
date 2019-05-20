@@ -7,8 +7,8 @@ StateEpochTestHelper = require '../../StateEpochTestHelper'
 {point, matrix, Matrix} = Atomic
 {stateEpochTest} = StateEpochTestHelper
 
-{Element, TextElement, RectangleElement, Layout} = Engine
-{LinearLayout} = Layout
+{Element, TextElement, RectangleElement} = require 'art-engine/Factories'
+{LinearLayout} = Engine.Layout
 
 testLogBitmap = (name, setup) ->
   test name, ->
@@ -32,12 +32,12 @@ module.exports = suite:
 
   "variable-height": ->
     testLogBitmap "basic column layout", ->
-      root: root = new Element
+      root: root = Element
         size: w:100, hch:1
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: 30
-        new RectangleElement color:"green", size: 50
-        new RectangleElement color:"blue",  size: 40
+        RectangleElement color:"red",   size: 30
+        RectangleElement color:"green", size: 50
+        RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq root.currentSize, point 100, 120
@@ -46,12 +46,12 @@ module.exports = suite:
   "column fixed-height fixed children": ->
 
     testLogBitmap "basic column layout", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: 30
-        new RectangleElement color:"green", size: 50
-        new RectangleElement color:"blue",  size: 40
+        RectangleElement color:"red",   size: 30
+        RectangleElement color:"green", size: 50
+        RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50), point(40)]
@@ -59,12 +59,12 @@ module.exports = suite:
 
   "column fixed-height variable children": ->
     testLogBitmap "single variable height child", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: 30
-        new RectangleElement color:"green", size: hph:1, w:50
-        new RectangleElement color:"blue",  size: 40
+        RectangleElement color:"red",   size: 30
+        RectangleElement color:"green", size: hph:1, w:50
+        RectangleElement color:"blue",  size: 40
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30), point(50, 30), point(40)]
@@ -72,15 +72,15 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     testLogBitmap "sub layouts are done after column layout is final", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new Element {},
-          new RectangleElement color: "yellow"
+        Element {},
+          RectangleElement color: "yellow"
 
-        new Element
+        Element
           size: ww:1, hw: .4
-          new RectangleElement color: "#f007"
+          RectangleElement color: "#f007"
 
       test: ->
         assert.eq (c.currentSize for c in root.children), [point(100, 60), point(100, 40)]
@@ -89,11 +89,11 @@ module.exports = suite:
         assert.eq (c.currentLocation for c in root.children), [point(0, 0), point(0, 60)]
 
     testLogBitmap "two same but variable height children", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: hph:1, w:30
-        new RectangleElement color:"green", size: hph:1, w:50
+        RectangleElement color:"red",   size: hph:1, w:30
+        RectangleElement color:"green", size: hph:1, w:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30, 50), point(50, 50)]
@@ -101,11 +101,11 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     testLogBitmap "two children with different layoutWeight", ->
-      root: root = new Element
+      root: root = Element
         size: 99
         childrenLayout: "column"
-        new RectangleElement color:"red",   layoutWeight: 2, size: hh:1, w:30
-        new RectangleElement color:"green",                  size: hh:1, w:50
+        RectangleElement color:"red",   layoutWeight: 2, size: hh:1, w:30
+        RectangleElement color:"green",                  size: hh:1, w:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30, 66), point(50, 33)]
@@ -113,12 +113,12 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     testLogBitmap "no pixel rounding", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red"
-        new RectangleElement color:"green"
-        new RectangleElement color:"blue"
+        RectangleElement color:"red"
+        RectangleElement color:"green"
+        RectangleElement color:"blue"
 
       test: ->
         assert.eq (c.currentSize     for c in root.children), [point(100, 100/3), point(100, 100/3), point(100, 100/3)]
@@ -126,22 +126,22 @@ module.exports = suite:
 
     testLogBitmap "regression - size should be: 30, 100", ->
       root: root =
-        new Element
+        Element
           size: h:100, wcw: 1
           childrenLayout: "column"
-          new Element
+          Element
             size: hh:1, wcw:1
-            new RectangleElement color:"black", size: hh:1, w:30
+            RectangleElement color:"black", size: hh:1, w:30
 
       test: ->
         assert.eq root.currentSize, point 30, 100
 
     testLogBitmap "two different but variable height children", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: hph:1.5, w:30
-        new RectangleElement color:"green", size: hph:.5, w:50
+        RectangleElement color:"red",   size: hph:1.5, w:30
+        RectangleElement color:"green", size: hph:.5, w:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30, 75), point(50, 25)]
@@ -149,11 +149,11 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     testLogBitmap "dynamic weight detection with two effectively equal-wighted children", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: hph:1.5, w:30
-        new RectangleElement color:"green", size: hph:1.5, w:50
+        RectangleElement color:"red",   size: hph:1.5, w:30
+        RectangleElement color:"green", size: hph:1.5, w:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30, 50), point(50, 50)]
@@ -161,11 +161,11 @@ module.exports = suite:
         log sizes: sizes, locations:locations
 
     testLogBitmap "variable child with min height", ->
-      root: root = new Element
+      root: root = Element
         size: 100
         childrenLayout: "column"
-        new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-        new RectangleElement color:"green", size: hph:1, w:50
+        RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+        RectangleElement color:"green", size: hph:1, w:50
 
       test: ->
         assert.eq sizes = (c.currentSize for c in root.children), [point(30, 60), point(50, 40)]
@@ -177,21 +177,21 @@ module.exports = suite:
           assert.eq locations = (c.currentLocation for c in root.children), [point(0, 0), point(0, 100)]
 
     testKnownFailingLogBitmap "order of variable children when one has a minimum height shouldn't matter", ->
-      root: root = new Element
+      root: root = Element
         size: w: 200, h: 100
-        new RectangleElement color: "#ddd"
-        root1 = new Element
+        RectangleElement color: "#ddd"
+        root1 = Element
           size: 100
           childrenLayout: "column"
-          new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
-          new RectangleElement color:"green", size: hph:1, w:50
+          RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+          RectangleElement color:"green", size: hph:1, w:50
 
-        root2 = new Element
+        root2 = Element
           location: x: 100
           size: 100
           childrenLayout: "column"
-          new RectangleElement color:"green", size: hph:1, w:50
-          new RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
+          RectangleElement color:"green", size: hph:1, w:50
+          RectangleElement color:"red",   size: w:30, h: (ps) -> max 60, ps.y
 
       test: ->
         knownFailingExplanation = """
@@ -220,14 +220,14 @@ module.exports = suite:
       }
       do (alignment, locations) =>
         testLogBitmap "align: '#{alignment}'", ->
-          root: root = new Element
+          root: root = Element
             size: h: 220, w:120
             padding: 10
             childrenLayout: "column"
             childrenAlignment: alignment
-            new RectangleElement color:"red",   size: 30
-            new RectangleElement color:"green", size: 50
-            new RectangleElement color:"blue",  size: 40
+            RectangleElement color:"red",   size: 30
+            RectangleElement color:"green", size: 50
+            RectangleElement color:"blue",  size: 40
 
           test: -> assert.eq locations, (c.currentLocation for c in root.children)
 

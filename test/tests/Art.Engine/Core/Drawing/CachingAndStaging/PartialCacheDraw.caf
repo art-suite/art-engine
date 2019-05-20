@@ -7,13 +7,13 @@ testPartialBeforeAfter = (name, options, moreTests...) ->
   test name, ->
     {color = #8ff, testBitmaps, clearColor = :black, initParent, backgroundColor = #480, init, before, after, tests, change, changeParent} = options
     log "testPartialBeforeAfter"
-    cachedElement ?= new Element
+    cachedElement ?= Element
       log merge
         size: h: before.length, w: before[0].length
         stage: true
         draw: backgroundColor
         initParent
-      changingElement = new Element
+      changingElement = Element
         draw: color
         init
 

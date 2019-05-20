@@ -1,10 +1,10 @@
 &ArtStandardLib.merge
-  &ArtAtomic
-  &ArtCanvas
-  &source/Art/Engine
-  &Core/CoreHelper
-  &TestHelper
   &ArtClassSystem
   &ArtStandardLib
   &ArtTestbench
+  &ArtAtomic
+  &ArtCanvas
+  &Core/CoreHelper
+  &source/Art/Engine
+  &TestHelper
   test: (args...) -> global.test args...

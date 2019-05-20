@@ -40,12 +40,16 @@ doPropChangeTest = (resetsCache, testName, propChangeFunction, wrapperElement) -
 newPropChangeTestElements = (cacheMode = true)->
   new Element
     size: point 100, 50
-    new RectangleElement colors: ["#000", "#fff", "#000"]
-    new Element
-      key: "testElement"
-      stage: cacheMode
-      new RectangleElement color: "#f00"
-      new RectangleElement key: "testChild", color: "#ff0", padding: 10
+    [
+      new RectangleElement colors: ["#000", "#fff", "#000"]
+      new Element
+        key: "testElement"
+        stage: cacheMode
+        [
+          new RectangleElement color: "#f00"
+          new RectangleElement key: "testChild", color: "#ff0", padding: 10
+        ]
+    ]
 
 propChangeTest = (resetsCache, propName, propValue, cacheMode = true)->
   testName = "changing #{propName} " + if resetsCache
@@ -70,7 +74,7 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           drawCount++
           rect()
 
-        new Element draw: "red"
+        [new Element draw: "red"]
 
       el.toBitmapWithInfo()
       .then (rendered) ->
@@ -108,12 +112,16 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
         wrapperElement =
           new Element
             size: point 100, 50
-            new RectangleElement colors: ["#000", "#fff", "#000"]
-            new Element
-              key: "testElement"
-              cacheDraw: true
-              new RectangleElement color: "#f00"
-              new RectangleElement key: "testChild", color: "#ff0", padding: 10
+            [
+              new RectangleElement colors: ["#000", "#fff", "#000"]
+              new Element
+                key: "testElement"
+                cacheDraw: true
+                [
+                  new RectangleElement color: "#f00"
+                  new RectangleElement key: "testChild", color: "#ff0", padding: 10
+                ]
+            ]
 
         wrapperElement.toBitmapWithInfo {}
         .then (rendered) ->
@@ -221,10 +229,12 @@ module.exports = Engine.Config.config.drawCacheEnabled && suite:
           parent = new Element
             axis: .5
             location: ps: .5
-            new RectangleElement color: "green", shadow: standardShadowProps
-            needsStagingElement = new Element
-              clip: true
-              new TextElement m standardTextProps, text: "hi!"
+            [
+              new RectangleElement color: "green", shadow: standardShadowProps
+              needsStagingElement = new Element
+                clip: true
+                [new TextElement m standardTextProps, text: "hi!"]
+            ]
 
         initialStagingBitmapsCreated = Element.stats.stagingBitmapsCreated
         e.toBitmapWithInfo()

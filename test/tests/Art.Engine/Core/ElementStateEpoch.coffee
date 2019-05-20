@@ -6,60 +6,60 @@ StateEpochTestHelper = require './StateEpochTestHelper'
 HtmlCanvas = Foundation.Browser.DomElementFactories.Canvas
 {log, peek, shallowEq} = Foundation
 {color, point, Matrix, matrix} = Atomic
-{Element, CanvasElement} = EngineCore
+{Element, CanvasElement} = require 'art-engine/Factories'
 {PointLayout} = Layout
 
 {stateEpochTest} = StateEpochTestHelper
 
 module.exports = suite: ->
 
-  test "new Element is changing", ->
-    el = new Element
+  test "Element is changing", ->
+    el = Element()
     assert.eq true, el._getIsChangingElement()
 
   test "setting Location and Size Layouts", ->
-    el = new Element
+    el = Element()
     el.location = 123
     el.size = 456
     assert.ok el.locationChanged
     assert.ok el.sizeChanged
 
   test "init size", ->
-    p = new Element
+    p = Element
       size: 70
     p.onNextReady ->
       assert.eq p.currentSize, point 70
 
   test "init currentSize with children", ->
-    p = new Element
+    p = Element
       size: 70
-      new Element size: 30
-      new Element size: 40
-      new Element size: 50
+      Element size: 30
+      Element size: 40
+      Element size: 50
     p.onNextReady ->
       assert.eq [30, 40, 50], (c.currentSize.x for c in p.children)
       assert.eq p.currentSize, point 70
 
   test "init scale", ->
-    el = new Element location:123, size:456, scale:2
+    el = Element location:123, size:456, scale:2
     el.onNextReady ->
       assert.eq el.currentLocation, point 123
       assert.eq el.currentSize, point 456
       assert.eq el.scale, point 2
 
   test "init isMask", ->
-    el = new Element isMask:true
+    el = Element isMask:true
     assert.eq el.pendingCompositeMode, "alphaMask"
 
   test "init angle", ->
-    el = new Element location:123, axis:.5, size:456, angle: Math.PI/2
+    el = Element location:123, axis:.5, size:456, angle: Math.PI/2
     el.onNextReady ->
       assert.eq el.currentLocation, point 123
       assert.eq el.currentSize, point 456
       assert.eq el.angle, Math.PI/2
 
   stateEpochTest "setting Scale", ->
-    el = new Element location:100
+    el = Element location:100
 
     ->
       assert.eq point(1.5), el.setScale 1.5
@@ -72,9 +72,9 @@ module.exports = suite: ->
         assert.eq el.scale, point 1.5
 
   stateEpochTest "elementToAbsMatrix", ->
-    gp = new Element {},
-      p = new Element {},
-        c = new Element
+    gp = Element {},
+      p = Element {},
+        c = Element()
 
     ->
       assert.eq gp.elementToAbsMatrix, matrix()
@@ -88,9 +88,9 @@ module.exports = suite: ->
         assert.eq c.elementToAbsMatrix, Matrix.translate 100
 
   stateEpochTest "absToElementMatrix", ->
-    gp = new Element {},
-      p = new Element {},
-        c = new Element
+    gp = Element {},
+      p = Element {},
+        c = Element()
 
     ->
       assert.eq gp.absToElementMatrix, matrix()
@@ -105,27 +105,27 @@ module.exports = suite: ->
 
 
   stateEpochTest "complex children structure", ->
-    o = new Element {},
+    o = Element {},
       [
         null
-        new Element name:"1"
+        Element name:"1"
         [
-          new Element name:"2"
+          Element name:"2"
           null
-          new Element name:"3"
+          Element name:"3"
         ]
         null
         null
-        new Element name:"4"
+        Element name:"4"
       ]
     ->
       names = (c.name | 0 for c in o.children)
       assert.eq names, [1, 2, 3, 4]
 
   stateEpochTest "rootElement", ->
-    gp = new Element {},
-      p = new Element {},
-        c = new Element
+    gp = Element {},
+      p = Element {},
+        c = Element()
 
     ->
       assert.equal c.getRootElement(), gp
@@ -133,31 +133,31 @@ module.exports = suite: ->
       assert.equal c.getCanvasElement(), null
 
   stateEpochTest "canvasElement", ->
-    ce = new CanvasElement canvas: HtmlCanvas(),
-      c = new Element
+    ce = CanvasElement canvas: HtmlCanvas(),
+      c = Element()
 
     ->
       assert.equal c.getRootElement(), ce
       assert.equal c.getCanvasElement(), ce
 
   stateEpochTest "setting Location and Size with Layout", ->
-    el = new Element()
+    el = Element()
     el.location = 123
     el.size = 456
     ->
       assert.eq el.currentLocation, point 123
       assert.eq el.currentSize, point 456
 
-  test "new Element with layout, location and currentSize changing", ->
-    el = new Element
+  test "Element with layout, location and currentSize changing", ->
+    el = Element
       location:               45
       size:                   123
 
     assert.ok el.locationChanged
     assert.ok el.sizeChanged
 
-  test "new Element with everything else but layout, location and currentSize changing", ->
-    el = new Element
+  test "Element with everything else but layout, location and currentSize changing", ->
+    el = Element
       cursor:                 "pointer"
       elementToParentMatrix:  matrix = Matrix.scale 2
       opacity:                .5
@@ -176,27 +176,27 @@ module.exports = suite: ->
     assert.eq el.pendingName, "myElement"
 
   test "setting layout with plain object adds to the layout", ->
-    el = new Element()
+    el = Element()
     el.size = wpw: .5
     assert.eq el.pendingSize._hasXLayout, true
     assert.eq el.pendingSize._hasYLayout, true
 
   stateEpochTest "changing size completely replaces old size", ->
-    el = new Element size: 123
+    el = Element size: 123
     el.size = y:456
     ->
       assert.eq el.currentSize, point 100, 456
 
   stateEpochTest "setting layout with null clears the layout", ->
-    el = new Element size: 123
+    el = Element size: 123
     el.size = null
     ->
       assert.eq el.currentLocation, point 0
 
-  stateEpochTest "new Element with children", ->
-    el = new Element name:"parent",
-      new Element name:"foo"
-      new Element name:"bar"
+  stateEpochTest "Element with children", ->
+    el = Element name:"parent",
+      Element name:"foo"
+      Element name:"bar"
     ->
       assert.eq el.name, "parent"
       assert.eq (child.name for child in el.children), ["foo", "bar"]
