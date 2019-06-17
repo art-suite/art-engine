@@ -15,7 +15,7 @@ defineModule module, ->
   class GlobalEpochStat extends Foundation.BaseClass
     constructor: (@sampleTime, @total, @sampleSet) ->
 
-    @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactLC", "reactRender", "event", "flux"]
+    @statFields:  statFields  = ["total", "draw", "aim", "aimLayout", "aimTL", "aimRR", "react", "reactAim", "reactUpdate", "reactRender", "event", "flux"]
     @statColors: statColors =
       total:  "gray"
       draw:   "#39c"
@@ -25,7 +25,7 @@ defineModule module, ->
       aimRR:        aimColor.withLightness aimColor.lightness * .7
       react:        reactColor
       reactAim:     reactColor.withLightness reactColor.lightness *.9
-      reactLC:      reactColor.withLightness reactColor.lightness *.8
+      reactUpdate:      reactColor.withLightness reactColor.lightness *.8
       reactRender:  reactColor.withLightness reactColor.lightness *.7
       event:  "#ff6347"
       flux:   "#d936a3"
