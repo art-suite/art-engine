@@ -66,6 +66,7 @@ module.exports = createWithPostCreate class ShadowableElement extends AtomElemen
     offsetX ||= 0
     offsetY ||= 0
     blur ||= 0
+    blur *= 1.25 # chrome seems to blur just a tad extra
     expandLeft    = max 0, blur - offsetX
     expandTop     = max 0, blur - offsetY
     expandRight   = max 0, blur + offsetX
