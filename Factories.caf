@@ -1,9 +1,20 @@
 import &ArtStandardLib, &ArtEngine
-{elementClasses} = ElementFactory
+ElementFactory extract elementClasses
 
 &ArtObjectTreeFactory.createObjectTreeFactories
   array klass from elementClasses
     klass.getName()
+
+  preprocessElement: (elementOrMacroString, Factory) ->
+    if isString macroString = elementOrMacroString
+      if macro = Macros[macroString]
+        macro
+      else
+        log.warn "" ArtReact-ArtEngine: string '#{macroString.slice 0, 20}' didn't match any macros.
+        null
+
+    else
+      elementOrMacroString
 
   (className, props, children) ->
     elementClass = elementClasses[className]

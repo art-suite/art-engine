@@ -8,6 +8,7 @@ module.exports
   Config:         require './Config'        
   DefaultProps:   require './DefaultProps'  
   FullScreenApp:  require './FullScreenApp' 
+  Macros:         require './Macros'        
   NormalizeProps: require './NormalizeProps'
   StandardImport: require './StandardImport'
 require './Animation'
