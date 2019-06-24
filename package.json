@@ -1,5 +1,5 @@
 {
-  "author": "Shane Brinkman-Davis Delamore, Imikimi LLC",
+  "author": "Shane Brinkman-Davis Delamore, Imikimi LLC\"",
   "dependencies": {
     "art-build-configurator": "*",
     "art-canvas": "git://github.com/imikimi/art-canvas.git",
@@ -15,9 +15,8 @@
   "name": "art-engine",
   "scripts": {
     "build": "webpack --progress",
-    "start": "webpack-dev-server --hot --inline --progress",
-    "test": "webpack-dev-server  --progress",
-    "testInBrowser": "webpack-dev-server --progress"
+    "start": "webpack-dev-server --hot --inline --progress --env.devServer",
+    "test": "webpack-dev-server  --progress --env.devServer"
   },
   "version": "4.1.0"
 }

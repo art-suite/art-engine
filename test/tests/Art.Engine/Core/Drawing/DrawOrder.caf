@@ -712,7 +712,7 @@ suite:
             color: "red"
             shadow: offset: 10
       test: (e) ->
-        assert.eq e.drawArea, rect 113
+        assert.eq e.drawArea, rect 116
 
     renderTest
       "fill padded"
@@ -906,7 +906,7 @@ suite:
               circle: ({w, h}) -> rect w * .40, h * .40, w * .20, h * .20
               outline:  color: :black lineWidth: .5
 
-      test: (e) -> assert.eq e.drawArea, rect -3, -3, 216, 216
+      test: (e) -> assert.eq e.drawArea, rect -3, -3, 219, 219
 
   regressions: ->
     renderTest

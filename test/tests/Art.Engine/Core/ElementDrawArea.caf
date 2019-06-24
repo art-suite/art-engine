@@ -51,7 +51,7 @@ suite:
             TextElement m standardTextProps, text: "hi!"
 
       ->
-        assert.eq o.elementSpaceDrawArea, rect -20, -15, 140, 140
+        assert.eq o.elementSpaceDrawArea, rect -25 -20 150 150
         assert.eq needsStagingElement.elementSpaceDrawArea.roundOut(.1), rect 33.5, 36, 33.1, 32
 
   children: ->

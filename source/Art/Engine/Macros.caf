@@ -1,0 +1,76 @@
+import &ArtStandardLib
+&Layout.PointLayout           extract pointLayout
+&Core.NamedElementPropValues  extract namedSizeLayouts
+&ArtAtomic extract Point.namedAlignmentPoints
+
+cursors = w
+  ""
+    default pointer
+    allScroll contextMenu help
+    wait progress
+
+    crosshair cell text verticalText
+
+    alias copy move noDrop notAllowed
+    zoomIn zoomOut
+
+    grab grabbing
+
+    eResize nResize neResize nwResize sResize seResize swResize wResizee wResize nsResize neswResize nwseResize colResize rowResize
+
+global.artEngineMacros = merge
+  object v in namedSizeLayouts
+    size: v
+
+  object v, k in namedAlignmentPoints
+    location: pointLayout k
+    axis: v
+
+  # Ex: childrenCenterCenter >> childrenAlignment: :centerCenter
+  object v, k in namedAlignmentPoints with-key lowerCamelCase "" children #{k}
+    childrenAlignment: v
+
+  # Ex: textCenterCenter >> align: :centerCenter
+  object v, k in namedAlignmentPoints with-key lowerCamelCase "" text #{k}
+    align: v
+
+  {}
+    row:        childrenLayout: :row
+    column:     childrenLayout: :column
+    flow:       childrenLayout: :flow
+    bold:       fontWeight:     :bold
+    italic:     fontStyle:      :italic
+    clip:       clip:           true
+    cacheDraw:  cacheDraw:      true
+
+
+    scaleToFit:   scale: scaleToFit = (ps, cs) -> ps.minRatio cs
+    scaleToFill:  scale: scaleToFill = (ps, cs) -> ps.maxRatio cs
+
+    fitSizeToParentWidth: size:
+      ww: 1
+      y: (ps, cs) ->
+        if cs.x > 0
+          cs.y * ps.x / cs.x
+        else 100
+
+    # ALIAS - is it better w/o the prepositions?
+    scaleFit:     scale: scaleToFit
+    scaleFill:    scale: scaleToFill
+
+    fitParent =
+      scale:    scaleToFit
+      location: :centerCenter
+      axis:     :centerCenter
+
+
+    fillParent =
+      scale:    scaleToFill
+      location: :centerCenter
+      axis:     :centerCenter
+
+    fitIntoParent:  fitParent
+    zoomIntoParent: fillParent
+
+  object cursor in cursors with-key "" #{cursor}Cursor
+    cursor: dashCase cursor
