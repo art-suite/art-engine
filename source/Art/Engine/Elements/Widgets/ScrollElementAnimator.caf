@@ -72,7 +72,7 @@ class ScrollElementAnimator extends PersistantAnimator
       toValue as targetScrollPosition
       currentValue as scrollPosition
 
-    frameSeconds = min frameSeconds, 1/15 # stop things from getting too crazy
+    frameSeconds = min frameSeconds, 1/30 # stop things from getting too crazy
 
     if tracking
       @stop()
