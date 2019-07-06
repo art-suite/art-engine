@@ -24,18 +24,20 @@ module.exports = class FullScreenApp
     if query.dev? || query.perfGraphs?
 
       ###
-      TODO:
-      1) I'd like a way to easily build production vs dev code.
-      2) DomConsole should only be included in dev code.
-      ANSWER:
-        1. make DomConsole its own NPM
-        2. let webpack rewrite the following require into a noop for production.
+        TODO:
+        1) I'd like a way to easily build production vs dev code.
+        2) DomConsole should only be included in dev code.
+        ANSWER:
+          1. make DomConsole its own NPM
+          2. let webpack rewrite the following require into a noop for production.
       ###
       require 'art-foundation/dev_tools/dom_console'
       {DomConsole} = Neptune.Art.Foundation.DevTools
 
       DomConsole.enable()
-      Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs?
+      if query.perfGraphs?
+        log "enable GlobalEpochStats"
+        Engine.DevTools.GlobalEpochStats.enable()
 
     log "Art.Engine.FullScreenApp: app ready"
 
@@ -51,21 +53,21 @@ module.exports = class FullScreenApp
       documentElement.style.height = "100%" unless iOSNative
 
   ###
-  IN:
-    config:
-      fonts: # SEE ArtCanvas.FontLoader for the most up-to-date-doc
+    IN:
+      config:
+        fonts: # SEE ArtCanvas.FontLoader for the most up-to-date-doc
 
-    title: document.title
-    styleSheets: array of style-sheet URLS to load
-    scripts: array of script URLs to load
+      title: document.title
+      styleSheets: array of style-sheet URLS to load
+      scripts: array of script URLs to load
 
-    meta: key-value map for meta-tags in the form:
-      name: content
+      meta: key-value map for meta-tags in the form:
+        name: content
 
-    link: add link tags to add in the form:
-      rel: tag-body-text
+      link: add link tags to add in the form:
+        rel: tag-body-text
 
-    manifest: manifest file URL
+      manifest: manifest file URL
 
   ###
   @init: (config = {})=>

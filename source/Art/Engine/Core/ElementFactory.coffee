@@ -12,7 +12,8 @@ module.exports = class ElementFactory extends BaseClass
     @_elementClasses = {}
 
   @classGetter
-    elementClasses: -> @singleton._elementClasses
+    elementClasses:     => @singleton._elementClasses
+    elementClassNames:  => Object.keys @elementClasses
 
   register: (klass) ->
     name = klass.name

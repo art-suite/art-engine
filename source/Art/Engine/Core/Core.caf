@@ -1,0 +1,13 @@
+# include before Drawing
+&GlobalEpochCycle
+&Drawing
+
+{merge} = require 'art-standard-lib'
+import &ArtStandardLib
+
+merge
+  {newElement, getElementClassNames} = &ElementFactory
+  {sourceToBitmapCache} = &SourceToBitmapCache
+  {} &Drawing/DrawCacheManager
+  &Lib
+
