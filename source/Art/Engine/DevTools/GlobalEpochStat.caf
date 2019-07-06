@@ -1,0 +1,24 @@
+import &StandardImport, &GlobalEpochStatsStyle
+
+class GlobalEpochStat extends BaseClass
+  constructor: (@sampleTime, @total, @sampleSet) ->
+
+  getStacked: (sampleName) ->
+    return @total if sampleName == :total
+    sum = 0
+    each sn in-array statFields by -1
+      sum += @sampleSet[sn] || 0
+      break if sn == sampleName
+    sum
+
+  drawSample: (bitmap, drawMatrix, sampleWidth, sampleField, h) ->
+    @ extract sampleTime
+    bitmap.drawRectangle
+      null
+      rect
+        x = floor drawMatrix.transformX sampleTime, sample = @getStacked sampleField
+        y = floor drawMatrix.transformY sampleTime, sample
+        sampleWidth
+        h - y
+
+      color: statColors[sampleField]

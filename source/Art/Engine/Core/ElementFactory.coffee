@@ -5,7 +5,7 @@ Foundation = require 'art-foundation'
 module.exports = class ElementFactory extends BaseClass
   @singletonClass()
 
-  @newElement: (elementClassName, props, children) => @singleton.newElement elementClassName, props, children
+  @newElement: (elementClassName, props, children, creator) => @singleton.newElement elementClassName, props, children, creator
 
   constructor: ->
     super
@@ -25,7 +25,9 @@ module.exports = class ElementFactory extends BaseClass
 
   classForElement: (elementClassName) -> @_elementClasses[elementClassName]
 
-  newElement: (elementClassName, props, children) ->
+  newElement: (elementClassName, props, children, creator) ->
     klass = @_elementClasses[elementClassName]
     throw new Error "ElementFactor: class not found for #{inspect elementClassName} (props: #{inspect props})" unless klass
-    new @_elementClasses[elementClassName] props, children
+    element = new @_elementClasses[elementClassName] props, children
+    element.creator = creator
+    element
