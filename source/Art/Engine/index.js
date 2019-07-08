@@ -13,7 +13,6 @@
 });
 require('./Animation');
 require('./Core');
-require('./DevTools');
 require('./Elements');
 require('./Events');
 require('./File');

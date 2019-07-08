@@ -8,7 +8,6 @@ module.exports = require('../namespace').addNamespace(
 );
 require('./Animation/namespace');
 require('./Core/namespace');
-require('./DevTools/namespace');
 require('./Elements/namespace');
 require('./Events/namespace');
 require('./File/namespace');

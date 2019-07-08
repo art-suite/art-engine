@@ -1,0 +1,153 @@
+import &ArtStandardLib, &ArtEpochedState
+
+&StateEpoch             extract stateEpoch
+&ArtEvents.EventEpoch   extract eventEpoch
+&Drawing/DrawEpoch      extract drawEpoch
+&idleEpoch              extract idleEpoch
+
+ArtFrameStats = &ArtFrameStats
+.registerStatColor    #39c     :draw
+.registerStatColor    #9c3     :aim    :aimLayout  :aimTL        :aimRR
+.registerStatColor    :gold    :react  :reactAim   :reactUpdate  :reactRender
+.registerStatColor    #d936a3  :flux
+.registerStatColor    #ff6347  :event
+.registerEventColors
+  generateDrawCache:  :green
+  animation:          #77f
+  animationAborted:   #f77
+  animationDone:      #77f
+  default:            :gray
+
+{dummyEpoch} = class DummyEpoch extends Epoch
+  @singletonClass()
+
+class GlobalEpochCycle extends Epoch
+  @singletonClass()
+
+  @classGetter
+    activeCanvasElements: -> @globalEpochCycle.activeCanvasElements
+
+  constructor: ->
+    super
+    @cycleQueued = false
+    @_processingCycle = false
+    @activeCanvasElements = []
+
+    dummyEpoch.queueNextEpoch =
+    idleEpoch.queueNextEpoch  =
+    stateEpoch.queueNextEpoch =
+    drawEpoch.queueNextEpoch  =
+    eventEpoch.queueNextEpoch = => @queueNextEpoch()
+
+    @subEpochs =
+      idle:   idleEpoch
+      event:  eventEpoch
+      aim:    stateEpoch
+      draw:   drawEpoch
+      react:  dummyEpoch  # dummyEpoch now; real one added later in loading
+      flux:   dummyEpoch  # dummyEpoch now; real one added later in loading
+
+    eventEpoch.logEvent = ArtFrameStats.logEvent
+
+  ############################
+    ArtFrameStats
+  ############################
+  logEvent:             ArtFrameStats.logEvent
+  startTimePerformance: ArtFrameStats.startTimer
+  endTimePerformance:   ArtFrameStats.endTimer
+
+  ############################
+    INFO
+  ############################
+  @getter
+    numActivePointers: ->
+      count = 0
+      each canvasElement in @activeCanvasElements
+        count += canvasElement.getNumActivePointers()
+      count
+
+    idle: ->
+      @subEpochs.react.getEpochLength() == 0 &&
+      @subEpochs.aim.getEpochLength() == 0 &&
+      @subEpochs.event.getEpochLength() == 0
+
+    epochLength: ->
+      sum = 0
+      each epoch in-object @subEpochs
+        sum += epoch.getEpochLength()
+      sum
+
+  @getter
+    idleEpoch:  -> @subEpochs.idle
+    eventEpoch: -> @subEpochs.event
+    stateEpoch: -> @subEpochs.aim
+    drawEpoch:  -> @subEpochs.draw
+    reactEpoch: -> @subEpochs.react
+    fluxEpoch:  -> @subEpochs.flux
+
+  ############################
+    post-load-configure
+  ############################
+  includeReact: (epoch) ->
+    @subEpochs.react = epoch
+    .queueNextEpoch = => @queueNextEpoch()
+
+  includeFlux:  (epoch) ->
+    @subEpochs.flux = epoch
+    .queueNextEpoch = => @queueNextEpoch()
+
+  detachCanvasElement: (toRemoveCe) ->
+    @activeCanvasElements = arrayWithout @activeCanvasElements, toRemoveCe
+
+  attachCanvasElement: (toAddCe) ->
+    @activeCanvasElements.push toAddCe
+
+  ############################
+    processEpoch
+  ############################
+  flushEpochNow: -> unless @_processingCycle
+    @_processingCycle = true
+    @_processCycleExceptDraw()
+    @_processingCycle = false
+
+  ### processEpochItems
+    Why @_processSubEpoch :aim twice?
+      Animations triggered on element creation cannot be properly initalized until
+      all other properties have been applied - i.e. until stateEpoch.onNextReady
+      However, animations triggered on element creation need to set their start-state before
+      the next redraw. Therefor, we allow a second iteration of non-draw epochs.
+      ALSO: some Components need to capture ElementSizes to refine layout (VerticalStackPager), so they may need one extra cycle.
+      SBD: Changed on 12-20-2015 to only reprocess StateEpoch. That's all the animators need.
+        In particular, I don't want to process the eventEpoch twice since animators trigger their frames
+        each time we process the eventEpoch.
+        We could process the React epoch again, but we don't need it with the new Art.EngineRemote code
+  processEpochItems: (items) ->
+    ArtFrameStats.startFrame()
+    @_processingCycle = true
+
+    each epoch in-object @subEpochs
+      epoch._frameSecond = @_frameSecond
+
+    @_processCycleExceptDraw()
+    @_processSubEpoch :aim if @subEpochs.aim.getEpochLength() > 0
+    @_processSubEpoch :draw
+
+    @queueNextEpoch() if @getEpochLength() > 0
+
+    @_processingCycle = false
+    ArtFrameStats.endFrame()
+
+  #####################
+    PRIVATE
+  #####################
+  _processSubEpoch: (name) ->
+    start = @startTimePerformance()
+    @subEpochs[name].processEpoch()
+    @endTimePerformance name, start
+
+  _processCycleExceptDraw: ->
+    @_processSubEpoch :event
+    @_processSubEpoch :flux
+    @_processSubEpoch :idle if @getIdle()
+    @_processSubEpoch :react
+    @_processSubEpoch :aim
