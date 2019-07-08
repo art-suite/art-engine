@@ -6,7 +6,6 @@ Animator = require "../Animation/Animator"
 Layout = require "../Layout"
 ElementBase = require './ElementBase'
 StateEpoch = require "./StateEpoch"
-GlobalEpochCycle = require './GlobalEpochCycle'
 
 {ElementDrawMixin, DrawCacheManager, ElementDrawAreaMixin} = require './Drawing'
 {config} = require '../Config'
@@ -18,7 +17,6 @@ GlobalEpochCycle = require './GlobalEpochCycle'
 {rgbColor, point, Point, rect, Rectangle, Matrix, matrix, identityMatrix, point0, point1, perimeter0, isPoint, perimeter} = Atomic
 {namedPoints} = Point
 {floor, ceil} = Math
-{globalEpochCycle} = GlobalEpochCycle
 {drawCacheManager} = DrawCacheManager
 {PointLayout} = Layout
 {pointLayout} = PointLayout

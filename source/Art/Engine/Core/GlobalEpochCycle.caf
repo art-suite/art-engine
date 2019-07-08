@@ -1,17 +1,18 @@
-import &ArtStandardLib, &ArtEpochedState
+import &ArtStandardLib, &ArtEpochedState, ArtFrameStats = &ArtFrameStats
 
 &StateEpoch             extract stateEpoch
 &ArtEvents.EventEpoch   extract eventEpoch
 &Drawing/DrawEpoch      extract drawEpoch
 &idleEpoch              extract idleEpoch
 
-ArtFrameStats = &ArtFrameStats
-.registerStatColor    #39c     :draw
-.registerStatColor    #9c3     :aim    :aimLayout  :aimTL        :aimRR
-.registerStatColor    :gold    :react  :reactAim   :reactUpdate  :reactRender
-.registerStatColor    #d936a3  :flux
-.registerStatColor    #ff6347  :event
-.registerEventColors
+# registerStatColor :orange :StateEpoch
+registerStatColor     #1      :idle
+registerStatColor     #39c    :draw
+registerStatColor     #9c3    :aim    :textLayout  :aimLayout :stateEpoch
+registerStatColor     :gold   :react  :reactUpdate :reactCreate  :reactRender
+registerStatColor     #d936a3 :flux
+registerStatColor     #ff6347 :event
+registerEventColors
   generateDrawCache:  :green
   animation:          #77f
   animationAborted:   #f77
@@ -47,14 +48,7 @@ class GlobalEpochCycle extends Epoch
       react:  dummyEpoch  # dummyEpoch now; real one added later in loading
       flux:   dummyEpoch  # dummyEpoch now; real one added later in loading
 
-    eventEpoch.logEvent = ArtFrameStats.logEvent
-
-  ############################
-    ArtFrameStats
-  ############################
-  logEvent:             ArtFrameStats.logEvent
-  startTimePerformance: ArtFrameStats.startTimer
-  endTimePerformance:   ArtFrameStats.endTimer
+    eventEpoch.logEvent = ArtFrameStats.logFrameEvent
 
   ############################
     INFO
@@ -141,9 +135,9 @@ class GlobalEpochCycle extends Epoch
     PRIVATE
   #####################
   _processSubEpoch: (name) ->
-    start = @startTimePerformance()
+    startFrameTimer name
     @subEpochs[name].processEpoch()
-    @endTimePerformance name, start
+    endFrameTimer()
 
   _processCycleExceptDraw: ->
     @_processSubEpoch :event

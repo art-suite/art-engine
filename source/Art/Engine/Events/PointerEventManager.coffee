@@ -10,6 +10,7 @@
 {eventEpoch} = EventEpoch
 
 {simpleBrowserInfo} = require('art-foundation').Browser
+{logFrameEvent} = require 'art-frame-stats'
 
 MultitouchManager = require './MultitouchManager'
 Pointer = require './Pointer'
@@ -518,7 +519,7 @@ module.exports = class PointerEventManager extends BaseClass
   ############################
   pointerDown: (id, location, props) ->
     eventType = if @numActivePointers == 0 then "pointerDown" else "pointerAdd"
-    eventEpoch.logEvent eventType, id
+    logFrameEvent eventType, id
 
     @addActivePointer pointer = new Pointer @, id, location
 
@@ -542,7 +543,7 @@ module.exports = class PointerEventManager extends BaseClass
     eventEpoch.flushEpochNow()
     eventType = if @numActivePointers == 1 then "pointerUp" else "pointerRemove"
 
-    eventEpoch.logEvent eventType, id
+    logFrameEvent eventType, id
 
     return unless pointer = @getActivePointer id
 
@@ -563,7 +564,7 @@ module.exports = class PointerEventManager extends BaseClass
   # pointerCancel - the pointer became inactive, but not because of the user. Ex: system interrupted the action with a dialog such as "low power"
   # No subsequent action should be taken, but this event notifies Elements to clean up or abort any action related to this active pointer.
   pointerCancel: (id, props) ->
-    eventEpoch.logEvent "pointerCancel", id
+    logFrameEvent "pointerCancel", id
 
     return unless pointer = @getActivePointer id
 
@@ -572,7 +573,7 @@ module.exports = class PointerEventManager extends BaseClass
     @removeActivePointer pointer
 
   pointerMove: (id, location, props) ->
-    eventEpoch.logEvent "pointerMove", id
+    logFrameEvent "pointerMove", id
 
     return unless pointer = @getActivePointer id
 

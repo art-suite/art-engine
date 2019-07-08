@@ -9,7 +9,6 @@
   Element:                require('./Element'),
   ElementBase:            require('./ElementBase'),
   ElementFactory:         require('./ElementFactory'),
-  EngineStat:             require('./EngineStat'),
   EpochedElementMixin:    require('./EpochedElementMixin'),
   EventedElementMixin:    require('./EventedElementMixin'),
   GlobalEpochCycle:       require('./GlobalEpochCycle'),

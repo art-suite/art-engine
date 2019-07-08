@@ -12,6 +12,8 @@
 StateEpochLayout = require './EpochLayout/StateEpochLayout'
 {point, Point} = require 'art-atomic'
 
+{startFrameTimer, endFrameTimer} = require 'art-frame-stats'
+
 {simpleBrowserInfo} = require 'art-browser-tools'
 
 childrenDrawUnchanged = (before, after) ->
@@ -58,8 +60,11 @@ defineModule module, class StateEpoch extends EpochClass
   #   However, if the redraw area doesn't include app pixels within Radius of A, then we might not update
   #   the screen correctly.
   # Basically, if el has filterDecendants, then we may need to expand the redrawArea.
-  informAncestorsElementNeedsRedrawing: (el) ->
-    el._needsRedrawing()
+  elemensNeedRedrawing: (elements) ->
+    startFrameTimer "enr", "#fa0"
+    for element in elements
+      element._needsRedrawing()
+    endFrameTimer()
     null
 
   applyStateChanges: (changingElements)->
@@ -189,6 +194,8 @@ defineModule module, class StateEpoch extends EpochClass
   processEpochItems: (changingElements)->
     # log "StateEpoc#processEpochItems"
     # log @inspectChangingElements changingElements
+
+    startFrameTimer "stateEpoch"
     @preprocessElementsForEpoch changingElements
 
     @computeDepths changingElements
@@ -219,7 +226,7 @@ defineModule module, class StateEpoch extends EpochClass
     drawChangedElements = @getDrawChangedElements changingElements
 
     # do first pass of drawDirtyArea computation
-    @informAncestorsElementNeedsRedrawing el for el in drawChangedElements
+    @elemensNeedRedrawing drawChangedElements
 
     @resetParentToElementMatricies elementToAbsMatrixChangedElementsDepthAscending
 
@@ -245,4 +252,6 @@ defineModule module, class StateEpoch extends EpochClass
     @recomputeMousePathAndCursor changingElements unless simpleBrowserInfo.touch
 
     # do second pass of drawDirtyArea computation
-    @informAncestorsElementNeedsRedrawing el for el in drawChangedElements
+    @elemensNeedRedrawing drawChangedElements
+
+    endFrameTimer()

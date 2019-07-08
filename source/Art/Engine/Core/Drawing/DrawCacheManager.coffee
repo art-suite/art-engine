@@ -11,12 +11,10 @@
   point1, point, Point, rect, Rectangle, matrix, Matrix
 } = require 'art-atomic'
 
+{logFrameEvent} = require 'art-frame-stats'
+
 ArtEngineCore = require './namespace'
 {Bitmap} = require 'art-canvas'
-
-globalEpochCycle = null
-getGlobalEpochCycle = ->
-  globalEpochCycle ||= (require '../GlobalEpochCycle').globalEpochCycle
 
 {drawCacheDebug} = getEnv()
 
@@ -234,7 +232,7 @@ defineModule module, class DrawCacheManager extends BaseClass
   # OUT: a clear bitmap (filled with pixel with color: #0000)
   _recycleUnusedCacheBitmap: (element, size) ->
     if unusedCacheBitmap = @_getUnusedCacheBitmap size
-      getGlobalEpochCycle().logEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
+      logFrameEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
       unusedCacheBitmap.recycle element, @_currentFrameNumber
       @_addCacheBitmap element, unusedCacheBitmap
 
@@ -252,7 +250,7 @@ defineModule module, class DrawCacheManager extends BaseClass
     size = size.max point1
 
     @_bitmapsCreated++
-    getGlobalEpochCycle().logEvent "createCacheBitmap", "createCacheBitmap"
+    logFrameEvent "createCacheBitmap", "createCacheBitmap"
 
     bitmap = @_addCacheBitmap element, new CacheBitmap element,
       element.getBitmapFactory().newBitmap size

@@ -16,7 +16,8 @@ defaultMiterLimit = 3
 defaultLineWidth = 1
 {config} = require '../../Config'
 {drawCacheManager} = require './DrawCacheManager'
-{globalEpochCycle} = require '../GlobalEpochCycle'
+
+{logFrameEvent} = require 'art-frame-stats'
 
 # iOS limitation:
 maxCanvasSize = 16777216
@@ -755,7 +756,7 @@ defineModule module, ->
               @_drawCacheBitmap.closeClipping lastClippingInfo
 
         else
-          globalEpochCycle.logEvent "fullDrawCache", @uniqueId
+          logFrameEvent "fullDrawCache", @uniqueId
           @_updateCurrentDrawCacheClippedArea bitmapAlreadyClear
 
       catch error

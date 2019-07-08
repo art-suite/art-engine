@@ -13,6 +13,8 @@
 
 ArtEngineCore = require '../namespace'
 
+{startFrameTimer, endFrameTimer} = require 'art-frame-stats'
+
 ###
 TODO:
 
@@ -36,8 +38,6 @@ TODO:
   isInfiniteResult
 } = LayoutTools = require './LayoutTools'
 
-globalEpochCycle = null
-
 module.exports = class StateEpochLayout extends BaseClass
 
   @markLayoutPropertiesChanged: (changingElements) =>
@@ -54,12 +54,11 @@ module.exports = class StateEpochLayout extends BaseClass
       markParentLayoutPropertiesChanged element
 
   @updateLayouts: (layoutChangedElements) =>
-    globalEpochCycle ?= ArtEngineCore.GlobalEpochCycle.globalEpochCycle
 
-    start = globalEpochCycle.startTimePerformance()
+    startFrameTimer "aimLayout"
     for element in layoutChangedElements when element.__layoutPropertiesChanged
       layoutElement element, element.getPendingParentSizeForChildren()
-    globalEpochCycle.endTimePerformance "aimLayout", start
+    endFrameTimer()
 
     null
 

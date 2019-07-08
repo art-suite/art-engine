@@ -13,9 +13,11 @@ are set to the current values.
 
 {currentSecond, min, max, Transaction, inspect, inspectLean, log, BaseClass} = require 'art-foundation'
 {rgbColor, Color, point, Point, rect, Rectangle, matrix, Matrix} = require 'art-atomic'
-{Event, EventEpoch, EventedMixin} = require 'art-events'
+{EventEpoch, EventedMixin} = require 'art-events'
 EasingFunctions = require './EasingFunctions'
 {eventEpoch} = EventEpoch
+
+{logFrameEvent} = require 'art-frame-stats'
 
 module.exports = class Animator extends EventedMixin BaseClass
   @animate: (objects, options) -> new Animator objects, options
@@ -78,7 +80,7 @@ module.exports = class Animator extends EventedMixin BaseClass
   ################################################
   abort: ->
     unless @aborted
-      eventEpoch.logEvent "animationAborted", @getObjectId()
+      logFrameEvent "animationAborted", @getObjectId()
       @aborted = true
       @deactivateAnimation()
       @queueEvent "abort"
@@ -94,7 +96,7 @@ module.exports = class Animator extends EventedMixin BaseClass
     eventEpoch.queue =>
       return if @deactivated
       @updateValues 0
-      eventEpoch.logEvent "animation", @getObjectId()
+      logFrameEvent "animation", @getObjectId()
       @startTime = currentSecond()
       @queueEvent "start"
 
@@ -154,7 +156,7 @@ module.exports = class Animator extends EventedMixin BaseClass
 
   done: ->
     return if @aborted
-    eventEpoch.logEvent "animation", @getObjectId()
+    logFrameEvent "animation", @getObjectId()
     @deactivateAnimation()
     @queueEvent "done"
     @nextAnimation()

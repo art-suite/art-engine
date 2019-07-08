@@ -6,17 +6,6 @@
 # https://developer.mozilla.org/en-US/docs/Web/Reference/Events/mousemove
 # http://stackoverflow.com/questions/1685326/responding-to-the-onmousemove-event-outside-of-the-browser-window-in-ie
 
-Foundation = require 'art-foundation'
-Atomic = require 'art-atomic'
-Canvas = require 'art-canvas'
-ArtEngineEvents = require '../Events'
-Element = require './Element'
-GlobalEpochCycle = require './GlobalEpochCycle'
-{DrawEpoch} = require './Drawing'
-EngineStat= require './EngineStat'
-{config} = require '../Config'
-
-
 {
   log, inspect
   nextTick
@@ -35,20 +24,25 @@ EngineStat= require './EngineStat'
   peek
 } = require 'art-standard-lib'
 
+Element = require './Element'
+{config} = require '../Config'
+
 {showPartialDrawAreas} = getEnv()
 {createWithPostCreate} = require 'art-class-system'
-{Browser} = require 'art-foundation'
+{Bitmap} = require 'art-canvas'
 
-{getOrientationAngle, simpleBrowserInfo} = Browser
+{getOrientationAngle, simpleBrowserInfo} = Browser = require 'art-browser-tools'
 HtmlCanvas = Browser.DomElementFactories.Canvas
 
-{rgbColor, hslColor, point, Point, rect, Rectangle, matrix, Matrix} = Atomic
+{
+  rgbColor, hslColor, point, Point, rect, Rectangle, matrix, Matrix
+} = require 'art-atomic'
 
 {getDevicePixelRatio, domElementOffset} = Browser.Dom
-{PointerEventManager, PointerEvent, KeyEvent} = ArtEngineEvents
+{PointerEventManager, PointerEvent, KeyEvent} = require '../Events'
 
-{globalEpochCycle} = GlobalEpochCycle
-{drawEpoch} = DrawEpoch
+{globalEpochCycle} = require './GlobalEpochCycle'
+{drawEpoch} = (require './Drawing').DrawEpoch
 
 extractPointerEventProps = (domEvent) ->
   {ctrlKey, metaKey, shiftKey, timeStamp} = domEvent
@@ -95,7 +89,6 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @pointerEventManager = new PointerEventManager canvasElement:@
 
     @_attach @_getOrCreateCanvasElement options
-    @engineStat = new EngineStat
 
     self.canvasElement ||= @
 
@@ -337,7 +330,7 @@ module.exports = createWithPostCreate class CanvasElement extends Element
     @_canvas.setAttribute "height",  @_pixelSize.y
 
     @_updateDocumentMatricies()
-    @_bitmapFactory = @canvasBitmap = new Canvas.Bitmap @_canvas, alpha: false
+    @_bitmapFactory = @canvasBitmap = new Bitmap @_canvas, alpha: false
     @queueDrawEpoch()
 
   _setElementToParentMatrixFromLayoutXY: (x, y) ->
@@ -598,17 +591,11 @@ module.exports = createWithPostCreate class CanvasElement extends Element
   # DRAWING and DRAW STATS
   ###############################################
 
+  getShowPartialDrawAreas = -> showPartialDrawAreas || config.showPartialDrawAreas
   partialRedrawCount = 0
   drawOnBitmap: ->
 
     Element.resetStats()
-    frameStartTime = currentSecond()
-    @firstFrameTime ||= frameStartTime
-
-    if @lastFrameTime
-      @engineStat.add "fps", 1 / (frameStartTime - @lastFrameTime)
-      @engineStat.add "frameTimeMS", (frameStartTime - @lastFrameTime) * 1000
-    @lastFrameTime = frameStartTime
 
     if @canvasBitmap
       if config.partialRedrawEnabled && @_dirtyDrawAreas
@@ -619,39 +606,28 @@ module.exports = createWithPostCreate class CanvasElement extends Element
       else
         super @canvasBitmap, @elementToParentMatrix
 
-    if spda = showPartialDrawAreas || config.showPartialDrawAreas
-      for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
-        partialRedrawCount++
-        spdaFull = spda == "full"
-        spdaApts = color: hslColor (partialRedrawCount % 36) / 36, 1,
-          if spdaFull then 1 else .8,
-          if spdaFull then 1/3 else 1
-        spdaArea = (dirtyDrawArea.mul @_devicePixelsPerPoint)
-        if spda == "log"
-          log "#{dirtyDrawArea.toString()} (#{dirtyDrawArea.area} pixels)"
-        if spdaFull
-          @canvasBitmap?.drawRectangle null, spdaArea, spdaApts
-        else
-          @canvasBitmap?.drawBorder null, spdaArea, spdaApts
-
-    frameEndTime = currentSecond()
-    @engineStat.add "drawTimeMS", (frameEndTime - frameStartTime) * 1000 | 0
+    if getShowPartialDrawAreas()
+      @_drawPartialDrawAreas()
 
     @_redrawAll = false
     @_dirtyDrawAreas = null
-    # @_showDrawStats()
 
-  _showDrawStats: ->
-    numSamples = @engineStat.length "drawTimeMS"
-    timeout 1000, =>
-      if numSamples == @engineStat.length "drawTimeMS"
-        totalDrawDuration = frameEndTime - @firstFrameTime
-        @engineStat.log()
-        @engineStat.reset()
-        @log
-          cache:
-            count: Element._activeCacheCount
-            size: (Element._activeCacheByteSize/(1024*1024)).toFixed(1)+"mb"
-        @firstFrameTime = null
-        @frameCount = 0
-        @lastFrameTime = null
+  _drawPartialDrawAreas: ->
+
+    spda = getShowPartialDrawAreas()
+    for dirtyDrawArea in @_dirtyDrawAreas || [@drawArea]
+      partialRedrawCount++
+      spdaFull = spda == "full"
+      spdaApts = color: hslColor (partialRedrawCount % 36) / 36, 1,
+        if spdaFull then 1 else .8,
+        if spdaFull then 1/3 else 1
+
+      spdaArea = (dirtyDrawArea.mul @_devicePixelsPerPoint)
+
+      if spda == "log"
+        log "#{dirtyDrawArea.toString()} (#{dirtyDrawArea.area} pixels)"
+
+      if spdaFull
+        @canvasBitmap?.drawRectangle null, spdaArea, spdaApts
+      else
+        @canvasBitmap?.drawBorder null, spdaArea, spdaApts

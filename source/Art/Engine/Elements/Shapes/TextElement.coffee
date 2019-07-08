@@ -2,7 +2,6 @@ Foundation = require 'art-foundation'
 Atomic = require 'art-atomic'
 Text = require 'art-text'
 ShadowableElement = require '../ShadowableElement'
-GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 
 {log, BaseClass, shallowClone, pureMerge, merge, createWithPostCreate, isPlainArray
   isString, isNumber
@@ -10,7 +9,7 @@ GlobalEpochCycle = require '../../Core/GlobalEpochCycle'
 {point, rect} = Atomic
 {normalizeFontOptions} = Text.Metrics
 
-{globalEpochCycle} = GlobalEpochCycle
+{startFrameTimer, endFrameTimer} = require 'art-frame-stats'
 
 propInternalName = BaseClass.propInternalName
 propSetterName = BaseClass._propSetterName
@@ -74,10 +73,10 @@ module.exports = createWithPostCreate class TextElement extends ShadowableElemen
   nonChildrenLayoutFirstPass: (constrainedSize, unconstrainedSize) ->
     # log TextElement: nonChildrenLayoutFirstPass: {@inspectedName,constrainedSize, unconstrainedSize}
     ret = null
-    start = globalEpochCycle.startTimePerformance()
+    startFrameTimer "textLayout"
     @_textLayout = new Text.Layout @getPendingText(), @getPendingFont(), @getPendingFormat(), unconstrainedSize.x, unconstrainedSize.y
     ret = @_textLayout.getSize()
-    globalEpochCycle.endTimePerformance start, "aimTL"
+    endFrameTimer()
     ret
 
   nonChildrenLayoutFinalPass: (size) ->
