@@ -189,3 +189,5 @@ class GlobalEpochStats extends BaseClass
         if samples == @stats.length && GlobalEpochStats.enabled
           @logStats()
           @reset()
+
+  @enable() if getEnv().perfGraphs?

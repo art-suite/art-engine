@@ -4,5 +4,7 @@
 (module.exports = require('./namespace'))
 
 .addModules({
-  GlobalEpochStats: require('./GlobalEpochStats')
+  GlobalEpochStat:       require('./GlobalEpochStat'),
+  GlobalEpochStats:      require('./GlobalEpochStats'),
+  GlobalEpochStatsStyle: require('./GlobalEpochStatsStyle')
 });

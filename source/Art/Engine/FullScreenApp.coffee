@@ -35,7 +35,6 @@ module.exports = class FullScreenApp
       {DomConsole} = Neptune.Art.Foundation.DevTools
 
       DomConsole.enable()
-      Engine.DevTools.GlobalEpochStats.enable() if query.perfGraphs?
 
     log "Art.Engine.FullScreenApp: app ready"
 

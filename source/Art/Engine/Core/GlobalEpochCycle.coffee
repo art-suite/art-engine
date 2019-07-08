@@ -39,8 +39,6 @@ module.exports = class GlobalEpochCycle extends Epoch
     @_fluxOnIdleOkUntil = currentSecond()
     @_resetThisCyclesStats()
 
-    # @globalEpochStats = new GlobalEpochStats
-
     idleEpoch.queueNextEpoch  =
     stateEpoch.queueNextEpoch =
     drawEpoch.queueNextEpoch  =
@@ -50,13 +48,20 @@ module.exports = class GlobalEpochCycle extends Epoch
     # I think it's OK to just push the event-epoch out (which should allow the request-image-dialog to fire)
     # eventEpoch.flushEpochNow  = => @flushEpochNow()
 
-    eventEpoch.logEvent = (name, id) => @globalEpochStats?.logEvent name, id
+    eventEpoch.logEvent = (name, id) => @logEvent name, id
 
   allowFluxOnIdle: (nextNSeconds)->
     @_fluxOnIdleOkUntil = currentSecond() + nextNSeconds
 
   _resetThisCyclesStats: ->
     @performanceSamples = {}
+
+  ############################
+  # FrameStats: DEPRICATED - use ArtFrameStats
+  ############################
+
+  logEvent: (name, id) ->
+    @globalEpochStats?.logEvent name, id
 
   addPerformanceSample: (name, value) ->
     throw new Error "@performanceSamples not set" unless @performanceSamples
@@ -65,15 +70,9 @@ module.exports = class GlobalEpochCycle extends Epoch
 
   timerStack = []
   timePerformance: (name, f) ->
-    start = currentSecond()
-    timerStack.push 0
+    start = @startTimePerformance()
     f()
-    subTimeTotal = timerStack.pop()
-    timeResult = currentSecond() - start
-    if (tsl = timerStack.length) > 0
-      timerStack[tsl-1] += timeResult
-
-    @addPerformanceSample name, timeResult - subTimeTotal
+    @endTimePerformance name, start
 
   startTimePerformance: ->
     start = currentSecond()
@@ -82,12 +81,15 @@ module.exports = class GlobalEpochCycle extends Epoch
 
   endTimePerformance: (name, start) ->
     subTimeTotal = timerStack.pop()
-    timeResult = currentSecond() - start
+    elapsedTime = currentSecond() - start
     if (tsl = timerStack.length) > 0
-      timerStack[tsl-1] += timeResult
+      timerStack[tsl-1] += elapsedTime
 
-    @addPerformanceSample name, timeResult - subTimeTotal
+    @addPerformanceSample name, elapsedTime - subTimeTotal
 
+  ############################
+  # </FrameStats>
+  ############################
   @getter
     numActivePointers: ->
       count = 0
@@ -119,9 +121,6 @@ module.exports = class GlobalEpochCycle extends Epoch
 
   includeReact: (epoch) -> (reactEpoch = epoch).queueNextEpoch = => @queueNextEpoch()
   includeFlux:  (epoch) -> (fluxEpoch  = epoch).queueNextEpoch = => @queueNextEpoch()
-
-  logEvent: (name, id) ->
-    @globalEpochStats?.logEvent name, id
 
   detachCanvasElement: (toRemoveCe) ->
     @activeCanvasElements = arrayWithout @activeCanvasElements, toRemoveCe
