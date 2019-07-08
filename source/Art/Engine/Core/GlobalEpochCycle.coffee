@@ -1,25 +1,33 @@
 'use strict';
-Foundation = require 'art-foundation'
-{EventEpoch} = require 'art-events'
-StateEpoch = require './StateEpoch'
-DrawEpoch = require './Drawing/DrawEpoch'
-IdleEpoch = require './IdleEpoch'
+
+{log, arrayWithout, currentSecond} = require 'art-standard-lib'
+{
+  globalCount
+  resetGlobalCounts
+} = require 'art-foundation'
+
+{eventEpoch}  = eventEpoch  = require('art-events').EventEpoch
+{stateEpoch}  = StateEpoch  = require './StateEpoch'
+{drawEpoch}   = DrawEpoch   = require './Drawing/DrawEpoch'
+{idleEpoch}   = IdleEpoch   = require './IdleEpoch'
 
 ArtFrameStats = require 'art-frame-stats'
 
-{
-  log, requestAnimationFrame, miniInspect, time, arrayWithout, currentSecond, Epoch
-  globalCount
-  isPlainObject
-  durationString
-  fastBind
-} = Foundation
+# ArtFrameStats
+# .registerStatColor #39c     :draw
+# .registerStatColor #9c3     :aim    :aimLayout  :aimTL        :aimRR
+# .registerStatColor :gold    :react  :reactAim   :reactUpdate  :reactRender
+# .registerStatColor #d936a3  :flux
+# .registerStatColor #ff6347  :event
 
-toMs = (s) -> (s*1000).toFixed(1) + "ms"
-{eventEpoch} = EventEpoch
-{drawEpoch} = DrawEpoch
-{stateEpoch} = StateEpoch
-{idleEpoch} = IdleEpoch
+# .registerEventColors
+#   generateDrawCache:  :green
+#   animation:          #77f
+#   animationAborted:   #f77
+#   animationDone:      #77f
+#   default:            :gray
+
+{Epoch} = require 'art-epoched-state'
 
 class DummyEpoch extends Epoch
   @singletonClass()
@@ -38,8 +46,6 @@ module.exports = class GlobalEpochCycle extends Epoch
     @cycleQueued = false
     @processingCycle = false
     @activeCanvasElements = []
-    @_fluxOnIdleOkUntil = currentSecond()
-    # @_resetThisCyclesStats()
 
     idleEpoch.queueNextEpoch  =
     stateEpoch.queueNextEpoch =
@@ -53,44 +59,14 @@ module.exports = class GlobalEpochCycle extends Epoch
     eventEpoch.logEvent = ArtFrameStats.logEvent # (name, id) => @logEvent name, id
 
   allowFluxOnIdle: (nextNSeconds)->
-    @_fluxOnIdleOkUntil = currentSecond() + nextNSeconds
-
-  # _resetThisCyclesStats: ->
-  #   @performanceSamples = {}
+    log.warn "DEPRICATED: Art.Engine.GlobalEpochCycle.allowFluxOnIdle - now a noop"
 
   ############################
-  # FrameStats: DEPRICATED - use ArtFrameStats
+  # ArtFrameStats
   ############################
-
   logEvent:             ArtFrameStats.logEvent
   startTimePerformance: ArtFrameStats.startTimer
   endTimePerformance:   ArtFrameStats.endTimer
-
-  # addPerformanceSample: (name, value) ->
-  #   throw new Error "@performanceSamples not set" unless @performanceSamples
-  #   @performanceSamples[name] = (@performanceSamples[name] || 0) + value
-  #   # @fluxFrameTime = @reactFrameTime = @eventFrameTime = @idleFrametime = @aimUpdateFrameTime = @drawFrameTime = 0
-
-  # timerStack = []
-  # timePerformance: (name, f) ->
-  #   start = @startTimePerformance()
-  #   f()
-  #   @endTimePerformance name, start
-  # logEvent: (name, id) ->
-  #   @globalEpochStats?.logEvent name, id
-
-  # startTimePerformance: ->
-  #   start = currentSecond()
-  #   timerStack.push 0
-  #   start
-
-  # endTimePerformance: (name, start) ->
-  #   subTimeTotal = timerStack.pop()
-  #   elapsedTime = currentSecond() - start
-  #   if (tsl = timerStack.length) > 0
-  #     timerStack[tsl-1] += elapsedTime
-
-  #   @addPerformanceSample name, elapsedTime - subTimeTotal
 
   ############################
   # </FrameStats>
@@ -171,7 +147,7 @@ module.exports = class GlobalEpochCycle extends Epoch
 
   _processCycleExceptDraw: ->
     @processEventEpoch()
-    @processFluxEpoch() #if @getIdle() || currentSecond() < @_fluxOnIdleOkUntil
+    @processFluxEpoch()
     @processIdleEpoch() if @getIdle()
 
     reactEpoch.updateGlobalCounts()
@@ -190,38 +166,32 @@ module.exports = class GlobalEpochCycle extends Epoch
     stateEpoch._frameSecond =
     drawEpoch._frameSecond = @_frameSecond
 
-    Foundation.resetGlobalCounts()
-    # startTime = currentSecond()
+    resetGlobalCounts()
 
     ArtFrameStats.startFrame()
 
-    # @_resetThisCyclesStats()
     @processingCycle = true
     @_processCycleExceptDraw()
 
-    # animations triggered on element creation cannot be properly initalized until
-    # all other properties have been applied - i.e. until stateEpoch.onNextReady
-    # However, animations triggered on element creation need to set their start-state before
-    # the next redraw. Therefor, we allow a second iteration of non-draw epochs.
-    # ALSO: some Components need to capture ElementSizes to refine layout (VerticalStackPager), so they may need one extra cycle.
-    # SBD: Changed on 12-20-2015 to only reprocess StateEpoch. That's all the animators need.
-    #   In particular, I don't want to process the eventEpoch twice since animators trigger their frames
-    #   each time we process the eventEpoch.
-    #   We could process the React epoch again, but we don't need it with the new Art.EngineRemote code
+    ### Why processStateEpoch twice?
+      Animations triggered on element creation cannot be properly initalized until
+      all other properties have been applied - i.e. until stateEpoch.onNextReady
+      However, animations triggered on element creation need to set their start-state before
+      the next redraw. Therefor, we allow a second iteration of non-draw epochs.
+      ALSO: some Components need to capture ElementSizes to refine layout (VerticalStackPager), so they may need one extra cycle.
+      SBD: Changed on 12-20-2015 to only reprocess StateEpoch. That's all the animators need.
+        In particular, I don't want to process the eventEpoch twice since animators trigger their frames
+        each time we process the eventEpoch.
+        We could process the React epoch again, but we don't need it with the new Art.EngineRemote code
+    ###
     @processStateEpoch() if stateEpoch.getEpochLength() > 0
 
     drawCount = drawEpoch.epochLength
     @processDrawEpoch()
     @processingCycle = false
 
-    # processTime = currentSecond() - @cycleStartTime
-    # @log cycleTime:"#{1000 * cycleTime | 0}ms", processTime:"#{1000 * processTime | 0}ms", events:events, states:states
-
     if @getEpochLength() > 0
       # console.warn "GlobalEpochCycle: processed maximum state and event cycles (#{@getEpochLength()}) before Draw."
       @queueNextEpoch()
-
-    # if drawCount > 0
-    #   @globalEpochStats?.add startTime, currentSecond() - startTime, @performanceSamples
 
     ArtFrameStats.endFrame()
