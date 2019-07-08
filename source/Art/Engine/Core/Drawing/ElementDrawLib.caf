@@ -199,7 +199,7 @@ class ElementDrawLib
 
     # all areasToTest are contained by at least one area in newDrawAreas
     each area in compactFlattenAllFast oldDrawAreas, addedDrawArea
-      unless find newDrawArea in newDrawAreas when newDrawArea.contains area
+      unless find newDrawArea in-array newDrawAreas when newDrawArea.contains area
         log formattedInspect validateDrawAreasFail: global.validateDrawAreasFail = {newDrawAreas, oldDrawAreas, addedDrawArea}
         throw new Error "expected one of #{formattedInspect newDrawAreas} to contain #{area}"
 
@@ -214,9 +214,9 @@ class ElementDrawLib
 
     null
 
-  @findFirstOverlappingAreaIndex: (areas, testArea) ->
-    find area, i in areas when area.overlaps testArea
-      i
+  # @findFirstOverlappingAreaIndex: (areas, testArea) ->
+  #   find area, i in-array areas when area.overlaps testArea
+  #     i
 
 
   ############################## HERE
@@ -258,48 +258,52 @@ class ElementDrawLib
 
     else
       areaToAdd =
-        areaToAdd
+        oldAta = areaToAdd
         .roundOut
           snapTo
           colorPrecision
           @chromeBugExpandDirtyDrawAreas
-      overlapCount = 0
-      alreadyContainedInDrawAreas = find area in dirtyDrawAreas
-        if area.contains areaToAdd
-          true
 
-        else
-          overlapCount++ if area.overlaps areaToAdd
-          false
+      foundOverlap = false
+      if find area in-array dirtyDrawAreas
+          if area.contains areaToAdd
+            true
 
-      switch
-      when alreadyContainedInDrawAreas
+          else
+            foundOverlap ||= area.overlaps areaToAdd
+            false
+
         dirtyDrawAreas
 
-      when overlapCount == 0
-        arrayWith dirtyDrawAreas, areaToAdd
+      else unless foundOverlap
+        push dirtyDrawAreas, areaToAdd
 
       else
-        workingDirtyArea = areaToAdd.clone()
+        workingDirtyArea = if oldAta != areaToAdd
+              areaToAdd
+        else  areaToAdd.clone()
 
-        foundNewOverlap = true
-        triesLeft = dirtyDrawAreas.length + 1
-        # grow areaToAdd unil it contains all overlaps
+        keepLength = -1
+        newKeepLength = dirtyDrawAreas.length
 
-        while foundNewOverlap && triesLeft-- >= 0
-          foundNewOverlap = false
-          each area in dirtyDrawAreas when workingDirtyArea.overlaps(area) && !workingDirtyArea.contains area
-            area.unionInto workingDirtyArea
-            foundNewOverlap = true
+        while newKeepLength != keepLength
+          keepLength = newKeepLength
+          newKeepLength = 0
 
-        if triesLeft < 0
-          log.error formattedInspect lastAddDirtyDrawAreaFailure: {dirtyDrawAreas, triesLeft, areaToAdd, workingDirtyArea, snapTo}
-          global.lastAddDirtyDrawAreaFailure = {dirtyDrawAreas, areaToAdd, workingDirtyArea, snapTo}
+          each i til keepLength
+            if workingDirtyArea.overlaps area = dirtyDrawAreas[i]
+              area.unionInto workingDirtyArea
 
-        # get new array, with all overlaps removed - they are now represented by areaToAdd
-        dirtyDrawAreas = array area in dirtyDrawAreas when !area.overlaps workingDirtyArea
+            else
+              if newKeepLength != i
+                dirtyDrawAreas[newKeepLength] = area
 
-        arrayWith dirtyDrawAreas, workingDirtyArea
+              newKeepLength++
+
+        dirtyDrawAreas[newKeepLength++] = workingDirtyArea
+        if dirtyDrawAreas.length == newKeepLength
+              dirtyDrawAreas
+        else  dirtyDrawAreas.slice 0, newKeepLength
 
   ### addDirtyDrawArea
     ## 2018-8-14
