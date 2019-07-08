@@ -5,6 +5,8 @@ StateEpoch = require './StateEpoch'
 DrawEpoch = require './Drawing/DrawEpoch'
 IdleEpoch = require './IdleEpoch'
 
+ArtFrameStats = require 'art-frame-stats'
+
 {
   log, requestAnimationFrame, miniInspect, time, arrayWithout, currentSecond, Epoch
   globalCount
@@ -37,7 +39,7 @@ module.exports = class GlobalEpochCycle extends Epoch
     @processingCycle = false
     @activeCanvasElements = []
     @_fluxOnIdleOkUntil = currentSecond()
-    @_resetThisCyclesStats()
+    # @_resetThisCyclesStats()
 
     idleEpoch.queueNextEpoch  =
     stateEpoch.queueNextEpoch =
@@ -48,44 +50,47 @@ module.exports = class GlobalEpochCycle extends Epoch
     # I think it's OK to just push the event-epoch out (which should allow the request-image-dialog to fire)
     # eventEpoch.flushEpochNow  = => @flushEpochNow()
 
-    eventEpoch.logEvent = (name, id) => @logEvent name, id
+    eventEpoch.logEvent = ArtFrameStats.logEvent # (name, id) => @logEvent name, id
 
   allowFluxOnIdle: (nextNSeconds)->
     @_fluxOnIdleOkUntil = currentSecond() + nextNSeconds
 
-  _resetThisCyclesStats: ->
-    @performanceSamples = {}
+  # _resetThisCyclesStats: ->
+  #   @performanceSamples = {}
 
   ############################
   # FrameStats: DEPRICATED - use ArtFrameStats
   ############################
 
-  logEvent: (name, id) ->
-    @globalEpochStats?.logEvent name, id
+  logEvent:             ArtFrameStats.logEvent
+  startTimePerformance: ArtFrameStats.startTimer
+  endTimePerformance:   ArtFrameStats.endTimer
 
-  addPerformanceSample: (name, value) ->
-    throw new Error "@performanceSamples not set" unless @performanceSamples
-    @performanceSamples[name] = (@performanceSamples[name] || 0) + value
-    # @fluxFrameTime = @reactFrameTime = @eventFrameTime = @idleFrametime = @aimUpdateFrameTime = @drawFrameTime = 0
+  # addPerformanceSample: (name, value) ->
+  #   throw new Error "@performanceSamples not set" unless @performanceSamples
+  #   @performanceSamples[name] = (@performanceSamples[name] || 0) + value
+  #   # @fluxFrameTime = @reactFrameTime = @eventFrameTime = @idleFrametime = @aimUpdateFrameTime = @drawFrameTime = 0
 
-  timerStack = []
-  timePerformance: (name, f) ->
-    start = @startTimePerformance()
-    f()
-    @endTimePerformance name, start
+  # timerStack = []
+  # timePerformance: (name, f) ->
+  #   start = @startTimePerformance()
+  #   f()
+  #   @endTimePerformance name, start
+  # logEvent: (name, id) ->
+  #   @globalEpochStats?.logEvent name, id
 
-  startTimePerformance: ->
-    start = currentSecond()
-    timerStack.push 0
-    start
+  # startTimePerformance: ->
+  #   start = currentSecond()
+  #   timerStack.push 0
+  #   start
 
-  endTimePerformance: (name, start) ->
-    subTimeTotal = timerStack.pop()
-    elapsedTime = currentSecond() - start
-    if (tsl = timerStack.length) > 0
-      timerStack[tsl-1] += elapsedTime
+  # endTimePerformance: (name, start) ->
+  #   subTimeTotal = timerStack.pop()
+  #   elapsedTime = currentSecond() - start
+  #   if (tsl = timerStack.length) > 0
+  #     timerStack[tsl-1] += elapsedTime
 
-    @addPerformanceSample name, elapsedTime - subTimeTotal
+  #   @addPerformanceSample name, elapsedTime - subTimeTotal
 
   ############################
   # </FrameStats>
@@ -186,9 +191,11 @@ module.exports = class GlobalEpochCycle extends Epoch
     drawEpoch._frameSecond = @_frameSecond
 
     Foundation.resetGlobalCounts()
-    startTime = currentSecond()
+    # startTime = currentSecond()
 
-    @_resetThisCyclesStats()
+    ArtFrameStats.startFrame()
+
+    # @_resetThisCyclesStats()
     @processingCycle = true
     @_processCycleExceptDraw()
 
@@ -214,38 +221,7 @@ module.exports = class GlobalEpochCycle extends Epoch
       # console.warn "GlobalEpochCycle: processed maximum state and event cycles (#{@getEpochLength()}) before Draw."
       @queueNextEpoch()
 
-    if drawCount > 0
-      globalEpochFrameTime = currentSecond() - startTime
+    # if drawCount > 0
+    #   @globalEpochStats?.add startTime, currentSecond() - startTime, @performanceSamples
 
-      gc = Foundation.globalCounts
-      # log ReactComponent_Rendered:gc.ReactComponent_Rendered
-      if false #globalEpochFrameTime > 1/60
-        keys = Object.keys(gc).sort()
-        sorted = {}
-        for k in keys
-          v = gc[k]
-          v = toMs v if v > 0 && v < 1
-          if isPlainObject v
-            for k2, v2 of v when v2 >0 && v2< 1
-              v[k2] = toMs v2
-          sorted[k] = v
-
-        log
-          globalCounts:sorted
-          fps:(1/globalEpochFrameTime).toFixed(1)
-
-        reactWork = (gc["ReactComponent_Created"] || 0) + (gc["ReactVirtualElement_Created"] || 0)
-        reactWastedWork = (gc["ReactComponent_UpdateFromTemporaryComponent_NoChange"] || 0) + (gc["ReactVirtualElement_UpdateFromTemporaryVirtualElement_NoChange"] || 0)
-        if reactWork > 0
-          log
-            reactWork: reactWork
-            reactWastedWork: reactWastedWork
-            reactEfficiency: 1 - reactWastedWork / reactWork
-
-      @globalEpochStats?.add startTime, globalEpochFrameTime, @performanceSamples
-        # flux:   @fluxFrameTime
-        # event:  @eventFrameTime
-        # react:  @reactFrameTime
-        # aim:    @aimUpdateFrameTime
-        # draw:   @drawFrameTime
-
+    ArtFrameStats.endFrame()
