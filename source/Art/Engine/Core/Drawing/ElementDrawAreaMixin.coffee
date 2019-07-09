@@ -42,7 +42,7 @@ defineModule module, ->
     clipElementSpaceArea: (elementSpaceArea, into) ->
       if @clip
         if @padding
-          @paddedArea.intersection elementSpaceArea, into
+          @getPaddedArea(into).intersection elementSpaceArea, into
         else
           @currentSize.intersection elementSpaceArea, into
 
@@ -102,8 +102,9 @@ defineModule module, ->
 
       OUT: new Rectangle
       ###
-      clippedDrawAreaInAncestor: (ancestor) ->
+      clippedDrawAreaInAncestor: (ancestor, into) ->
         self = @
+        drawArea = into
 
         while parent = self.parent
           drawArea = self.getClippedDrawAreaInParent drawArea, drawArea

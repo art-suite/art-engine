@@ -583,10 +583,13 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       point x - p.getWidth(), y - p.getHeight()
 
     # element-space rectangle covering element's area with padding
-    paddedArea: ->
+    paddedArea: (into) ->
       p = @getCurrentPadding()
       size = @_currentSize
-      new Rectangle 0, 0, max(0, size.x - p.getWidth()), max(0, size.y - p.getHeight())
+      into ?= new Rectangle 0, 0
+      into.w = max 0, size.x - p.getWidth()
+      into.h = max 0, size.y - p.getHeight()
+      into
 
   @drawAreaProperty         clip: default: false, preprocess: (v) -> !!v
 
