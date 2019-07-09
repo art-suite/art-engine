@@ -61,7 +61,7 @@ defineModule module, class StateEpoch extends EpochClass
   #   the screen correctly.
   # Basically, if el has filterDecendants, then we may need to expand the redrawArea.
   elemensNeedRedrawing: (elements) ->
-    startFrameTimer "enr", "#fa0"
+    startFrameTimer "redrawCheck"
     for element in elements
       element._needsRedrawing()
     endFrameTimer()

@@ -8,7 +8,7 @@ import &ArtStandardLib, &ArtEpochedState, ArtFrameStats = &ArtFrameStats
 # registerStatColor :orange :StateEpoch
 registerStatColor     #1      :idle
 registerStatColor     #39c    :draw
-registerStatColor     #9c3    :aim    :textLayout  :aimLayout :stateEpoch
+registerStatColor     #9c3    :aim    :redrawCheck :textLayout  :aimLayout :stateEpoch
 registerStatColor     :gold   :react  :reactUpdate :reactCreate  :reactRender
 registerStatColor     #d936a3 :flux
 registerStatColor     #ff6347 :event
