@@ -1,22 +1,7 @@
-'use strict';
-{
-  inspect, Map, timeout, remove, log, defineModule
-  getEnv
-} = require 'art-standard-lib'
-{humanByteSize, Browser} = (require 'art-foundation')
-{getIsMobileBrowser} = Browser
-{BaseClass} = require 'art-class-system'
+import &StandardImport, &ArtBrowserTools
+&ArtFoundation extract humanByteSize
 
-{
-  point1, point, Point, rect, Rectangle, matrix, Matrix
-} = require 'art-atomic'
-
-{logFrameEvent} = require 'art-frame-stats'
-
-ArtEngineCore = require './namespace'
-{Bitmap} = require 'art-canvas'
-
-{drawCacheDebug} = getEnv()
+getEnv() extract drawCacheDebug
 
 mapRemove = (map, key) ->
   out = map.get key
@@ -24,22 +9,21 @@ mapRemove = (map, key) ->
   out
 
 ###
-PURPOSE
-- Keep the maximum byte-size of the cache under a cap.
-- recycle unused bitmaps since creating bitmaps is costly
+  PURPOSE
+  - Keep the maximum byte-size of the cache under a cap.
+  - recycle unused bitmaps since creating bitmaps is costly
 
-TODO
+  TODO
 
-Stop clearing cached sub-elements when drawing a new cached element.
- - the DrawCacheManager will reclaim their bitmaps in time
+  Stop clearing cached sub-elements when drawing a new cached element.
+   - the DrawCacheManager will reclaim their bitmaps in time
 
-Stop tracking caching stats in Element
+  Stop tracking caching stats in Element
 
-Call advanceFrameTime every global draw-frame
-Call doneWithCacheBitmap from _clearDrawCache(doNotUpdateDrawCacheManager) unless doNotUpdateDrawCacheManager is true
-call allocateCacheBitmap when a new cache bitmap is used
-call useCacheBitmap every time a the drawCache bitmap is used
-###
+  Call advanceFrameTime every global draw-frame
+  Call doneWithCacheBitmap from _clearDrawCache(doNotUpdateDrawCacheManager) unless doNotUpdateDrawCacheManager is true
+  call allocateCacheBitmap when a new cache bitmap is used
+  call useCacheBitmap every time a the drawCache bitmap is used
 
 class CacheBitmap extends BaseClass
 
@@ -49,6 +33,20 @@ class CacheBitmap extends BaseClass
   _reset: (lastFrameUsed) ->
     @useCount = 0
     @lastFrameUsed = lastFrameUsed || 0
+
+  ## release
+    OUT: bytesReleased
+    NOTE:
+      Safari on iOS may work better with this:
+        _canvas.width = _canvas.height = 1
+
+      testing...
+  release: ->
+    @elementDoneWithCacheBitmap()
+    if @bitmap extract byteSize, _canvas
+      _canvas.width = _canvas.height = 1
+    @bitmap = null
+    byteSize
 
   # returns @bitmap
   recycle: (newElement, lastFrameUsed) ->
@@ -65,23 +63,24 @@ class CacheBitmap extends BaseClass
   elementDoneWithCacheBitmap: ->
     if @element && @element._drawCacheBitmap == @bitmap
       @element.__clearDrawCacheCallbackFromDrawCacheManager()
+
     @element = null
 
   @getter
-    inspectedObjects: -> {@size, @byteSize, @bitmap}
-    size: -> @bitmap.size
-    byteSize: -> @bitmap.getByteSize()
+    inspectedObjects: -> {} @size, @byteSize, @bitmap
+    size:             -> @bitmap.size
+    byteSize:         -> @bitmap.getByteSize()
 
-defineModule module, class DrawCacheManager extends BaseClass
+class DrawCacheManager extends BaseClass
   @byteSizeFromSize: byteSizeFromSize = (size) -> size.x * size.y * 4
   @singletonClass()
 
   @getDrawCacheManager: -> DrawCacheManager.singleton
 
   @usableBitmap: usableBitmap = (bitmap, w, h) ->
-    {x, y} = bitmap.size
-    w <= x && h <= y && # big enough
-    x * y < w * h * 2   # but no more than twice the pixel-count
+    bitmap.size extract x, y
+    w <= x && h <= y # big enough
+    && x * y < w * h * 2   # but no more than twice the pixel-count
 
   constructor: ->
     super
@@ -98,7 +97,14 @@ defineModule module, class DrawCacheManager extends BaseClass
     @_unusedCacheBitmaps = []
     @_unusedCacheByteSize = 0
 
-  @getter "cacheByteSize unusedCacheByteSize maxCacheByteSize bitmapsCreated",
+  ##############################
+    INSPECTION
+  ##############################
+  @getter
+    :cacheByteSize
+    :unusedCacheByteSize
+    :maxCacheByteSize
+    :bitmapsCreated
     byteSize: -> @_cacheByteSize + @_unusedCacheByteSize
     humanByteSize: -> humanByteSize @byteSize
     humanCacheSummary: -> "#{humanByteSize @_cacheByteSize} + #{humanByteSize @_unusedCacheByteSize} = #{@humanByteSize}"
@@ -117,50 +123,58 @@ defineModule module, class DrawCacheManager extends BaseClass
 
       recyclable.sort (a, b) -> a.lastFrameUsed - b.lastFrameUsed
 
-  # EFFECT: all cached bitmaps are released
-  # OUT: {bytesReleased, bitmapsReleased}
-  # KEYWORD: flushCache
-  @flushCache: -> DrawCacheManager.singleton.flushCache()
-  flushCache: ->
-    log DrawCacheManager:
-      flushCache: "start"
-      info: @getCacheInfo()
-    # @_validateCacheByteSize "flushCache start"
-
-    bitmapsReleased = 0
-    bytesReleased = 0
-
-    @_cacheBitmaps.forEach (cachedBitmap, element) =>
-      cachedBitmap.elementDoneWithCacheBitmap()
-      bitmapsReleased++
-      bytesReleased += cachedBitmap.getByteSize()
-
-    @_initCache()
-
-    # @_validateCacheByteSize "flushCache done"
-
-    log DrawCacheManager:
-      flushCache: "done"
-      info: @getCacheInfo()
-      results: {bytesReleased, bitmapsReleased}
-
-    {bytesReleased, bitmapsReleased}
-
-  releaseUnusedBitmaps: ->
-    @_unusedCacheByteSize = 0
-    @_unusedCacheBitmaps = []
-
   @getCacheInfo: -> DrawCacheManager.singleton.getCacheInfo()
   getCacheInfo: ->
-    {
+    {}
       cacheBitmaps:       @_cacheBitmaps.size
       unusedCacheBitmaps: @_unusedCacheBitmaps.length
       @cacheByteSize
       @unusedCacheByteSize
       @maxCacheByteSize
       @bitmapsCreated
-    }
 
+  ##########################
+    MAIN API
+  ##########################
+  ## allocateCacheBitmap
+    called every time a new element drawCache is created
+    OUT: a clear Art.Canvas.Bitmap (filled with pixel with color: #0000)
+  allocateCacheBitmap: (element, size) ->
+    @doneWithCacheBitmap element
+
+    @_recycleUnusedCacheBitmap  element, size
+    ? @_createCacheBitmap       element, size
+
+  ## useDrawCache
+    called by element every time the draw-cache is used
+  useDrawCache: (element) ->
+    @_cacheBitmaps.get element
+    ?.use @_currentFrameNumber
+
+  ## doneWithCacheBitmap
+    called by Element#_clearDrawCache
+    EFFECT:
+      if element has a cacheBitmap,
+        move it to @_unusedCacheBitmaps
+  doneWithCacheBitmap: (element) ->
+    # @_validateCacheByteSize "doneWithCacheBitmap start"
+    if cachedBitmap = mapRemove @_cacheBitmaps, element
+      cachedBitmap.elementDoneWithCacheBitmap()
+      byteSize = cachedBitmap.getByteSize()
+      # console.error "doneWithCacheBitmap recycling for #{cachedBitmap.element?.inspectedName} bitmap = #{cachedBitmap.bitmap.size}"
+      @_unusedCacheByteSize += byteSize
+      @_cacheByteSize -= byteSize
+      @_unusedCacheBitmaps.push cachedBitmap
+      # @_validateCacheByteSize "doneWithCacheBitmap done"
+
+  ## advanceFrame
+    called call once per global draw cycle
+  advanceFrame: ->
+    @_currentFrameNumber++
+
+  ##############################
+    VALIDATION
+  ##############################
   # manually callable
   @validateCacheByteSize: (context) -> DrawCacheManager.singleton.validateCacheByteSize context
   validateCacheByteSize: (context) ->
@@ -173,14 +187,14 @@ defineModule module, class DrawCacheManager extends BaseClass
       cacheByteSize += bitmap.byteSize
       cacheBitmaps.push {bitmap, element:element.inspectedName}
 
-    for b in @_unusedCacheBitmaps
+    each b in @_unusedCacheBitmaps
       unusedCacheByteSize += b.byteSize
 
-    unless (
+    unless true &&
         @_cacheByteSize + @_unusedCacheByteSize <= @_maxCacheByteSize &&
         @_cacheByteSize == cacheByteSize &&
         @_unusedCacheByteSize == unusedCacheByteSize
-        )
+
       log.error validateCacheByteSize:
         context:            context
         tracked:            {@cacheByteSize, @unusedCacheByteSize}
@@ -190,40 +204,52 @@ defineModule module, class DrawCacheManager extends BaseClass
 
       throw new Error "bad _cacheByteSize"
 
-    {
-      message: "ok"
+    {}
+      message: :ok
       eq: @_cacheByteSize == cacheByteSize
       cacheByteSize, @_cacheByteSize, unusedCacheByteSize, @_unusedCacheByteSize
-    }
 
-  # called by Element#_clearDrawCache
-  doneWithCacheBitmap: (element) ->
-    # @_validateCacheByteSize "doneWithCacheBitmap start"
-    if cachedBitmap = mapRemove @_cacheBitmaps, element
-      cachedBitmap.elementDoneWithCacheBitmap()
-      byteSize = cachedBitmap.getByteSize()
-      # console.error "doneWithCacheBitmap recycling for #{cachedBitmap.element?.inspectedName} bitmap = #{cachedBitmap.bitmap.size}"
-      @_unusedCacheByteSize += byteSize
-      @_cacheByteSize -= byteSize
-      @_unusedCacheBitmaps.push cachedBitmap
-      # @_validateCacheByteSize "doneWithCacheBitmap done"
+  ##############################
+    FLUSH CACHE
+  ##############################
+  ## flushCache
+    EFFECT: all cached bitmaps are released
+    OUT: {bytesReleased, bitmapsReleased}
+  @flushCache: -> DrawCacheManager.singleton.flushCache()
+  flushCache: ->
+    log DrawCacheManager:
+      flushCache: "start"
+      info: @getCacheInfo()
+    # @_validateCacheByteSize "flushCache start"
 
-  # called by element every time the draw-cache is used
-  useDrawCache: (element) ->
-    @_cacheBitmaps.get(element)?.use @_currentFrameNumber
+    bitmapsReleased = @_unusedCacheBitmaps.length
+    bytesReleased = @releaseUnusedBitmaps()
 
-  # called every time a new element drawCache is created
-  # OUT: a clear Art.Canvas.Bitmap (filled with pixel with color: #0000)
-  allocateCacheBitmap: (element, size) ->
-    @doneWithCacheBitmap element
+    @_cacheBitmaps.forEach (cachedBitmap, element) ->
+      bitmapsReleased++
+      log :flushCache_release
+      bytesReleased += cachedBitmap.release()
 
-    @_recycleUnusedCacheBitmap(element, size) ||
-    @_createCacheBitmap element, size
+    bytesReleased += @_cacheByteSize
 
-  # called call once per global draw cycle
-  advanceFrame: ->
-    @_currentFrameNumber++
-    cfn = @_currentFrameNumber
+    @_initCache()
+
+    # @_validateCacheByteSize "flushCache done"
+
+    log DrawCacheManager:
+      flushCache: :done
+      info: @getCacheInfo()
+      results: {} bytesReleased, bitmapsReleased
+
+    {} bytesReleased, bitmapsReleased
+
+  releaseUnusedBitmaps: ->
+    bytesReleased = 0
+    each cv in @_unusedCacheBitmaps
+      bytesReleased += cv.release()
+    @_unusedCacheByteSize = 0
+    @_unusedCacheBitmaps = []
+    bytesReleased
 
   ##########################
   # PRIVATE
@@ -232,7 +258,7 @@ defineModule module, class DrawCacheManager extends BaseClass
   # OUT: a clear bitmap (filled with pixel with color: #0000)
   _recycleUnusedCacheBitmap: (element, size) ->
     if unusedCacheBitmap = @_getUnusedCacheBitmap size
-      logFrameEvent "recycleUnusedCacheBitmap", "recycleUnusedCacheBitmap"
+      logFrameEvent :recycleUnusedCacheBitmap :recycleUnusedCacheBitmap
       unusedCacheBitmap.recycle element, @_currentFrameNumber
       @_addCacheBitmap element, unusedCacheBitmap
 
@@ -250,7 +276,7 @@ defineModule module, class DrawCacheManager extends BaseClass
     size = size.max point1
 
     @_bitmapsCreated++
-    logFrameEvent "createCacheBitmap", "createCacheBitmap"
+    logFrameEvent :createCacheBitmap :createCacheBitmap
 
     bitmap = @_addCacheBitmap element, new CacheBitmap element,
       element.getBitmapFactory().newBitmap size
@@ -267,22 +293,24 @@ defineModule module, class DrawCacheManager extends BaseClass
     @validateCacheByteSize context
 
   canUseBitmap: canUseBitmap = (cachedBitmap, requestedSize) ->
-    if cachedBitmap?
-      {size} = cachedBitmap
+    if cachedBitmap extract? size
       if size.area < requestedSize.area * 2     # not too big
-        {w, h} = requestedSize
-        {x, y} = size
+        requestedSize extract w, h
+        size extract x, y
         x >= w && y >= h                        # big enough
 
 
-  # return a recycledCachedbitmap with the right size (removing it from @_unusedCacheBitmaps)
-  # or null if there is no matching recycledCacheBitmap
+  ## _getUnusedCacheBitmap
+    OUT:
+      a recycledCachedbitmap with the right size (removing it from @_unusedCacheBitmaps)
+      OR null if there is no matching recycledCacheBitmap
   _getUnusedCacheBitmap: (size) ->
-    for cachedBitmap, i in @_unusedCacheBitmaps when canUseBitmap cachedBitmap, size
+    each cachedBitmap, i in-array @_unusedCacheBitmaps when canUseBitmap cachedBitmap, size
       @_unusedCacheBitmaps = remove @_unusedCacheBitmaps, i
       @_unusedCacheByteSize -= cachedBitmap.byteSize
       return cachedBitmap
-    undefined
+
+    null # none found
 
   # remove oldest bitmaps from the cache until we have enough from for a new bitmap of the specified size
   # return null
@@ -290,9 +318,9 @@ defineModule module, class DrawCacheManager extends BaseClass
     @_evictUnusedBitmaps()
 
     unless @cacheByteSizeOk
-      for cachedBitmap in @recycleableSortedCacheBitmaps
+      each cachedBitmap in-array @recycleableSortedCacheBitmaps
         if cachedBitmap = mapRemove @_cacheBitmaps, cachedBitmap.element
-          cachedBitmap.elementDoneWithCacheBitmap()
+          cachedBitmap.release()
           @_cacheByteSize -= cachedBitmap.getByteSize()
           if drawCacheDebug then log "-#{humanByteSize cachedBitmap.byteSize} - releasing not-recently-used (#{@humanCacheSummary})"
           break if @cacheByteSizeOk
@@ -307,9 +335,11 @@ defineModule module, class DrawCacheManager extends BaseClass
       a.byteSize - b.byteSize
 
     until @cacheByteSizeOk || @_unusedCacheBitmaps.length == 0
-      bitmap = @_unusedCacheBitmaps.pop()
-      @_unusedCacheByteSize -= bitmap.byteSize
-      if drawCacheDebug then log "-#{humanByteSize bitmap.byteSize} - releasing unused #{bitmap.size} (#{@humanCacheSummary})"
+      cachedBitmap = @_unusedCacheBitmaps.pop()
+      cachedBitmap extract byteSize, size
+      cachedBitmap.release()
+      @_unusedCacheByteSize -= byteSize
+      if drawCacheDebug then log "-#{humanByteSize byteSize} - releasing unused #{size} (#{@humanCacheSummary})"
 
     null
 
