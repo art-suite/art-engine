@@ -1,0 +1,118 @@
+import &ArtStandardLib, &ArtCanvas
+
+propsEq:        plainObjectsDeepEq
+shallowPropsEq: shallowEq
+
+flushAllCaches: flushAllCaches = ->
+  &Drawing/DrawCacheManager.drawCacheManager.flushCache()
+  &ArtCanvas.MipmapCache.singleton.releaseAll()
+  null
+
+releaseAllCaches: flushAllCaches
+
+validateAll: ->
+  &Drawing/DrawCacheManager.validateCacheByteSize()
+
+getArtEngineUsage: ->
+  &Drawing/DrawCacheManager.drawCacheManager extract
+    cacheByteSize as drawCacheByteSize
+    unusedCacheByteSize as drawCacheUnusedCacheByteSize
+
+  &Elements.BitmapElement extract bitmapCache
+
+  canvasByteSize  = 0
+  elementCounts   = total: 0
+  propObjectCount =
+    array:          0
+    string:         0
+    function:       0
+    plainObject:    0
+    objects:        {}
+    number:         0
+    rest:           0
+    totalGcObjects: 0
+    null:           0
+    boolean:        0
+
+  recursionBlock = []
+  countObjects = (value, key) ->
+    return if value in recursionBlock
+    switch
+      when isString value   then propObjectCount.string++
+      when isBoolean value  then propObjectCount.boolean++
+      when isNumber value   then propObjectCount.number++
+      when !value?          then propObjectCount.null++
+
+      when isArray value
+        propObjectCount.totalGcObjects++
+        propObjectCount.array++
+        recursionBlock.push value
+        each v in value
+          countObjects v
+
+        recursionBlock.pop()
+
+      when isPlainObject value
+        propObjectCount.totalGcObjects++
+        propObjectCount.plainObject++
+        recursionBlock.push value
+        each v, k in value
+          countObjects v, k
+
+        recursionBlock.pop()
+
+      when isFunction value
+        propObjectCount.totalGcObjects++
+        propObjectCount.function++
+
+      when name = value.class?.name
+        propObjectCount.totalGcObjects++
+        propObjectCount.objects[name] = (propObjectCount.objects[name] | 0) + 1
+
+      else
+        console.log rest: value
+        propObjectCount.rest++
+
+  each element in &Core.ElementBase._elementInstanceRegistry
+    elementCounts.total++
+    elementCounts[element.shortNamespacePath] = (elementCounts[element.shortNamespacePath] | 0) + 1
+    countObjects element.minimalProps
+
+    if element instanceof Neptune.Art.Engine.Core.CanvasElement
+      canvasByteSize += element.canvasByteSize
+
+  toMbRegexp = /Bytes$|ByteSize$/i
+  megabyte = 2**20
+  toMb = (a) ->
+    if isObject a
+      object v, k in a with-key
+          if (v >= megabyte) && toMbRegexp.test k
+            lowerCamelCase k.replace /Bytes$|ByteSize$/i, 'Megabytes'
+          else
+            k
+
+        if isObject(v) || /Bytes$|ByteSize$/i.test k
+          toMb v
+
+        else
+          v
+
+    else if (a >= megabyte)
+      (a / 1024 ** 2) | 0
+
+    else
+      a
+
+  toMb {}
+    imageMemory: {}
+      mipmapCache:                    mipmapCache.memoryInfo
+      bitmapCache:                    bitmapCache.memoryInfo
+
+      drawCacheByteSize
+      drawCacheUnusedCacheByteSize
+      canvasByteSize
+
+      totalBytes: mipmapCache.byteSize + bitmapCache.byteSize + drawCacheByteSize + drawCacheUnusedCacheByteSize + canvasByteSize
+
+    elementCounts
+    propObjectCount

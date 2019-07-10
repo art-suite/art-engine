@@ -9,5 +9,5 @@ merge
   {newElement, getElementClassNames} = &ElementFactory
   {sourceToBitmapCache} = &SourceToBitmapCache
   {} &Drawing/DrawCacheManager
+  &Drawing/DrawCacheManager
   &Lib
-

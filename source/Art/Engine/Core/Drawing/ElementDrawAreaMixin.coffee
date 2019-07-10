@@ -39,10 +39,11 @@ defineModule module, ->
         If present, this rectangle will be completely replaced with new values.
     OUT: into, if present, else a new Rectangle
     ###
+    paddedAreaTemp = new Rectangle()
     clipElementSpaceArea: (elementSpaceArea, into) ->
       if @clip
         if @padding
-          @getPaddedArea(into).intersection elementSpaceArea, into
+          @getPaddedArea(paddedAreaTemp).intersection elementSpaceArea, into
         else
           @currentSize.intersection elementSpaceArea, into
 

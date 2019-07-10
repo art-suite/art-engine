@@ -29,14 +29,14 @@ suite:
   partialUpdate: ->
     test "clipping limits dirty redraw", ->
       el = Element
-        size: 4
-        stage: true
-        RectangleElement color: "#480"
+        size:   4
+        stage:  true
+        draw:   #480
         Element
-          location: x: 1
-          size: 1
-          clip: true
-          e = RectangleElement size: 2, color: "#8ff"
+          location: x:  1
+          size:         1
+          clip:         true
+          e = Element size: 2, draw: #8ff
       el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw clipping", el, []
@@ -45,7 +45,7 @@ suite:
           4 4 4 4
           4 4 4 4
 
-        el._drawCacheBitmap.clear("black")
+        el._drawCacheBitmap.clear :black
         e.location = x: -1
         el.toBitmapWithInfo {}
       .then ->
@@ -59,33 +59,36 @@ suite:
       el = Element
         stage: true
         clip: true
-        size: w: 6, h: 2
-        RectangleElement color: "#480"
+        size: 6, 2
+        draw: #400
         e = TextElement
-          padding: 1
+          padding:  -2
+          location: y: -11
           size: ps: 1
-          fontSize: 1
-          text: "."
-          align: "left"
-          color: "#8ff"
+          fontFamily: :arial
+          fontSize: 20
+          text:     :.
+          align:    :topLeft
+          color:    #8ff
+
       el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_initialDraw", el, []
-          4 4 4 4 4 4
-          4 4 4 4 4 4
+          8 8 4 4 4 4
+          8 8 4 4 4 4
 
-        el._drawCacheBitmap.clear("black")
-        e.align = "center"
+        el._drawCacheBitmap.clear :black
+        e.align = :right
         el.toBitmapWithInfo {}
       .then ->
         compareDownsampledRedChannel "partialRedraw_redrawLeftAndCenter", el, []
-          4 4 4 4 0 0
-          4 4 4 4 0 0
+          4 4 4 4 8 8
+          4 4 4 4 8 8
 
-        el._drawCacheBitmap.clear("black")
-        e.align = "bottomCenter"
-        el.toBitmapWithInfo {}
-      .then ->
-        compareDownsampledRedChannel "partialRedraw_redrawCenter", el, []
-          0 4 4 4 0 0
-          0 4 4 4 0 0
+      #   el._drawCacheBitmap.clear :black
+      #   e.align = "bottomCenter"
+      #   el.toBitmapWithInfo {}
+      # .then ->
+      #   compareDownsampledRedChannel "partialRedraw_redrawCenter", el, []
+      #     0 4 4 4 0 0
+      #     0 4 4 4 0 0

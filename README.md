@@ -17,4 +17,10 @@ Visit the Wiki for more: https://github.com/imikimi/art-engine/wiki
 ?showPartialDrawAreas=full
 # show partial redraw areas as filled in rectangle
 
+?perfGraphs
+# show ArtFrameStats performance graphs
+
+?drawCacheDebug
+# show when the drawCache is used
+
 ```

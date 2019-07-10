@@ -18,7 +18,7 @@
   nextTick
   object
   BaseClass: {propInternalName}
-
+  point0
   propsEq
   shallowPropsEq
 } = require './StandardImport'
@@ -476,6 +476,7 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
     # conrete props which are not the default values
     minimalProps: ->
       ret = {}
+      ret.currentLocation = @currentLocation unless point0.eq @currentLocation
       for k, {externalName, internalName, virtual, defaultValue} of @metaProperties
         unless virtual
           unless externalName in minimalPropsIngore

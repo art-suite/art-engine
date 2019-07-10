@@ -587,6 +587,7 @@ defineModule module, class Element extends ElementDrawMixin ElementDrawAreaMixin
       p = @getCurrentPadding()
       size = @_currentSize
       into ?= new Rectangle 0, 0
+      into.x = into.y = 0
       into.w = max 0, size.x - p.getWidth()
       into.h = max 0, size.y - p.getHeight()
       into

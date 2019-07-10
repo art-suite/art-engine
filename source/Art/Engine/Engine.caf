@@ -1,0 +1,9 @@
+[]
+  &Core
+  &Elements
+  &Animation
+  &Forms
+  &Layout
+  {}
+    &Events.GestureRecognizer
+    &Events.GestureRecognizer.createGestureRecognizer
