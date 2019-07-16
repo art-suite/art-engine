@@ -320,9 +320,9 @@ class DrawCacheManager extends BaseClass
     unless @cacheByteSizeOk
       each cachedBitmap in-array @recycleableSortedCacheBitmaps
         if cachedBitmap = mapRemove @_cacheBitmaps, cachedBitmap.element
+          @_cacheByteSize -= byteSize = cachedBitmap.getByteSize()
           cachedBitmap.release()
-          @_cacheByteSize -= cachedBitmap.getByteSize()
-          if drawCacheDebug then log "-#{humanByteSize cachedBitmap.byteSize} - releasing not-recently-used (#{@humanCacheSummary})"
+          if drawCacheDebug then log "-#{humanByteSize byteSize} - releasing not-recently-used (#{@humanCacheSummary})"
           break if @cacheByteSizeOk
 
       unless @cacheByteSizeOk
