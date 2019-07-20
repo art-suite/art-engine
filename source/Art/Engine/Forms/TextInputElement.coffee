@@ -3,7 +3,7 @@
   defineModule, log, object, merge, select, inspect, wordsArray, timeout, max
   isNumber
 } = require 'art-standard-lib'
-{rgbColor, point} = require 'art-atomic'
+{rgbColor, point, rect} = require 'art-atomic'
 
 {Layout:ArtTextLayout} = require 'art-text'
 defaultLeading = ArtTextLayout.defaultLayoutOptions.leading
@@ -92,7 +92,7 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       autocorrect:    normalizeAuto options.autoCorrect     ? options.autocorrect
       spellcheck:     if options.spellcheck? then "#{!!options.spellcheck}"
 
-    Factory = if isTextarea = props.type == "textarea"
+    Factory = if isTextarea = @isTextarea = props.type == "textarea"
       delete props.type
       TextArea
     else
@@ -169,9 +169,9 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   # returns childrenSize
   nonChildrenLayoutFirstPass: ->
     point @domElement.scrollWidth,
-      max @getPendingFontSize() * 1.4, if @value.length > 0
+      max @getPendingFontSize() * .75, if @value.length > 0 && @isTextarea
         @domElement.style.height = '0'
-        @domElement.scrollHeight
+        @domElement.scrollHeight - @domHeightDelta
       else 0
 
   _safeToProcessFocusEvents: ->
@@ -214,6 +214,22 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
       @queueEvent "valueChanged",
         value: @value
         lastValue: @lastValue
+
+  @getter
+    domTopDelta:    -> @fontSize * if @isTextarea then -.16279 else -.3
+    domHeightDelta: ->
+      if @isTextarea then @fontSize * .25 - @domTopDelta
+      else @fontSize * .7
+
+  _computeElementSpaceDrawArea: ->
+    {_currentSize} = @getState()
+    {w, h} = _currentSize
+    x = y = 0
+    # {domTopDelta, fontSize} = @
+    y += @domTopDelta
+    h += @domHeightDelta
+    h += @fontSize * .25 if @isTextarea
+    rect x, y, w, h
 
   @virtualProperty
     value:

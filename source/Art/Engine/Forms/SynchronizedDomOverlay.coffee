@@ -88,12 +88,13 @@ module.exports = class SynchronizedDomOverlay extends Element
     @_domElementWrapper.style.height  = "#{clippedDrawAreaInAncestor.h}px"
     @_domElementWrapper.style.display = if opacity == 0 then "none" else "block"
 
-    # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
+    # # log "SynchronizedDomOverlay#_updateDomLayout: #{inspect opacity:opacity, area:r, scale:point sx, sy}"
+    # log {clippedDrawAreaInAncestor}
     @_domElement.style.opacity  = opacity
-    @_domElement.style.left     = "#{m.getLocationX() - clippedDrawAreaInAncestor.left}px"
-    @_domElement.style.top      = "#{m.getLocationY() - clippedDrawAreaInAncestor.top}px"
-    @_domElement.style.width    = "#{size.x}px"
-    @_domElement.style.height   = "#{size.y}px"
+    @_domElement.style.left     = "#{@domLeftDelta    + m.getLocationX() - clippedDrawAreaInAncestor.left}px"
+    @_domElement.style.top      = "#{@domTopDelta     + m.getLocationY() - clippedDrawAreaInAncestor.top}px"
+    @_domElement.style.width    = "#{@domWidthDelta   + size.x}px"
+    @_domElement.style.height   = "#{@domHeightDelta  + size.y}px"
 
     sx    = m.getScaleX()
     sy    = m.getScaleY()
@@ -103,6 +104,13 @@ module.exports = class SynchronizedDomOverlay extends Element
       "scale(#{sx}, #{sy})"
     else
       "none"
+
+  @getter
+    domLeftDelta:   -> 0
+    domTopDelta:    -> 0
+    domHeightDelta: -> 0
+    domWidthDelta:  -> 0
+
 
   getSizeAffectsDrawArea: -> true
 
