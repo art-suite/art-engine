@@ -272,8 +272,8 @@ module.exports = (superClass) -> class EpochedElementMixin extends superClass
       internalName: internalName
       externalName: externalName
       preprocessor: preprocessor
-      getterName: @_propGetterName externalName
-      setterName: @_propSetterName externalName
+      getterName: @getPropGetterName externalName
+      setterName: @getPropSetterName externalName
 
     if options.virtual
       metaProperties.virtual = true

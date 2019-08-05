@@ -5,6 +5,7 @@
     "art-canvas": "git://github.com/imikimi/art-canvas.git",
     "art-events": "*",
     "art-foundation": "git://github.com/imikimi/art-foundation.git",
+    "art-frame-stats": "*",
     "art-text": "git://github.com/imikimi/art-text.git",
     "art-xbd": "git://github.com/imikimi/art-xbd.git",
     "javascript-detect-element-resize": "^0.5.3",

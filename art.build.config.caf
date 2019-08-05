@@ -16,3 +16,4 @@ package:
     art-text:                         :git://github.com/imikimi/art-text.git
     keyboardevent-key-polyfill:       :^1.0.2
     javascript-detect-element-resize: :^0.5.3
+    art-frame-stats:                  :*
