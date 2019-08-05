@@ -1,6 +1,7 @@
 {
   "author": "Shane Brinkman-Davis Delamore, Imikimi LLC\"",
   "dependencies": {
+    "art-atomic": "*",
     "art-build-configurator": "*",
     "art-canvas": "git://github.com/imikimi/art-canvas.git",
     "art-events": "*",
