@@ -23,6 +23,8 @@ defineModule module, class TextInputElement extends SynchronizedDomOverlay
   #   align:      "left"
   #   style:      custom style
   #   padding:    5 (pixels)
+  #   type:       input | textarea | password | month | number | email | date
+  #               https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_%3Cinput%3E_types
   #   maxLength
   #   autoCapitalize
   #   autoComplete
