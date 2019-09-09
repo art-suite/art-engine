@@ -6,8 +6,18 @@ PointLayoutBase = require './PointLayoutBase'
 module.exports = class InterpolatedPointLayout extends PointLayoutBase
   PointLayoutBase.InterpolatedPointLayout = @ # resolve circular dependency
 
+  eq: (b) ->
+    @layout2.eq b.layout2
+
   constructor: (layout1, layout2, p)->
     super
+    while layout1 instanceof InterpolatedPointLayout
+      {layout1} = layout1
+
+    if layout2 instanceof InterpolatedPointLayout
+      log {@layout2}
+      throw new Error "InterpolatedPointLayout - to-layout should not be InterpolatedPointLayouts!"
+
     @layout1 = layout1
     @layout2 = layout2
     @p = p

@@ -328,6 +328,20 @@ defineModule module, class PointLayout extends PointLayoutBase = require './Poin
       else
         @initializer
 
+  eq: (b) ->
+    @maxLayout     == b.maxLayout &&
+    @customLayout  == b.customLayout &&
+    @customLayoutX == b.customLayoutX &&
+    @customLayoutY == b.customLayoutY &&
+    @x             == b.x &&
+    @xpw           == b.xpw &&
+    @xph           == b.xph &&
+    @xcw           == b.xcw &&
+    @y             == b.y &&
+    @yph           == b.yph &&
+    @ypw           == b.ypw &&
+    @ych           == b.ych
+
   layoutX: (ps, cs) ->
     # copy all members we use into this closure
     # do not access anything on '@' inside the functions created velow
