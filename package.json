@@ -1,5 +1,6 @@
 {
-  "author": "Shane Brinkman-Davis Delamore, Imikimi LLC\"",
+  "author": "Shane Brinkman-Davis Delamore, Imikimi LLC",
+  "bugs": "https:/github.com/art-suite/art-engine/issues",
   "dependencies": {
     "art-atomic": "*",
     "art-build-configurator": "*",
@@ -7,14 +8,36 @@
     "art-events": "*",
     "art-foundation": "git://github.com/imikimi/art-foundation.git",
     "art-frame-stats": "*",
-    "art-text": "git://github.com/imikimi/art-text.git",
-    "art-xbd": "git://github.com/imikimi/art-xbd.git",
+    "art-text": "*",
+    "art-xbd": "*",
     "javascript-detect-element-resize": "^0.5.3",
     "keyboardevent-key-polyfill": "^1.0.2"
   },
   "description": "The ArtEngine is a layout, rendering and event engine for creating user interfaces in HTML5 Canvas elements.",
+  "devDependencies": {
+    "art-testbench": "*",
+    "case-sensitive-paths-webpack-plugin": "^2.2.0",
+    "chai": "^4.2.0",
+    "coffee-loader": "^0.7.3",
+    "css-loader": "^3.0.0",
+    "json-loader": "^0.5.7",
+    "mocha": "^6.2.0",
+    "mock-fs": "^4.10.0",
+    "script-loader": "^0.7.2",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.39.1",
+    "webpack-cli": "*",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-merge": "^4.2.1",
+    "webpack-node-externals": "^1.7.2",
+    "webpack-stylish": "^0.1.8"
+  },
+  "homepage": "https://github.com/art-suite/art-engine",
   "license": "ISC",
   "name": "art-engine",
+  "repository": {
+    "url": "https://github.com/art-suite/art-engine."
+  },
   "scripts": {
     "build": "webpack --progress",
     "start": "webpack-dev-server --hot --inline --progress --env.devServer",
