@@ -22,18 +22,20 @@ class ScrollElementAnimator extends PersistantAnimator
     tracking:     -> floatEq0 @_frictionConstant
     hasSpring:    -> !floatEq0 @_springConstant
     hasVelocity:  -> !floatEq0 @velocity
+    animatingMemomentum: -> @hasVelocity && !@animatingTo
+    animatingTo:  -> @hasSpring && @currentValue != @toValue
     active: ->
       @hasVelocity
-      || @hasSpring &&
-        @currentValue != @toValue
+      || @animatingTo
 
     velocityIsSlow: -> absLte @_velocity, 60 # less than 1 pixel per frame @ 60fps
     scrollPosition: ->          @scrollElement.scrollPosition ? 0
     inspectedObjects: ->
       ScrollElementAnimator: {}
+        @uniqueId
         scrollElement: @scrollElement.inspectedName
         @velocity, @springConstant, @frictionConstant
-        @scrollPosition
+        @scrollPosition, @currentValue, @toValue, @active
 
   @setter
     scrollPosition: (v) ->
@@ -48,7 +50,6 @@ class ScrollElementAnimator extends PersistantAnimator
   boundSp: (scrollPosition) ->  @scrollElement.boundSp scrollPosition
 
   addVelocity: (v) ->
-    # log "" addVelocity: #{@velocity} + #{v} = #{} @velocity + v
     @velocity += v
     @springConstant   = 0
     @frictionConstant = animatorBreakingFriction

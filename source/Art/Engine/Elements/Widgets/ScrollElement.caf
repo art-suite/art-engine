@@ -139,8 +139,8 @@ class ScrollElement extends Element
   ###################
     SCROLL ACTIONS
   ###################
-  scrollToTop: -> @animateToValidScrollPosition @childrenSize
-  scrollToBottom: -> @animateToValidScrollPosition -@childrenSize
+  scrollToTop: -> @animateToValidScrollPositionDelta @childrenSize
+  scrollToBottom: -> @animateToValidScrollPositionDelta -@childrenSize
   scrollToChild: (child, center, onlyScrollDirection) ->
     switch onlyScrollDirection
       when :horizontal then return unless @isHorizontal
@@ -150,8 +150,8 @@ class ScrollElement extends Element
           @centerArea         child.getLogicalAreaInAncestor @
     else  @scrollAreaOnscreen child.getLogicalAreaInAncestor @
 
-  pageDown:       -> @animateToValidScrollPosition -@windowSize
-  pageUp:         -> @animateToValidScrollPosition @windowSize
+  pageDown:       -> @animateToValidScrollPositionDelta -@windowSize
+  pageUp:         -> @animateToValidScrollPositionDelta @windowSize
 
   scrollAreaOnscreen: (area) ->
     @ extract windowSize
@@ -160,10 +160,10 @@ class ScrollElement extends Element
     rangeEnd    = @_getAreaEnd area
 
     if rangeStart < 0
-      @animateToValidScrollPosition -rangeStart
+      @animateToValidScrollPositionDelta -rangeStart
 
     else if rangeEnd > windowSize
-      @animateToValidScrollPosition max -rangeStart, windowSize - rangeEnd
+      @animateToValidScrollPositionDelta max -rangeStart, windowSize - rangeEnd
 
   centerArea: (area) ->
     @ extract windowSize
@@ -171,7 +171,7 @@ class ScrollElement extends Element
     rangeStart  = @_getAreaStart area
     rangeEnd    = @_getAreaEnd area
 
-    @animateToValidScrollPosition
+    @animateToValidScrollPositionDelta
       -min
         # scroll area to middle of view
         rangeStart + rangeEnd - windowSize
@@ -180,11 +180,11 @@ class ScrollElement extends Element
         # but ensure rangeStart is on-screen if the range doesn't fit
         rangeStart
 
-  animateToValidScrollPosition: (desiredOffset = 0)->
+  animateToValidScrollPositionDelta: (desiredOffset = 0)->
     {scrollPosition} = @
     @_validScrollPositionCheckScheduled = false
 
-    unless @_scrollAnimator.active
+    unless @_scrollAnimator.animatingMemomentum
       @_scrollAnimator.animateToValidScrollPosition scrollPosition + desiredOffset
 
   setFirstElementPosition: (fp)->
@@ -213,15 +213,16 @@ class ScrollElement extends Element
         timeout 100
         .then ->
           return unless @_mostRecentMouseWheelEvent == event
-          @animateToValidScrollPosition()
+          @animateToValidScrollPositionDelta()
 
       createGestureRecognizer
         didNotImmediatelyFlick: (e) ->
           @_flickAcceleratorMultiplier = defaultFlickAcceleratorMultiplier
-          @_scrollAnimator.freeze()
+          @_scrollAnimator.freeze() unless @_scrollAnimator.animatingTo
+
         prepare: -> @_gesturePending = true
         finally: ->
-          @animateToValidScrollPosition()
+          @animateToValidScrollPositionDelta()
           @_gesturePending = false
 
         custom:
@@ -449,7 +450,7 @@ class ScrollElement extends Element
       @_validScrollPositionCheckScheduled = true
       timeout 250, ->
         if !@_gesturePending && !@_scrollAnimator.active
-          @animateToValidScrollPosition()
+          @animateToValidScrollPositionDelta()
         @_validScrollPositionCheckScheduled = false
 
   _scrollPositionChanged: ->
