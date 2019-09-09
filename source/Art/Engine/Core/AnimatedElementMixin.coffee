@@ -87,6 +87,7 @@ module.exports = (superClass) -> class AnimatedElementMixin extends superClass
     {_parent, _animateOnCreation} = @_pendingState
     @__stateEpochCount == 0 && (_animateOnCreation || !(@_pendingState._parent?.__stateEpochCount == 0))
 
+  loggedAnimationErrors = 0
   preprocessForEpoch: ->
     if pendingAnimators = @_pendingState._animators
       animateFromVoid = @getPendingCreatedAndAddedToExistingParent()
@@ -96,22 +97,36 @@ module.exports = (superClass) -> class AnimatedElementMixin extends superClass
       for prop, animator of pendingAnimators
         {active} = animator
 
-        pendingValue = @_pendingState[prop]
+        try
+          pendingValue = @_pendingState[prop]
 
-        baseValue = if @__stateEpochCount == 0
-          pendingValue
-        else
-          @[prop]
+          baseValue = if @__stateEpochCount == 0
+            pendingValue
+          else
+            @[prop]
 
-        currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
-          @_animatingFromVoid = true
-          animator.getPreprocessedFromVoid @, baseValue
-        else baseValue
+          currentValue = if animateFromVoid && hasFromVoidAnimation = animator.hasFromVoidAnimation
+            @_animatingFromVoid = true
+            animator.getPreprocessedFromVoid @, baseValue
+          else baseValue
 
-        newValue = if active || !propsEq currentValue, pendingValue
-          animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
-        else pendingValue
+          newValue = if active || !propsEq currentValue, pendingValue
+            animator.animateAbsoluteTime @, currentValue, pendingValue, frameSecond
+          else pendingValue
 
-        @_pendingState[prop] = newValue
+          @_pendingState[prop] = newValue
+
+        catch error
+          @_pendingState[prop] = pendingValue
+          if loggedAnimationErrors++ < 10
+
+            log.error ArtEngine: AnimatedElementMixin: errorApplyingProp: {
+              element: @inspectedName
+              prop
+              currentValue: @[prop]
+              pendingValue: @_pendingState[prop]
+              animator
+              error
+            }
 
     null
